@@ -1,0 +1,1 @@
+- Dont use mobile emojis , and doesnt make it look like a vibe coded
