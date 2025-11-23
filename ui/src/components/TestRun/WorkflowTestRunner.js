@@ -216,6 +216,45 @@ const WorkflowTestRunner = ({ workflow, onClose }) => {
           };
         }));
 
+        // Update edge styles based on execution progress
+        setEdges(prevEdges => prevEdges.map(edge => {
+          // Check if source node is completed
+          const sourceHistory = result.instance.executionHistory.find(h => h.nodeId === edge.source);
+          const targetHistory = result.instance.executionHistory.find(h => h.nodeId === edge.target);
+
+          // Edge is completed if both source and target are completed
+          const isCompleted = sourceHistory?.result?.status === 'COMPLETED' && targetHistory?.result?.status === 'COMPLETED';
+
+          // Edge is active if source is completed and target is current/running
+          const isActive = sourceHistory?.result?.status === 'COMPLETED' &&
+                          (result.instance.currentNodeId === edge.target ||
+                           targetHistory?.result?.status === 'RUNNING' ||
+                           targetHistory?.result?.status === 'CURRENT');
+
+          if (isCompleted) {
+            return {
+              ...edge,
+              animated: false,
+              style: { stroke: '#10b981', strokeWidth: 2 }, // Green for completed
+              type: 'smoothstep'
+            };
+          } else if (isActive) {
+            return {
+              ...edge,
+              animated: true,
+              style: { stroke: '#3b82f6', strokeWidth: 3 }, // Blue animated for active
+              type: 'smoothstep'
+            };
+          } else {
+            return {
+              ...edge,
+              animated: false,
+              style: { stroke: '#d1d5db', strokeWidth: 1.5 }, // Gray for pending
+              type: 'smoothstep'
+            };
+          }
+        }));
+
         // Check if user task is waiting
         if (result.instance.status === 'PAUSED' && result.instance.processData?.taskId) {
           setShowUserTaskForm(true);
