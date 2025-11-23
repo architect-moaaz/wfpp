@@ -1,612 +1,37 @@
 [
   {
     "id": "model_001",
-    "name": "conversations",
-    "description": "Main conversation collection storing chat sessions with embedded messages",
-    "databaseType": "nosql",
-    "fields": [
-      {
-        "id": "field_001",
-        "name": "_id",
-        "type": "object",
-        "required": true,
-        "defaultValue": null,
-        "description": "MongoDB ObjectId for conversation",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_002",
-        "name": "sessionId",
-        "type": "string",
-        "required": true,
-        "defaultValue": null,
-        "description": "Unique session identifier",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_003",
-        "name": "userId",
-        "type": "string",
-        "required": false,
-        "defaultValue": null,
-        "description": "User identifier if authenticated",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_004",
-        "name": "status",
-        "type": "string",
-        "required": true,
-        "defaultValue": "active",
-        "description": "Conversation status: active, ended_magic_word, timeout",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_005",
-        "name": "magicWord",
-        "type": "string",
-        "required": true,
-        "defaultValue": null,
-        "description": "The magic word that ends this conversation",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_006",
-        "name": "startTime",
-        "type": "date",
-        "required": true,
-        "defaultValue": null,
-        "description": "When conversation started",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_007",
-        "name": "endTime",
-        "type": "date",
-        "required": false,
-        "defaultValue": null,
-        "description": "When conversation ended",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_008",
-        "name": "messages",
-        "type": "array",
-        "required": true,
-        "defaultValue": [],
-        "description": "Array of embedded message documents",
-        "embedded": true,
-        "ref": null
-      },
-      {
-        "id": "field_009",
-        "name": "metadata",
-        "type": "object",
-        "required": false,
-        "defaultValue": {},
-        "description": "Additional session metadata",
-        "embedded": true,
-        "ref": null
-      }
-    ],
-    "embedded": [
-      {
-        "name": "messageDoc",
-        "fields": [
-          {
-            "id": "field_010",
-            "name": "messageId",
-            "type": "string",
-            "required": true,
-            "description": "Unique message identifier"
-          },
-          {
-            "id": "field_011",
-            "name": "type",
-            "type": "string",
-            "required": true,
-            "description": "Message type: user_input, bot_response"
-          },
-          {
-            "id": "field_012",
-            "name": "content",
-            "type": "string",
-            "required": true,
-            "description": "Message content text"
-          },
-          {
-            "id": "field_013",
-            "name": "timestamp",
-            "type": "date",
-            "required": true,
-            "description": "When message was sent"
-          },
-          {
-            "id": "field_014",
-            "name": "quirkStyle",
-            "type": "string",
-            "required": false,
-            "description": "Style of quirky response used"
-          },
-          {
-            "id": "field_015",
-            "name": "processingTime",
-            "type": "number",
-            "required": false,
-            "description": "Bot response time in milliseconds"
-          }
-        ]
-      },
-      {
-        "name": "metadataDoc",
-        "fields": [
-          {
-            "id": "field_016",
-            "name": "userAgent",
-            "type": "string",
-            "required": false,
-            "description": "User's browser/client info"
-          },
-          {
-            "id": "field_017",
-            "name": "ipAddress",
-            "type": "string",
-            "required": false,
-            "description": "User's IP address"
-          },
-          {
-            "id": "field_018",
-            "name": "platform",
-            "type": "string",
-            "required": false,
-            "description": "Platform: web, mobile, api"
-          }
-        ]
-      }
-    ],
-    "references": [],
-    "indexes": [
-      {
-        "fields": {
-          "sessionId": 1
-        },
-        "unique": true,
-        "sparse": false
-      },
-      {
-        "fields": {
-          "userId": 1,
-          "startTime": -1
-        },
-        "unique": false,
-        "sparse": true
-      },
-      {
-        "fields": {
-          "status": 1
-        },
-        "unique": false,
-        "sparse": false
-      },
-      {
-        "fields": {
-          "startTime": -1
-        },
-        "unique": false,
-        "sparse": false
-      }
-    ],
-    "updatedAt": "2025-11-23T17:20:40.216Z"
-  },
-  {
-    "id": "model_002",
-    "name": "quirkyResponses",
-    "description": "Template collection for quirky bot response patterns",
-    "databaseType": "nosql",
-    "fields": [
-      {
-        "id": "field_019",
-        "name": "_id",
-        "type": "object",
-        "required": true,
-        "defaultValue": null,
-        "description": "MongoDB ObjectId for response template",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_020",
-        "name": "category",
-        "type": "string",
-        "required": true,
-        "defaultValue": null,
-        "description": "Response category: greeting, question, statement, confusion",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_021",
-        "name": "quirkStyle",
-        "type": "string",
-        "required": true,
-        "defaultValue": null,
-        "description": "Style: sarcastic, punny, rhyming, dramatic, confused",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_022",
-        "name": "templates",
-        "type": "array",
-        "required": true,
-        "defaultValue": [],
-        "description": "Array of response templates with placeholders",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_023",
-        "name": "triggers",
-        "type": "array",
-        "required": false,
-        "defaultValue": [],
-        "description": "Keywords or patterns that trigger this response type",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_024",
-        "name": "weight",
-        "type": "number",
-        "required": true,
-        "defaultValue": 1,
-        "description": "Selection probability weight",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_025",
-        "name": "isActive",
-        "type": "boolean",
-        "required": true,
-        "defaultValue": true,
-        "description": "Whether template is active",
-        "embedded": false,
-        "ref": null
-      }
-    ],
-    "embedded": [],
-    "references": [],
-    "indexes": [
-      {
-        "fields": {
-          "category": 1,
-          "quirkStyle": 1
-        },
-        "unique": false,
-        "sparse": false
-      },
-      {
-        "fields": {
-          "isActive": 1
-        },
-        "unique": false,
-        "sparse": false
-      },
-      {
-        "fields": {
-          "triggers": 1
-        },
-        "unique": false,
-        "sparse": false
-      }
-    ],
-    "updatedAt": "2025-11-23T17:20:40.218Z"
-  },
-  {
-    "id": "model_003",
-    "name": "magicWords",
-    "description": "Collection of available magic words for ending conversations",
-    "databaseType": "nosql",
-    "fields": [
-      {
-        "id": "field_026",
-        "name": "_id",
-        "type": "object",
-        "required": true,
-        "defaultValue": null,
-        "description": "MongoDB ObjectId for magic word",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_027",
-        "name": "word",
-        "type": "string",
-        "required": true,
-        "defaultValue": null,
-        "description": "The magic word itself",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_028",
-        "name": "difficulty",
-        "type": "string",
-        "required": true,
-        "defaultValue": "medium",
-        "description": "Difficulty level: easy, medium, hard, expert",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_029",
-        "name": "hints",
-        "type": "array",
-        "required": false,
-        "defaultValue": [],
-        "description": "Progressive hints about the magic word",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_030",
-        "name": "usageCount",
-        "type": "number",
-        "required": true,
-        "defaultValue": 0,
-        "description": "How many times this word has been used",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_031",
-        "name": "isActive",
-        "type": "boolean",
-        "required": true,
-        "defaultValue": true,
-        "description": "Whether word is available for selection",
-        "embedded": false,
-        "ref": null
-      }
-    ],
-    "embedded": [],
-    "references": [],
-    "indexes": [
-      {
-        "fields": {
-          "word": 1
-        },
-        "unique": true,
-        "sparse": false
-      },
-      {
-        "fields": {
-          "difficulty": 1,
-          "isActive": 1
-        },
-        "unique": false,
-        "sparse": false
-      },
-      {
-        "fields": {
-          "usageCount": 1
-        },
-        "unique": false,
-        "sparse": false
-      }
-    ],
-    "updatedAt": "2025-11-23T17:20:40.220Z"
-  },
-  {
-    "id": "model_004",
-    "name": "analytics",
-    "description": "Conversation analytics and bot performance metrics",
-    "databaseType": "nosql",
-    "fields": [
-      {
-        "id": "field_024",
-        "name": "_id",
-        "type": "object",
-        "required": true,
-        "defaultValue": null,
-        "description": "Unique analytics record identifier",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_025",
-        "name": "date",
-        "type": "date",
-        "required": true,
-        "defaultValue": null,
-        "description": "Analytics date",
-        "embedded": false,
-        "ref": null
-      },
-      {
-        "id": "field_026",
-        "name": "metrics",
-        "type": "object",
-        "required": true,
-        "defaultValue": {},
-        "description": "Daily performance metrics",
-        "embedded": true,
-        "ref": null
-      },
-      {
-        "id": "field_027",
-        "name": "popularIntents",
-        "type": "array",
-        "required": true,
-        "defaultValue": [],
-        "description": "Most common user intents",
-        "embedded": true,
-        "ref": null
-      },
-      {
-        "id": "field_028",
-        "name": "responseRatings",
-        "type": "array",
-        "required": true,
-        "defaultValue": [],
-        "description": "User satisfaction with responses",
-        "embedded": true,
-        "ref": null
-      },
-      {
-        "id": "field_029",
-        "name": "conversationStats",
-        "type": "object",
-        "required": true,
-        "defaultValue": {},
-        "description": "Conversation statistics",
-        "embedded": true,
-        "ref": null
-      }
-    ],
-    "embedded": [
-      {
-        "name": "metrics",
-        "fields": [
-          {
-            "name": "totalConversations",
-            "type": "number",
-            "description": "Daily conversation count"
-          },
-          {
-            "name": "averageResponseTime",
-            "type": "number",
-            "description": "Average bot response time"
-          },
-          {
-            "name": "successfulResponses",
-            "type": "number",
-            "description": "Successfully handled queries"
-          },
-          {
-            "name": "fallbackResponses",
-            "type": "number",
-            "description": "Fallback responses used"
-          },
-          {
-            "name": "userSatisfactionScore",
-            "type": "number",
-            "description": "Average user satisfaction"
-          }
-        ]
-      },
-      {
-        "name": "popularIntents",
-        "fields": [
-          {
-            "name": "intent",
-            "type": "string",
-            "description": "Intent name"
-          },
-          {
-            "name": "count",
-            "type": "number",
-            "description": "Usage count"
-          },
-          {
-            "name": "successRate",
-            "type": "number",
-            "description": "Success rate percentage"
-          }
-        ]
-      },
-      {
-        "name": "responseRatings",
-        "fields": [
-          {
-            "name": "responseId",
-            "type": "string",
-            "description": "Response template ID"
-          },
-          {
-            "name": "averageRating",
-            "type": "number",
-            "description": "Average user rating"
-          },
-          {
-            "name": "ratingCount",
-            "type": "number",
-            "description": "Number of ratings"
-          }
-        ]
-      },
-      {
-        "name": "conversationStats",
-        "fields": [
-          {
-            "name": "averageLength",
-            "type": "number",
-            "description": "Average messages per conversation"
-          },
-          {
-            "name": "completionRate",
-            "type": "number",
-            "description": "Conversation completion rate"
-          },
-          {
-            "name": "retentionRate",
-            "type": "number",
-            "description": "User return rate"
-          }
-        ]
-      }
-    ],
-    "references": [],
-    "indexes": [
-      {
-        "fields": {
-          "date": -1
-        },
-        "unique": true,
-        "sparse": false
-      },
-      {
-        "fields": {
-          "metrics.userSatisfactionScore": -1
-        },
-        "unique": false,
-        "sparse": false
-      }
-    ],
-    "updatedAt": "2025-11-23T17:11:13.287Z"
-  },
-  {
-    "id": "model_005",
-    "name": "Assignment",
-    "description": "Assignments and assessments within courses",
+    "name": "User",
+    "description": "System users including employees and managers",
     "databaseType": "sql",
     "fields": [
       {
-        "id": "field_037",
+        "id": "field_001",
         "name": "id",
-        "type": "bigint",
-        "sqlType": "BIGINT",
+        "type": "int",
+        "sqlType": "INT AUTO_INCREMENT",
         "required": true,
         "primaryKey": true,
         "unique": true,
         "defaultValue": null,
-        "validation": {
-          "autoIncrement": true
-        }
+        "validation": {}
       },
       {
-        "id": "field_038",
-        "name": "course_id",
-        "type": "bigint",
-        "sqlType": "BIGINT",
+        "id": "field_002",
+        "name": "employee_id",
+        "type": "varchar",
+        "sqlType": "VARCHAR(20)",
+        "required": true,
+        "primaryKey": false,
+        "unique": true,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_003",
+        "name": "first_name",
+        "type": "varchar",
+        "sqlType": "VARCHAR(100)",
         "required": true,
         "primaryKey": false,
         "unique": false,
@@ -614,10 +39,32 @@
         "validation": {}
       },
       {
-        "id": "field_039",
-        "name": "module_id",
-        "type": "bigint",
-        "sqlType": "BIGINT",
+        "id": "field_004",
+        "name": "last_name",
+        "type": "varchar",
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_005",
+        "name": "email",
+        "type": "varchar",
+        "sqlType": "VARCHAR(255)",
+        "required": true,
+        "primaryKey": false,
+        "unique": true,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_006",
+        "name": "phone",
+        "type": "varchar",
+        "sqlType": "VARCHAR(20)",
         "required": false,
         "primaryKey": false,
         "unique": false,
@@ -625,10 +72,10 @@
         "validation": {}
       },
       {
-        "id": "field_040",
-        "name": "title",
-        "type": "varchar",
-        "sqlType": "VARCHAR(255)",
+        "id": "field_007",
+        "name": "department_id",
+        "type": "int",
+        "sqlType": "INT",
         "required": true,
         "primaryKey": false,
         "unique": false,
@@ -636,7 +83,140 @@
         "validation": {}
       },
       {
-        "id": "field_041",
+        "id": "field_008",
+        "name": "manager_id",
+        "type": "int",
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_009",
+        "name": "hire_date",
+        "type": "date",
+        "sqlType": "DATE",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_010",
+        "name": "status",
+        "type": "enum",
+        "sqlType": "ENUM('active', 'inactive', 'terminated')",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "active",
+        "validation": {}
+      },
+      {
+        "id": "field_011",
+        "name": "created_at",
+        "type": "datetime",
+        "sqlType": "DATETIME",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "CURRENT_TIMESTAMP",
+        "validation": {}
+      },
+      {
+        "id": "field_012",
+        "name": "updated_at",
+        "type": "datetime",
+        "sqlType": "DATETIME",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "validation": {}
+      }
+    ],
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Department",
+        "foreignKey": "department_id",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE"
+      },
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "foreignKey": "manager_id",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_employee_id",
+        "fields": [
+          "employee_id"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_department_id",
+        "fields": [
+          "department_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_manager_id",
+        "fields": [
+          "manager_id"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": [],
+    "updatedAt": "2025-11-23T17:44:09.006Z"
+  },
+  {
+    "id": "model_002",
+    "name": "Department",
+    "description": "Organizational departments",
+    "databaseType": "sql",
+    "fields": [
+      {
+        "id": "field_013",
+        "name": "id",
+        "type": "int",
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "unique": true,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_014",
+        "name": "name",
+        "type": "varchar",
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "unique": true,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_015",
         "name": "description",
         "type": "text",
         "sqlType": "TEXT",
@@ -647,32 +227,10 @@
         "validation": {}
       },
       {
-        "id": "field_042",
-        "name": "type",
-        "type": "enum",
-        "sqlType": "ENUM('quiz', 'assignment', 'exam', 'project')",
-        "required": true,
-        "primaryKey": false,
-        "unique": false,
-        "defaultValue": null,
-        "validation": {}
-      },
-      {
-        "id": "field_043",
-        "name": "max_points",
-        "type": "decimal",
-        "sqlType": "DECIMAL(8,2)",
-        "required": true,
-        "primaryKey": false,
-        "unique": false,
-        "defaultValue": null,
-        "validation": {}
-      },
-      {
-        "id": "field_044",
-        "name": "due_date",
-        "type": "datetime",
-        "sqlType": "DATETIME",
+        "id": "field_016",
+        "name": "head_id",
+        "type": "int",
+        "sqlType": "INT",
         "required": false,
         "primaryKey": false,
         "unique": false,
@@ -680,21 +238,10 @@
         "validation": {}
       },
       {
-        "id": "field_045",
-        "name": "is_published",
-        "type": "boolean",
-        "sqlType": "BOOLEAN",
-        "required": true,
-        "primaryKey": false,
-        "unique": false,
-        "defaultValue": false,
-        "validation": {}
-      },
-      {
-        "id": "field_046",
+        "id": "field_017",
         "name": "created_at",
-        "type": "timestamp",
-        "sqlType": "TIMESTAMP",
+        "type": "datetime",
+        "sqlType": "DATETIME",
         "required": true,
         "primaryKey": false,
         "unique": false,
@@ -702,10 +249,10 @@
         "validation": {}
       },
       {
-        "id": "field_047",
+        "id": "field_018",
         "name": "updated_at",
-        "type": "timestamp",
-        "sqlType": "TIMESTAMP",
+        "type": "datetime",
+        "sqlType": "DATETIME",
         "required": true,
         "primaryKey": false,
         "unique": false,
@@ -716,138 +263,62 @@
     "relationships": [
       {
         "type": "belongsTo",
-        "target": "Course",
-        "foreignKey": "course_id",
-        "onDelete": "CASCADE",
-        "onUpdate": "CASCADE"
-      },
-      {
-        "type": "belongsTo",
-        "target": "Module",
-        "foreignKey": "module_id",
+        "target": "User",
+        "foreignKey": "head_id",
         "onDelete": "SET NULL",
         "onUpdate": "CASCADE"
       }
     ],
     "indexes": [
       {
-        "name": "idx_assignment_course",
+        "name": "idx_department_name",
         "fields": [
-          "course_id"
+          "name"
         ],
-        "unique": false
+        "unique": true
       },
       {
-        "name": "idx_assignment_module",
+        "name": "idx_head_id",
         "fields": [
-          "module_id"
-        ],
-        "unique": false
-      },
-      {
-        "name": "idx_assignment_due_date",
-        "fields": [
-          "due_date"
+          "head_id"
         ],
         "unique": false
       }
     ],
-    "constraints": [
-      {
-        "type": "check",
-        "expression": "max_points > 0"
-      }
-    ],
-    "updatedAt": "2025-11-23T07:33:56.463Z"
+    "constraints": [],
+    "updatedAt": "2025-11-23T17:44:09.008Z"
   },
   {
-    "id": "model_006",
-    "name": "Submission",
-    "description": "Student submissions for assignments",
+    "id": "model_003",
+    "name": "LeaveType",
+    "description": "Types of leave available",
     "databaseType": "sql",
     "fields": [
       {
-        "id": "field_048",
+        "id": "field_019",
         "name": "id",
-        "type": "bigint",
-        "sqlType": "BIGINT",
+        "type": "int",
+        "sqlType": "INT AUTO_INCREMENT",
         "required": true,
         "primaryKey": true,
         "unique": true,
         "defaultValue": null,
-        "validation": {
-          "autoIncrement": true
-        }
-      },
-      {
-        "id": "field_049",
-        "name": "assignment_id",
-        "type": "bigint",
-        "sqlType": "BIGINT",
-        "required": true,
-        "primaryKey": false,
-        "unique": false,
-        "defaultValue": null,
         "validation": {}
       },
       {
-        "id": "field_050",
-        "name": "student_id",
-        "type": "bigint",
-        "sqlType": "BIGINT",
-        "required": true,
-        "primaryKey": false,
-        "unique": false,
-        "defaultValue": null,
-        "validation": {}
-      },
-      {
-        "id": "field_051",
-        "name": "content",
-        "type": "text",
-        "sqlType": "LONGTEXT",
-        "required": false,
-        "primaryKey": false,
-        "unique": false,
-        "defaultValue": null,
-        "validation": {}
-      },
-      {
-        "id": "field_052",
-        "name": "file_path",
+        "id": "field_020",
+        "name": "name",
         "type": "varchar",
-        "sqlType": "VARCHAR(500)",
-        "required": false,
-        "primaryKey": false,
-        "unique": false,
-        "defaultValue": null,
-        "validation": {}
-      },
-      {
-        "id": "field_053",
-        "name": "submitted_at",
-        "type": "datetime",
-        "sqlType": "DATETIME",
+        "sqlType": "VARCHAR(100)",
         "required": true,
         "primaryKey": false,
-        "unique": false,
-        "defaultValue": "CURRENT_TIMESTAMP",
-        "validation": {}
-      },
-      {
-        "id": "field_054",
-        "name": "score",
-        "type": "decimal",
-        "sqlType": "DECIMAL(8,2)",
-        "required": false,
-        "primaryKey": false,
-        "unique": false,
+        "unique": true,
         "defaultValue": null,
         "validation": {}
       },
       {
-        "id": "field_055",
-        "name": "feedback",
+        "id": "field_021",
+        "name": "description",
         "type": "text",
         "sqlType": "TEXT",
         "required": false,
@@ -857,32 +328,54 @@
         "validation": {}
       },
       {
-        "id": "field_056",
-        "name": "graded_at",
+        "id": "field_022",
+        "name": "max_days_per_year",
+        "type": "int",
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_023",
+        "name": "is_paid",
+        "type": "boolean",
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": true,
+        "validation": {}
+      },
+      {
+        "id": "field_024",
+        "name": "requires_approval",
+        "type": "boolean",
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": true,
+        "validation": {}
+      },
+      {
+        "id": "field_025",
+        "name": "is_active",
+        "type": "boolean",
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": true,
+        "validation": {}
+      },
+      {
+        "id": "field_026",
+        "name": "created_at",
         "type": "datetime",
         "sqlType": "DATETIME",
-        "required": false,
-        "primaryKey": false,
-        "unique": false,
-        "defaultValue": null,
-        "validation": {}
-      },
-      {
-        "id": "field_057",
-        "name": "graded_by",
-        "type": "bigint",
-        "sqlType": "BIGINT",
-        "required": false,
-        "primaryKey": false,
-        "unique": false,
-        "defaultValue": null,
-        "validation": {}
-      },
-      {
-        "id": "field_058",
-        "name": "created_at",
-        "type": "timestamp",
-        "sqlType": "TIMESTAMP",
         "required": true,
         "primaryKey": false,
         "unique": false,
@@ -890,10 +383,141 @@
         "validation": {}
       },
       {
-        "id": "field_059",
+        "id": "field_027",
         "name": "updated_at",
-        "type": "timestamp",
-        "sqlType": "TIMESTAMP",
+        "type": "datetime",
+        "sqlType": "DATETIME",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "validation": {}
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_leave_type_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_is_active",
+        "fields": [
+          "is_active"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "max_days_per_year >= 0"
+      }
+    ],
+    "updatedAt": "2025-11-23T17:44:09.009Z"
+  },
+  {
+    "id": "model_004",
+    "name": "LeaveBalance",
+    "description": "Employee leave balances per leave type per year",
+    "databaseType": "sql",
+    "fields": [
+      {
+        "id": "field_028",
+        "name": "id",
+        "type": "int",
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "unique": true,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_029",
+        "name": "user_id",
+        "type": "int",
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_030",
+        "name": "leave_type_id",
+        "type": "int",
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_031",
+        "name": "year",
+        "type": "int",
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_032",
+        "name": "allocated_days",
+        "type": "decimal",
+        "sqlType": "DECIMAL(5,2)",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "0.00",
+        "validation": {}
+      },
+      {
+        "id": "field_033",
+        "name": "used_days",
+        "type": "decimal",
+        "sqlType": "DECIMAL(5,2)",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "0.00",
+        "validation": {}
+      },
+      {
+        "id": "field_034",
+        "name": "remaining_days",
+        "type": "decimal",
+        "sqlType": "DECIMAL(5,2) GENERATED ALWAYS AS (allocated_days - used_days) STORED",
+        "required": false,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_035",
+        "name": "created_at",
+        "type": "datetime",
+        "sqlType": "DATETIME",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "CURRENT_TIMESTAMP",
+        "validation": {}
+      },
+      {
+        "id": "field_036",
+        "name": "updated_at",
+        "type": "datetime",
+        "sqlType": "DATETIME",
         "required": true,
         "primaryKey": false,
         "unique": false,
@@ -904,46 +528,33 @@
     "relationships": [
       {
         "type": "belongsTo",
-        "target": "Assignment",
-        "foreignKey": "assignment_id",
+        "target": "User",
+        "foreignKey": "user_id",
         "onDelete": "CASCADE",
         "onUpdate": "CASCADE"
       },
       {
         "type": "belongsTo",
-        "target": "User",
-        "foreignKey": "student_id",
+        "target": "LeaveType",
+        "foreignKey": "leave_type_id",
         "onDelete": "CASCADE",
-        "onUpdate": "CASCADE"
-      },
-      {
-        "type": "belongsTo",
-        "target": "User",
-        "foreignKey": "graded_by",
-        "onDelete": "SET NULL",
         "onUpdate": "CASCADE"
       }
     ],
     "indexes": [
       {
-        "name": "idx_submission_assignment_student",
+        "name": "idx_user_leave_year",
         "fields": [
-          "assignment_id",
-          "student_id"
+          "user_id",
+          "leave_type_id",
+          "year"
         ],
         "unique": true
       },
       {
-        "name": "idx_submission_student",
+        "name": "idx_year",
         "fields": [
-          "student_id"
-        ],
-        "unique": false
-      },
-      {
-        "name": "idx_submission_graded_by",
-        "fields": [
-          "graded_by"
+          "year"
         ],
         "unique": false
       }
@@ -951,10 +562,362 @@
     "constraints": [
       {
         "type": "check",
-        "expression": "score IS NULL OR score >= 0"
+        "expression": "allocated_days >= 0"
+      },
+      {
+        "type": "check",
+        "expression": "used_days >= 0"
+      },
+      {
+        "type": "check",
+        "expression": "used_days <= allocated_days"
+      },
+      {
+        "type": "check",
+        "expression": "year >= 2000"
       }
     ],
-    "updatedAt": "2025-11-23T07:33:56.463Z"
+    "updatedAt": "2025-11-23T17:44:09.010Z"
+  },
+  {
+    "id": "model_005",
+    "name": "LeaveRequest",
+    "description": "Employee leave requests",
+    "databaseType": "sql",
+    "fields": [
+      {
+        "id": "field_037",
+        "name": "id",
+        "type": "int",
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "unique": true,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_038",
+        "name": "user_id",
+        "type": "int",
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_039",
+        "name": "leave_type_id",
+        "type": "int",
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_040",
+        "name": "start_date",
+        "type": "date",
+        "sqlType": "DATE",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_041",
+        "name": "end_date",
+        "type": "date",
+        "sqlType": "DATE",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_042",
+        "name": "total_days",
+        "type": "decimal",
+        "sqlType": "DECIMAL(5,2)",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_043",
+        "name": "reason",
+        "type": "text",
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_044",
+        "name": "status",
+        "type": "enum",
+        "sqlType": "ENUM('pending', 'approved', 'rejected', 'cancelled')",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "pending",
+        "validation": {}
+      },
+      {
+        "id": "field_045",
+        "name": "approved_by",
+        "type": "int",
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_046",
+        "name": "approved_at",
+        "type": "datetime",
+        "sqlType": "DATETIME",
+        "required": false,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_047",
+        "name": "rejection_reason",
+        "type": "text",
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_048",
+        "name": "created_at",
+        "type": "datetime",
+        "sqlType": "DATETIME",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "CURRENT_TIMESTAMP",
+        "validation": {}
+      },
+      {
+        "id": "field_049",
+        "name": "updated_at",
+        "type": "datetime",
+        "sqlType": "DATETIME",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "validation": {}
+      }
+    ],
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "foreignKey": "user_id",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE"
+      },
+      {
+        "type": "belongsTo",
+        "target": "LeaveType",
+        "foreignKey": "leave_type_id",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE"
+      },
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "foreignKey": "approved_by",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_id",
+        "fields": [
+          "user_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_leave_type_id",
+        "fields": [
+          "leave_type_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_status",
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_start_date",
+        "fields": [
+          "start_date"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_approved_by",
+        "fields": [
+          "approved_by"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_user_date_range",
+        "fields": [
+          "user_id",
+          "start_date",
+          "end_date"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "end_date >= start_date"
+      },
+      {
+        "type": "check",
+        "expression": "total_days > 0"
+      },
+      {
+        "type": "check",
+        "expression": "start_date >= CURRENT_DATE OR status = 'cancelled'"
+      }
+    ],
+    "updatedAt": "2025-11-23T17:44:09.011Z"
+  },
+  {
+    "id": "model_006",
+    "name": "Holiday",
+    "description": "Company holidays and non-working days",
+    "databaseType": "sql",
+    "fields": [
+      {
+        "id": "field_050",
+        "name": "id",
+        "type": "int",
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "unique": true,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_051",
+        "name": "name",
+        "type": "varchar",
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_052",
+        "name": "date",
+        "type": "date",
+        "sqlType": "DATE",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_053",
+        "name": "is_recurring",
+        "type": "boolean",
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": false,
+        "validation": {}
+      },
+      {
+        "id": "field_054",
+        "name": "description",
+        "type": "text",
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": null,
+        "validation": {}
+      },
+      {
+        "id": "field_055",
+        "name": "created_at",
+        "type": "datetime",
+        "sqlType": "DATETIME",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "CURRENT_TIMESTAMP",
+        "validation": {}
+      },
+      {
+        "id": "field_056",
+        "name": "updated_at",
+        "type": "datetime",
+        "sqlType": "DATETIME",
+        "required": true,
+        "primaryKey": false,
+        "unique": false,
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "validation": {}
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_holiday_date",
+        "fields": [
+          "date"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_name_date",
+        "fields": [
+          "name",
+          "date"
+        ],
+        "unique": true
+      }
+    ],
+    "constraints": [],
+    "updatedAt": "2025-11-23T17:44:09.012Z"
   },
   {
     "id": "model_007",

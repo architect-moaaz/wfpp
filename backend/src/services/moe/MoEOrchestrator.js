@@ -12,6 +12,7 @@ const RouterAgent = require('./RouterAgent');
 const ExpertCombiner = require('./ExpertCombiner');
 const WorkflowValidator = require('../validation/WorkflowValidator');
 const WorkflowFixer = require('../validation/WorkflowFixer');
+const PlanningExpert = require('./experts/PlanningExpert');
 
 // Import workflow experts
 const SimpleWorkflowExpert = require('./experts/SimpleWorkflowExpert');
@@ -46,6 +47,7 @@ const DesignExpert = require('./experts/DesignExpert');
 class MoEOrchestrator {
   constructor() {
     this.router = new RouterAgent();
+    this.planningExpert = new PlanningExpert();
 
     // Initialize all experts
     this.experts = {
@@ -121,9 +123,17 @@ class MoEOrchestrator {
         content: designInput ? 'Analyzing request with design file and routing to specialized experts...' : 'Analyzing request and routing to specialized experts...'
       });
 
+      // Phase 0: Create comprehensive plan (only for new workflows)
+      let applicationPlan = null;
+      if (!existingWorkflow) {
+        console.log('[MoE] Step 1.5: Creating application plan...');
+        applicationPlan = await this.createApplicationPlan(userRequirements, conversationHistory, emitThinking);
+        console.log('[MoE] Step 1.5 COMPLETE: Plan created with', applicationPlan ? `${applicationPlan.dataModels.length} models` : 'fallback');
+      }
+
       // Phase 1: Route to appropriate experts
       console.log('[MoE] Step 2: Starting request routing...');
-      const routing = await this.routeRequest(userRequirements, conversationHistory, emitThinking);
+      const routing = await this.routeRequest(userRequirements, conversationHistory, emitThinking, applicationPlan);
       console.log('[MoE] Step 2 COMPLETE: Routing result:', JSON.stringify(routing, null, 2));
 
       // Phase 2: Execute selected experts in parallel
@@ -166,16 +176,79 @@ class MoEOrchestrator {
   }
 
   /**
+   * Phase 0: Create comprehensive application plan
+   */
+  async createApplicationPlan(userRequirements, conversationHistory, emitThinking) {
+    emitThinking({
+      agent: 'PlanningExpert',
+      step: 'Creating Application Blueprint',
+      content: 'Analyzing requirements and creating comprehensive plan...'
+    });
+
+    try {
+      const context = {
+        applicationDomain: this.extractDomain(userRequirements),
+        complexity: this.estimateComplexity(userRequirements)
+      };
+
+      const plan = await this.planningExpert.createPlan(userRequirements, context);
+
+      emitThinking({
+        agent: 'PlanningExpert',
+        step: 'Plan Created',
+        content: `Blueprint complete: ${plan.dataModels.length} data models, ${plan.workflows.length} workflows, ${plan.forms.length} forms, ${plan.pages.length} pages`
+      });
+
+      return plan;
+    } catch (error) {
+      console.error('[MoE] Planning failed:', error);
+      emitThinking({
+        agent: 'PlanningExpert',
+        step: 'Planning Skipped',
+        content: 'Proceeding without detailed plan due to error'
+      });
+      return null;
+    }
+  }
+
+  /**
+   * Extract application domain from requirements
+   */
+  extractDomain(requirements) {
+    const domains = ['HR', 'Finance', 'CRM', 'Inventory', 'Project Management', 'Healthcare', 'Education'];
+    const lower = requirements.toLowerCase();
+    for (const domain of domains) {
+      if (lower.includes(domain.toLowerCase())) {
+        return domain;
+      }
+    }
+    return 'General';
+  }
+
+  /**
+   * Estimate complexity from requirements
+   */
+  estimateComplexity(requirements) {
+    const lower = requirements.toLowerCase();
+    const complexIndicators = ['integration', 'multiple', 'advanced', 'complex', 'approval', 'workflow'];
+    const matchCount = complexIndicators.filter(indicator => lower.includes(indicator)).length;
+
+    if (matchCount >= 3) return 'complex';
+    if (matchCount >= 1) return 'moderate';
+    return 'simple';
+  }
+
+  /**
    * Phase 1: Route request to appropriate experts
    */
-  async routeRequest(userRequirements, conversationHistory, emitThinking) {
+  async routeRequest(userRequirements, conversationHistory, emitThinking, applicationPlan = null) {
     emitThinking({
       agent: 'RouterAgent',
       step: 'Analyzing Request',
-      content: 'Determining complexity, domain, and best expert combination...'
+      content: applicationPlan ? 'Using application plan to route to experts...' : 'Determining complexity, domain, and best expert combination...'
     });
 
-    const routing = await this.router.execute(userRequirements, conversationHistory, emitThinking);
+    const routing = await this.router.execute(userRequirements, conversationHistory, emitThinking, applicationPlan);
 
     emitThinking({
       agent: 'RouterAgent',

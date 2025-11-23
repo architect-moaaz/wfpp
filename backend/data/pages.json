@@ -6363,7 +6363,7 @@
     },
     "sections": [
       {
-        "id": "header_section",
+        "id": "header",
         "type": "header",
         "width": "full",
         "components": [
@@ -6372,10 +6372,10 @@
             "config": {
               "text": "Submit Leave Request",
               "variant": "h1",
-              "align": "center"
+              "align": "left"
             },
             "styling": {
-              "margin": "lg",
+              "margin": "0",
               "padding": "md"
             }
           }
@@ -6388,9 +6388,7 @@
         "components": [
           {
             "type": "form",
-            "config": {
-              "variant": "card"
-            },
+            "config": {},
             "styling": {
               "margin": "md",
               "padding": "lg",
@@ -6413,8 +6411,13 @@
           },
           {
             "label": "My Requests",
-            "route": "/my-requests",
+            "route": "/leave-requests",
             "icon": "calendar"
+          },
+          {
+            "label": "New Request",
+            "route": "/leave-requests/new",
+            "icon": "plus"
           },
           {
             "label": "Team Requests",
@@ -6422,16 +6425,12 @@
             "icon": "users"
           },
           {
-            "label": "Reports",
-            "route": "/reports",
-            "icon": "chart"
+            "label": "Profile",
+            "route": "/profile",
+            "icon": "user"
           }
         ],
         "actions": [
-          {
-            "label": "Profile",
-            "action": "profile"
-          },
           {
             "label": "Logout",
             "action": "logout"
@@ -6441,10 +6440,11 @@
     },
     "styling": {
       "backgroundColor": "#f8fafc",
-      "textColor": "#1e293b",
+      "textColor": "#0f172a",
       "spacing": "comfortable"
     },
-    "createdAt": "2025-11-16T07:24:36.590Z"
+    "createdAt": "2025-11-16T07:24:36.590Z",
+    "updatedAt": "2025-11-23T17:44:09.050Z"
   },
   {
     "id": "login_page",
@@ -6544,12 +6544,12 @@
     "type": "dashboard",
     "route": "/dashboard",
     "platform": "both",
-    "designReference": "dashboard-main",
+    "designReference": "auto-generated",
     "layout": {
       "type": "dashboard",
       "responsive": true,
       "maxWidth": "1400px",
-      "padding": "md"
+      "padding": "lg"
     },
     "sections": [
       {
@@ -6560,102 +6560,135 @@
           {
             "type": "text",
             "config": {
-              "text": "Learning Management System",
+              "text": "Leave Management System",
               "variant": "h1",
               "align": "left"
-            }
-          },
-          {
-            "type": "text",
-            "config": {
-              "text": "Welcome back! Here's what's happening in your courses.",
-              "variant": "p",
-              "align": "left"
+            },
+            "styling": {
+              "margin": "0",
+              "padding": "md"
             }
           }
         ]
       },
       {
-        "id": "stats",
+        "id": "stats_section",
         "type": "main",
         "width": "full",
         "components": [
           {
             "type": "card",
             "config": {
-              "title": "Total Courses",
+              "title": "Total Leave Requests",
               "value": "24",
-              "icon": "book",
-              "trend": "+12%"
+              "subtitle": "This month"
             },
             "styling": {
-              "width": "quarter"
+              "margin": "sm",
+              "padding": "md",
+              "background": "#ffffff",
+              "borderRadius": "8px"
             }
           },
           {
             "type": "card",
             "config": {
-              "title": "Active Students",
-              "value": "1,247",
-              "icon": "users",
-              "trend": "+8%"
+              "title": "Pending Approvals",
+              "value": "7",
+              "subtitle": "Awaiting review"
             },
             "styling": {
-              "width": "quarter"
+              "margin": "sm",
+              "padding": "md",
+              "background": "#ffffff",
+              "borderRadius": "8px"
             }
           },
           {
             "type": "card",
             "config": {
-              "title": "Completed Lessons",
-              "value": "389",
-              "icon": "check-circle",
-              "trend": "+15%"
+              "title": "Approved Leaves",
+              "value": "15",
+              "subtitle": "This month"
             },
             "styling": {
-              "width": "quarter"
+              "margin": "sm",
+              "padding": "md",
+              "background": "#ffffff",
+              "borderRadius": "8px"
             }
           },
           {
             "type": "card",
             "config": {
-              "title": "Pending Assignments",
-              "value": "56",
-              "icon": "clock",
-              "trend": "-5%"
+              "title": "Available Balance",
+              "value": "18 days",
+              "subtitle": "Annual leave"
             },
             "styling": {
-              "width": "quarter"
+              "margin": "sm",
+              "padding": "md",
+              "background": "#ffffff",
+              "borderRadius": "8px"
             }
           }
         ]
       },
       {
-        "id": "content",
+        "id": "quick_actions",
         "type": "main",
         "width": "full",
         "components": [
           {
-            "type": "chart",
+            "type": "button",
             "config": {
-              "title": "Course Enrollment Trends",
-              "type": "line",
-              "data": "enrollment.monthly"
+              "text": "Request Leave",
+              "variant": "primary",
+              "size": "lg"
             },
             "styling": {
-              "width": "two-thirds"
+              "margin": "sm",
+              "padding": "md"
             }
           },
           {
-            "type": "list",
+            "type": "button",
             "config": {
-              "title": "Recent Activities",
-              "items": "activities.recent",
-              "itemTemplate": "activity"
+              "text": "View My Requests",
+              "variant": "outline",
+              "size": "lg"
             },
             "styling": {
-              "width": "third"
+              "margin": "sm",
+              "padding": "md"
             }
+          }
+        ]
+      },
+      {
+        "id": "recent_requests",
+        "type": "main",
+        "width": "full",
+        "components": [
+          {
+            "type": "table",
+            "config": {
+              "title": "Recent Leave Requests",
+              "columns": [
+                "Date",
+                "Type",
+                "Duration",
+                "Status"
+              ],
+              "data": []
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "md",
+              "background": "#ffffff",
+              "borderRadius": "8px"
+            },
+            "dataBinding": "leaveRequests.recent"
           }
         ]
       }
@@ -6670,40 +6703,54 @@
             "icon": "home"
           },
           {
-            "label": "Courses",
-            "route": "/courses",
-            "icon": "book"
+            "label": "My Requests",
+            "route": "/leave-requests",
+            "icon": "calendar"
           },
           {
-            "label": "Students",
-            "route": "/students",
+            "label": "New Request",
+            "route": "/leave-requests/new",
+            "icon": "plus"
+          },
+          {
+            "label": "Team Requests",
+            "route": "/team-requests",
             "icon": "users"
           },
           {
-            "label": "Assignments",
-            "route": "/assignments",
-            "icon": "clipboard"
+            "label": "Profile",
+            "route": "/profile",
+            "icon": "user"
           }
         ],
         "actions": [
-          {
-            "label": "Profile",
-            "action": "profile"
-          },
           {
             "label": "Logout",
             "action": "logout"
           }
         ]
+      },
+      "footer": {
+        "links": [
+          {
+            "label": "Help",
+            "route": "/help"
+          },
+          {
+            "label": "Support",
+            "route": "/support"
+          }
+        ],
+        "copyright": true
       }
     },
     "styling": {
-      "backgroundColor": "#F8FAFC",
-      "textColor": "#1E293B",
+      "backgroundColor": "#f8fafc",
+      "textColor": "#0f172a",
       "spacing": "comfortable"
     },
     "createdAt": "2025-11-16T07:46:02.574Z",
-    "updatedAt": "2025-11-23T07:33:56.498Z"
+    "updatedAt": "2025-11-23T17:44:09.050Z"
   },
   {
     "id": "tickets_list",
@@ -7350,25 +7397,29 @@
     "type": "auth",
     "route": "/login",
     "platform": "both",
-    "designReference": "login-page",
+    "designReference": "auto-generated",
     "layout": {
       "type": "single",
       "responsive": true,
       "maxWidth": "400px",
-      "padding": "lg"
+      "padding": "xl"
     },
     "sections": [
       {
-        "id": "auth_container",
+        "id": "login_form",
         "type": "main",
-        "width": "full",
+        "width": "constrained",
         "components": [
           {
             "type": "text",
             "config": {
-              "text": "Welcome Back",
+              "text": "Leave Management System",
               "variant": "h1",
               "align": "center"
+            },
+            "styling": {
+              "margin": "lg",
+              "padding": "0"
             }
           },
           {
@@ -7377,37 +7428,71 @@
               "text": "Sign in to your account",
               "variant": "p",
               "align": "center"
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "0"
             }
           },
           {
             "type": "form",
-            "config": {
-              "formRef": "login_form"
+            "config": {},
+            "styling": {
+              "margin": "lg",
+              "padding": "xl",
+              "background": "#ffffff",
+              "borderRadius": "8px"
             },
             "formRef": "login_form"
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Forgot your password?",
+              "variant": "caption",
+              "align": "center"
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "0"
+            }
           }
         ]
       }
     ],
     "navigation": {
       "header": {
-        "logo": true,
-        "menu": []
+        "logo": false,
+        "menu": [],
+        "actions": []
+      },
+      "footer": {
+        "links": [
+          {
+            "label": "Help",
+            "route": "/help"
+          },
+          {
+            "label": "Privacy",
+            "route": "/privacy"
+          }
+        ],
+        "copyright": true
       }
     },
     "styling": {
-      "backgroundColor": "#FFFFFF",
-      "textColor": "#1E293B",
+      "backgroundColor": "#f1f5f9",
+      "textColor": "#0f172a",
       "spacing": "comfortable"
     },
     "createdAt": "2025-11-16T07:46:02.574Z",
-    "updatedAt": "2025-11-23T07:33:56.498Z"
+    "updatedAt": "2025-11-23T17:44:09.050Z"
   },
   {
     "id": "leave_requests_list",
     "name": "My Leave Requests",
     "type": "list",
-    "route": "/requests",
+    "route": "/leave-requests",
     "platform": "both",
     "designReference": "auto-generated",
     "layout": {
@@ -7430,8 +7515,8 @@
               "align": "left"
             },
             "styling": {
-              "margin": "md",
-              "padding": "none"
+              "margin": "0",
+              "padding": "md"
             }
           },
           {
@@ -7441,9 +7526,8 @@
               "variant": "primary"
             },
             "styling": {
-              "margin": "md",
-              "padding": "sm",
-              "borderRadius": "8px"
+              "margin": "sm",
+              "padding": "sm"
             }
           }
         ]
@@ -7456,32 +7540,8 @@
           {
             "type": "input",
             "config": {
-              "type": "select",
-              "placeholder": "Filter by status",
-              "options": [
-                "All",
-                "Pending",
-                "Approved",
-                "Rejected"
-              ]
-            },
-            "styling": {
-              "margin": "sm",
-              "padding": "sm"
-            }
-          },
-          {
-            "type": "input",
-            "config": {
-              "type": "select",
-              "placeholder": "Filter by type",
-              "options": [
-                "All Types",
-                "Annual",
-                "Sick",
-                "Personal",
-                "Emergency"
-              ]
+              "placeholder": "Search requests...",
+              "type": "search"
             },
             "styling": {
               "margin": "sm",
@@ -7499,47 +7559,24 @@
             "type": "table",
             "config": {
               "columns": [
-                {
-                  "key": "type",
-                  "label": "Type",
-                  "sortable": true
-                },
-                {
-                  "key": "startDate",
-                  "label": "Start Date",
-                  "sortable": true
-                },
-                {
-                  "key": "endDate",
-                  "label": "End Date",
-                  "sortable": true
-                },
-                {
-                  "key": "days",
-                  "label": "Days",
-                  "sortable": true
-                },
-                {
-                  "key": "status",
-                  "label": "Status",
-                  "sortable": true
-                },
-                {
-                  "key": "actions",
-                  "label": "Actions",
-                  "sortable": false
-                }
+                "Request Date",
+                "Leave Type",
+                "Start Date",
+                "End Date",
+                "Duration",
+                "Status",
+                "Actions"
               ],
-              "pagination": true,
-              "pageSize": 10
+              "sortable": true,
+              "pagination": true
             },
             "styling": {
               "margin": "md",
-              "padding": "lg",
+              "padding": "md",
               "background": "#ffffff",
-              "borderRadius": "12px"
+              "borderRadius": "8px"
             },
-            "dataBinding": "requests.list"
+            "dataBinding": "leaveRequests.list"
           }
         ]
       }
@@ -7551,22 +7588,22 @@
           {
             "label": "Dashboard",
             "route": "/dashboard",
-            "icon": "dashboard"
+            "icon": "home"
           },
           {
             "label": "My Requests",
-            "route": "/requests",
+            "route": "/leave-requests",
             "icon": "calendar"
           },
           {
             "label": "New Request",
-            "route": "/requests/new",
+            "route": "/leave-requests/new",
             "icon": "plus"
           },
           {
-            "label": "Team Calendar",
-            "route": "/calendar",
-            "icon": "calendar-days"
+            "label": "Team Requests",
+            "route": "/team-requests",
+            "icon": "users"
           },
           {
             "label": "Profile",
@@ -7576,10 +7613,6 @@
         ],
         "actions": [
           {
-            "label": "Notifications",
-            "action": "show-notifications"
-          },
-          {
             "label": "Logout",
             "action": "logout"
           }
@@ -7588,11 +7621,11 @@
     },
     "styling": {
       "backgroundColor": "#f8fafc",
-      "textColor": "#1e293b",
+      "textColor": "#0f172a",
       "spacing": "comfortable"
     },
     "createdAt": "2025-11-16T07:53:01.314Z",
-    "updatedAt": "2025-11-21T07:41:50.298Z"
+    "updatedAt": "2025-11-23T17:44:09.050Z"
   },
   {
     "id": "leave_request_detail",
@@ -7605,7 +7638,7 @@
       "type": "single",
       "responsive": true,
       "maxWidth": "800px",
-      "padding": "md"
+      "padding": "lg"
     },
     "sections": [
       {
@@ -7621,75 +7654,98 @@
               "align": "left"
             },
             "styling": {
+              "margin": "0",
+              "padding": "md"
+            }
+          }
+        ]
+      },
+      {
+        "id": "details_section",
+        "type": "main",
+        "width": "constrained",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Request Information",
+              "fields": [
+                {
+                  "label": "Employee",
+                  "value": "{{employee.name}}"
+                },
+                {
+                  "label": "Leave Type",
+                  "value": "{{leaveType}}"
+                },
+                {
+                  "label": "Start Date",
+                  "value": "{{startDate}}"
+                },
+                {
+                  "label": "End Date",
+                  "value": "{{endDate}}"
+                },
+                {
+                  "label": "Duration",
+                  "value": "{{duration}} days"
+                },
+                {
+                  "label": "Status",
+                  "value": "{{status}}"
+                },
+                {
+                  "label": "Reason",
+                  "value": "{{reason}}"
+                }
+              ]
+            },
+            "styling": {
               "margin": "md",
+              "padding": "lg",
+              "background": "#ffffff",
+              "borderRadius": "8px"
+            },
+            "dataBinding": "leaveRequest.detail"
+          }
+        ]
+      },
+      {
+        "id": "actions_section",
+        "type": "main",
+        "width": "constrained",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "text": "Edit Request",
+              "variant": "primary"
+            },
+            "styling": {
+              "margin": "sm",
               "padding": "sm"
             }
           },
           {
             "type": "button",
             "config": {
-              "text": "Edit",
-              "variant": "secondary",
-              "icon": "edit"
+              "text": "Cancel Request",
+              "variant": "danger"
             },
             "styling": {
-              "margin": "sm"
-            }
-          }
-        ]
-      },
-      {
-        "id": "details",
-        "type": "main",
-        "width": "full",
-        "components": [
-          {
-            "type": "card",
-            "config": {
-              "title": "Request Information"
-            },
-            "styling": {
-              "margin": "md",
-              "padding": "lg",
-              "borderRadius": "8px"
-            }
-          },
-          {
-            "type": "card",
-            "config": {
-              "title": "Approval Status"
-            },
-            "styling": {
-              "margin": "md",
-              "padding": "lg",
-              "borderRadius": "8px"
-            }
-          }
-        ]
-      },
-      {
-        "id": "actions",
-        "type": "main",
-        "width": "full",
-        "components": [
-          {
-            "type": "button",
-            "config": {
-              "text": "Approve",
-              "variant": "success"
-            },
-            "styling": {
-              "margin": "sm"
+              "margin": "sm",
+              "padding": "sm"
             }
           },
           {
             "type": "button",
             "config": {
-              "text": "Reject",
-              "variant": "error"
+              "text": "Back to List",
+              "variant": "outline"
             },
             "styling": {
-              "margin": "sm"
+              "margin": "sm",
+              "padding": "sm"
             }
           }
         ]
@@ -7697,7 +7753,7 @@
     ],
     "styling": {
       "backgroundColor": "#f8fafc",
-      "textColor": "#1e293b",
+      "textColor": "#0f172a",
       "spacing": "comfortable"
     },
     "createdAt": "2025-11-16T07:53:01.314Z",
@@ -7711,24 +7767,35 @@
             "icon": "home"
           },
           {
-            "label": "Leave Requests",
+            "label": "My Requests",
             "route": "/leave-requests",
             "icon": "calendar"
           },
           {
-            "label": "Employees",
-            "route": "/employees",
+            "label": "New Request",
+            "route": "/leave-requests/new",
+            "icon": "plus"
+          },
+          {
+            "label": "Team Requests",
+            "route": "/team-requests",
             "icon": "users"
           },
           {
-            "label": "Policies",
-            "route": "/policies",
-            "icon": "settings"
+            "label": "Profile",
+            "route": "/profile",
+            "icon": "user"
+          }
+        ],
+        "actions": [
+          {
+            "label": "Logout",
+            "action": "logout"
           }
         ]
       }
     },
-    "updatedAt": "2025-11-18T10:43:32.506Z"
+    "updatedAt": "2025-11-23T17:44:09.050Z"
   },
   {
     "id": "create_leave_request",
@@ -13793,9 +13860,9 @@
   },
   {
     "id": "request_detail",
-    "name": "Leave Request Detail",
+    "name": "Leave Request Details",
     "type": "detail",
-    "route": "/leave/request/:id",
+    "route": "/requests/:id",
     "platform": "both",
     "designReference": "auto-generated",
     "layout": {
@@ -13806,9 +13873,9 @@
     },
     "sections": [
       {
-        "id": "header_section",
+        "id": "detail_header",
         "type": "header",
-        "width": "constrained",
+        "width": "full",
         "components": [
           {
             "type": "text",
@@ -13825,89 +13892,25 @@
           {
             "type": "button",
             "config": {
-              "text": "Back to My Requests",
-              "variant": "secondary",
-              "action": "navigate:/leave/my-requests"
+              "text": "Edit Request",
+              "variant": "outline"
             },
             "styling": {
-              "margin": "sm",
-              "padding": "sm"
+              "margin": "md"
             }
           }
         ]
       },
       {
-        "id": "detail_section",
+        "id": "request_info",
         "type": "main",
-        "width": "constrained",
+        "width": "full",
         "components": [
           {
             "type": "card",
             "config": {
               "title": "Request Information",
-              "variant": "detail"
-            },
-            "styling": {
-              "margin": "md",
-              "padding": "lg",
-              "background": "#ffffff",
-              "borderRadius": "8px"
-            },
-            "components": [
-              {
-                "type": "text",
-                "config": {
-                  "text": "Leave Type: {{request.type}}",
-                  "variant": "p"
-                },
-                "dataBinding": "leaveRequest.type"
-              },
-              {
-                "type": "text",
-                "config": {
-                  "text": "Start Date: {{request.startDate}}",
-                  "variant": "p"
-                },
-                "dataBinding": "leaveRequest.startDate"
-              },
-              {
-                "type": "text",
-                "config": {
-                  "text": "End Date: {{request.endDate}}",
-                  "variant": "p"
-                },
-                "dataBinding": "leaveRequest.endDate"
-              },
-              {
-                "type": "text",
-                "config": {
-                  "text": "Status: {{request.status}}",
-                  "variant": "p"
-                },
-                "dataBinding": "leaveRequest.status"
-              },
-              {
-                "type": "text",
-                "config": {
-                  "text": "Reason: {{request.reason}}",
-                  "variant": "p"
-                },
-                "dataBinding": "leaveRequest.reason"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "id": "actions_section",
-        "type": "main",
-        "width": "constrained",
-        "components": [
-          {
-            "type": "card",
-            "config": {
-              "title": "Actions",
-              "variant": "container"
+              "layout": "detail"
             },
             "styling": {
               "margin": "md",
@@ -13915,26 +13918,42 @@
               "background": "#ffffff",
               "borderRadius": "8px"
             },
-            "components": [
-              {
-                "type": "button",
-                "config": {
-                  "text": "Edit Request",
-                  "variant": "primary",
-                  "action": "navigate:/leave/edit/{{id}}"
-                },
-                "conditionalDisplay": "request.status === 'pending'"
-              },
-              {
-                "type": "button",
-                "config": {
-                  "text": "Cancel Request",
-                  "variant": "error",
-                  "action": "cancelRequest"
-                },
-                "conditionalDisplay": "request.status === 'pending'"
-              }
-            ]
+            "dataBinding": "request.details"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Status Timeline",
+              "layout": "timeline"
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "md",
+              "background": "#ffffff",
+              "borderRadius": "8px"
+            },
+            "dataBinding": "request.timeline"
+          }
+        ]
+      },
+      {
+        "id": "approval_section",
+        "type": "main",
+        "width": "full",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "formId": "approval_form",
+              "conditionalRender": "user.isManager"
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "md",
+              "background": "#ffffff",
+              "borderRadius": "8px"
+            },
+            "formRef": "approval_form"
           }
         ]
       }
@@ -13950,30 +13969,29 @@
           },
           {
             "label": "My Requests",
-            "route": "/leave/my-requests",
+            "route": "/requests",
             "icon": "calendar"
           },
           {
-            "label": "Request Leave",
-            "route": "/leave/request",
-            "icon": "plus"
-          },
-          {
             "label": "Team Requests",
-            "route": "/leave/team",
+            "route": "/team-requests",
             "icon": "users"
           }
         ],
         "actions": [
           {
             "label": "Profile",
-            "action": "profile-menu"
+            "action": "profile"
           },
           {
             "label": "Logout",
             "action": "logout"
           }
         ]
+      },
+      "footer": {
+        "links": [],
+        "copyright": true
       }
     },
     "styling": {
@@ -13982,7 +14000,7 @@
       "spacing": "comfortable"
     },
     "createdAt": "2025-11-21T07:41:50.298Z",
-    "updatedAt": "2025-11-21T11:59:08.073Z"
+    "updatedAt": "2025-11-23T17:32:36.206Z"
   },
   {
     "id": "team_calendar",
@@ -14455,18 +14473,18 @@
     "id": "team_requests",
     "name": "Team Leave Requests",
     "type": "list",
-    "route": "/leave/team",
+    "route": "/team-requests",
     "platform": "both",
     "designReference": "auto-generated",
     "layout": {
       "type": "single",
       "responsive": true,
-      "maxWidth": "1200px",
-      "padding": "md"
+      "maxWidth": "1400px",
+      "padding": "lg"
     },
     "sections": [
       {
-        "id": "header_section",
+        "id": "header",
         "type": "header",
         "width": "full",
         "components": [
@@ -14478,20 +14496,26 @@
               "align": "left"
             },
             "styling": {
-              "margin": "md",
-              "padding": "sm"
+              "margin": "0",
+              "padding": "md"
             }
-          },
+          }
+        ]
+      },
+      {
+        "id": "filters",
+        "type": "main",
+        "width": "full",
+        "components": [
           {
-            "type": "text",
+            "type": "input",
             "config": {
-              "text": "Review and approve team member leave requests",
-              "variant": "p",
-              "align": "left"
+              "placeholder": "Search by employee name...",
+              "type": "search"
             },
             "styling": {
               "margin": "sm",
-              "padding": "0"
+              "padding": "sm"
             }
           }
         ]
@@ -14502,66 +14526,28 @@
         "width": "full",
         "components": [
           {
-            "type": "card",
+            "type": "table",
             "config": {
               "title": "Pending Approvals",
-              "variant": "container"
+              "columns": [
+                "Employee",
+                "Leave Type",
+                "Start Date",
+                "End Date",
+                "Duration",
+                "Submitted",
+                "Actions"
+              ],
+              "sortable": true,
+              "pagination": true
             },
             "styling": {
               "margin": "md",
               "padding": "md",
-              "background": "#fff7ed",
-              "borderRadius": "8px",
-              "border": "1px solid #fed7aa"
+              "background": "#ffffff",
+              "borderRadius": "8px"
             },
-            "components": [
-              {
-                "type": "table",
-                "config": {
-                  "columns": [
-                    {
-                      "key": "employee",
-                      "label": "Employee",
-                      "sortable": true
-                    },
-                    {
-                      "key": "type",
-                      "label": "Leave Type",
-                      "sortable": true
-                    },
-                    {
-                      "key": "startDate",
-                      "label": "Start Date",
-                      "sortable": true
-                    },
-                    {
-                      "key": "endDate",
-                      "label": "End Date",
-                      "sortable": true
-                    },
-                    {
-                      "key": "days",
-                      "label": "Days",
-                      "sortable": true
-                    },
-                    {
-                      "key": "submittedAt",
-                      "label": "Submitted",
-                      "sortable": true
-                    },
-                    {
-                      "key": "actions",
-                      "label": "Actions",
-                      "sortable": false
-                    }
-                  ],
-                  "variant": "full",
-                  "pagination": true,
-                  "pageSize": 10
-                },
-                "dataBinding": "leaveRequests.pendingApprovals"
-              }
-            ]
+            "dataBinding": "teamRequests.pending"
           }
         ]
       },
@@ -14575,45 +14561,16 @@
             "config": {
               "title": "All Team Requests",
               "columns": [
-                {
-                  "key": "employee",
-                  "label": "Employee",
-                  "sortable": true
-                },
-                {
-                  "key": "type",
-                  "label": "Leave Type",
-                  "sortable": true
-                },
-                {
-                  "key": "startDate",
-                  "label": "Start Date",
-                  "sortable": true
-                },
-                {
-                  "key": "endDate",
-                  "label": "End Date",
-                  "sortable": true
-                },
-                {
-                  "key": "days",
-                  "label": "Days",
-                  "sortable": true
-                },
-                {
-                  "key": "status",
-                  "label": "Status",
-                  "sortable": true
-                },
-                {
-                  "key": "submittedAt",
-                  "label": "Submitted",
-                  "sortable": true
-                }
+                "Employee",
+                "Leave Type",
+                "Start Date",
+                "End Date",
+                "Duration",
+                "Status",
+                "Actions"
               ],
-              "variant": "full",
-              "pagination": true,
-              "pageSize": 20
+              "sortable": true,
+              "pagination": true
             },
             "styling": {
               "margin": "md",
@@ -14621,7 +14578,7 @@
               "background": "#ffffff",
               "borderRadius": "8px"
             },
-            "dataBinding": "leaveRequests.teamRequests"
+            "dataBinding": "teamRequests.all"
           }
         ]
       }
@@ -14637,25 +14594,26 @@
           },
           {
             "label": "My Requests",
-            "route": "/leave/my-requests",
+            "route": "/leave-requests",
             "icon": "calendar"
           },
           {
-            "label": "Request Leave",
-            "route": "/leave/request",
+            "label": "New Request",
+            "route": "/leave-requests/new",
             "icon": "plus"
           },
           {
             "label": "Team Requests",
-            "route": "/leave/team",
+            "route": "/team-requests",
             "icon": "users"
+          },
+          {
+            "label": "Profile",
+            "route": "/profile",
+            "icon": "user"
           }
         ],
         "actions": [
-          {
-            "label": "Profile",
-            "action": "profile-menu"
-          },
           {
             "label": "Logout",
             "action": "logout"
@@ -14665,10 +14623,11 @@
     },
     "styling": {
       "backgroundColor": "#f8fafc",
-      "textColor": "#1e293b",
+      "textColor": "#0f172a",
       "spacing": "comfortable"
     },
-    "createdAt": "2025-11-21T11:59:08.073Z"
+    "createdAt": "2025-11-21T11:59:08.073Z",
+    "updatedAt": "2025-11-23T17:44:09.050Z"
   },
   {
     "id": "books_list",
@@ -17501,5 +17460,529 @@
       "workflowId": "Quirky Chatbot Response Loop"
     },
     "createdAt": "2025-11-23T17:20:40.263Z"
+  },
+  {
+    "id": "new_request",
+    "name": "New Leave Request",
+    "type": "form",
+    "route": "/requests/new",
+    "platform": "both",
+    "designReference": "auto-generated",
+    "layout": {
+      "type": "single",
+      "responsive": true,
+      "maxWidth": "800px",
+      "padding": "md"
+    },
+    "sections": [
+      {
+        "id": "form_header",
+        "type": "header",
+        "width": "full",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "New Leave Request",
+              "variant": "h1",
+              "align": "left"
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "sm"
+            }
+          }
+        ]
+      },
+      {
+        "id": "request_form",
+        "type": "main",
+        "width": "full",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "formId": "leave_request_form"
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "md",
+              "background": "#ffffff",
+              "borderRadius": "8px"
+            },
+            "formRef": "leave_request_form"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "header": {
+        "logo": true,
+        "menu": [
+          {
+            "label": "Dashboard",
+            "route": "/dashboard",
+            "icon": "home"
+          },
+          {
+            "label": "My Requests",
+            "route": "/requests",
+            "icon": "calendar"
+          },
+          {
+            "label": "Team Requests",
+            "route": "/team-requests",
+            "icon": "users"
+          }
+        ],
+        "actions": [
+          {
+            "label": "Profile",
+            "action": "profile"
+          },
+          {
+            "label": "Logout",
+            "action": "logout"
+          }
+        ]
+      },
+      "footer": {
+        "links": [],
+        "copyright": true
+      }
+    },
+    "styling": {
+      "backgroundColor": "#f8fafc",
+      "textColor": "#1e293b",
+      "spacing": "comfortable"
+    },
+    "createdAt": "2025-11-23T17:32:36.205Z"
+  },
+  {
+    "id": "my_requests",
+    "name": "My Leave Requests",
+    "type": "list",
+    "route": "/requests",
+    "platform": "both",
+    "designReference": "auto-generated",
+    "layout": {
+      "type": "single",
+      "responsive": true,
+      "maxWidth": "1200px",
+      "padding": "md"
+    },
+    "sections": [
+      {
+        "id": "requests_header",
+        "type": "header",
+        "width": "full",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "My Leave Requests",
+              "variant": "h1",
+              "align": "left"
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "sm"
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "New Request",
+              "variant": "primary"
+            },
+            "styling": {
+              "margin": "md"
+            }
+          }
+        ]
+      },
+      {
+        "id": "filters",
+        "type": "main",
+        "width": "full",
+        "components": [
+          {
+            "type": "input",
+            "config": {
+              "type": "select",
+              "placeholder": "Filter by status",
+              "options": [
+                "All",
+                "Pending",
+                "Approved",
+                "Rejected"
+              ]
+            },
+            "styling": {
+              "margin": "sm",
+              "width": "200px"
+            }
+          },
+          {
+            "type": "input",
+            "config": {
+              "type": "date",
+              "placeholder": "From date"
+            },
+            "styling": {
+              "margin": "sm",
+              "width": "150px"
+            }
+          }
+        ]
+      },
+      {
+        "id": "requests_table",
+        "type": "main",
+        "width": "full",
+        "components": [
+          {
+            "type": "table",
+            "config": {
+              "columns": [
+                "Type",
+                "Start Date",
+                "End Date",
+                "Days",
+                "Status",
+                "Actions"
+              ],
+              "data": "userRequests",
+              "sortable": true,
+              "paginated": true
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "sm",
+              "background": "#ffffff",
+              "borderRadius": "8px"
+            },
+            "dataBinding": "requests.userRequests"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "header": {
+        "logo": true,
+        "menu": [
+          {
+            "label": "Dashboard",
+            "route": "/dashboard",
+            "icon": "home"
+          },
+          {
+            "label": "My Requests",
+            "route": "/requests",
+            "icon": "calendar"
+          },
+          {
+            "label": "Team Requests",
+            "route": "/team-requests",
+            "icon": "users"
+          },
+          {
+            "label": "Calendar",
+            "route": "/calendar",
+            "icon": "calendar-days"
+          }
+        ],
+        "actions": [
+          {
+            "label": "Profile",
+            "action": "profile"
+          },
+          {
+            "label": "Logout",
+            "action": "logout"
+          }
+        ]
+      },
+      "footer": {
+        "links": [],
+        "copyright": true
+      }
+    },
+    "styling": {
+      "backgroundColor": "#f8fafc",
+      "textColor": "#1e293b",
+      "spacing": "comfortable"
+    },
+    "createdAt": "2025-11-23T17:32:36.205Z"
+  },
+  {
+    "id": "calendar_view",
+    "name": "Leave Calendar",
+    "type": "dashboard",
+    "route": "/calendar",
+    "platform": "both",
+    "designReference": "auto-generated",
+    "layout": {
+      "type": "single",
+      "responsive": true,
+      "maxWidth": "1400px",
+      "padding": "md"
+    },
+    "sections": [
+      {
+        "id": "calendar_header",
+        "type": "header",
+        "width": "full",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Team Leave Calendar",
+              "variant": "h1",
+              "align": "left"
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "sm"
+            }
+          }
+        ]
+      },
+      {
+        "id": "calendar_controls",
+        "type": "main",
+        "width": "full",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "text": "Today",
+              "variant": "outline"
+            },
+            "styling": {
+              "margin": "sm"
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Month",
+              "variant": "primary"
+            },
+            "styling": {
+              "margin": "sm"
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Week",
+              "variant": "outline"
+            },
+            "styling": {
+              "margin": "sm"
+            }
+          }
+        ]
+      },
+      {
+        "id": "calendar_component",
+        "type": "main",
+        "width": "full",
+        "components": [
+          {
+            "type": "chart",
+            "config": {
+              "type": "calendar",
+              "data": "calendarEvents"
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "md",
+              "background": "#ffffff",
+              "borderRadius": "8px"
+            },
+            "dataBinding": "calendar.events"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "header": {
+        "logo": true,
+        "menu": [
+          {
+            "label": "Dashboard",
+            "route": "/dashboard",
+            "icon": "home"
+          },
+          {
+            "label": "My Requests",
+            "route": "/requests",
+            "icon": "calendar"
+          },
+          {
+            "label": "Team Requests",
+            "route": "/team-requests",
+            "icon": "users"
+          },
+          {
+            "label": "Calendar",
+            "route": "/calendar",
+            "icon": "calendar-days"
+          }
+        ],
+        "actions": [
+          {
+            "label": "Profile",
+            "action": "profile"
+          },
+          {
+            "label": "Logout",
+            "action": "logout"
+          }
+        ]
+      },
+      "footer": {
+        "links": [],
+        "copyright": true
+      }
+    },
+    "styling": {
+      "backgroundColor": "#f8fafc",
+      "textColor": "#1e293b",
+      "spacing": "comfortable"
+    },
+    "createdAt": "2025-11-23T17:32:36.206Z"
+  },
+  {
+    "id": "employee_profile",
+    "name": "Employee Profile",
+    "type": "form",
+    "route": "/profile",
+    "platform": "both",
+    "designReference": "auto-generated",
+    "layout": {
+      "type": "single",
+      "responsive": true,
+      "maxWidth": "800px",
+      "padding": "lg"
+    },
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "width": "full",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Employee Profile",
+              "variant": "h1",
+              "align": "left"
+            },
+            "styling": {
+              "margin": "0",
+              "padding": "md"
+            }
+          }
+        ]
+      },
+      {
+        "id": "profile_form",
+        "type": "main",
+        "width": "constrained",
+        "components": [
+          {
+            "type": "form",
+            "config": {},
+            "styling": {
+              "margin": "md",
+              "padding": "lg",
+              "background": "#ffffff",
+              "borderRadius": "8px"
+            },
+            "formRef": "employee_profile_form"
+          }
+        ]
+      },
+      {
+        "id": "leave_balance",
+        "type": "sidebar",
+        "width": "constrained",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Leave Balance",
+              "fields": [
+                {
+                  "label": "Annual Leave",
+                  "value": "18 days"
+                },
+                {
+                  "label": "Sick Leave",
+                  "value": "5 days"
+                },
+                {
+                  "label": "Personal Leave",
+                  "value": "3 days"
+                }
+              ]
+            },
+            "styling": {
+              "margin": "md",
+              "padding": "md",
+              "background": "#ffffff",
+              "borderRadius": "8px"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "header": {
+        "logo": true,
+        "menu": [
+          {
+            "label": "Dashboard",
+            "route": "/dashboard",
+            "icon": "home"
+          },
+          {
+            "label": "My Requests",
+            "route": "/leave-requests",
+            "icon": "calendar"
+          },
+          {
+            "label": "New Request",
+            "route": "/leave-requests/new",
+            "icon": "plus"
+          },
+          {
+            "label": "Team Requests",
+            "route": "/team-requests",
+            "icon": "users"
+          },
+          {
+            "label": "Profile",
+            "route": "/profile",
+            "icon": "user"
+          }
+        ],
+        "actions": [
+          {
+            "label": "Logout",
+            "action": "logout"
+          }
+        ]
+      }
+    },
+    "styling": {
+      "backgroundColor": "#f8fafc",
+      "textColor": "#0f172a",
+      "spacing": "comfortable"
+    },
+    "createdAt": "2025-11-23T17:44:09.050Z"
   }
 ]

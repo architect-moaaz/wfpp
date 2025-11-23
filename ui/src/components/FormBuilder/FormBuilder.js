@@ -54,7 +54,7 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
       y: index * 4, // Stack vertically with more spacing
       w: 24, // Full width
       h: 4, // Increased height for better display
-      minW: 6,
+      minW: 4, // Reduced to work with all breakpoints
       minH: 2
     }));
   };
@@ -333,8 +333,8 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
                   ref={layoutRef}
                   className="form-grid-layout"
                   layouts={{ lg: layout }}
-                  breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-                  cols={{ lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 }}
+                  breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 600 }}
+                  cols={{ lg: 24, md: 20, sm: 12, xs: 8 }}
                   rowHeight={35}
                   onLayoutChange={handleLayoutChange}
                   isDraggable={!previewMode}
