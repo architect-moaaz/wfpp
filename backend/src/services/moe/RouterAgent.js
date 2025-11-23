@@ -44,11 +44,12 @@ class RouterAgent extends BaseAgent {
 
 ## Expert Selection Rules:
 
-### Workflow Experts:
+### Workflow Experts (SELECT ONLY ONE):
 - Simple workflows → SimpleWorkflowExpert
 - Complex workflows → ComplexWorkflowExpert
 - Approval workflows → ApprovalWorkflowExpert
 - Data processing → DataProcessingExpert
+- IMPORTANT: Only select ONE workflow expert, not multiple. Multiple workflow experts will create duplicate nodes.
 
 ### Data Model Experts:
 - Relational data → SQLExpert
@@ -79,7 +80,7 @@ class RouterAgent extends BaseAgent {
 Return ONLY valid JSON:
 {
   "routing": {
-    "workflowExperts": ["SimpleWorkflowExpert" | "ComplexWorkflowExpert" | "ApprovalWorkflowExpert" | "DataProcessingExpert"],
+    "workflowExperts": ["Only ONE expert from: SimpleWorkflowExpert, ComplexWorkflowExpert, ApprovalWorkflowExpert, DataProcessingExpert"],
     "dataModelExperts": ["SQLExpert" | "NoSQLExpert" | "GraphExpert" | "TimeSeriesExpert"],
     "formExperts": ["SimpleFormExpert" | "AdvancedFormExpert" | "MobileFormExpert" | "WizardFormExpert"],
     "mobileExperts": ["iOSExpert" | "AndroidExpert" | "CrossPlatformExpert"],
@@ -125,8 +126,8 @@ ${conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
 Based on the request:
 1. Determine workflow complexity (simple, medium, complex)
 2. Identify domain (approval, data-processing, onboarding, etc.)
-3. Select appropriate workflow experts
-4. Select appropriate form experts
+3. Select ONE workflow expert (IMPORTANT: only select one workflow expert)
+4. Select appropriate form experts (can select multiple)
 5. Select appropriate data model experts
 6. Select appropriate mobile experts
 7. Decide if multiple experts should be combined (ensemble)

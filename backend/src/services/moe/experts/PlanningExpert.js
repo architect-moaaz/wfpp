@@ -32,7 +32,7 @@ class PlanningExpert {
 
       const response = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 8000,
+        max_tokens: 16000, // Increased for complex applications
         temperature: 0.3, // Lower temperature for more consistent planning
         messages: [{
           role: 'user',
