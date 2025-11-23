@@ -1,0 +1,6392 @@
+[
+  {
+    "id": "workflow_1703875200000_form_leave_application",
+    "name": "leave_application_form",
+    "title": "Leave Application Form",
+    "description": "Comprehensive leave request form with approvals and documentation",
+    "nodeId": "node_001",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "section_employee_info",
+        "title": "Employee Information",
+        "collapsible": false
+      },
+      {
+        "id": "section_leave_details",
+        "title": "Leave Details",
+        "collapsible": false
+      },
+      {
+        "id": "section_supporting_docs",
+        "title": "Supporting Documentation",
+        "collapsible": true
+      },
+      {
+        "id": "section_approval",
+        "title": "Approval Section",
+        "collapsible": false
+      }
+    ],
+    "fields": [
+      {
+        "fieldName": "employee_id",
+        "label": "Employee ID",
+        "type": "text",
+        "required": true,
+        "section": "section_employee_info",
+        "placeholder": "Enter employee ID",
+        "validation": {
+          "pattern": "^EMP[0-9]{4,6}$",
+          "message": "Employee ID must be in format EMP1234"
+        }
+      },
+      {
+        "fieldName": "employee_name",
+        "label": "Employee Name",
+        "type": "text",
+        "required": true,
+        "section": "section_employee_info",
+        "readonly": true,
+        "tooltip": "Auto-populated from employee database"
+      },
+      {
+        "fieldName": "department",
+        "label": "Department",
+        "type": "dropdown",
+        "required": true,
+        "section": "section_employee_info",
+        "options": [
+          "HR",
+          "Finance",
+          "IT",
+          "Marketing",
+          "Operations",
+          "Legal"
+        ],
+        "readonly": true
+      },
+      {
+        "fieldName": "manager_email",
+        "label": "Direct Manager Email",
+        "type": "email",
+        "required": true,
+        "section": "section_employee_info",
+        "readonly": true,
+        "tooltip": "This will be used for approval notifications"
+      },
+      {
+        "fieldName": "leave_type",
+        "label": "Leave Type",
+        "type": "dropdown",
+        "required": true,
+        "section": "section_leave_details",
+        "options": [
+          "Annual Leave",
+          "Sick Leave",
+          "Maternity/Paternity Leave",
+          "Emergency Leave",
+          "Study Leave",
+          "Unpaid Leave"
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "fieldName": "leave_start_date",
+        "label": "Leave Start Date",
+        "type": "date",
+        "required": true,
+        "section": "section_leave_details",
+        "minDate": "today",
+        "tooltip": "Select the first day of leave"
+      },
+      {
+        "fieldName": "leave_end_date",
+        "label": "Leave End Date",
+        "type": "date",
+        "required": true,
+        "section": "section_leave_details",
+        "minDate": "leave_start_date",
+        "tooltip": "Select the last day of leave"
+      },
+      {
+        "fieldName": "total_days",
+        "label": "Total Leave Days",
+        "type": "calculated",
+        "section": "section_leave_details",
+        "formula": "BUSINESS_DAYS(leave_start_date, leave_end_date)",
+        "readonly": true,
+        "tooltip": "Automatically calculated excluding weekends"
+      },
+      {
+        "fieldName": "remaining_balance",
+        "label": "Remaining Leave Balance",
+        "type": "number",
+        "section": "section_leave_details",
+        "readonly": true,
+        "suffix": "days",
+        "tooltip": "Current available leave balance"
+      },
+      {
+        "fieldName": "half_day",
+        "label": "Half Day Request",
+        "type": "switch",
+        "section": "section_leave_details",
+        "defaultValue": false,
+        "tooltip": "Check if this is a half-day leave request"
+      },
+      {
+        "fieldName": "half_day_period",
+        "label": "Half Day Period",
+        "type": "radio",
+        "section": "section_leave_details",
+        "options": [
+          "Morning",
+          "Afternoon"
+        ],
+        "layout": "horizontal",
+        "conditional": {
+          "field": "half_day",
+          "condition": "equals",
+          "value": true
+        }
+      },
+      {
+        "fieldName": "leave_reason",
+        "label": "Reason for Leave",
+        "type": "richtext",
+        "required": true,
+        "section": "section_leave_details",
+        "placeholder": "Please provide detailed reason for leave request",
+        "validation": {
+          "minLength": 20,
+          "maxLength": 1000
+        },
+        "toolbar": [
+          "bold",
+          "italic",
+          "underline",
+          "bulletList"
+        ]
+      },
+      {
+        "fieldName": "emergency_contact",
+        "label": "Emergency Contact Details",
+        "type": "textarea",
+        "section": "section_leave_details",
+        "placeholder": "Name, relationship, and phone number",
+        "conditional": {
+          "field": "leave_type",
+          "condition": "equals",
+          "value": "Emergency Leave"
+        }
+      },
+      {
+        "fieldName": "handover_details",
+        "label": "Work Handover Information",
+        "type": "richtext",
+        "section": "section_leave_details",
+        "placeholder": "Describe work handover arrangements and coverage plans",
+        "conditional": {
+          "field": "total_days",
+          "condition": "greater_than",
+          "value": 3
+        },
+        "toolbar": [
+          "bold",
+          "italic",
+          "bulletList",
+          "numberedList"
+        ]
+      },
+      {
+        "fieldName": "supporting_documents",
+        "label": "Supporting Documents",
+        "type": "file",
+        "section": "section_supporting_docs",
+        "maxFiles": 5,
+        "maxSize": "10MB",
+        "allowedTypes": [
+          ".pdf",
+          ".jpg",
+          ".png",
+          ".doc",
+          ".docx"
+        ],
+        "tooltip": "Upload medical certificates, travel documents, or other supporting files",
+        "conditional": {
+          "field": "leave_type",
+          "condition": "in",
+          "value": [
+            "Sick Leave",
+            "Maternity/Paternity Leave",
+            "Study Leave"
+          ]
+        }
+      },
+      {
+        "fieldName": "medical_certificate",
+        "label": "Medical Certificate Required",
+        "type": "consent",
+        "section": "section_supporting_docs",
+        "text": "I understand that medical certificate is mandatory for sick leave exceeding 3 days",
+        "required": true,
+        "conditional": {
+          "field": "leave_type",
+          "condition": "equals",
+          "value": "Sick Leave"
+        }
+      },
+      {
+        "fieldName": "employee_signature",
+        "label": "Employee Digital Signature",
+        "type": "esign",
+        "required": true,
+        "section": "section_approval",
+        "canvasWidth": 400,
+        "canvasHeight": 150,
+        "tooltip": "Please sign to confirm the accuracy of information provided"
+      },
+      {
+        "fieldName": "application_date",
+        "label": "Application Date",
+        "type": "date",
+        "section": "section_approval",
+        "defaultValue": "today",
+        "readonly": true
+      },
+      {
+        "fieldName": "manager_approval_status",
+        "label": "Manager Approval Status",
+        "type": "radio",
+        "section": "section_approval",
+        "options": [
+          "Pending",
+          "Approved",
+          "Rejected",
+          "Needs More Info"
+        ],
+        "defaultValue": "Pending",
+        "readonly": true,
+        "layout": "horizontal"
+      },
+      {
+        "fieldName": "manager_comments",
+        "label": "Manager Comments",
+        "type": "textarea",
+        "section": "section_approval",
+        "placeholder": "Manager feedback or additional requirements",
+        "readonly": true,
+        "rows": 3
+      },
+      {
+        "fieldName": "hr_approval_status",
+        "label": "HR Approval Status",
+        "type": "radio",
+        "section": "section_approval",
+        "options": [
+          "Pending",
+          "Approved",
+          "Rejected"
+        ],
+        "defaultValue": "Pending",
+        "readonly": true,
+        "layout": "horizontal"
+      },
+      {
+        "fieldName": "hr_comments",
+        "label": "HR Comments",
+        "type": "textarea",
+        "section": "section_approval",
+        "placeholder": "HR review notes",
+        "readonly": true,
+        "rows": 3
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "trigger": "half_day",
+        "condition": "equals true",
+        "actions": [
+          {
+            "show": "half_day_period"
+          },
+          {
+            "setValue": "total_days",
+            "value": "0.5"
+          }
+        ]
+      },
+      {
+        "trigger": "leave_type",
+        "condition": "equals Emergency Leave",
+        "actions": [
+          {
+            "show": "emergency_contact"
+          },
+          {
+            "setRequired": "emergency_contact",
+            "value": true
+          }
+        ]
+      },
+      {
+        "trigger": "total_days",
+        "condition": "greater_than 3",
+        "actions": [
+          {
+            "show": "handover_details"
+          },
+          {
+            "setRequired": "handover_details",
+            "value": true
+          }
+        ]
+      },
+      {
+        "trigger": "leave_type",
+        "condition": "in ['Sick Leave', 'Maternity/Paternity Leave', 'Study Leave']",
+        "actions": [
+          {
+            "show": "supporting_documents"
+          },
+          {
+            "setRequired": "supporting_documents",
+            "value": true
+          }
+        ]
+      }
+    ],
+    "calculations": [
+      {
+        "field": "total_days",
+        "formula": "IF(half_day = true, 0.5, BUSINESS_DAYS(leave_start_date, leave_end_date))"
+      },
+      {
+        "field": "remaining_balance_after",
+        "formula": "remaining_balance - total_days"
+      }
+    ],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-15T13:59:09.919Z",
+    "updatedAt": "2025-11-15T13:59:09.919Z"
+  },
+  {
+    "id": "workflow_1703875200000_form_manager_approval",
+    "name": "manager_approval_form",
+    "title": "Manager Leave Approval Form",
+    "description": "Manager review and approval form for leave applications",
+    "nodeId": "node_002",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "section_leave_summary",
+        "title": "Leave Application Summary",
+        "collapsible": false
+      },
+      {
+        "id": "section_manager_review",
+        "title": "Manager Review",
+        "collapsible": false
+      },
+      {
+        "id": "section_workflow_impact",
+        "title": "Workflow Impact Assessment",
+        "collapsible": false
+      }
+    ],
+    "fields": [
+      {
+        "fieldName": "application_id",
+        "label": "Application Reference ID",
+        "type": "text",
+        "required": true,
+        "section": "section_leave_summary",
+        "readonly": true,
+        "tooltip": "Auto-generated application reference"
+      },
+      {
+        "fieldName": "employee_name_display",
+        "label": "Employee Name",
+        "type": "text",
+        "section": "section_leave_summary",
+        "readonly": true
+      },
+      {
+        "fieldName": "leave_type_display",
+        "label": "Leave Type",
+        "type": "text",
+        "section": "section_leave_summary",
+        "readonly": true
+      },
+      {
+        "fieldName": "leave_duration_display",
+        "label": "Leave Duration",
+        "type": "text",
+        "section": "section_leave_summary",
+        "readonly": true,
+        "tooltip": "Start date to end date with total days"
+      },
+      {
+        "fieldName": "leave_reason_display",
+        "label": "Employee's Reason",
+        "type": "richtext",
+        "section": "section_leave_summary",
+        "readonly": true
+      },
+      {
+        "fieldName": "team_availability",
+        "label": "Team Availability During Leave Period",
+        "type": "datatable",
+        "required": true,
+        "section": "section_workflow_impact",
+        "columns": [
+          {
+            "name": "team_member",
+            "type": "text",
+            "label": "Team Member"
+          },
+          {
+            "name": "availability",
+            "type": "dropdown",
+            "label": "Availability",
+            "options": [
+              "Available",
+              "On Leave",
+              "Limited",
+              "Unavailable"
+            ]
+          },
+          {
+            "name": "coverage_capability",
+            "type": "rating",
+            "label": "Coverage Capability",
+            "maxRating": 5
+          }
+        ],
+        "tooltip": "Assess team coverage during the requested leave period"
+      },
+      {
+        "fieldName": "workload_impact",
+        "label": "Workload Impact Assessment",
+        "type": "matrix",
+        "required": true,
+        "section": "section_workflow_impact",
+        "questions": [
+          "Project deadlines",
+          "Client commitments",
+          "Team dependencies",
+          "Critical tasks"
+        ],
+        "options": [
+          "No Impact",
+          "Low Impact",
+          "Medium Impact",
+          "High Impact",
+          "Critical Impact"
+        ],
+        "tooltip": "Rate the impact on various work areas"
+      },
+      {
+        "fieldName": "alternative_arrangements",
+        "label": "Alternative Work Arrangements",
+        "type": "checkbox",
+        "section": "section_workflow_impact",
+        "options": [
+          "Work from home option",
+          "Reduced hours",
+          "Flexible schedule",
+          "Remote work during travel",
+          "Partial leave approval"
+        ],
+        "tooltip": "Select applicable alternative arrangements if full leave cannot be approved"
+      },
+      {
+        "fieldName": "coverage_plan",
+        "label": "Coverage Plan Details",
+        "type": "richtext",
+        "required": true,
+        "section": "section_workflow_impact",
+        "placeholder": "Describe how work will be covered during the leave period",
+        "toolbar": [
+          "bold",
+          "italic",
+          "bulletList",
+          "numberedList",
+          "link"
+        ]
+      },
+      {
+        "fieldName": "manager_decision",
+        "label": "Manager Decision",
+        "type": "radio",
+        "required": true,
+        "section": "section_manager_review",
+        "options": [
+          "Fully Approved",
+          "Approved with Conditions",
+          "Partially Approved",
+          "Rejected",
+          "Requires HR Review"
+        ],
+        "layout": "vertical",
+        "tooltip": "Select your decision on this leave application"
+      },
+      {
+        "fieldName": "approval_conditions",
+        "label": "Approval Conditions",
+        "type": "textarea",
+        "section": "section_manager_review",
+        "placeholder": "Specify any conditions for approval (e.g., specific dates, work completion requirements)",
+        "conditional": {
+          "field": "manager_decision",
+          "condition": "in",
+          "value": [
+            "Approved with Conditions",
+            "Partially Approved"
+          ]
+        },
+        "rows": 4
+      },
+      {
+        "fieldName": "rejection_reason",
+        "label": "Reason for Rejection",
+        "type": "richtext",
+        "section": "section_manager_review",
+        "required": true,
+        "placeholder": "Provide detailed reason for rejection and suggest alternatives if possible",
+        "conditional": {
+          "field": "manager_decision",
+          "condition": "equals",
+          "value": "Rejected"
+        },
+        "toolbar": [
+          "bold",
+          "italic",
+          "bulletList"
+        ]
+      },
+      {
+        "fieldName": "hr_escalation_reason",
+        "label": "HR Escalation Details",
+        "type": "textarea",
+        "section": "section_manager_review",
+        "required": true,
+        "placeholder": "Explain why this application requires HR review",
+        "conditional": {
+          "field": "manager_decision",
+          "condition": "equals",
+          "value": "Requires HR Review"
+        },
+        "rows": 3
+      },
+      {
+        "fieldName": "priority_level",
+        "label": "Application Priority Level",
+        "type": "slider",
+        "section": "section_manager_review",
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "defaultValue": 3,
+        "showValue": true,
+        "tooltip": "1 = Low Priority, 5 = Urgent"
+      },
+      {
+        "fieldName": "manager_additional_notes",
+        "label": "Additional Manager Notes",
+        "type": "richtext",
+        "section": "section_manager_review",
+        "placeholder": "Any additional comments, suggestions, or information for HR or employee",
+        "toolbar": [
+          "bold",
+          "italic",
+          "underline",
+          "bulletList",
+          "numberedList"
+        ]
+      },
+      {
+        "fieldName": "review_date",
+        "label": "Review Date",
+        "type": "date",
+        "section": "section_manager_review",
+        "defaultValue": "today",
+        "readonly": true
+      },
+      {
+        "fieldName": "manager_signature",
+        "label": "Manager Digital Signature",
+        "type": "esign",
+        "required": true,
+        "section": "section_manager_review",
+        "canvasWidth": 350,
+        "canvasHeight": 120,
+        "tooltip": "Sign to confirm your review and decision"
+      },
+      {
+        "fieldName": "estimated_productivity_impact",
+        "label": "Estimated Productivity Impact (%)",
+        "type": "slider",
+        "section": "section_workflow_impact",
+        "min": 0,
+        "max": 100,
+        "step": 5,
+        "defaultValue": 0,
+        "showValue": true,
+        "suffix": "%",
+        "tooltip": "Estimate percentage impact on team/project productivity"
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "trigger": "manager_decision",
+        "condition": "in ['Approved with Conditions', 'Partially Approved']",
+        "actions": [
+          {
+            "show": "approval_conditions"
+          },
+          {
+            "setRequired": "approval_conditions",
+            "value": true
+          }
+        ]
+      },
+      {
+        "trigger": "manager_decision",
+        "condition": "equals Rejected",
+        "actions": [
+          {
+            "show": "rejection_reason"
+          },
+          {
+            "setRequired": "rejection_reason",
+            "value": true
+          }
+        ]
+      },
+      {
+        "trigger": "manager_decision",
+        "condition": "equals Requires HR Review",
+        "actions": [
+          {
+            "show": "hr_escalation_reason"
+          },
+          {
+            "setRequired": "hr_escalation_reason",
+            "value": true
+          }
+        ]
+      }
+    ],
+    "calculations": [
+      {
+        "field": "total_team_coverage_score",
+        "formula": "AVERAGE(team_availability.coverage_capability)"
+      }
+    ],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-15T13:59:09.919Z",
+    "updatedAt": "2025-11-15T13:59:09.919Z"
+  },
+  {
+    "id": "workflow_1703875200000_form_hr_final_approval",
+    "name": "hr_final_approval_form",
+    "title": "HR Final Approval & Policy Review",
+    "description": "HR department final review, policy compliance check, and system integration form",
+    "nodeId": "node_003",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "section_policy_compliance",
+        "title": "Policy Compliance Review",
+        "collapsible": false
+      },
+      {
+        "id": "section_balance_management",
+        "title": "Leave Balance Management",
+        "collapsible": false
+      },
+      {
+        "id": "section_payroll_integration",
+        "title": "Payroll & Benefits Integration",
+        "collapsible": false
+      },
+      {
+        "id": "section_final_decision",
+        "title": "Final HR Decision",
+        "collapsible": false
+      }
+    ],
+    "fields": [
+      {
+        "fieldName": "application_reference",
+        "label": "Application Reference",
+        "type": "text",
+        "section": "section_policy_compliance",
+        "readonly": true,
+        "required": true
+      },
+      {
+        "fieldName": "employee_details_summary",
+        "label": "Employee Summary",
+        "type": "card",
+        "section": "section_policy_compliance",
+        "readonly": true,
+        "tooltip": "Employee name, ID, department, and position"
+      },
+      {
+        "fieldName": "manager_recommendation",
+        "label": "Manager Recommendation",
+        "type": "text",
+        "section": "section_policy_compliance",
+        "readonly": true
+      },
+      {
+        "fieldName": "policy_compliance_check",
+        "label": "Policy Compliance Checklist",
+        "type": "checkbox",
+        "required": true,
+        "section": "section_policy_compliance",
+        "options": [
+          "Minimum notice period met (varies by leave type)",
+          "Annual leave limit not exceeded",
+          "Supporting documentation provided (if required)",
+          "No blackout period conflicts",
+          "Previous leave patterns reviewed",
+          "Department coverage requirements met",
+          "Employment contract terms verified"
+        ],
+        "tooltip": "Check all applicable policy requirements that have been verified"
+      },
+      {
+        "fieldName": "policy_violations",
+        "label": "Policy Violations Identified",
+        "type": "textarea",
+        "section": "section_policy_compliance",
+        "placeholder": "List any policy violations or concerns identified during review",
+        "rows": 3,
+        "conditional": {
+          "field": "policy_compliance_check",
+          "condition": "not_all_selected",
+          "value": true
+        }
+      },
+      {
+        "fieldName": "current_leave_balance",
+        "label": "Current Leave Balance",
+        "type": "number",
+        "section": "section_balance_management",
+        "readonly": true,
+        "suffix": "days",
+        "tooltip": "Current available leave balance from HR system"
+      },
+      {
+        "fieldName": "requested_days",
+        "label": "Requested Leave Days",
+        "type": "number",
+        "section": "section_balance_management",
+        "readonly": true,
+        "suffix": "days"
+      },
+      {
+        "fieldName": "balance_after_leave",
+        "label": "Balance After Leave",
+        "type": "calculated",
+        "section": "section_balance_management",
+        "formula": "current_leave_balance - requested_days",
+        "readonly": true,
+        "suffix": "days"
+      },
+      {
+        "fieldName": "negative_balance_approval",
+        "label": "Negative Balance Approval",
+        "type": "radio",
+        "section": "section_balance_management",
+        "options": [
+          "Not Applicable",
+          "Approved (Advance Leave)",
+          "Rejected (Insufficient Balance)"
+        ],
+        "conditional": {
+          "field": "balance_after_leave",
+          "condition": "less_than",
+          "value": 0
+        },
+        "tooltip": "Required when leave request would result in negative balance"
+      },
+      {
+        "fieldName": "leave_accrual_adjustment",
+        "label": "Leave Accrual Adjustment",
+        "type": "currency",
+        "section": "section_balance_management",
+        "currencySymbol": "$",
+        "tooltip": "Any monetary adjustment for leave accrual or payout"
+      },
+      {
+        "fieldName": "payroll_deduction_required",
+        "label": "Payroll Deduction Required",
+        "type": "switch",
+        "section": "section_payroll_integration",
+        "defaultValue": false,
+        "tooltip": "Toggle if unpaid leave requires payroll deduction"
+      },
+      {
+        "fieldName": "deduction_amount",
+        "label": "Deduction Amount",
+        "type": "currency",
+        "section": "section_payroll_integration",
+        "currencySymbol": "$",
+        "conditional": {
+          "field": "payroll_deduction_required",
+          "condition": "equals",
+          "value": true
+        },
+        "required": true
+      },
+      {
+        "fieldName": "benefits_impact",
+        "label": "Benefits Impact Assessment",
+        "type": "matrix",
+        "section": "section_payroll_integration",
+        "questions": [
+          "Health Insurance",
+          "Retirement Contributions",
+          "Life Insurance",
+          "Disability Coverage"
+        ],
+        "options": [
+          "No Impact",
+          "Suspended",
+          "Reduced",
+          "Employee Responsibility",
+          "COBRA Eligible"
+        ],
+        "tooltip": "Assess impact on employee benefits during leave period"
+      },
+      {
+        "fieldName": "return_to_work_date",
+        "label": "Expected Return to Work Date",
+        "type": "date",
+        "section": "section_payroll_integration",
+        "tooltip": "Expected date for employee return - used for payroll planning"
+      },
+      {
+        "fieldName": "system_integrations",
+        "label": "System Integration Updates",
+        "type": "checkbox",
+        "section": "section_payroll_integration",
+        "options": [
+          "Payroll system updated",
+          "Benefits system notified",
+          "Access control system updated",
+          "Time tracking system configured",
+          "Calendar system blocked",
+          "Email auto-responder setup requested"
+        ],
+        "tooltip": "Select systems that need to be updated for this leave"
+      },
+      {
+        "fieldName": "hr_final_decision",
+        "label": "Final HR Decision",
+        "type": "radio",
+        "required": true,
+        "section": "section_final_decision",
+        "options": [
+          "Fully Approved",
+          "Approved with Modifications",
+          "Conditionally Approved",
+          "Rejected",
+          "Escalated to Senior Management"
+        ],
+        "layout": "vertical"
+      },
+      {
+        "fieldName": "approval_modifications",
+        "label": "Approval Modifications",
+        "type": "richtext",
+        "section": "section_final_decision",
+        "conditional": {
+          "field": "hr_final_decision",
+          "condition": "equals",
+          "value": "Approved with Modifications"
+        },
+        "required": true,
+        "placeholder": "Describe the modifications to the original leave request",
+        "toolbar": [
+          "bold",
+          "italic",
+          "bulletList",
+          "numberedList"
+        ]
+      },
+      {
+        "fieldName": "conditional_requirements",
+        "label": "Conditional Approval Requirements",
+        "type": "textarea",
+        "section": "section_final_decision",
+        "conditional": {
+          "field": "hr_final_decision",
+          "condition": "equals",
+          "value": "Conditionally Approved"
+        },
+        "required": true,
+        "placeholder": "List specific conditions that must be met for final approval",
+        "rows": 4
+      },
+      {
+        "fieldName": "rejection_details",
+        "label": "Detailed Rejection Reason",
+        "type": "richtext",
+        "section": "section_final_decision",
+        "conditional": {
+          "field": "hr_final_decision",
+          "condition": "equals",
+          "value": "Rejected"
+        },
+        "required": true,
+        "placeholder": "Provide comprehensive reason for rejection and any appeal process information",
+        "toolbar": [
+          "bold",
+          "italic",
+          "underline",
+          "bulletList",
+          "numberedList",
+          "link"
+        ]
+      },
+      {
+        "fieldName": "escalation_justification",
+        "label": "Escalation Justification",
+        "type": "textarea",
+        "section": "section_final_decision",
+        "conditional": {
+          "field": "hr_final_decision",
+          "condition": "equals",
+          "value": "Escalated to Senior Management"
+        },
+        "required": true,
+        "placeholder": "Explain why this case requires senior management review",
+        "rows": 3
+      },
+      {
+        "fieldName": "hr_processing_notes",
+        "label": "HR Processing Notes",
+        "type": "richtext",
+        "section": "section_final_decision",
+        "placeholder": "Internal HR notes, special considerations, or follow-up actions required",
+        "toolbar": [
+          "bold",
+          "italic",
+          "bulletList",
+          "numberedList"
+        ]
+      },
+      {
+        "fieldName": "hr_officer_name",
+        "label": "HR Officer Name",
+        "type": "text",
+        "section": "section_final_decision",
+        "required": true,
+        "tooltip": "Name of HR officer processing this application"
+      },
+      {
+        "fieldName": "hr_processing_date",
+        "label": "HR Processing Date",
+        "type": "date",
+        "section": "section_final_decision",
+        "defaultValue": "today",
+        "readonly": true
+      },
+      {
+        "fieldName": "hr_digital_signature",
+        "label": "HR Officer Digital Signature",
+        "type": "esign",
+        "required": true,
+        "section": "section_final_decision",
+        "canvasWidth": 400,
+        "canvasHeight": 150,
+        "tooltip": "Digital signature to authorize the final decision"
+      },
+      {
+        "fieldName": "audit_trail_notes",
+        "label": "Audit Trail Notes",
+        "type": "textarea",
+        "section": "section_final_decision",
+        "placeholder": "Additional notes for audit and compliance purposes",
+        "rows": 2,
+        "tooltip": "Internal notes for audit trail and compliance documentation"
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "trigger": "balance_after_leave",
+        "condition": "less_than 0",
+        "actions": [
+          {
+            "show": "negative_balance_approval"
+          },
+          {
+            "setRequired": "negative_balance_approval",
+            "value": true
+          }
+        ]
+      },
+      {
+        "trigger": "payroll_deduction_required",
+        "condition": "equals true",
+        "actions": [
+          {
+            "show": "deduction_amount"
+          },
+          {
+            "setRequired": "deduction_amount",
+            "value": true
+          }
+        ]
+      },
+      {
+        "trigger": "hr_final_decision",
+        "condition": "equals Approved with Modifications",
+        "actions": [
+          {
+            "show": "approval_modifications"
+          },
+          {
+            "setRequired": "approval_modifications",
+            "value": true
+          }
+        ]
+      },
+      {
+        "trigger": "hr_final_decision",
+        "condition": "equals Conditionally Approved",
+        "actions": [
+          {
+            "show": "conditional_requirements"
+          },
+          {
+            "setRequired": "conditional_requirements",
+            "value": true
+          }
+        ]
+      },
+      {
+        "trigger": "hr_final_decision",
+        "condition": "equals Rejected",
+        "actions": [
+          {
+            "show": "rejection_details"
+          },
+          {
+            "setRequired": "rejection_details",
+            "value": true
+          }
+        ]
+      },
+      {
+        "trigger": "hr_final_decision",
+        "condition": "equals Escalated to Senior Management",
+        "actions": [
+          {
+            "show": "escalation_justification"
+          },
+          {
+            "setRequired": "escalation_justification",
+            "value": true
+          }
+        ]
+      }
+    ],
+    "calculations": [
+      {
+        "field": "balance_after_leave",
+        "formula": "current_leave_balance - requested_days"
+      },
+      {
+        "field": "total_processing_days",
+        "formula": "BUSINESS_DAYS(application_date, hr_processing_date)"
+      }
+    ],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-15T13:59:09.919Z",
+    "updatedAt": "2025-11-15T13:59:09.919Z"
+  },
+  {
+    "id": "workflow_1703875200000_form_leave_request",
+    "name": "leave_request_mobile",
+    "title": "Leave Request",
+    "description": "Submit a new leave request",
+    "nodeId": "leave_request_node",
+    "optimizedFor": "mobile",
+    "layout": "single-column",
+    "fields": [
+      {
+        "fieldName": "leave_type",
+        "type": "dropdown",
+        "label": "Leave Type",
+        "required": true,
+        "options": [
+          "Annual Leave",
+          "Sick Leave",
+          "Personal Leave",
+          "Maternity/Paternity",
+          "Emergency Leave",
+          "Unpaid Leave"
+        ],
+        "placeholder": "Select leave type"
+      },
+      {
+        "fieldName": "start_date",
+        "type": "date",
+        "label": "Start Date",
+        "required": true,
+        "minDate": "today"
+      },
+      {
+        "fieldName": "end_date",
+        "type": "date",
+        "label": "End Date",
+        "required": true,
+        "minDate": "today"
+      },
+      {
+        "fieldName": "half_day",
+        "type": "toggle",
+        "label": "Half Day Request",
+        "defaultValue": false
+      },
+      {
+        "fieldName": "half_day_period",
+        "type": "radio",
+        "label": "Half Day Period",
+        "options": [
+          "Morning",
+          "Afternoon"
+        ],
+        "layout": "horizontal",
+        "conditional": {
+          "field": "half_day",
+          "value": true
+        }
+      },
+      {
+        "fieldName": "reason",
+        "type": "textarea",
+        "label": "Reason",
+        "required": true,
+        "placeholder": "Brief reason for leave",
+        "maxLength": 500,
+        "rows": 3
+      },
+      {
+        "fieldName": "emergency_contact",
+        "type": "phoneInput",
+        "label": "Emergency Contact",
+        "placeholder": "Contact number during leave"
+      },
+      {
+        "fieldName": "supporting_documents",
+        "type": "file",
+        "label": "Supporting Documents",
+        "maxFiles": 3,
+        "allowedTypes": [
+          "pdf",
+          "jpg",
+          "png"
+        ],
+        "maxSize": "5MB"
+      },
+      {
+        "fieldName": "medical_certificate",
+        "type": "camera",
+        "label": "Medical Certificate",
+        "conditional": {
+          "field": "leave_type",
+          "value": "Sick Leave"
+        }
+      }
+    ],
+    "deviceCapabilities": [
+      "camera",
+      "file"
+    ],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-15T13:59:09.919Z",
+    "updatedAt": "2025-11-15T13:59:09.919Z"
+  },
+  {
+    "id": "workflow_1703875200000_form_leave_approval",
+    "name": "leave_approval_mobile",
+    "title": "Leave Approval",
+    "description": "Approve or reject leave request",
+    "nodeId": "leave_approval_node",
+    "optimizedFor": "mobile",
+    "layout": "single-column",
+    "fields": [
+      {
+        "fieldName": "employee_name",
+        "type": "text",
+        "label": "Employee Name",
+        "readonly": true
+      },
+      {
+        "fieldName": "leave_details",
+        "type": "card",
+        "headerText": "Leave Details",
+        "backgroundColor": "#f8f9fa"
+      },
+      {
+        "fieldName": "leave_type_display",
+        "type": "label",
+        "text": "Leave Type:",
+        "readonly": true
+      },
+      {
+        "fieldName": "leave_period",
+        "type": "label",
+        "text": "Period:",
+        "readonly": true
+      },
+      {
+        "fieldName": "total_days",
+        "type": "number",
+        "label": "Total Days",
+        "readonly": true
+      },
+      {
+        "fieldName": "approval_status",
+        "type": "radio",
+        "label": "Decision",
+        "required": true,
+        "options": [
+          "Approved",
+          "Rejected",
+          "Needs Review"
+        ],
+        "layout": "vertical"
+      },
+      {
+        "fieldName": "approved_days",
+        "type": "number",
+        "label": "Approved Days",
+        "min": 0,
+        "conditional": {
+          "field": "approval_status",
+          "value": "Approved"
+        }
+      },
+      {
+        "fieldName": "manager_comments",
+        "type": "textarea",
+        "label": "Manager Comments",
+        "placeholder": "Add comments or conditions",
+        "rows": 3,
+        "maxLength": 1000
+      },
+      {
+        "fieldName": "approval_date",
+        "type": "date",
+        "label": "Approval Date",
+        "defaultValue": "today",
+        "readonly": true
+      },
+      {
+        "fieldName": "digital_signature",
+        "type": "esign",
+        "label": "Digital Signature",
+        "required": true,
+        "canvasWidth": "100%",
+        "canvasHeight": 150
+      }
+    ],
+    "deviceCapabilities": [
+      "signature"
+    ],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-15T13:59:09.919Z",
+    "updatedAt": "2025-11-15T13:59:09.919Z"
+  },
+  {
+    "id": "workflow_1703875200000_form_leave_balance_check",
+    "name": "leave_balance_mobile",
+    "title": "Leave Balance",
+    "description": "Check your leave balance",
+    "nodeId": "leave_balance_node",
+    "optimizedFor": "mobile",
+    "layout": "single-column",
+    "fields": [
+      {
+        "fieldName": "employee_search",
+        "type": "autocomplete",
+        "label": "Employee",
+        "placeholder": "Search employee name or ID",
+        "minChars": 2
+      },
+      {
+        "fieldName": "leave_year",
+        "type": "dropdown",
+        "label": "Leave Year",
+        "defaultValue": "current_year",
+        "options": [
+          "2024",
+          "2023",
+          "2022"
+        ]
+      },
+      {
+        "fieldName": "balance_display",
+        "type": "card",
+        "headerText": "Current Balances",
+        "backgroundColor": "#e7f3ff"
+      }
+    ],
+    "deviceCapabilities": [],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-15T13:59:09.919Z",
+    "updatedAt": "2025-11-15T13:59:09.919Z"
+  },
+  {
+    "id": "workflow_1703875200000_form_leave_history",
+    "name": "leave_history_mobile",
+    "title": "Leave History",
+    "description": "View leave history and status",
+    "nodeId": "leave_history_node",
+    "optimizedFor": "mobile",
+    "layout": "single-column",
+    "fields": [
+      {
+        "fieldName": "date_range",
+        "type": "dropdown",
+        "label": "Time Period",
+        "options": [
+          "Last 30 days",
+          "Last 3 months",
+          "Last 6 months",
+          "This Year",
+          "Custom Range"
+        ],
+        "defaultValue": "Last 3 months"
+      },
+      {
+        "fieldName": "start_date_custom",
+        "type": "date",
+        "label": "From Date",
+        "conditional": {
+          "field": "date_range",
+          "value": "Custom Range"
+        }
+      },
+      {
+        "fieldName": "end_date_custom",
+        "type": "date",
+        "label": "To Date",
+        "conditional": {
+          "field": "date_range",
+          "value": "Custom Range"
+        }
+      },
+      {
+        "fieldName": "status_filter",
+        "type": "multiselect",
+        "label": "Status Filter",
+        "options": [
+          "Pending",
+          "Approved",
+          "Rejected",
+          "Cancelled"
+        ],
+        "maxSelections": 4
+      }
+    ],
+    "deviceCapabilities": [],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-15T13:59:09.919Z",
+    "updatedAt": "2025-11-15T13:59:09.919Z"
+  },
+  {
+    "id": "workflow_1703875200000_form_leave_cancellation",
+    "name": "leave_cancellation_mobile",
+    "title": "Cancel Leave",
+    "description": "Cancel approved leave request",
+    "nodeId": "leave_cancellation_node",
+    "optimizedFor": "mobile",
+    "layout": "single-column",
+    "fields": [
+      {
+        "fieldName": "leave_request_id",
+        "type": "text",
+        "label": "Leave Request ID",
+        "required": true,
+        "placeholder": "Enter request ID"
+      },
+      {
+        "fieldName": "cancellation_type",
+        "type": "radio",
+        "label": "Cancellation Type",
+        "required": true,
+        "options": [
+          "Full Cancellation",
+          "Partial Cancellation"
+        ],
+        "layout": "vertical"
+      },
+      {
+        "fieldName": "partial_dates",
+        "type": "section",
+        "headerText": "Select dates to cancel",
+        "conditional": {
+          "field": "cancellation_type",
+          "value": "Partial Cancellation"
+        }
+      },
+      {
+        "fieldName": "cancel_from_date",
+        "type": "date",
+        "label": "Cancel From",
+        "conditional": {
+          "field": "cancellation_type",
+          "value": "Partial Cancellation"
+        }
+      },
+      {
+        "fieldName": "cancel_to_date",
+        "type": "date",
+        "label": "Cancel To",
+        "conditional": {
+          "field": "cancellation_type",
+          "value": "Partial Cancellation"
+        }
+      },
+      {
+        "fieldName": "cancellation_reason",
+        "type": "dropdown",
+        "label": "Reason for Cancellation",
+        "required": true,
+        "options": [
+          "Change in plans",
+          "Work urgency",
+          "Personal emergency resolved",
+          "Health recovered",
+          "Other"
+        ]
+      },
+      {
+        "fieldName": "other_reason",
+        "type": "textarea",
+        "label": "Specify Other Reason",
+        "placeholder": "Please specify",
+        "rows": 2,
+        "conditional": {
+          "field": "cancellation_reason",
+          "value": "Other"
+        }
+      },
+      {
+        "fieldName": "confirm_cancellation",
+        "type": "consent",
+        "text": "I understand that cancelling leave may affect my leave balance and future requests",
+        "required": true
+      }
+    ],
+    "deviceCapabilities": [],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-15T13:59:09.919Z",
+    "updatedAt": "2025-11-15T13:59:09.919Z"
+  },
+  {
+    "id": "workflow_1703875200000_form_team_leave_calendar",
+    "name": "team_calendar_mobile",
+    "title": "Team Calendar",
+    "description": "View team leave schedule",
+    "nodeId": "team_calendar_node",
+    "optimizedFor": "mobile",
+    "layout": "single-column",
+    "fields": [
+      {
+        "fieldName": "calendar_view",
+        "type": "dropdown",
+        "label": "View",
+        "options": [
+          "This Week",
+          "This Month",
+          "Next Month",
+          "Custom Range"
+        ],
+        "defaultValue": "This Month"
+      },
+      {
+        "fieldName": "department_filter",
+        "type": "dropdown",
+        "label": "Department",
+        "options": [
+          "All Departments",
+          "Engineering",
+          "Marketing",
+          "Sales",
+          "HR",
+          "Finance"
+        ],
+        "defaultValue": "All Departments"
+      },
+      {
+        "fieldName": "leave_type_filter",
+        "type": "multiselect",
+        "label": "Leave Types",
+        "options": [
+          "Annual Leave",
+          "Sick Leave",
+          "Personal Leave",
+          "Maternity/Paternity"
+        ],
+        "maxSelections": 4
+      }
+    ],
+    "deviceCapabilities": [],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-15T13:59:09.919Z",
+    "updatedAt": "2025-11-15T13:59:09.919Z"
+  },
+  {
+    "id": "workflow_1703847192_form_ticket_creation",
+    "name": "ticket_creation_form",
+    "title": "New Ticket Submission",
+    "description": "Submit a new support or service ticket with detailed information",
+    "nodeId": "create_ticket_node",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "requester_info",
+        "title": "Requester Information",
+        "collapsible": false
+      },
+      {
+        "id": "ticket_details",
+        "title": "Ticket Details",
+        "collapsible": false
+      },
+      {
+        "id": "attachments_approval",
+        "title": "Attachments & Approval",
+        "collapsible": true
+      }
+    ],
+    "fields": [
+      {
+        "type": "text",
+        "fieldName": "requester_name",
+        "label": "Full Name",
+        "required": true,
+        "section": "requester_info",
+        "placeholder": "Enter your full name",
+        "validation": {
+          "minLength": 2,
+          "pattern": "^[a-zA-Z\\s]+$"
+        }
+      },
+      {
+        "type": "email",
+        "fieldName": "requester_email",
+        "label": "Email Address",
+        "required": true,
+        "section": "requester_info",
+        "placeholder": "your.email@company.com",
+        "tooltip": "We'll use this email for all ticket communications"
+      },
+      {
+        "type": "phoneInput",
+        "fieldName": "requester_phone",
+        "label": "Phone Number",
+        "required": false,
+        "section": "requester_info",
+        "defaultCountry": "US"
+      },
+      {
+        "type": "dropdown",
+        "fieldName": "ticket_category",
+        "label": "Ticket Category",
+        "required": true,
+        "section": "ticket_details",
+        "options": [
+          {
+            "value": "technical",
+            "label": "Technical Support"
+          },
+          {
+            "value": "billing",
+            "label": "Billing Issue"
+          },
+          {
+            "value": "feature",
+            "label": "Feature Request"
+          },
+          {
+            "value": "bug",
+            "label": "Bug Report"
+          },
+          {
+            "value": "access",
+            "label": "Access Request"
+          },
+          {
+            "value": "other",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "type": "radio",
+        "fieldName": "priority_level",
+        "label": "Priority Level",
+        "required": true,
+        "section": "ticket_details",
+        "options": [
+          {
+            "value": "low",
+            "label": "Low - General inquiry"
+          },
+          {
+            "value": "medium",
+            "label": "Medium - Business impact"
+          },
+          {
+            "value": "high",
+            "label": "High - Significant impact"
+          },
+          {
+            "value": "critical",
+            "label": "Critical - System down"
+          }
+        ],
+        "layout": "vertical"
+      },
+      {
+        "type": "text",
+        "fieldName": "ticket_subject",
+        "label": "Subject",
+        "required": true,
+        "section": "ticket_details",
+        "placeholder": "Brief summary of your issue",
+        "maxLength": 100
+      },
+      {
+        "type": "richtext",
+        "fieldName": "ticket_description",
+        "label": "Detailed Description",
+        "required": true,
+        "section": "ticket_details",
+        "placeholder": "Please provide detailed information about your issue, including steps to reproduce if applicable",
+        "toolbar": [
+          "bold",
+          "italic",
+          "underline",
+          "bulletList",
+          "numberedList"
+        ]
+      },
+      {
+        "type": "multiselect",
+        "fieldName": "affected_systems",
+        "label": "Affected Systems",
+        "required": false,
+        "section": "ticket_details",
+        "options": [
+          {
+            "value": "crm",
+            "label": "CRM System"
+          },
+          {
+            "value": "erp",
+            "label": "ERP System"
+          },
+          {
+            "value": "email",
+            "label": "Email System"
+          },
+          {
+            "value": "network",
+            "label": "Network/Internet"
+          },
+          {
+            "value": "database",
+            "label": "Database"
+          },
+          {
+            "value": "web_app",
+            "label": "Web Application"
+          },
+          {
+            "value": "mobile_app",
+            "label": "Mobile App"
+          }
+        ],
+        "maxSelections": 5
+      },
+      {
+        "type": "date",
+        "fieldName": "incident_date",
+        "label": "When did this issue occur?",
+        "required": false,
+        "section": "ticket_details",
+        "includeTime": true,
+        "maxDate": "today"
+      },
+      {
+        "type": "currency",
+        "fieldName": "estimated_impact",
+        "label": "Estimated Financial Impact",
+        "required": false,
+        "section": "ticket_details",
+        "currencySymbol": "$",
+        "placeholder": "0.00",
+        "tooltip": "If applicable, estimate the financial impact of this issue"
+      },
+      {
+        "type": "file",
+        "fieldName": "supporting_documents",
+        "label": "Supporting Documents",
+        "required": false,
+        "section": "attachments_approval",
+        "maxFiles": 5,
+        "maxSize": "10MB",
+        "allowedTypes": [
+          ".pdf",
+          ".doc",
+          ".docx",
+          ".jpg",
+          ".png",
+          ".gif",
+          ".zip"
+        ]
+      },
+      {
+        "type": "checkbox",
+        "fieldName": "urgency_factors",
+        "label": "Urgency Factors (check all that apply)",
+        "required": false,
+        "section": "attachments_approval",
+        "options": [
+          {
+            "value": "customer_facing",
+            "label": "Customer-facing issue"
+          },
+          {
+            "value": "revenue_impact",
+            "label": "Revenue impact"
+          },
+          {
+            "value": "security_concern",
+            "label": "Security concern"
+          },
+          {
+            "value": "compliance_issue",
+            "label": "Compliance issue"
+          },
+          {
+            "value": "deadline_driven",
+            "label": "Deadline-driven"
+          }
+        ]
+      },
+      {
+        "type": "esign",
+        "fieldName": "requester_signature",
+        "label": "Digital Signature",
+        "required": true,
+        "section": "attachments_approval",
+        "canvasWidth": 400,
+        "canvasHeight": 150,
+        "tooltip": "Please sign to confirm the accuracy of the information provided"
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "condition": {
+          "field": "ticket_category",
+          "operator": "equals",
+          "value": "billing"
+        },
+        "actions": [
+          {
+            "type": "show",
+            "target": "estimated_impact"
+          },
+          {
+            "type": "require",
+            "target": "estimated_impact"
+          }
+        ]
+      },
+      {
+        "condition": {
+          "field": "priority_level",
+          "operator": "in",
+          "value": [
+            "high",
+            "critical"
+          ]
+        },
+        "actions": [
+          {
+            "type": "require",
+            "target": "incident_date"
+          },
+          {
+            "type": "require",
+            "target": "requester_phone"
+          }
+        ]
+      }
+    ],
+    "calculations": [],
+    "workflowId": "workflow_1703847192",
+    "createdAt": "2025-11-15T17:24:00.162Z",
+    "updatedAt": "2025-11-15T17:24:00.162Z"
+  },
+  {
+    "id": "workflow_1703847192_form_ticket_assignment",
+    "name": "ticket_assignment_form",
+    "title": "Ticket Assignment & Routing",
+    "description": "Assign tickets to appropriate teams and agents",
+    "nodeId": "assign_ticket_node",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "assignment_details",
+        "title": "Assignment Details",
+        "collapsible": false
+      },
+      {
+        "id": "resource_allocation",
+        "title": "Resource Allocation",
+        "collapsible": false
+      },
+      {
+        "id": "escalation_settings",
+        "title": "Escalation Settings",
+        "collapsible": true
+      }
+    ],
+    "fields": [
+      {
+        "type": "lookup",
+        "fieldName": "ticket_id",
+        "label": "Ticket ID",
+        "required": true,
+        "section": "assignment_details",
+        "source": "tickets",
+        "readonly": true
+      },
+      {
+        "type": "dropdown",
+        "fieldName": "assigned_team",
+        "label": "Assigned Team",
+        "required": true,
+        "section": "assignment_details",
+        "options": [
+          {
+            "value": "level1_support",
+            "label": "Level 1 Support"
+          },
+          {
+            "value": "level2_technical",
+            "label": "Level 2 Technical"
+          },
+          {
+            "value": "level3_specialist",
+            "label": "Level 3 Specialist"
+          },
+          {
+            "value": "billing_team",
+            "label": "Billing Team"
+          },
+          {
+            "value": "security_team",
+            "label": "Security Team"
+          },
+          {
+            "value": "development",
+            "label": "Development Team"
+          }
+        ]
+      },
+      {
+        "type": "autocomplete",
+        "fieldName": "assigned_agent",
+        "label": "Assigned Agent",
+        "required": true,
+        "section": "assignment_details",
+        "options": [],
+        "minChars": 2,
+        "tooltip": "Start typing to search for available agents"
+      },
+      {
+        "type": "slider",
+        "fieldName": "complexity_score",
+        "label": "Complexity Score",
+        "required": true,
+        "section": "assignment_details",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "showValue": true,
+        "defaultValue": 5
+      },
+      {
+        "type": "number",
+        "fieldName": "estimated_hours",
+        "label": "Estimated Resolution Hours",
+        "required": true,
+        "section": "resource_allocation",
+        "min": 0.5,
+        "max": 200,
+        "step": 0.5,
+        "suffix": "hours"
+      },
+      {
+        "type": "currency",
+        "fieldName": "budget_allocation",
+        "label": "Budget Allocation",
+        "required": false,
+        "section": "resource_allocation",
+        "currencySymbol": "$",
+        "placeholder": "0.00"
+      },
+      {
+        "type": "date",
+        "fieldName": "target_resolution",
+        "label": "Target Resolution Date",
+        "required": true,
+        "section": "resource_allocation",
+        "includeTime": true,
+        "minDate": "today"
+      },
+      {
+        "type": "multiselect",
+        "fieldName": "required_skills",
+        "label": "Required Skills",
+        "required": false,
+        "section": "resource_allocation",
+        "options": [
+          {
+            "value": "database_admin",
+            "label": "Database Administration"
+          },
+          {
+            "value": "network_security",
+            "label": "Network Security"
+          },
+          {
+            "value": "web_development",
+            "label": "Web Development"
+          },
+          {
+            "value": "mobile_development",
+            "label": "Mobile Development"
+          },
+          {
+            "value": "system_integration",
+            "label": "System Integration"
+          },
+          {
+            "value": "api_development",
+            "label": "API Development"
+          },
+          {
+            "value": "cloud_services",
+            "label": "Cloud Services"
+          }
+        ]
+      },
+      {
+        "type": "switch",
+        "fieldName": "auto_escalate",
+        "label": "Enable Auto-Escalation",
+        "required": false,
+        "section": "escalation_settings",
+        "defaultValue": true
+      },
+      {
+        "type": "number",
+        "fieldName": "escalation_threshold",
+        "label": "Escalation Threshold (hours)",
+        "required": false,
+        "section": "escalation_settings",
+        "min": 1,
+        "max": 168,
+        "defaultValue": 24,
+        "suffix": "hours"
+      },
+      {
+        "type": "textarea",
+        "fieldName": "assignment_notes",
+        "label": "Assignment Notes",
+        "required": false,
+        "section": "escalation_settings",
+        "rows": 4,
+        "placeholder": "Add any special instructions or notes for the assigned agent",
+        "maxLength": 500
+      },
+      {
+        "type": "tags",
+        "fieldName": "ticket_tags",
+        "label": "Ticket Tags",
+        "required": false,
+        "section": "escalation_settings",
+        "maxTags": 10,
+        "suggestions": [
+          "urgent",
+          "vip_customer",
+          "security",
+          "billing",
+          "technical",
+          "feature"
+        ]
+      },
+      {
+        "type": "calculated",
+        "fieldName": "priority_weight",
+        "label": "Priority Weight",
+        "section": "escalation_settings",
+        "formula": "complexity_score * estimated_hours",
+        "dependencies": [
+          "complexity_score",
+          "estimated_hours"
+        ],
+        "readonly": true
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "condition": {
+          "field": "assigned_team",
+          "operator": "equals",
+          "value": "level3_specialist"
+        },
+        "actions": [
+          {
+            "type": "require",
+            "target": "budget_allocation"
+          },
+          {
+            "type": "show",
+            "target": "required_skills"
+          }
+        ]
+      },
+      {
+        "condition": {
+          "field": "auto_escalate",
+          "operator": "equals",
+          "value": true
+        },
+        "actions": [
+          {
+            "type": "show",
+            "target": "escalation_threshold"
+          },
+          {
+            "type": "require",
+            "target": "escalation_threshold"
+          }
+        ]
+      }
+    ],
+    "calculations": [
+      {
+        "field": "priority_weight",
+        "formula": "complexity_score * estimated_hours",
+        "dependencies": [
+          "complexity_score",
+          "estimated_hours"
+        ]
+      }
+    ],
+    "workflowId": "workflow_1703847192",
+    "createdAt": "2025-11-15T17:24:00.162Z",
+    "updatedAt": "2025-11-15T17:24:00.162Z"
+  },
+  {
+    "id": "workflow_1703847192_form_ticket_resolution",
+    "name": "ticket_resolution_form",
+    "title": "Ticket Resolution & Closure",
+    "description": "Complete ticket resolution with detailed documentation and customer approval",
+    "nodeId": "resolve_ticket_node",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "resolution_summary",
+        "title": "Resolution Summary",
+        "collapsible": false
+      },
+      {
+        "id": "technical_details",
+        "title": "Technical Details",
+        "collapsible": false
+      },
+      {
+        "id": "time_tracking",
+        "title": "Time & Resource Tracking",
+        "collapsible": false
+      },
+      {
+        "id": "customer_approval",
+        "title": "Customer Approval & Sign-off",
+        "collapsible": false
+      }
+    ],
+    "fields": [
+      {
+        "type": "lookup",
+        "fieldName": "ticket_reference",
+        "label": "Ticket Reference",
+        "required": true,
+        "section": "resolution_summary",
+        "source": "tickets",
+        "readonly": true
+      },
+      {
+        "type": "dropdown",
+        "fieldName": "resolution_status",
+        "label": "Resolution Status",
+        "required": true,
+        "section": "resolution_summary",
+        "options": [
+          {
+            "value": "resolved",
+            "label": "Resolved - Issue Fixed"
+          },
+          {
+            "value": "workaround",
+            "label": "Workaround - Temporary Solution"
+          },
+          {
+            "value": "duplicate",
+            "label": "Duplicate - Merged with Another Ticket"
+          },
+          {
+            "value": "no_action",
+            "label": "No Action Required"
+          },
+          {
+            "value": "escalated",
+            "label": "Escalated to Higher Level"
+          }
+        ]
+      },
+      {
+        "type": "richtext",
+        "fieldName": "resolution_description",
+        "label": "Resolution Description",
+        "required": true,
+        "section": "resolution_summary",
+        "placeholder": "Provide detailed explanation of how the issue was resolved",
+        "toolbar": [
+          "bold",
+          "italic",
+          "underline",
+          "bulletList",
+          "numberedList",
+          "link"
+        ]
+      },
+      {
+        "type": "multiselect",
+        "fieldName": "resolution_categories",
+        "label": "Resolution Categories",
+        "required": true,
+        "section": "resolution_summary",
+        "options": [
+          {
+            "value": "configuration",
+            "label": "Configuration Change"
+          },
+          {
+            "value": "software_update",
+            "label": "Software Update"
+          },
+          {
+            "value": "hardware_replacement",
+            "label": "Hardware Replacement"
+          },
+          {
+            "value": "user_training",
+            "label": "User Training"
+          },
+          {
+            "value": "process_change",
+            "label": "Process Change"
+          },
+          {
+            "value": "third_party",
+            "label": "Third Party Vendor"
+          }
+        ]
+      },
+      {
+        "type": "codeeditor",
+        "fieldName": "technical_solution",
+        "label": "Technical Solution Code",
+        "required": false,
+        "section": "technical_details",
+        "language": "sql",
+        "placeholder": "Enter any code, scripts, or technical commands used"
+      },
+      {
+        "type": "datatable",
+        "fieldName": "system_changes",
+        "label": "System Changes Made",
+        "required": false,
+        "section": "technical_details",
+        "columns": [
+          {
+            "field": "system",
+            "label": "System",
+            "type": "text"
+          },
+          {
+            "field": "change_type",
+            "label": "Change Type",
+            "type": "select"
+          },
+          {
+            "field": "old_value",
+            "label": "Old Value",
+            "type": "text"
+          },
+          {
+            "field": "new_value",
+            "label": "New Value",
+            "type": "text"
+          },
+          {
+            "field": "timestamp",
+            "label": "Timestamp",
+            "type": "datetime"
+          }
+        ]
+      },
+      {
+        "type": "file",
+        "fieldName": "resolution_documents",
+        "label": "Resolution Documentation",
+        "required": false,
+        "section": "technical_details",
+        "maxFiles": 10,
+        "maxSize": "25MB",
+        "allowedTypes": [
+          ".pdf",
+          ".doc",
+          ".docx",
+          ".txt",
+          ".jpg",
+          ".png",
+          ".zip"
+        ]
+      },
+      {
+        "type": "timer",
+        "fieldName": "actual_time_spent",
+        "label": "Actual Time Spent",
+        "required": true,
+        "section": "time_tracking",
+        "autoStart": false
+      },
+      {
+        "type": "currency",
+        "fieldName": "actual_cost",
+        "label": "Actual Resolution Cost",
+        "required": false,
+        "section": "time_tracking",
+        "currencySymbol": "$",
+        "placeholder": "0.00"
+      },
+      {
+        "type": "rating",
+        "fieldName": "difficulty_rating",
+        "label": "Difficulty Rating",
+        "required": true,
+        "section": "time_tracking",
+        "maxRating": 5,
+        "ratingType": "star"
+      },
+      {
+        "type": "checkbox",
+        "fieldName": "followup_required",
+        "label": "Follow-up Actions Required",
+        "required": false,
+        "section": "time_tracking",
+        "options": [
+          {
+            "value": "customer_training",
+            "label": "Customer Training Session"
+          },
+          {
+            "value": "monitoring",
+            "label": "System Monitoring"
+          },
+          {
+            "value": "documentation",
+            "label": "Update Documentation"
+          },
+          {
+            "value": "preventive_measures",
+            "label": "Implement Preventive Measures"
+          }
+        ]
+      },
+      {
+        "type": "date",
+        "fieldName": "followup_date",
+        "label": "Follow-up Date",
+        "required": false,
+        "section": "time_tracking",
+        "includeTime": true,
+        "minDate": "today"
+      },
+      {
+        "type": "switch",
+        "fieldName": "customer_notification_sent",
+        "label": "Customer Notification Sent",
+        "required": true,
+        "section": "customer_approval",
+        "defaultValue": false
+      },
+      {
+        "type": "textarea",
+        "fieldName": "customer_feedback",
+        "label": "Customer Feedback",
+        "required": false,
+        "section": "customer_approval",
+        "rows": 4,
+        "placeholder": "Record any feedback received from the customer"
+      },
+      {
+        "type": "esign",
+        "fieldName": "agent_signature",
+        "label": "Agent Signature",
+        "required": true,
+        "section": "customer_approval",
+        "canvasWidth": 400,
+        "canvasHeight": 150,
+        "tooltip": "Agent signature confirming resolution completion"
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "condition": {
+          "field": "resolution_status",
+          "operator": "equals",
+          "value": "escalated"
+        },
+        "actions": [
+          {
+            "type": "hide",
+            "target": "customer_approval"
+          },
+          {
+            "type": "require",
+            "target": "resolution_description"
+          }
+        ]
+      },
+      {
+        "condition": {
+          "field": "followup_required",
+          "operator": "contains",
+          "value": "customer_training"
+        },
+        "actions": [
+          {
+            "type": "show",
+            "target": "followup_date"
+          },
+          {
+            "type": "require",
+            "target": "followup_date"
+          }
+        ]
+      },
+      {
+        "condition": {
+          "field": "customer_notification_sent",
+          "operator": "equals",
+          "value": false
+        },
+        "actions": [
+          {
+            "type": "show_warning",
+            "message": "Customer should be notified before closing the ticket"
+          }
+        ]
+      }
+    ],
+    "calculations": [
+      {
+        "field": "efficiency_score",
+        "formula": "(estimated_hours / actual_time_spent) * 100",
+        "dependencies": [
+          "estimated_hours",
+          "actual_time_spent"
+        ]
+      }
+    ],
+    "workflowId": "workflow_1703847192",
+    "createdAt": "2025-11-15T17:24:00.162Z",
+    "updatedAt": "2025-11-15T17:24:00.162Z"
+  },
+  {
+    "id": "workflow_1734643200_form_001",
+    "name": "leave_request_form",
+    "title": "Employee Leave Request",
+    "description": "Submit your leave request with required documentation and approvals",
+    "nodeId": "leave_request_node",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "employee_info",
+        "title": "Employee Information",
+        "collapsible": false
+      },
+      {
+        "id": "leave_details",
+        "title": "Leave Details",
+        "collapsible": false
+      },
+      {
+        "id": "documentation",
+        "title": "Supporting Documents",
+        "collapsible": true
+      },
+      {
+        "id": "approvals",
+        "title": "Approvals & Signatures",
+        "collapsible": false
+      }
+    ],
+    "fields": [
+      {
+        "fieldName": "employee_id",
+        "type": "text",
+        "label": "Employee ID",
+        "section": "employee_info",
+        "required": true,
+        "readonly": true,
+        "placeholder": "Auto-filled from system"
+      },
+      {
+        "fieldName": "employee_name",
+        "type": "text",
+        "label": "Employee Name",
+        "section": "employee_info",
+        "required": true,
+        "readonly": true
+      },
+      {
+        "fieldName": "department",
+        "type": "dropdown",
+        "label": "Department",
+        "section": "employee_info",
+        "required": true,
+        "options": [
+          "Human Resources",
+          "Finance",
+          "IT",
+          "Operations",
+          "Marketing",
+          "Sales"
+        ]
+      },
+      {
+        "fieldName": "manager_email",
+        "type": "email",
+        "label": "Direct Manager Email",
+        "section": "employee_info",
+        "required": true,
+        "validation": {
+          "pattern": "^[^@]+@[^@]+\\.[^@]+$"
+        }
+      },
+      {
+        "fieldName": "leave_type",
+        "type": "dropdown",
+        "label": "Type of Leave",
+        "section": "leave_details",
+        "required": true,
+        "options": [
+          "Annual Leave",
+          "Sick Leave",
+          "Maternity/Paternity",
+          "Emergency Leave",
+          "Study Leave",
+          "Unpaid Leave"
+        ]
+      },
+      {
+        "fieldName": "start_date",
+        "type": "date",
+        "label": "Leave Start Date",
+        "section": "leave_details",
+        "required": true,
+        "minDate": "today"
+      },
+      {
+        "fieldName": "end_date",
+        "type": "date",
+        "label": "Leave End Date",
+        "section": "leave_details",
+        "required": true,
+        "minDate": "start_date"
+      },
+      {
+        "fieldName": "total_days",
+        "type": "calculated",
+        "label": "Total Leave Days",
+        "section": "leave_details",
+        "readonly": true,
+        "formula": "WORKDAYS(start_date, end_date)",
+        "dependencies": [
+          "start_date",
+          "end_date"
+        ]
+      },
+      {
+        "fieldName": "half_day",
+        "type": "switch",
+        "label": "Half Day Leave",
+        "section": "leave_details",
+        "defaultValue": false
+      },
+      {
+        "fieldName": "half_day_period",
+        "type": "radio",
+        "label": "Half Day Period",
+        "section": "leave_details",
+        "options": [
+          "Morning",
+          "Afternoon"
+        ],
+        "layout": "horizontal",
+        "dependsOn": "half_day",
+        "showWhen": "half_day == true"
+      },
+      {
+        "fieldName": "leave_reason",
+        "type": "richtext",
+        "label": "Reason for Leave",
+        "section": "leave_details",
+        "required": true,
+        "placeholder": "Please provide detailed reason for your leave request..."
+      },
+      {
+        "fieldName": "medical_certificate",
+        "type": "file",
+        "label": "Medical Certificate",
+        "section": "documentation",
+        "dependsOn": "leave_type",
+        "showWhen": "leave_type == 'Sick Leave'",
+        "required": true,
+        "maxFiles": 1,
+        "allowedTypes": [
+          "pdf",
+          "jpg",
+          "png",
+          "doc",
+          "docx"
+        ],
+        "maxSize": "5MB"
+      },
+      {
+        "fieldName": "supporting_documents",
+        "type": "file",
+        "label": "Additional Supporting Documents",
+        "section": "documentation",
+        "maxFiles": 5,
+        "allowedTypes": [
+          "pdf",
+          "jpg",
+          "png",
+          "doc",
+          "docx"
+        ],
+        "maxSize": "10MB"
+      },
+      {
+        "fieldName": "emergency_contact",
+        "type": "phoneInput",
+        "label": "Emergency Contact Number",
+        "section": "leave_details",
+        "required": true,
+        "defaultCountry": "US"
+      },
+      {
+        "fieldName": "handover_notes",
+        "type": "textarea",
+        "label": "Work Handover Notes",
+        "section": "leave_details",
+        "placeholder": "Describe work handover arrangements and responsibilities...",
+        "rows": 4
+      },
+      {
+        "fieldName": "coverage_employee",
+        "type": "text",
+        "label": "Coverage Employee Name",
+        "section": "leave_details",
+        "placeholder": "Employee covering your responsibilities"
+      },
+      {
+        "fieldName": "employee_signature",
+        "type": "esign",
+        "label": "Employee Signature",
+        "section": "approvals",
+        "required": true,
+        "canvasWidth": 400,
+        "canvasHeight": 150
+      },
+      {
+        "fieldName": "submission_date",
+        "type": "date",
+        "label": "Submission Date",
+        "section": "approvals",
+        "defaultValue": "today",
+        "readonly": true
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "fieldName": "half_day_period",
+        "condition": "half_day == true",
+        "action": "show"
+      },
+      {
+        "fieldName": "medical_certificate",
+        "condition": "leave_type == 'Sick Leave'",
+        "action": "show_required"
+      }
+    ],
+    "calculations": [
+      {
+        "fieldName": "total_days",
+        "formula": "WORKDAYS(start_date, end_date)",
+        "dependencies": [
+          "start_date",
+          "end_date"
+        ]
+      }
+    ],
+    "workflowId": "workflow_1734643200",
+    "createdAt": "2025-11-16T06:50:46.780Z",
+    "updatedAt": "2025-11-16T06:50:46.780Z"
+  },
+  {
+    "id": "workflow_1734643200_form_002",
+    "name": "manager_approval_form",
+    "title": "Manager Leave Approval",
+    "description": "Review and approve/reject employee leave requests",
+    "nodeId": "manager_approval_node",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "request_summary",
+        "title": "Leave Request Summary",
+        "collapsible": false
+      },
+      {
+        "id": "approval_section",
+        "title": "Manager Review",
+        "collapsible": false
+      },
+      {
+        "id": "financial_impact",
+        "title": "Financial Impact",
+        "collapsible": true
+      }
+    ],
+    "fields": [
+      {
+        "fieldName": "request_id",
+        "type": "text",
+        "label": "Request ID",
+        "section": "request_summary",
+        "readonly": true
+      },
+      {
+        "fieldName": "employee_details",
+        "type": "card",
+        "label": "Employee Information",
+        "section": "request_summary",
+        "readonly": true
+      },
+      {
+        "fieldName": "leave_summary",
+        "type": "dataGrid",
+        "label": "Leave Details",
+        "section": "request_summary",
+        "readonly": true,
+        "columns": [
+          {
+            "field": "type",
+            "headerName": "Leave Type"
+          },
+          {
+            "field": "start",
+            "headerName": "Start Date"
+          },
+          {
+            "field": "end",
+            "headerName": "End Date"
+          },
+          {
+            "field": "days",
+            "headerName": "Total Days"
+          }
+        ]
+      },
+      {
+        "fieldName": "team_impact_assessment",
+        "type": "richtext",
+        "label": "Team Impact Assessment",
+        "section": "approval_section",
+        "required": true,
+        "placeholder": "Assess the impact on team productivity and projects..."
+      },
+      {
+        "fieldName": "coverage_arrangements",
+        "type": "textarea",
+        "label": "Coverage Arrangements Review",
+        "section": "approval_section",
+        "required": true,
+        "rows": 3
+      },
+      {
+        "fieldName": "approval_status",
+        "type": "radio",
+        "label": "Approval Decision",
+        "section": "approval_section",
+        "required": true,
+        "options": [
+          "Approved",
+          "Rejected",
+          "Requires HR Review"
+        ],
+        "layout": "vertical"
+      },
+      {
+        "fieldName": "rejection_reason",
+        "type": "richtext",
+        "label": "Rejection Reason",
+        "section": "approval_section",
+        "dependsOn": "approval_status",
+        "showWhen": "approval_status == 'Rejected'",
+        "required": true
+      },
+      {
+        "fieldName": "hr_escalation_notes",
+        "type": "textarea",
+        "label": "HR Escalation Notes",
+        "section": "approval_section",
+        "dependsOn": "approval_status",
+        "showWhen": "approval_status == 'Requires HR Review'",
+        "required": true,
+        "rows": 4
+      },
+      {
+        "fieldName": "salary_impact",
+        "type": "currency",
+        "label": "Estimated Salary Impact",
+        "section": "financial_impact",
+        "currencySymbol": "$",
+        "dependsOn": "approval_status",
+        "showWhen": "approval_status == 'Unpaid Leave'"
+      },
+      {
+        "fieldName": "replacement_cost",
+        "type": "currency",
+        "label": "Temporary Replacement Cost",
+        "section": "financial_impact",
+        "currencySymbol": "$"
+      },
+      {
+        "fieldName": "total_financial_impact",
+        "type": "calculated",
+        "label": "Total Financial Impact",
+        "section": "financial_impact",
+        "formula": "salary_impact + replacement_cost",
+        "dependencies": [
+          "salary_impact",
+          "replacement_cost"
+        ],
+        "readonly": true
+      },
+      {
+        "fieldName": "manager_signature",
+        "type": "esign",
+        "label": "Manager Signature",
+        "section": "approval_section",
+        "required": true,
+        "canvasWidth": 400,
+        "canvasHeight": 150
+      },
+      {
+        "fieldName": "approval_date",
+        "type": "date",
+        "label": "Approval Date",
+        "section": "approval_section",
+        "defaultValue": "today",
+        "readonly": true
+      },
+      {
+        "fieldName": "priority_level",
+        "type": "rating",
+        "label": "Request Priority Level",
+        "section": "approval_section",
+        "maxRating": 5,
+        "ratingType": "star"
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "fieldName": "rejection_reason",
+        "condition": "approval_status == 'Rejected'",
+        "action": "show_required"
+      },
+      {
+        "fieldName": "hr_escalation_notes",
+        "condition": "approval_status == 'Requires HR Review'",
+        "action": "show_required"
+      }
+    ],
+    "calculations": [
+      {
+        "fieldName": "total_financial_impact",
+        "formula": "salary_impact + replacement_cost",
+        "dependencies": [
+          "salary_impact",
+          "replacement_cost"
+        ]
+      }
+    ],
+    "workflowId": "workflow_1734643200",
+    "createdAt": "2025-11-16T06:50:46.780Z",
+    "updatedAt": "2025-11-16T06:50:46.780Z"
+  },
+  {
+    "id": "workflow_1734643200_form_003",
+    "name": "hr_review_form",
+    "title": "HR Leave Review & Final Approval",
+    "description": "HR department final review and policy compliance check",
+    "nodeId": "hr_review_node",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "policy_compliance",
+        "title": "Policy Compliance Review",
+        "collapsible": false
+      },
+      {
+        "id": "employee_history",
+        "title": "Employee Leave History",
+        "collapsible": true
+      },
+      {
+        "id": "final_decision",
+        "title": "Final HR Decision",
+        "collapsible": false
+      }
+    ],
+    "fields": [
+      {
+        "fieldName": "hr_reviewer_name",
+        "type": "text",
+        "label": "HR Reviewer Name",
+        "section": "policy_compliance",
+        "required": true
+      },
+      {
+        "fieldName": "policy_checklist",
+        "type": "checkbox",
+        "label": "Policy Compliance Checklist",
+        "section": "policy_compliance",
+        "required": true,
+        "options": [
+          "Minimum notice period met",
+          "Leave balance sufficient",
+          "Documentation complete",
+          "Manager approval obtained",
+          "Coverage arrangements adequate"
+        ]
+      },
+      {
+        "fieldName": "leave_balance_check",
+        "type": "dataGrid",
+        "label": "Leave Balance Summary",
+        "section": "employee_history",
+        "readonly": true,
+        "columns": [
+          {
+            "field": "type",
+            "headerName": "Leave Type"
+          },
+          {
+            "field": "entitled",
+            "headerName": "Annual Entitlement"
+          },
+          {
+            "field": "taken",
+            "headerName": "Already Taken"
+          },
+          {
+            "field": "remaining",
+            "headerName": "Remaining Balance"
+          }
+        ]
+      },
+      {
+        "fieldName": "previous_leaves",
+        "type": "dataGrid",
+        "label": "Recent Leave History (Last 12 Months)",
+        "section": "employee_history",
+        "readonly": true,
+        "columns": [
+          {
+            "field": "date",
+            "headerName": "Date"
+          },
+          {
+            "field": "type",
+            "headerName": "Type"
+          },
+          {
+            "field": "days",
+            "headerName": "Days"
+          },
+          {
+            "field": "status",
+            "headerName": "Status"
+          }
+        ]
+      },
+      {
+        "fieldName": "compliance_score",
+        "type": "calculated",
+        "label": "Compliance Score",
+        "section": "policy_compliance",
+        "formula": "COUNT_TRUE(policy_checklist) / 5 * 100",
+        "dependencies": [
+          "policy_checklist"
+        ],
+        "readonly": true
+      },
+      {
+        "fieldName": "hr_notes",
+        "type": "richtext",
+        "label": "HR Review Notes",
+        "section": "final_decision",
+        "required": true,
+        "placeholder": "Document any policy considerations, precedents, or special circumstances..."
+      },
+      {
+        "fieldName": "final_status",
+        "type": "dropdown",
+        "label": "Final Status",
+        "section": "final_decision",
+        "required": true,
+        "options": [
+          "Approved",
+          "Rejected",
+          "Conditional Approval",
+          "Requires CEO Approval"
+        ]
+      },
+      {
+        "fieldName": "conditions",
+        "type": "textarea",
+        "label": "Approval Conditions",
+        "section": "final_decision",
+        "dependsOn": "final_status",
+        "showWhen": "final_status == 'Conditional Approval'",
+        "required": true,
+        "rows": 3
+      },
+      {
+        "fieldName": "ceo_escalation_reason",
+        "type": "richtext",
+        "label": "CEO Escalation Reason",
+        "section": "final_decision",
+        "dependsOn": "final_status",
+        "showWhen": "final_status == 'Requires CEO Approval'",
+        "required": true
+      },
+      {
+        "fieldName": "payroll_impact_code",
+        "type": "dropdown",
+        "label": "Payroll Impact Code",
+        "section": "final_decision",
+        "options": [
+          "PAID_LEAVE",
+          "UNPAID_LEAVE",
+          "PARTIAL_PAY",
+          "SPECIAL_RATE"
+        ],
+        "required": true
+      },
+      {
+        "fieldName": "hr_signature",
+        "type": "esign",
+        "label": "HR Representative Signature",
+        "section": "final_decision",
+        "required": true,
+        "canvasWidth": 400,
+        "canvasHeight": 150
+      },
+      {
+        "fieldName": "final_review_date",
+        "type": "date",
+        "label": "Final Review Date",
+        "section": "final_decision",
+        "defaultValue": "today",
+        "readonly": true
+      },
+      {
+        "fieldName": "notification_sent",
+        "type": "switch",
+        "label": "Employee Notification Sent",
+        "section": "final_decision",
+        "defaultValue": false
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "fieldName": "conditions",
+        "condition": "final_status == 'Conditional Approval'",
+        "action": "show_required"
+      },
+      {
+        "fieldName": "ceo_escalation_reason",
+        "condition": "final_status == 'Requires CEO Approval'",
+        "action": "show_required"
+      }
+    ],
+    "calculations": [
+      {
+        "fieldName": "compliance_score",
+        "formula": "COUNT_TRUE(policy_checklist) / 5 * 100",
+        "dependencies": [
+          "policy_checklist"
+        ]
+      }
+    ],
+    "workflowId": "workflow_1734643200",
+    "createdAt": "2025-11-16T06:50:46.780Z",
+    "updatedAt": "2025-11-16T06:50:46.780Z"
+  },
+  {
+    "id": "workflow_1703875200000_form_expense_submit",
+    "name": "expense_submission_form",
+    "title": "Submit Expense",
+    "description": "Submit an expense for approval",
+    "nodeId": "expense_submit_node",
+    "complexity": "simple",
+    "fields": [
+      {
+        "id": "field_1",
+        "name": "expenseDescription",
+        "label": "Expense Description",
+        "type": "text",
+        "required": true,
+        "placeholder": "e.g., Office Supplies, Travel",
+        "maxLength": 100
+      },
+      {
+        "id": "field_2",
+        "name": "expenseCategory",
+        "label": "Category",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "value": "travel",
+            "label": "Travel"
+          },
+          {
+            "value": "supplies",
+            "label": "Office Supplies"
+          },
+          {
+            "value": "meals",
+            "label": "Meals & Entertainment"
+          },
+          {
+            "value": "equipment",
+            "label": "Equipment"
+          },
+          {
+            "value": "other",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "field_3",
+        "name": "expenseAmount",
+        "label": "Amount",
+        "type": "currency",
+        "required": true,
+        "currencySymbol": "$",
+        "placeholder": "0.00"
+      },
+      {
+        "id": "field_4",
+        "name": "expenseDate",
+        "label": "Expense Date",
+        "type": "date",
+        "required": true
+      },
+      {
+        "id": "field_5",
+        "name": "notes",
+        "label": "Additional Notes",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "Provide any additional details",
+        "rows": 3,
+        "maxLength": 250
+      }
+    ],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-17T10:10:41.462Z",
+    "updatedAt": "2025-11-17T10:10:41.462Z"
+  },
+  {
+    "id": "workflow_1703875200000_form_expense_approve",
+    "name": "expense_approval_form",
+    "title": "Approve/Reject Expense",
+    "description": "Review and approve or reject the submitted expense",
+    "nodeId": "expense_approve_node",
+    "complexity": "simple",
+    "fields": [
+      {
+        "id": "field_1",
+        "name": "approvalStatus",
+        "label": "Approval Decision",
+        "type": "radio",
+        "required": true,
+        "options": [
+          {
+            "value": "approved",
+            "label": "Approve"
+          },
+          {
+            "value": "rejected",
+            "label": "Reject"
+          }
+        ],
+        "layout": "horizontal"
+      },
+      {
+        "id": "field_2",
+        "name": "approvalComments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "Provide approval or rejection reason",
+        "rows": 4,
+        "maxLength": 300
+      },
+      {
+        "id": "field_3",
+        "name": "approvalDate",
+        "label": "Approval Date",
+        "type": "date",
+        "required": true
+      }
+    ],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-17T10:10:41.462Z",
+    "updatedAt": "2025-11-17T10:10:41.462Z"
+  },
+  {
+    "id": "workflow_1703875200000_form_expense_reimburse",
+    "name": "expense_reimbursement_form",
+    "title": "Process Reimbursement",
+    "description": "Process payment for approved expense",
+    "nodeId": "expense_reimburse_node",
+    "complexity": "simple",
+    "fields": [
+      {
+        "id": "field_1",
+        "name": "paymentMethod",
+        "label": "Payment Method",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "value": "direct_deposit",
+            "label": "Direct Deposit"
+          },
+          {
+            "value": "check",
+            "label": "Check"
+          },
+          {
+            "value": "credit_card",
+            "label": "Company Credit Card"
+          }
+        ]
+      },
+      {
+        "id": "field_2",
+        "name": "reimbursementAmount",
+        "label": "Reimbursement Amount",
+        "type": "currency",
+        "required": true,
+        "currencySymbol": "$",
+        "placeholder": "0.00"
+      },
+      {
+        "id": "field_3",
+        "name": "processedDate",
+        "label": "Processing Date",
+        "type": "date",
+        "required": true
+      },
+      {
+        "id": "field_4",
+        "name": "referenceNotes",
+        "label": "Reference Notes",
+        "type": "text",
+        "required": false,
+        "placeholder": "e.g., Check number, transaction ID",
+        "maxLength": 100
+      }
+    ],
+    "workflowId": "workflow_1703875200000",
+    "createdAt": "2025-11-17T10:10:41.462Z",
+    "updatedAt": "2025-11-17T10:10:41.462Z"
+  },
+  {
+    "id": "workflow_1734476234567_form_ticket_submission",
+    "name": "support_ticket_submission",
+    "title": "Support Ticket Submission",
+    "description": "Submit a support request with detailed information for sentiment analysis and prioritization",
+    "nodeId": "submit_ticket",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "customer_info",
+        "title": "Customer Information",
+        "collapsible": false,
+        "backgroundColor": "#f8f9fa"
+      },
+      {
+        "id": "issue_details",
+        "title": "Issue Details",
+        "collapsible": false,
+        "backgroundColor": "#fff"
+      },
+      {
+        "id": "attachments",
+        "title": "Supporting Documentation",
+        "collapsible": true,
+        "backgroundColor": "#f8f9fa"
+      },
+      {
+        "id": "priority_assessment",
+        "title": "Impact Assessment",
+        "collapsible": false,
+        "backgroundColor": "#fff"
+      }
+    ],
+    "fields": [
+      {
+        "fieldName": "customer_name",
+        "type": "text",
+        "label": "Full Name",
+        "section": "customer_info",
+        "required": true,
+        "placeholder": "Enter your full name",
+        "validation": {
+          "minLength": 2,
+          "pattern": "^[a-zA-Z\\s]+$"
+        }
+      },
+      {
+        "fieldName": "customer_email",
+        "type": "email",
+        "label": "Email Address",
+        "section": "customer_info",
+        "required": true,
+        "placeholder": "your.email@company.com",
+        "tooltip": "We'll use this to send updates about your ticket"
+      },
+      {
+        "fieldName": "customer_phone",
+        "type": "phoneInput",
+        "label": "Phone Number",
+        "section": "customer_info",
+        "required": false,
+        "defaultCountry": "US",
+        "tooltip": "Optional - for urgent issues requiring immediate contact"
+      },
+      {
+        "fieldName": "issue_category",
+        "type": "dropdown",
+        "label": "Issue Category",
+        "section": "issue_details",
+        "required": true,
+        "options": [
+          {
+            "value": "technical",
+            "label": "Technical Issue"
+          },
+          {
+            "value": "billing",
+            "label": "Billing & Account"
+          },
+          {
+            "value": "feature",
+            "label": "Feature Request"
+          },
+          {
+            "value": "bug",
+            "label": "Bug Report"
+          },
+          {
+            "value": "integration",
+            "label": "Integration Support"
+          },
+          {
+            "value": "other",
+            "label": "Other"
+          }
+        ],
+        "placeholder": "Select issue category"
+      },
+      {
+        "fieldName": "issue_title",
+        "type": "text",
+        "label": "Issue Title",
+        "section": "issue_details",
+        "required": true,
+        "placeholder": "Brief summary of your issue",
+        "maxLength": 100,
+        "validation": {
+          "minLength": 10
+        }
+      },
+      {
+        "fieldName": "issue_description",
+        "type": "richtext",
+        "label": "Detailed Description",
+        "section": "issue_details",
+        "required": true,
+        "placeholder": "Please provide a detailed description of your issue, including steps to reproduce if applicable",
+        "toolbar": [
+          "bold",
+          "italic",
+          "underline",
+          "bulletList",
+          "numberedList",
+          "link"
+        ],
+        "validation": {
+          "minLength": 50
+        },
+        "tooltip": "The more detail you provide, the better we can help resolve your issue"
+      },
+      {
+        "fieldName": "urgency_level",
+        "type": "radio",
+        "label": "Urgency Level",
+        "section": "priority_assessment",
+        "required": true,
+        "options": [
+          {
+            "value": "low",
+            "label": "Low - Can wait a few days"
+          },
+          {
+            "value": "medium",
+            "label": "Medium - Needs attention within 24 hours"
+          },
+          {
+            "value": "high",
+            "label": "High - Business critical, needs immediate attention"
+          },
+          {
+            "value": "critical",
+            "label": "Critical - System down, blocking operations"
+          }
+        ],
+        "layout": "vertical"
+      },
+      {
+        "fieldName": "business_impact",
+        "type": "multiselect",
+        "label": "Business Impact",
+        "section": "priority_assessment",
+        "required": false,
+        "options": [
+          {
+            "value": "revenue_loss",
+            "label": "Revenue Loss"
+          },
+          {
+            "value": "customer_facing",
+            "label": "Customer-Facing Issue"
+          },
+          {
+            "value": "security_concern",
+            "label": "Security Concern"
+          },
+          {
+            "value": "compliance_issue",
+            "label": "Compliance Issue"
+          },
+          {
+            "value": "productivity_loss",
+            "label": "Team Productivity Loss"
+          },
+          {
+            "value": "data_integrity",
+            "label": "Data Integrity Issue"
+          }
+        ],
+        "maxSelections": 3,
+        "tooltip": "Select all that apply - helps us prioritize your request"
+      },
+      {
+        "fieldName": "expected_resolution",
+        "type": "date",
+        "label": "Expected Resolution Date",
+        "section": "priority_assessment",
+        "required": false,
+        "minDate": "today",
+        "tooltip": "When do you need this resolved by?"
+      },
+      {
+        "fieldName": "supporting_files",
+        "type": "file",
+        "label": "Attachments",
+        "section": "attachments",
+        "required": false,
+        "maxFiles": 5,
+        "maxSize": "10MB",
+        "allowedTypes": [
+          ".pdf",
+          ".doc",
+          ".docx",
+          ".txt",
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".gif",
+          ".zip"
+        ],
+        "tooltip": "Screenshots, error logs, or other relevant files"
+      },
+      {
+        "fieldName": "error_logs",
+        "type": "codeeditor",
+        "label": "Error Logs or Code Snippets",
+        "section": "attachments",
+        "required": false,
+        "language": "text",
+        "placeholder": "Paste error messages, stack traces, or relevant code here",
+        "tooltip": "Include any error messages or code that might help diagnose the issue"
+      },
+      {
+        "fieldName": "satisfaction_rating",
+        "type": "rating",
+        "label": "Previous Support Experience",
+        "section": "customer_info",
+        "required": false,
+        "maxRating": 5,
+        "ratingType": "star",
+        "tooltip": "Rate your previous experience with our support team"
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "condition": {
+          "field": "urgency_level",
+          "operator": "equals",
+          "value": "critical"
+        },
+        "actions": [
+          {
+            "type": "show",
+            "field": "customer_phone"
+          },
+          {
+            "type": "require",
+            "field": "customer_phone"
+          }
+        ]
+      },
+      {
+        "condition": {
+          "field": "issue_category",
+          "operator": "equals",
+          "value": "technical"
+        },
+        "actions": [
+          {
+            "type": "show",
+            "field": "error_logs"
+          }
+        ]
+      },
+      {
+        "condition": {
+          "field": "urgency_level",
+          "operator": "in",
+          "value": [
+            "high",
+            "critical"
+          ]
+        },
+        "actions": [
+          {
+            "type": "require",
+            "field": "expected_resolution"
+          },
+          {
+            "type": "require",
+            "field": "business_impact"
+          }
+        ]
+      }
+    ],
+    "calculations": [
+      {
+        "fieldName": "priority_score",
+        "type": "calculated",
+        "formula": "CASE(urgency_level, 'low', 1, 'medium', 2, 'high', 3, 'critical', 4) * (business_impact.length + 1)",
+        "dependencies": [
+          "urgency_level",
+          "business_impact"
+        ]
+      }
+    ],
+    "workflowId": "workflow_1734476234567",
+    "createdAt": "2025-11-18T11:00:54.196Z",
+    "updatedAt": "2025-11-18T11:00:54.196Z"
+  },
+  {
+    "id": "workflow_1734476234567_form_sentiment_analysis",
+    "name": "sentiment_analysis_review",
+    "title": "Sentiment Analysis & Review",
+    "description": "Automated sentiment analysis results with manual review and adjustment capabilities",
+    "nodeId": "analyze_sentiment",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "analysis_results",
+        "title": "AI Sentiment Analysis Results",
+        "collapsible": false,
+        "backgroundColor": "#e3f2fd"
+      },
+      {
+        "id": "manual_review",
+        "title": "Manual Review & Adjustment",
+        "collapsible": false,
+        "backgroundColor": "#fff"
+      },
+      {
+        "id": "escalation_decision",
+        "title": "Escalation & Routing Decision",
+        "collapsible": false,
+        "backgroundColor": "#f3e5f5"
+      }
+    ],
+    "fields": [
+      {
+        "fieldName": "ticket_id",
+        "type": "text",
+        "label": "Ticket ID",
+        "section": "analysis_results",
+        "required": true,
+        "readonly": true,
+        "defaultValue": "AUTO_GENERATED"
+      },
+      {
+        "fieldName": "ai_sentiment_score",
+        "type": "slider",
+        "label": "AI Sentiment Score",
+        "section": "analysis_results",
+        "required": true,
+        "min": -1,
+        "max": 1,
+        "step": 0.1,
+        "showValue": true,
+        "readonly": true,
+        "tooltip": "AI-detected sentiment: -1 (very negative) to +1 (very positive)"
+      },
+      {
+        "fieldName": "ai_sentiment_label",
+        "type": "text",
+        "label": "AI Sentiment Classification",
+        "section": "analysis_results",
+        "required": true,
+        "readonly": true,
+        "tooltip": "Automated classification based on sentiment analysis"
+      },
+      {
+        "fieldName": "ai_keywords",
+        "type": "tags",
+        "label": "Detected Keywords",
+        "section": "analysis_results",
+        "required": false,
+        "readonly": true,
+        "tooltip": "Key phrases and emotions detected by AI"
+      },
+      {
+        "fieldName": "confidence_level",
+        "type": "Progress Bar",
+        "label": "Analysis Confidence",
+        "section": "analysis_results",
+        "required": true,
+        "currentValue": 0,
+        "maxValue": 100,
+        "color": "primary",
+        "showPercentage": true,
+        "readonly": true
+      },
+      {
+        "fieldName": "manual_sentiment_override",
+        "type": "radio",
+        "label": "Manual Sentiment Review",
+        "section": "manual_review",
+        "required": true,
+        "options": [
+          {
+            "value": "agree",
+            "label": "Agree with AI assessment"
+          },
+          {
+            "value": "disagree",
+            "label": "Disagree - needs adjustment"
+          },
+          {
+            "value": "uncertain",
+            "label": "Uncertain - needs senior review"
+          }
+        ],
+        "layout": "vertical"
+      },
+      {
+        "fieldName": "corrected_sentiment",
+        "type": "dropdown",
+        "label": "Corrected Sentiment",
+        "section": "manual_review",
+        "required": false,
+        "options": [
+          {
+            "value": "very_negative",
+            "label": "Very Negative"
+          },
+          {
+            "value": "negative",
+            "label": "Negative"
+          },
+          {
+            "value": "neutral",
+            "label": "Neutral"
+          },
+          {
+            "value": "positive",
+            "label": "Positive"
+          },
+          {
+            "value": "very_positive",
+            "label": "Very Positive"
+          }
+        ],
+        "placeholder": "Select corrected sentiment if needed"
+      },
+      {
+        "fieldName": "review_notes",
+        "type": "textarea",
+        "label": "Review Notes",
+        "section": "manual_review",
+        "required": false,
+        "rows": 4,
+        "placeholder": "Explain why you disagree with the AI assessment or provide additional context",
+        "maxLength": 500
+      },
+      {
+        "fieldName": "escalation_required",
+        "type": "switch",
+        "label": "Escalation Required",
+        "section": "escalation_decision",
+        "required": true,
+        "defaultValue": false,
+        "tooltip": "Toggle if this ticket requires immediate escalation"
+      },
+      {
+        "fieldName": "assigned_team",
+        "type": "dropdown",
+        "label": "Assign to Team",
+        "section": "escalation_decision",
+        "required": true,
+        "options": [
+          {
+            "value": "level1",
+            "label": "Level 1 Support"
+          },
+          {
+            "value": "level2",
+            "label": "Level 2 Technical"
+          },
+          {
+            "value": "billing",
+            "label": "Billing Team"
+          },
+          {
+            "value": "engineering",
+            "label": "Engineering"
+          },
+          {
+            "value": "management",
+            "label": "Management"
+          },
+          {
+            "value": "security",
+            "label": "Security Team"
+          }
+        ]
+      },
+      {
+        "fieldName": "priority_override",
+        "type": "radio",
+        "label": "Priority Override",
+        "section": "escalation_decision",
+        "required": false,
+        "options": [
+          {
+            "value": "no_change",
+            "label": "Keep original priority"
+          },
+          {
+            "value": "increase",
+            "label": "Increase priority"
+          },
+          {
+            "value": "decrease",
+            "label": "Decrease priority"
+          }
+        ],
+        "layout": "horizontal"
+      },
+      {
+        "fieldName": "estimated_effort",
+        "type": "dropdown",
+        "label": "Estimated Resolution Effort",
+        "section": "escalation_decision",
+        "required": true,
+        "options": [
+          {
+            "value": "low",
+            "label": "Low (< 2 hours)"
+          },
+          {
+            "value": "medium",
+            "label": "Medium (2-8 hours)"
+          },
+          {
+            "value": "high",
+            "label": "High (1-3 days)"
+          },
+          {
+            "value": "complex",
+            "label": "Complex (> 3 days)"
+          }
+        ]
+      },
+      {
+        "fieldName": "reviewer_signature",
+        "type": "esign",
+        "label": "Reviewer Signature",
+        "section": "manual_review",
+        "required": true,
+        "canvasWidth": 400,
+        "canvasHeight": 150,
+        "tooltip": "Digital signature confirming your review"
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "condition": {
+          "field": "manual_sentiment_override",
+          "operator": "equals",
+          "value": "disagree"
+        },
+        "actions": [
+          {
+            "type": "require",
+            "field": "corrected_sentiment"
+          },
+          {
+            "type": "require",
+            "field": "review_notes"
+          }
+        ]
+      },
+      {
+        "condition": {
+          "field": "escalation_required",
+          "operator": "equals",
+          "value": true
+        },
+        "actions": [
+          {
+            "type": "show",
+            "field": "priority_override"
+          }
+        ]
+      },
+      {
+        "condition": {
+          "field": "ai_sentiment_score",
+          "operator": "lessThan",
+          "value": -0.5
+        },
+        "actions": [
+          {
+            "type": "setValue",
+            "field": "escalation_required",
+            "value": true
+          }
+        ]
+      },
+      {
+        "condition": {
+          "field": "confidence_level",
+          "operator": "lessThan",
+          "value": 70
+        },
+        "actions": [
+          {
+            "type": "setValue",
+            "field": "manual_sentiment_override",
+            "value": "uncertain"
+          }
+        ]
+      }
+    ],
+    "calculations": [
+      {
+        "fieldName": "final_sentiment_score",
+        "type": "calculated",
+        "formula": "IF(manual_sentiment_override = 'disagree', CASE(corrected_sentiment, 'very_negative', -1, 'negative', -0.5, 'neutral', 0, 'positive', 0.5, 'very_positive', 1), ai_sentiment_score)",
+        "dependencies": [
+          "manual_sentiment_override",
+          "corrected_sentiment",
+          "ai_sentiment_score"
+        ]
+      },
+      {
+        "fieldName": "routing_priority",
+        "type": "calculated",
+        "formula": "IF(escalation_required, 'HIGH', IF(final_sentiment_score < -0.3, 'MEDIUM', 'NORMAL'))",
+        "dependencies": [
+          "escalation_required",
+          "final_sentiment_score"
+        ]
+      }
+    ],
+    "workflowId": "workflow_1734476234567",
+    "createdAt": "2025-11-18T11:00:54.196Z",
+    "updatedAt": "2025-11-18T11:00:54.196Z"
+  },
+  {
+    "id": "workflow_1703524800000_form_feedback_001",
+    "name": "customer_feedback_form",
+    "title": "Customer Feedback",
+    "description": "Share your feedback to help us improve our service",
+    "nodeId": "feedback_collection",
+    "complexity": "simple",
+    "fields": [
+      {
+        "id": "field_1",
+        "name": "customer_name",
+        "label": "Your Name",
+        "type": "text",
+        "required": true,
+        "placeholder": "Enter your full name",
+        "maxLength": 100
+      },
+      {
+        "id": "field_2",
+        "name": "email",
+        "label": "Email Address",
+        "type": "email",
+        "required": true,
+        "placeholder": "your.email@example.com"
+      },
+      {
+        "id": "field_3",
+        "name": "feedback_category",
+        "label": "Feedback Category",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "value": "product",
+            "label": "Product Quality"
+          },
+          {
+            "value": "service",
+            "label": "Customer Service"
+          },
+          {
+            "value": "delivery",
+            "label": "Delivery/Shipping"
+          },
+          {
+            "value": "pricing",
+            "label": "Pricing"
+          },
+          {
+            "value": "other",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "field_4",
+        "name": "overall_rating",
+        "label": "Overall Rating",
+        "type": "rating",
+        "required": true,
+        "maxRating": 5,
+        "ratingType": "star"
+      },
+      {
+        "id": "field_5",
+        "name": "feedback_text",
+        "label": "Your Feedback",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "Please share your detailed feedback...",
+        "rows": 5,
+        "maxLength": 1000
+      },
+      {
+        "id": "field_6",
+        "name": "feedback_date",
+        "label": "Date",
+        "type": "date",
+        "required": true
+      }
+    ],
+    "workflowId": "workflow_1703524800000",
+    "createdAt": "2025-11-18T11:25:38.862Z",
+    "updatedAt": "2025-11-18T11:25:38.862Z"
+  },
+  {
+    "id": "workflow_1737174400000_book_form",
+    "name": "Book Management Form",
+    "description": "Form for creating and editing book records",
+    "layout": {
+      "type": "two-column",
+      "columns": 2,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "isbn",
+        "name": "isbn",
+        "label": "ISBN",
+        "type": "text",
+        "placeholder": "978-0-123456-78-9",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "pattern:^[0-9-]{10,17}$"
+          ],
+          "errorMessage": "Please enter a valid ISBN"
+        },
+        "styling": {
+          "width": "half",
+          "order": 1
+        }
+      },
+      {
+        "id": "title",
+        "name": "title",
+        "label": "Title",
+        "type": "text",
+        "placeholder": "Enter book title",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:1"
+          ],
+          "errorMessage": "Title is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 2
+        }
+      },
+      {
+        "id": "author",
+        "name": "author",
+        "label": "Author",
+        "type": "text",
+        "placeholder": "Author name",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:2"
+          ],
+          "errorMessage": "Author name is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 3
+        }
+      },
+      {
+        "id": "category",
+        "name": "category",
+        "label": "Category",
+        "type": "select",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select a category"
+        },
+        "styling": {
+          "width": "half",
+          "order": 4
+        },
+        "options": [
+          {
+            "value": "fiction",
+            "label": "Fiction"
+          },
+          {
+            "value": "non-fiction",
+            "label": "Non-Fiction"
+          },
+          {
+            "value": "science",
+            "label": "Science"
+          },
+          {
+            "value": "history",
+            "label": "History"
+          },
+          {
+            "value": "biography",
+            "label": "Biography"
+          },
+          {
+            "value": "technology",
+            "label": "Technology"
+          }
+        ]
+      },
+      {
+        "id": "publisher",
+        "name": "publisher",
+        "label": "Publisher",
+        "type": "text",
+        "placeholder": "Publisher name",
+        "required": false,
+        "styling": {
+          "width": "half",
+          "order": 5
+        }
+      },
+      {
+        "id": "publicationYear",
+        "name": "publicationYear",
+        "label": "Publication Year",
+        "type": "number",
+        "placeholder": "2024",
+        "required": false,
+        "validation": {
+          "rules": [
+            "min:1000",
+            "max:2024"
+          ],
+          "errorMessage": "Enter a valid year"
+        },
+        "styling": {
+          "width": "half",
+          "order": 6
+        }
+      },
+      {
+        "id": "copiesAvailable",
+        "name": "copiesAvailable",
+        "label": "Copies Available",
+        "type": "number",
+        "placeholder": "0",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:0"
+          ],
+          "errorMessage": "Enter number of copies available"
+        },
+        "styling": {
+          "width": "half",
+          "order": 7
+        }
+      },
+      {
+        "id": "location",
+        "name": "location",
+        "label": "Library Location",
+        "type": "text",
+        "placeholder": "Shelf/Section location",
+        "required": false,
+        "styling": {
+          "width": "half",
+          "order": 8
+        }
+      },
+      {
+        "id": "description",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "placeholder": "Book description or summary",
+        "required": false,
+        "styling": {
+          "width": "full",
+          "order": 9
+        }
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Save Book",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "cancel",
+        "label": "Cancel",
+        "style": "secondary",
+        "position": "right"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_1737174400000",
+    "createdAt": "2025-11-21T12:09:15.585Z",
+    "updatedAt": "2025-11-21T12:09:15.585Z"
+  },
+  {
+    "id": "workflow_1737174400000_member_form",
+    "name": "Member Registration Form",
+    "description": "Form for registering new library members",
+    "layout": {
+      "type": "two-column",
+      "columns": 2,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "membershipId",
+        "name": "membershipId",
+        "label": "Membership ID",
+        "type": "text",
+        "placeholder": "Auto-generated",
+        "required": false,
+        "validation": {
+          "rules": [],
+          "errorMessage": ""
+        },
+        "styling": {
+          "width": "half",
+          "order": 1
+        }
+      },
+      {
+        "id": "firstName",
+        "name": "firstName",
+        "label": "First Name",
+        "type": "text",
+        "placeholder": "Enter first name",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:2"
+          ],
+          "errorMessage": "First name is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 2
+        }
+      },
+      {
+        "id": "lastName",
+        "name": "lastName",
+        "label": "Last Name",
+        "type": "text",
+        "placeholder": "Enter last name",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:2"
+          ],
+          "errorMessage": "Last name is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 3
+        }
+      },
+      {
+        "id": "email",
+        "name": "email",
+        "label": "Email Address",
+        "type": "email",
+        "placeholder": "member@email.com",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "email"
+          ],
+          "errorMessage": "Valid email address is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 4
+        }
+      },
+      {
+        "id": "phone",
+        "name": "phone",
+        "label": "Phone Number",
+        "type": "text",
+        "placeholder": "+1-234-567-8900",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "pattern:^[+]?[0-9\\s\\-()]+$"
+          ],
+          "errorMessage": "Valid phone number is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 5
+        }
+      },
+      {
+        "id": "dateOfBirth",
+        "name": "dateOfBirth",
+        "label": "Date of Birth",
+        "type": "date",
+        "required": false,
+        "styling": {
+          "width": "half",
+          "order": 6
+        }
+      },
+      {
+        "id": "membershipType",
+        "name": "membershipType",
+        "label": "Membership Type",
+        "type": "select",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select membership type"
+        },
+        "styling": {
+          "width": "half",
+          "order": 7
+        },
+        "options": [
+          {
+            "value": "student",
+            "label": "Student"
+          },
+          {
+            "value": "faculty",
+            "label": "Faculty"
+          },
+          {
+            "value": "general",
+            "label": "General Public"
+          },
+          {
+            "value": "premium",
+            "label": "Premium"
+          }
+        ]
+      },
+      {
+        "id": "address",
+        "name": "address",
+        "label": "Address",
+        "type": "textarea",
+        "placeholder": "Street address, City, State, ZIP",
+        "required": false,
+        "styling": {
+          "width": "full",
+          "order": 8
+        }
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Register Member",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "cancel",
+        "label": "Cancel",
+        "style": "secondary",
+        "position": "right"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_1737174400000",
+    "createdAt": "2025-11-21T12:09:15.585Z",
+    "updatedAt": "2025-11-21T12:09:15.585Z"
+  },
+  {
+    "id": "workflow_1737174400000_borrow_form",
+    "name": "Book Borrowing Form",
+    "description": "Form for checking out books to members",
+    "layout": {
+      "type": "single-column",
+      "columns": 1,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "memberId",
+        "name": "memberId",
+        "label": "Member",
+        "type": "select",
+        "placeholder": "Select member",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select a member"
+        },
+        "styling": {
+          "width": "full",
+          "order": 1
+        },
+        "options": []
+      },
+      {
+        "id": "bookId",
+        "name": "bookId",
+        "label": "Book",
+        "type": "select",
+        "placeholder": "Select book",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select a book"
+        },
+        "styling": {
+          "width": "full",
+          "order": 2
+        },
+        "options": []
+      },
+      {
+        "id": "borrowDate",
+        "name": "borrowDate",
+        "label": "Borrow Date",
+        "type": "date",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Borrow date is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 3
+        }
+      },
+      {
+        "id": "dueDate",
+        "name": "dueDate",
+        "label": "Due Date",
+        "type": "date",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Due date is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 4
+        }
+      },
+      {
+        "id": "notes",
+        "name": "notes",
+        "label": "Notes",
+        "type": "textarea",
+        "placeholder": "Additional notes (optional)",
+        "required": false,
+        "styling": {
+          "width": "full",
+          "order": 5
+        }
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Check Out Book",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "cancel",
+        "label": "Cancel",
+        "style": "secondary",
+        "position": "right"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_1737174400000",
+    "createdAt": "2025-11-21T12:09:15.585Z",
+    "updatedAt": "2025-11-21T12:09:15.585Z"
+  },
+  {
+    "id": "workflow_1737174400000_return_form",
+    "name": "Book Return Form",
+    "description": "Form for returning borrowed books",
+    "layout": {
+      "type": "single-column",
+      "columns": 1,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "borrowRecordId",
+        "name": "borrowRecordId",
+        "label": "Borrow Record",
+        "type": "select",
+        "placeholder": "Select borrow record",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select a borrow record"
+        },
+        "styling": {
+          "width": "full",
+          "order": 1
+        },
+        "options": []
+      },
+      {
+        "id": "returnDate",
+        "name": "returnDate",
+        "label": "Return Date",
+        "type": "date",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Return date is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 2
+        }
+      },
+      {
+        "id": "condition",
+        "name": "condition",
+        "label": "Book Condition",
+        "type": "select",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please assess book condition"
+        },
+        "styling": {
+          "width": "half",
+          "order": 3
+        },
+        "options": [
+          {
+            "value": "excellent",
+            "label": "Excellent"
+          },
+          {
+            "value": "good",
+            "label": "Good"
+          },
+          {
+            "value": "fair",
+            "label": "Fair"
+          },
+          {
+            "value": "poor",
+            "label": "Poor"
+          },
+          {
+            "value": "damaged",
+            "label": "Damaged"
+          }
+        ]
+      },
+      {
+        "id": "lateFee",
+        "name": "lateFee",
+        "label": "Late Fee",
+        "type": "number",
+        "placeholder": "0.00",
+        "required": false,
+        "validation": {
+          "rules": [
+            "min:0"
+          ],
+          "errorMessage": "Enter valid fee amount"
+        },
+        "styling": {
+          "width": "half",
+          "order": 4
+        }
+      },
+      {
+        "id": "returnNotes",
+        "name": "returnNotes",
+        "label": "Return Notes",
+        "type": "textarea",
+        "placeholder": "Any issues or notes about the return",
+        "required": false,
+        "styling": {
+          "width": "full",
+          "order": 5
+        }
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Process Return",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "cancel",
+        "label": "Cancel",
+        "style": "secondary",
+        "position": "right"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_1737174400000",
+    "createdAt": "2025-11-21T12:09:15.585Z",
+    "updatedAt": "2025-11-21T12:09:15.585Z"
+  },
+  {
+    "id": "workflow_1732905842000_trip_request_form",
+    "name": "Trip Request Form",
+    "description": "Create and manage travel requests",
+    "designReference": "auto-generated-trip-form",
+    "layout": {
+      "type": "two-column",
+      "columns": 2,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "employee_id",
+        "name": "employeeId",
+        "label": "Employee ID",
+        "type": "text",
+        "placeholder": "Enter employee ID",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:3"
+          ],
+          "errorMessage": "Employee ID is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 1
+        }
+      },
+      {
+        "id": "employee_name",
+        "name": "employeeName",
+        "label": "Employee Name",
+        "type": "text",
+        "placeholder": "Enter full name",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:2"
+          ],
+          "errorMessage": "Employee name is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 2
+        }
+      },
+      {
+        "id": "destination",
+        "name": "destination",
+        "label": "Destination",
+        "type": "text",
+        "placeholder": "Enter destination city/country",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Destination is required"
+        },
+        "styling": {
+          "width": "full",
+          "order": 3
+        }
+      },
+      {
+        "id": "departure_date",
+        "name": "departureDate",
+        "label": "Departure Date",
+        "type": "date",
+        "placeholder": "",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "futureDate"
+          ],
+          "errorMessage": "Valid departure date is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 4
+        }
+      },
+      {
+        "id": "return_date",
+        "name": "returnDate",
+        "label": "Return Date",
+        "type": "date",
+        "placeholder": "",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "afterDeparture"
+          ],
+          "errorMessage": "Return date must be after departure"
+        },
+        "styling": {
+          "width": "half",
+          "order": 5
+        }
+      },
+      {
+        "id": "travel_purpose",
+        "name": "travelPurpose",
+        "label": "Purpose of Travel",
+        "type": "select",
+        "placeholder": "Select travel purpose",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Travel purpose is required"
+        },
+        "styling": {
+          "width": "full",
+          "order": 6
+        },
+        "options": [
+          {
+            "value": "business",
+            "label": "Business Meeting"
+          },
+          {
+            "value": "training",
+            "label": "Training/Conference"
+          },
+          {
+            "value": "client_visit",
+            "label": "Client Visit"
+          },
+          {
+            "value": "project",
+            "label": "Project Work"
+          },
+          {
+            "value": "other",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "budget_estimate",
+        "name": "budgetEstimate",
+        "label": "Estimated Budget",
+        "type": "number",
+        "placeholder": "Enter budget in USD",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:0"
+          ],
+          "errorMessage": "Valid budget estimate is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 7
+        }
+      },
+      {
+        "id": "priority",
+        "name": "priority",
+        "label": "Priority Level",
+        "type": "radio",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Priority level is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 8
+        },
+        "options": [
+          {
+            "value": "low",
+            "label": "Low"
+          },
+          {
+            "value": "medium",
+            "label": "Medium"
+          },
+          {
+            "value": "high",
+            "label": "High"
+          },
+          {
+            "value": "urgent",
+            "label": "Urgent"
+          }
+        ]
+      },
+      {
+        "id": "description",
+        "name": "description",
+        "label": "Additional Details",
+        "type": "textarea",
+        "placeholder": "Provide additional details about the trip",
+        "required": false,
+        "validation": {
+          "rules": [
+            "maxLength:500"
+          ],
+          "errorMessage": "Description cannot exceed 500 characters"
+        },
+        "styling": {
+          "width": "full",
+          "order": 9
+        }
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Submit Request",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "cancel",
+        "label": "Cancel",
+        "style": "secondary",
+        "position": "right"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_1732905842000",
+    "createdAt": "2025-11-22T06:22:39.325Z",
+    "updatedAt": "2025-11-22T06:22:39.325Z"
+  },
+  {
+    "id": "workflow_1732905842000_expense_claim_form",
+    "name": "Expense Claim Form",
+    "description": "Submit travel expense claims",
+    "designReference": "auto-generated-expense-form",
+    "layout": {
+      "type": "single-column",
+      "columns": 1,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "trip_id",
+        "name": "tripId",
+        "label": "Trip ID",
+        "type": "select",
+        "placeholder": "Select associated trip",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Trip ID is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 1
+        }
+      },
+      {
+        "id": "expense_date",
+        "name": "expenseDate",
+        "label": "Expense Date",
+        "type": "date",
+        "placeholder": "",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Expense date is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 2
+        }
+      },
+      {
+        "id": "expense_category",
+        "name": "expenseCategory",
+        "label": "Expense Category",
+        "type": "select",
+        "placeholder": "Select expense category",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Expense category is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 3
+        },
+        "options": [
+          {
+            "value": "accommodation",
+            "label": "Accommodation"
+          },
+          {
+            "value": "transportation",
+            "label": "Transportation"
+          },
+          {
+            "value": "meals",
+            "label": "Meals"
+          },
+          {
+            "value": "fuel",
+            "label": "Fuel"
+          },
+          {
+            "value": "parking",
+            "label": "Parking"
+          },
+          {
+            "value": "other",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "amount",
+        "name": "amount",
+        "label": "Amount",
+        "type": "number",
+        "placeholder": "Enter amount",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:0"
+          ],
+          "errorMessage": "Valid amount is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 4
+        }
+      },
+      {
+        "id": "currency",
+        "name": "currency",
+        "label": "Currency",
+        "type": "select",
+        "placeholder": "Select currency",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Currency is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 5
+        },
+        "options": [
+          {
+            "value": "USD",
+            "label": "US Dollar"
+          },
+          {
+            "value": "EUR",
+            "label": "Euro"
+          },
+          {
+            "value": "GBP",
+            "label": "British Pound"
+          },
+          {
+            "value": "CAD",
+            "label": "Canadian Dollar"
+          }
+        ]
+      },
+      {
+        "id": "receipt_number",
+        "name": "receiptNumber",
+        "label": "Receipt Number",
+        "type": "text",
+        "placeholder": "Enter receipt number",
+        "required": false,
+        "validation": {
+          "rules": [],
+          "errorMessage": ""
+        },
+        "styling": {
+          "width": "half",
+          "order": 6
+        }
+      },
+      {
+        "id": "receipt_file",
+        "name": "receiptFile",
+        "label": "Receipt Attachment",
+        "type": "file",
+        "placeholder": "",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "fileType:image,pdf"
+          ],
+          "errorMessage": "Receipt attachment is required"
+        },
+        "styling": {
+          "width": "full",
+          "order": 7
+        }
+      },
+      {
+        "id": "description",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "placeholder": "Describe the expense",
+        "required": false,
+        "validation": {
+          "rules": [
+            "maxLength:300"
+          ],
+          "errorMessage": "Description cannot exceed 300 characters"
+        },
+        "styling": {
+          "width": "full",
+          "order": 8
+        }
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Submit Claim",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "cancel",
+        "label": "Cancel",
+        "style": "secondary",
+        "position": "right"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_1732905842000",
+    "createdAt": "2025-11-22T06:22:39.325Z",
+    "updatedAt": "2025-11-22T06:22:39.325Z"
+  },
+  {
+    "id": "workflow_1732905842000_travel_policy_form",
+    "name": "Travel Policy Form",
+    "description": "Configure travel policies",
+    "designReference": "auto-generated-policy-form",
+    "layout": {
+      "type": "single-column",
+      "columns": 1,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "policy_name",
+        "name": "policyName",
+        "label": "Policy Name",
+        "type": "text",
+        "placeholder": "Enter policy name",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:3"
+          ],
+          "errorMessage": "Policy name is required"
+        },
+        "styling": {
+          "width": "full",
+          "order": 1
+        }
+      },
+      {
+        "id": "max_accommodation",
+        "name": "maxAccommodation",
+        "label": "Max Accommodation (per night)",
+        "type": "number",
+        "placeholder": "Enter maximum amount",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:0"
+          ],
+          "errorMessage": "Valid accommodation limit is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 2
+        }
+      },
+      {
+        "id": "max_meals",
+        "name": "maxMeals",
+        "label": "Max Meals (per day)",
+        "type": "number",
+        "placeholder": "Enter maximum amount",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:0"
+          ],
+          "errorMessage": "Valid meals limit is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 3
+        }
+      },
+      {
+        "id": "max_transportation",
+        "name": "maxTransportation",
+        "label": "Max Transportation (per trip)",
+        "type": "number",
+        "placeholder": "Enter maximum amount",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:0"
+          ],
+          "errorMessage": "Valid transportation limit is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 4
+        }
+      },
+      {
+        "id": "approval_required",
+        "name": "approvalRequired",
+        "label": "Approval Required Above",
+        "type": "number",
+        "placeholder": "Enter threshold amount",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:0"
+          ],
+          "errorMessage": "Approval threshold is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 5
+        }
+      },
+      {
+        "id": "advance_booking_days",
+        "name": "advanceBookingDays",
+        "label": "Advance Booking Required (days)",
+        "type": "number",
+        "placeholder": "Enter number of days",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:0"
+          ],
+          "errorMessage": "Advance booking days is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 6
+        }
+      },
+      {
+        "id": "allowed_classes",
+        "name": "allowedClasses",
+        "label": "Allowed Travel Classes",
+        "type": "checkbox",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "At least one travel class must be selected"
+        },
+        "styling": {
+          "width": "full",
+          "order": 7
+        },
+        "options": [
+          {
+            "value": "economy",
+            "label": "Economy"
+          },
+          {
+            "value": "premium_economy",
+            "label": "Premium Economy"
+          },
+          {
+            "value": "business",
+            "label": "Business"
+          },
+          {
+            "value": "first",
+            "label": "First Class"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Save Policy",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "cancel",
+        "label": "Cancel",
+        "style": "secondary",
+        "position": "right"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_1732905842000",
+    "createdAt": "2025-11-22T06:22:39.325Z",
+    "updatedAt": "2025-11-22T06:22:39.325Z"
+  },
+  {
+    "id": "workflow_1763795399672_redesign_request_form",
+    "name": "Form Redesign Request",
+    "description": "Submit your form redesign requirements and preferences",
+    "designReference": "auto-generated",
+    "layout": {
+      "type": "single-column",
+      "columns": 1,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "current_form_name",
+        "name": "currentFormName",
+        "label": "Current Form Name",
+        "type": "text",
+        "placeholder": "Enter the name of the form to redesign",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:2"
+          ],
+          "errorMessage": "Form name is required (minimum 2 characters)"
+        },
+        "styling": {
+          "width": "full",
+          "order": 1
+        }
+      },
+      {
+        "id": "redesign_reason",
+        "name": "redesignReason",
+        "label": "Reason for Redesign",
+        "type": "select",
+        "placeholder": "Select primary reason",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select a reason for redesign"
+        },
+        "styling": {
+          "width": "full",
+          "order": 2
+        },
+        "options": [
+          {
+            "value": "usability",
+            "label": "Improve Usability"
+          },
+          {
+            "value": "visual",
+            "label": "Update Visual Design"
+          },
+          {
+            "value": "mobile",
+            "label": "Better Mobile Experience"
+          },
+          {
+            "value": "accessibility",
+            "label": "Accessibility Improvements"
+          },
+          {
+            "value": "functionality",
+            "label": "Add New Functionality"
+          },
+          {
+            "value": "performance",
+            "label": "Performance Issues"
+          },
+          {
+            "value": "other",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "target_audience",
+        "name": "targetAudience",
+        "label": "Target Audience",
+        "type": "checkbox",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select at least one target audience"
+        },
+        "styling": {
+          "width": "full",
+          "order": 3
+        },
+        "options": [
+          {
+            "value": "general",
+            "label": "General Public"
+          },
+          {
+            "value": "business",
+            "label": "Business Users"
+          },
+          {
+            "value": "technical",
+            "label": "Technical Users"
+          },
+          {
+            "value": "elderly",
+            "label": "Elderly Users"
+          },
+          {
+            "value": "mobile_primary",
+            "label": "Mobile-First Users"
+          }
+        ]
+      },
+      {
+        "id": "design_preferences",
+        "name": "designPreferences",
+        "label": "Design Style Preference",
+        "type": "radio",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select a design style"
+        },
+        "styling": {
+          "width": "full",
+          "order": 4
+        },
+        "options": [
+          {
+            "value": "minimalist",
+            "label": "Minimalist & Clean"
+          },
+          {
+            "value": "modern",
+            "label": "Modern & Trendy"
+          },
+          {
+            "value": "professional",
+            "label": "Professional & Corporate"
+          },
+          {
+            "value": "friendly",
+            "label": "Friendly & Approachable"
+          },
+          {
+            "value": "bold",
+            "label": "Bold & Eye-catching"
+          }
+        ]
+      },
+      {
+        "id": "priority_features",
+        "name": "priorityFeatures",
+        "label": "Priority Features",
+        "type": "checkbox",
+        "required": false,
+        "validation": {
+          "rules": [],
+          "errorMessage": ""
+        },
+        "styling": {
+          "width": "full",
+          "order": 5
+        },
+        "options": [
+          {
+            "value": "validation",
+            "label": "Real-time Validation"
+          },
+          {
+            "value": "autosave",
+            "label": "Auto-save Progress"
+          },
+          {
+            "value": "multiStep",
+            "label": "Multi-step Form"
+          },
+          {
+            "value": "fileUpload",
+            "label": "File Upload Support"
+          },
+          {
+            "value": "conditional",
+            "label": "Conditional Fields"
+          },
+          {
+            "value": "darkMode",
+            "label": "Dark Mode Support"
+          }
+        ]
+      },
+      {
+        "id": "additional_requirements",
+        "name": "additionalRequirements",
+        "label": "Additional Requirements",
+        "type": "textarea",
+        "placeholder": "Describe any specific requirements, constraints, or features you'd like included...",
+        "required": false,
+        "validation": {
+          "rules": [
+            "maxLength:500"
+          ],
+          "errorMessage": "Maximum 500 characters allowed"
+        },
+        "styling": {
+          "width": "full",
+          "order": 6
+        }
+      },
+      {
+        "id": "deadline",
+        "name": "deadline",
+        "label": "Preferred Deadline",
+        "type": "date",
+        "placeholder": "Select deadline",
+        "required": false,
+        "validation": {
+          "rules": [
+            "futureDate"
+          ],
+          "errorMessage": "Deadline must be in the future"
+        },
+        "styling": {
+          "width": "half",
+          "order": 7
+        }
+      },
+      {
+        "id": "budget_range",
+        "name": "budgetRange",
+        "label": "Budget Range",
+        "type": "select",
+        "placeholder": "Select budget range",
+        "required": false,
+        "validation": {
+          "rules": [],
+          "errorMessage": ""
+        },
+        "styling": {
+          "width": "half",
+          "order": 8
+        },
+        "options": [
+          {
+            "value": "low",
+            "label": "Under $1,000"
+          },
+          {
+            "value": "medium",
+            "label": "$1,000 - $5,000"
+          },
+          {
+            "value": "high",
+            "label": "$5,000 - $15,000"
+          },
+          {
+            "value": "enterprise",
+            "label": "$15,000+"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Submit Redesign Request",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "reset",
+        "label": "Clear Form",
+        "style": "outline",
+        "position": "left"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_1763795399672",
+    "createdAt": "2025-11-22T07:09:59.677Z",
+    "updatedAt": "2025-11-22T07:09:59.677Z"
+  },
+  {
+    "id": "workflow_lms_20241201_001_login_form",
+    "name": "Login Form",
+    "description": "User authentication form",
+    "designReference": "auth-page",
+    "layout": {
+      "type": "single-column",
+      "columns": 1,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "email",
+        "name": "email",
+        "label": "Email Address",
+        "type": "email",
+        "placeholder": "Enter your email",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "email"
+          ],
+          "errorMessage": "Please enter a valid email address"
+        },
+        "styling": {
+          "width": "full",
+          "order": 1
+        }
+      },
+      {
+        "id": "password",
+        "name": "password",
+        "label": "Password",
+        "type": "password",
+        "placeholder": "Enter your password",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:6"
+          ],
+          "errorMessage": "Password must be at least 6 characters"
+        },
+        "styling": {
+          "width": "full",
+          "order": 2
+        }
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Sign In",
+        "style": "primary",
+        "position": "center"
+      },
+      {
+        "type": "link",
+        "label": "Forgot Password?",
+        "style": "text",
+        "position": "center"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": false,
+      "realTime": false
+    },
+    "workflowId": "workflow_lms_20241201_001",
+    "createdAt": "2025-11-23T07:33:56.422Z",
+    "updatedAt": "2025-11-23T07:33:56.422Z"
+  },
+  {
+    "id": "workflow_lms_20241201_001_course_form",
+    "name": "Course Form",
+    "description": "Create or edit course",
+    "designReference": "course-form",
+    "layout": {
+      "type": "two-column",
+      "columns": 2,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "title",
+        "name": "title",
+        "label": "Course Title",
+        "type": "text",
+        "placeholder": "Enter course title",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "maxLength:100"
+          ],
+          "errorMessage": "Course title is required"
+        },
+        "styling": {
+          "width": "full",
+          "order": 1
+        }
+      },
+      {
+        "id": "description",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "placeholder": "Describe the course content and objectives",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:50"
+          ],
+          "errorMessage": "Please provide a detailed description"
+        },
+        "styling": {
+          "width": "full",
+          "order": 2
+        }
+      },
+      {
+        "id": "instructor",
+        "name": "instructor",
+        "label": "Instructor",
+        "type": "select",
+        "placeholder": "Select instructor",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select an instructor"
+        },
+        "styling": {
+          "width": "half",
+          "order": 3
+        },
+        "options": []
+      },
+      {
+        "id": "category",
+        "name": "category",
+        "label": "Category",
+        "type": "select",
+        "placeholder": "Select category",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select a category"
+        },
+        "styling": {
+          "width": "half",
+          "order": 4
+        },
+        "options": [
+          {
+            "value": "technology",
+            "label": "Technology"
+          },
+          {
+            "value": "business",
+            "label": "Business"
+          },
+          {
+            "value": "design",
+            "label": "Design"
+          },
+          {
+            "value": "marketing",
+            "label": "Marketing"
+          }
+        ]
+      },
+      {
+        "id": "duration",
+        "name": "duration",
+        "label": "Duration (hours)",
+        "type": "number",
+        "placeholder": "Course duration",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:1",
+            "max:500"
+          ],
+          "errorMessage": "Duration must be between 1 and 500 hours"
+        },
+        "styling": {
+          "width": "half",
+          "order": 5
+        }
+      },
+      {
+        "id": "difficulty",
+        "name": "difficulty",
+        "label": "Difficulty Level",
+        "type": "radio",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select difficulty level"
+        },
+        "styling": {
+          "width": "half",
+          "order": 6
+        },
+        "options": [
+          {
+            "value": "beginner",
+            "label": "Beginner"
+          },
+          {
+            "value": "intermediate",
+            "label": "Intermediate"
+          },
+          {
+            "value": "advanced",
+            "label": "Advanced"
+          }
+        ]
+      },
+      {
+        "id": "thumbnail",
+        "name": "thumbnail",
+        "label": "Course Thumbnail",
+        "type": "file",
+        "placeholder": "Upload course image",
+        "required": false,
+        "validation": {
+          "rules": [
+            "fileType:image"
+          ],
+          "errorMessage": "Please upload a valid image file"
+        },
+        "styling": {
+          "width": "full",
+          "order": 7
+        }
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Save Course",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "cancel",
+        "label": "Cancel",
+        "style": "secondary",
+        "position": "right"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_lms_20241201_001",
+    "createdAt": "2025-11-23T07:33:56.422Z",
+    "updatedAt": "2025-11-23T07:33:56.422Z"
+  },
+  {
+    "id": "workflow_lms_20241201_001_student_form",
+    "name": "Student Form",
+    "description": "Add or edit student information",
+    "designReference": "student-form",
+    "layout": {
+      "type": "two-column",
+      "columns": 2,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "firstName",
+        "name": "firstName",
+        "label": "First Name",
+        "type": "text",
+        "placeholder": "Enter first name",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:2"
+          ],
+          "errorMessage": "First name is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 1
+        }
+      },
+      {
+        "id": "lastName",
+        "name": "lastName",
+        "label": "Last Name",
+        "type": "text",
+        "placeholder": "Enter last name",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:2"
+          ],
+          "errorMessage": "Last name is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 2
+        }
+      },
+      {
+        "id": "email",
+        "name": "email",
+        "label": "Email Address",
+        "type": "email",
+        "placeholder": "student@example.com",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "email",
+            "unique"
+          ],
+          "errorMessage": "Please enter a valid, unique email address"
+        },
+        "styling": {
+          "width": "half",
+          "order": 3
+        }
+      },
+      {
+        "id": "phone",
+        "name": "phone",
+        "label": "Phone Number",
+        "type": "tel",
+        "placeholder": "+1 (555) 123-4567",
+        "required": false,
+        "validation": {
+          "rules": [
+            "phone"
+          ],
+          "errorMessage": "Please enter a valid phone number"
+        },
+        "styling": {
+          "width": "half",
+          "order": 4
+        }
+      },
+      {
+        "id": "dateOfBirth",
+        "name": "dateOfBirth",
+        "label": "Date of Birth",
+        "type": "date",
+        "required": false,
+        "validation": {
+          "rules": [
+            "date",
+            "maxDate:today"
+          ],
+          "errorMessage": "Please enter a valid birth date"
+        },
+        "styling": {
+          "width": "half",
+          "order": 5
+        }
+      },
+      {
+        "id": "enrollmentDate",
+        "name": "enrollmentDate",
+        "label": "Enrollment Date",
+        "type": "date",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "date"
+          ],
+          "errorMessage": "Enrollment date is required"
+        },
+        "styling": {
+          "width": "half",
+          "order": 6
+        }
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Save Student",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "cancel",
+        "label": "Cancel",
+        "style": "secondary",
+        "position": "right"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_lms_20241201_001",
+    "createdAt": "2025-11-23T07:33:56.422Z",
+    "updatedAt": "2025-11-23T07:33:56.422Z"
+  },
+  {
+    "id": "workflow_lms_20241201_001_lesson_form",
+    "name": "Lesson Form",
+    "description": "Create or edit lesson",
+    "designReference": "lesson-form",
+    "layout": {
+      "type": "single-column",
+      "columns": 1,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "title",
+        "name": "title",
+        "label": "Lesson Title",
+        "type": "text",
+        "placeholder": "Enter lesson title",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "maxLength:200"
+          ],
+          "errorMessage": "Lesson title is required"
+        },
+        "styling": {
+          "width": "full",
+          "order": 1
+        }
+      },
+      {
+        "id": "content",
+        "name": "content",
+        "label": "Lesson Content",
+        "type": "textarea",
+        "placeholder": "Enter lesson content and materials",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:100"
+          ],
+          "errorMessage": "Please provide detailed lesson content"
+        },
+        "styling": {
+          "width": "full",
+          "order": 2
+        }
+      },
+      {
+        "id": "videoUrl",
+        "name": "videoUrl",
+        "label": "Video URL",
+        "type": "url",
+        "placeholder": "https://example.com/video",
+        "required": false,
+        "validation": {
+          "rules": [
+            "url"
+          ],
+          "errorMessage": "Please enter a valid URL"
+        },
+        "styling": {
+          "width": "full",
+          "order": 3
+        }
+      },
+      {
+        "id": "duration",
+        "name": "duration",
+        "label": "Duration (minutes)",
+        "type": "number",
+        "placeholder": "Lesson duration",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:1",
+            "max:300"
+          ],
+          "errorMessage": "Duration must be between 1 and 300 minutes"
+        },
+        "styling": {
+          "width": "half",
+          "order": 4
+        }
+      },
+      {
+        "id": "order",
+        "name": "order",
+        "label": "Lesson Order",
+        "type": "number",
+        "placeholder": "Order in course",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:1"
+          ],
+          "errorMessage": "Please specify lesson order"
+        },
+        "styling": {
+          "width": "half",
+          "order": 5
+        }
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Save Lesson",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "cancel",
+        "label": "Cancel",
+        "style": "secondary",
+        "position": "right"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_lms_20241201_001",
+    "createdAt": "2025-11-23T07:33:56.422Z",
+    "updatedAt": "2025-11-23T07:33:56.422Z"
+  },
+  {
+    "id": "workflow_lms_20241201_001_assignment_form",
+    "name": "Assignment Form",
+    "description": "Create or edit assignment",
+    "designReference": "assignment-form",
+    "layout": {
+      "type": "single-column",
+      "columns": 1,
+      "spacing": "comfortable"
+    },
+    "fields": [
+      {
+        "id": "title",
+        "name": "title",
+        "label": "Assignment Title",
+        "type": "text",
+        "placeholder": "Enter assignment title",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "maxLength:150"
+          ],
+          "errorMessage": "Assignment title is required"
+        },
+        "styling": {
+          "width": "full",
+          "order": 1
+        }
+      },
+      {
+        "id": "description",
+        "name": "description",
+        "label": "Instructions",
+        "type": "textarea",
+        "placeholder": "Provide detailed instructions for the assignment",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:50"
+          ],
+          "errorMessage": "Please provide detailed instructions"
+        },
+        "styling": {
+          "width": "full",
+          "order": 2
+        }
+      },
+      {
+        "id": "dueDate",
+        "name": "dueDate",
+        "label": "Due Date",
+        "type": "datetime-local",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "futureDate"
+          ],
+          "errorMessage": "Due date must be in the future"
+        },
+        "styling": {
+          "width": "half",
+          "order": 3
+        }
+      },
+      {
+        "id": "maxPoints",
+        "name": "maxPoints",
+        "label": "Maximum Points",
+        "type": "number",
+        "placeholder": "100",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:1",
+            "max:1000"
+          ],
+          "errorMessage": "Points must be between 1 and 1000"
+        },
+        "styling": {
+          "width": "half",
+          "order": 4
+        }
+      },
+      {
+        "id": "submissionType",
+        "name": "submissionType",
+        "label": "Submission Type",
+        "type": "select",
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select submission type"
+        },
+        "styling": {
+          "width": "full",
+          "order": 5
+        },
+        "options": [
+          {
+            "value": "file",
+            "label": "File Upload"
+          },
+          {
+            "value": "text",
+            "label": "Text Entry"
+          },
+          {
+            "value": "url",
+            "label": "URL Submission"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "type": "submit",
+        "label": "Save Assignment",
+        "style": "primary",
+        "position": "right"
+      },
+      {
+        "type": "cancel",
+        "label": "Cancel",
+        "style": "secondary",
+        "position": "right"
+      }
+    ],
+    "validation": {
+      "onSubmit": true,
+      "onBlur": true,
+      "realTime": false
+    },
+    "workflowId": "workflow_lms_20241201_001",
+    "createdAt": "2025-11-23T07:33:56.422Z",
+    "updatedAt": "2025-11-23T07:33:56.422Z"
+  },
+  {
+    "id": "workflow_1735689024_form_chatbot_001",
+    "name": "chatbot_query_form",
+    "title": "Chat with Our Quirky Bot",
+    "description": "Ask your question and get a fun, conversational response",
+    "nodeId": null,
+    "complexity": "simple",
+    "fields": [
+      {
+        "id": "field_1",
+        "name": "user_query",
+        "label": "Your Question",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "Ask me anything! Be specific for better quirky answers...",
+        "maxLength": 500,
+        "rows": 4,
+        "tooltip": "Type your question here - the more details, the more fun my response!"
+      },
+      {
+        "id": "field_2",
+        "name": "conversation_tone",
+        "label": "Pick Your Vibe",
+        "type": "dropdown",
+        "required": true,
+        "placeholder": "Select conversation style",
+        "defaultValue": "quirky",
+        "options": [
+          {
+            "label": "Quirky & Playful",
+            "value": "quirky"
+          },
+          {
+            "label": "Sarcastic & Witty",
+            "value": "sarcastic"
+          },
+          {
+            "label": "Mysterious & Cryptic",
+            "value": "mysterious"
+          },
+          {
+            "label": "Enthusiastic & Energetic",
+            "value": "enthusiastic"
+          }
+        ],
+        "tooltip": "Choose how you'd like me to respond"
+      },
+      {
+        "id": "field_3",
+        "name": "user_name",
+        "label": "Your Name (Optional)",
+        "type": "text",
+        "required": false,
+        "placeholder": "Tell me your name so I can be personal!",
+        "maxLength": 50
+      }
+    ],
+    "workflowId": "workflow_1735689024",
+    "createdAt": "2025-11-23T17:11:13.238Z",
+    "updatedAt": "2025-11-23T17:11:13.238Z"
+  },
+  {
+    "id": "workflow_1735689024_form_chatbot_002",
+    "name": "chatbot_feedback_form",
+    "title": "How Was Your Chat?",
+    "description": "Tell us about your quirky chatbot experience",
+    "nodeId": null,
+    "complexity": "simple",
+    "fields": [
+      {
+        "id": "field_1",
+        "name": "response_rating",
+        "label": "Rate My Response",
+        "type": "rating",
+        "required": true,
+        "maxRating": 5,
+        "ratingType": "star",
+        "tooltip": "How quirky and helpful was my answer?"
+      },
+      {
+        "id": "field_2",
+        "name": "feedback_text",
+        "label": "Your Feedback",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "Was I funny? Helpful? Totally weird? Let me know!",
+        "maxLength": 300,
+        "rows": 3,
+        "tooltip": "Help me improve my quirky personality"
+      },
+      {
+        "id": "field_3",
+        "name": "would_chat_again",
+        "label": "Chat With Me Again?",
+        "type": "radio",
+        "required": true,
+        "options": [
+          {
+            "label": "Absolutely! You're hilarious",
+            "value": "yes"
+          },
+          {
+            "label": "Maybe, need more practice",
+            "value": "maybe"
+          },
+          {
+            "label": "Not really",
+            "value": "no"
+          }
+        ]
+      },
+      {
+        "id": "field_4",
+        "name": "email_contact",
+        "label": "Email (Optional)",
+        "type": "email",
+        "required": false,
+        "placeholder": "your@email.com",
+        "tooltip": "So we can follow up with quirky updates"
+      }
+    ],
+    "workflowId": "workflow_1735689024",
+    "createdAt": "2025-11-23T17:11:13.238Z",
+    "updatedAt": "2025-11-23T17:11:13.238Z"
+  }
+]

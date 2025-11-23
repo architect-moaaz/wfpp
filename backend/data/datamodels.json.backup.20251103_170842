@@ -1,0 +1,353 @@
+[
+  {
+    "id": "model_loan_001",
+    "name": "LoanApplication",
+    "description": "Main loan application entity containing applicant details and loan request information",
+    "fields": [
+      {
+        "id": "field_001",
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "validation": {
+          "pattern": "^LA-[0-9]{8}$"
+        },
+        "defaultValue": null,
+        "description": "Unique loan application identifier"
+      },
+      {
+        "id": "field_002",
+        "name": "application_status",
+        "type": "enum",
+        "required": true,
+        "validation": {
+          "options": [
+            "submitted",
+            "under_review",
+            "pending_approval",
+            "approved",
+            "rejected",
+            "disbursed"
+          ]
+        },
+        "defaultValue": "submitted",
+        "description": "Current status of loan application"
+      },
+      {
+        "id": "field_003",
+        "name": "loan_amount",
+        "type": "number",
+        "required": true,
+        "validation": {
+          "min": 1000,
+          "max": 10000000
+        },
+        "defaultValue": null,
+        "description": "Requested loan amount"
+      },
+      {
+        "id": "field_004",
+        "name": "loan_purpose",
+        "type": "enum",
+        "required": true,
+        "validation": {
+          "options": [
+            "personal",
+            "home",
+            "auto",
+            "business",
+            "education",
+            "other"
+          ]
+        },
+        "defaultValue": null,
+        "description": "Purpose of the loan"
+      },
+      {
+        "id": "field_005",
+        "name": "loan_term_months",
+        "type": "number",
+        "required": true,
+        "validation": {
+          "min": 6,
+          "max": 360
+        },
+        "defaultValue": null,
+        "description": "Loan term in months"
+      },
+      {
+        "id": "field_006",
+        "name": "interest_rate",
+        "type": "number",
+        "required": false,
+        "validation": {
+          "min": 0.01,
+          "max": 50
+        },
+        "defaultValue": null,
+        "description": "Approved interest rate percentage"
+      },
+      {
+        "id": "field_007",
+        "name": "monthly_income",
+        "type": "number",
+        "required": true,
+        "validation": {
+          "min": 0
+        },
+        "defaultValue": null,
+        "description": "Applicant's monthly income"
+      },
+      {
+        "id": "field_008",
+        "name": "employment_status",
+        "type": "enum",
+        "required": true,
+        "validation": {
+          "options": [
+            "employed",
+            "self_employed",
+            "unemployed",
+            "retired",
+            "student"
+          ]
+        },
+        "defaultValue": null,
+        "description": "Current employment status"
+      },
+      {
+        "id": "field_009",
+        "name": "credit_score",
+        "type": "number",
+        "required": false,
+        "validation": {
+          "min": 300,
+          "max": 850
+        },
+        "defaultValue": null,
+        "description": "Applicant's credit score"
+      },
+      {
+        "id": "field_010",
+        "name": "submission_date",
+        "type": "datetime",
+        "required": true,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP",
+        "description": "Date and time of application submission"
+      },
+      {
+        "id": "field_011",
+        "name": "created_at",
+        "type": "datetime",
+        "required": true,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP",
+        "description": "Record creation timestamp"
+      },
+      {
+        "id": "field_012",
+        "name": "updated_at",
+        "type": "datetime",
+        "required": true,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP",
+        "description": "Record last update timestamp"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "hasMany",
+        "target": "LoanReview",
+        "foreignKey": "loan_application_id"
+      },
+      {
+        "type": "hasMany",
+        "target": "LoanApproval",
+        "foreignKey": "loan_application_id"
+      },
+      {
+        "type": "hasMany",
+        "target": "LoanDocument",
+        "foreignKey": "loan_application_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Customer",
+        "foreignKey": "customer_id"
+      }
+    ],
+    "indexes": [
+      "application_status",
+      "submission_date",
+      "customer_id"
+    ],
+    "metadata": {
+      "timestamps": true,
+      "softDelete": false
+    },
+    "workflowId": "workflow_1703876543210",
+    "createdAt": "2025-11-03T11:33:07.778Z",
+    "updatedAt": "2025-11-03T11:33:07.778Z"
+  },
+  {
+    "id": "model_loan_004",
+    "name": "LoanOfficer",
+    "description": "Loan officers who process applications",
+    "fields": [
+      {
+        "id": "field_030",
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "validation": {
+          "pattern": "^LO-[0-9]{4}$"
+        },
+        "defaultValue": null,
+        "description": "Unique loan officer identifier"
+      },
+      {
+        "id": "field_031",
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "validation": {
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "defaultValue": null,
+        "description": "Officer full name"
+      },
+      {
+        "id": "field_032",
+        "name": "email",
+        "type": "email",
+        "required": true,
+        "validation": {
+          "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+        },
+        "defaultValue": null,
+        "description": "Officer email address"
+      },
+      {
+        "id": "field_033",
+        "name": "department",
+        "type": "enum",
+        "required": true,
+        "validation": {
+          "values": [
+            "residential",
+            "commercial",
+            "personal",
+            "auto"
+          ]
+        },
+        "defaultValue": null,
+        "description": "Officer department"
+      },
+      {
+        "id": "field_034",
+        "name": "active",
+        "type": "boolean",
+        "required": true,
+        "validation": {},
+        "defaultValue": true,
+        "description": "Officer active status"
+      },
+      {
+        "id": "field_035",
+        "name": "max_approval_amount",
+        "type": "number",
+        "required": true,
+        "validation": {
+          "min": 0,
+          "max": 1000000
+        },
+        "defaultValue": 50000,
+        "description": "Maximum amount officer can approve"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "hasMany",
+        "target": "LoanApplication",
+        "foreignKey": "assigned_officer_id"
+      },
+      {
+        "type": "hasMany",
+        "target": "ReviewTask",
+        "foreignKey": "assigned_to"
+      }
+    ],
+    "indexes": [
+      "email",
+      "department",
+      "active"
+    ],
+    "metadata": {
+      "timestamps": true,
+      "softDelete": true
+    },
+    "workflowId": "workflow_1734565892341",
+    "createdAt": "2025-11-03T11:37:59.095Z",
+    "updatedAt": "2025-11-03T11:37:59.095Z"
+  }
+]adata": {
+      "timestamps": true,
+      "softDelete": false
+    },
+    "workflowId": "workflow_1734565892341",
+    "createdAt": "2025-11-03T11:37:59.095Z",
+    "updatedAt": "2025-11-03T11:37:59.095Z"
+  }
+]tion": "Review decision"
+      },
+      {
+        "id": "field_028",
+        "name": "decision_reason",
+        "type": "text",
+        "required": false,
+        "validation": {
+          "maxLength": 1000
+        },
+        "defaultValue": null,
+        "description": "Reason for decision"
+      },
+      {
+        "id": "field_029",
+        "name": "completed_at",
+        "type": "datetime",
+        "required": false,
+        "validation": {},
+        "defaultValue": null,
+        "description": "Task completion timestamp"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "LoanApplication",
+        "foreignKey": "loan_application_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "LoanOfficer",
+        "foreignKey": "assigned_to"
+      }
+    ],
+    "indexes": [
+      "loan_application_id",
+      "assigned_to",
+      "status",
+      "due_date",
+      "priority"
+    ],
+    "metadata": {
+      "timestamps": true,
+      "softDelete": false
+    },
+    "workflowId": "workflow_1734565892341",
+    "createdAt": "2025-11-03T11:37:59.095Z",
+    "updatedAt": "2025-11-03T11:37:59.095Z"
+  }
+]

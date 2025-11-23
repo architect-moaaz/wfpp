@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Page Preview" />
+    <title>Page Preview</title>
+  </head>
+  <body style="margin: 0; padding: 0;">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="preview-root"></div>
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <script type="module">
+      // Get page ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageId = urlParams.get('id');
+
+      if (!pageId) {
+        document.getElementById('preview-root').innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+            <h2 style="color: #ef4444; margin: 0 0 8px 0;">Error</h2>
+            <p style="color: #6b7280;">No page ID provided</p>
+          </div>
+        `;
+      } else {
+        // Fetch and render the page
+        fetchAndRenderPage(pageId);
+      }
+
+      async function fetchAndRenderPage(pageId) {
+        const root = document.getElementById('preview-root');
+
+        // Show loading state
+        root.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;">
+            <div style="width: 48px; height: 48px; border: 4px solid #f3f4f6; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="margin-top: 16px; color: #6b7280;">Loading page...</p>
+          </div>
+          <style>
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+          </style>
+        `;
+
+        try {
+          const response = await fetch(`http://localhost:5000/api/pages/${pageId}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch page');
+          }
+
+          const data = await response.json();
+          if (data.success && data.page) {
+            renderPage(data.page);
+          } else {
+            throw new Error('Page not found');
+          }
+        } catch (error) {
+          root.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+              <h2 style="color: #ef4444; margin: 0 0 8px 0;">Error Loading Page</h2>
+              <p style="color: #6b7280;">${error.message}</p>
+            </div>
+          `;
+        }
+      }
+
+      function renderPage(page) {
+        const root = document.getElementById('preview-root');
+
+        // Apply custom CSS if exists
+        if (page.customCSS) {
+          const style = document.createElement('style');
+          style.textContent = page.customCSS;
+          document.head.appendChild(style);
+        }
+
+        // Build HTML from page sections
+        let html = '<div style="min-height: 100vh; background-color: #f9fafb; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif;">';
+
+        // Page header
+        html += '<div style="background: white; border-bottom: 1px solid #e5e7eb; padding: 16px 24px; margin-bottom: 24px;">';
+        html += `<h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #111827;">${page.name || 'Page Preview'}</h1>`;
+        if (page.type) {
+          html += `<p style="margin: 4px 0 0 0; font-size: 14px; color: #6b7280;">Type: ${page.type} | Route: ${page.route || 'N/A'}</p>`;
+        }
+        html += '</div>';
+
+        html += '<div style="max-width: 1400px; margin: 0 auto; padding: 0 24px;">';
+
+        if (page.sections && page.sections.length > 0) {
+          page.sections.forEach((section, idx) => {
+            html += `<div style="background: white; border-radius: 8px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">`;
+            html += `<h2 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #374151; text-transform: capitalize;">${section.type || section.id}</h2>`;
+            if (section.components && section.components.length > 0) {
+              section.components.forEach(component => {
+                html += renderComponent(component);
+              });
+            }
+            html += '</div>';
+          });
+        } else {
+          html += '<div style="background: white; border-radius: 8px; padding: 40px; text-align: center;"><p style="color: #6b7280; margin: 0;">This page has no content yet. Add components using the Page Designer.</p></div>';
+        }
+
+        html += '</div></div>';
+        root.innerHTML = html;
+      }
+
+      function renderComponent(component) {
+        const config = component.config || {};
+
+        switch (component.type) {
+          case 'text':
+            const textContent = component.content || component.text || config.text || config.content || config.title || 'Text content';
+            const textVariant = component.variant || config.variant || 'p';
+            const fontSize = textVariant === 'h1' ? '32px' : textVariant === 'h2' ? '24px' : textVariant === 'h3' ? '20px' : '16px';
+            const fontWeight = textVariant.startsWith('h') ? '600' : '400';
+            return `<div style="margin-bottom: 16px; font-size: ${fontSize}; font-weight: ${fontWeight}; color: #111827;">${textContent}</div>`;
+
+          case 'heading':
+            const headingLevel = config.level || 'h2';
+            const headingFontSize = headingLevel === 'h1' ? '2.5rem' : headingLevel === 'h2' ? '2rem' : headingLevel === 'h3' ? '1.5rem' : '1.25rem';
+            return `<${headingLevel} style="text-align: ${config.align || 'left'}; color: ${config.color || '#000'}; margin: 0 0 16px 0; font-size: ${headingFontSize};">${config.text || 'Heading'}</${headingLevel}>`;
+
+          case 'paragraph':
+            return `<p style="text-align: ${config.align || 'left'}; color: ${config.color || '#000'}; line-height: 1.6; margin: 0 0 16px 0;">${config.text || 'Paragraph text'}</p>`;
+
+          case 'textInput':
+            return `
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">${config.label || 'Text Input'}${config.required ? '<span style="color: #ef4444; margin-left: 4px;">*</span>' : ''}</label>
+                <input type="text" placeholder="${config.placeholder || ''}" style="width: ${config.width || '100%'}; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;" />
+              </div>
+            `;
+
+          case 'textarea':
+            return `
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">${config.label || 'Textarea'}</label>
+                <textarea placeholder="${config.placeholder || ''}" rows="${config.rows || 4}" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-family: inherit;"></textarea>
+              </div>
+            `;
+
+          case 'select':
+            const options = (config.options || ['Option 1']).map(opt => `<option>${opt}</option>`).join('');
+            return `
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">${config.label || 'Select'}</label>
+                <select style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">${options}</select>
+              </div>
+            `;
+
+          case 'checkbox':
+            return `<label style="display: flex; align-items: center; margin-bottom: 12px; cursor: pointer;"><input type="checkbox" style="margin-right: 8px;" /><span>${config.label || 'Checkbox'}</span></label>`;
+
+          case 'button':
+            const buttonSize = config.size === 'small' ? '6px 12px' : config.size === 'large' ? '12px 24px' : '8px 16px';
+            const buttonBg = config.variant === 'secondary' ? '#6b7280' : config.variant === 'danger' ? '#ef4444' : '#3b82f6';
+            return `<button style="padding: ${buttonSize}; background-color: ${buttonBg}; color: #ffffff; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; width: ${config.fullWidth ? '100%' : 'auto'}; margin-bottom: 16px;">${config.text || 'Button'}</button>`;
+
+          case 'image':
+            return `<img src="${config.src || 'https://via.placeholder.com/400x300'}" alt="${config.alt || 'Image'}" style="width: ${config.width || '100%'}; border-radius: ${config.borderRadius || '8px'}; max-width: 100%; margin-bottom: 16px;" />`;
+
+          case 'table':
+            const cols = config.columns || ['Column'];
+            const headerCells = cols.map(col => `<th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb; font-weight: 600;">${col}</th>`).join('');
+            const dataCells = cols.map(() => `<td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Sample data</td>`).join('');
+            return `
+              <div style="margin-bottom: 16px; overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
+                  <thead><tr style="background-color: #f9fafb;">${headerCells}</tr></thead>
+                  <tbody><tr>${dataCells}</tr></tbody>
+                </table>
+              </div>
+            `;
+
+          case 'list':
+            const items = (config.items || ['List item']).map(item => `<li style="margin-bottom: 8px;">${item}</li>`).join('');
+            return `<ul style="margin: 0 0 16px 0; padding-left: 24px;">${items}</ul>`;
+
+          case 'card':
+            const cardTitle = component.title || config.title || 'Card Title';
+            const cardContent = component.content || config.content || 'Card content';
+            const cardMetric = component.metric || config.metric || '';
+            const cardColor = component.color || config.color || '#3b82f6';
+            const colorMap = {
+              blue: '#3b82f6',
+              red: '#ef4444',
+              green: '#10b981',
+              yellow: '#f59e0b',
+              purple: '#8b5cf6'
+            };
+            const bgColor = colorMap[cardColor] || cardColor;
+
+            return `
+              <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; background: linear-gradient(135deg, ${bgColor}15 0%, ${bgColor}05 100%); border-left: 4px solid ${bgColor};">
+                <h3 style="margin: 0 0 8px 0; font-size: 0.875rem; font-weight: 500; color: #6b7280; text-transform: uppercase;">${cardTitle}</h3>
+                ${cardMetric ? `<p style="margin: 0; font-size: 2rem; font-weight: 700; color: ${bgColor};">${cardMetric}</p>` : `<p style="margin: 0; color: #374151; line-height: 1.6;">${cardContent}</p>`}
+              </div>
+            `;
+
+          case 'chart':
+            const chartTitle = component.title || config.title || 'Chart';
+            const chartType = component.chartType || config.type || 'bar';
+            return `
+              <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; background-color: #ffffff;">
+                <h3 style="margin: 0 0 16px 0; font-size: 1rem; font-weight: 600; color: #374151;">${chartTitle}</h3>
+                <div style="display: flex; align-items: center; justify-content: center; height: 200px; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); border-radius: 6px;">
+                  <p style="color: #6b7280; font-size: 14px;">${chartType.toUpperCase()} Chart Visualization</p>
+                </div>
+              </div>
+            `;
+
+          case 'container':
+            let containerContent = '';
+            if (component.children && component.children.length > 0) {
+              component.children.forEach(child => {
+                containerContent += renderComponent(child);
+              });
+            }
+            return `<div style="padding: ${config.padding || '20px'}; background-color: ${config.backgroundColor || 'transparent'}; border-radius: ${config.borderRadius || '0'}; margin-bottom: 16px;">${containerContent}</div>`;
+
+          case 'grid':
+            let gridContent = '';
+            if (component.children && component.children.length > 0) {
+              component.children.forEach(child => {
+                gridContent += renderComponent(child);
+              });
+            }
+            return `<div style="display: grid; grid-template-columns: repeat(${config.columns || 2}, 1fr); gap: ${config.gap || '16px'}; margin-bottom: 16px;">${gridContent}</div>`;
+
+          case 'section':
+            let sectionContent = '';
+            if (component.children && component.children.length > 0) {
+              component.children.forEach(child => {
+                sectionContent += renderComponent(child);
+              });
+            }
+            return `<section style="margin-bottom: 32px; padding: ${config.padding || '0'};">${sectionContent}</section>`;
+
+          default:
+            return `<div style="padding: 12px; background-color: #f3f4f6; border-radius: 6px; margin-bottom: 16px;">Unknown component: ${component.type}</div>`;
+        }
+      }
+    </script>
+  </body>
+</html>

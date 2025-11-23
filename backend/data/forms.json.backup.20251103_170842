@@ -1,0 +1,1180 @@
+[
+  {
+    "id": "form_loan_management_system_node-5",
+    "name": "loan_officer_review_form",
+    "title": "Loan Officer Review - Manual Assessment",
+    "description": "Review and assess loan application for borderline cases",
+    "nodeId": "node-5",
+    "nodeType": "userTask",
+    "dataModelId": "model_loan_002",
+    "fields": [
+      {
+        "id": "field_101",
+        "name": "application_reference",
+        "label": "Application Reference Number",
+        "type": "text",
+        "required": false,
+        "placeholder": "",
+        "description": "System-generated application reference",
+        "dataModelField": "applicationReference",
+        "properties": {
+          "readonly": true
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_102",
+        "name": "applicant_name_display",
+        "label": "Applicant Name",
+        "type": "text",
+        "required": false,
+        "placeholder": "",
+        "description": "Name of loan applicant",
+        "dataModelField": "applicantName",
+        "properties": {
+          "readonly": true
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_103",
+        "name": "loan_amount_display",
+        "label": "Requested Loan Amount",
+        "type": "currency",
+        "required": false,
+        "placeholder": "",
+        "description": "Amount requested by applicant",
+        "dataModelField": "loanAmount",
+        "properties": {
+          "currencySymbol": "$",
+          "locale": "en-US",
+          "readonly": true
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_104",
+        "name": "loan_type_display",
+        "label": "Loan Type",
+        "type": "text",
+        "required": false,
+        "placeholder": "",
+        "description": "Type of loan requested",
+        "dataModelField": "loanType",
+        "properties": {
+          "readonly": true
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_105",
+        "name": "credit_score_display",
+        "label": "Credit Score Range",
+        "type": "text",
+        "required": false,
+        "placeholder": "",
+        "description": "Applicant's estimated credit score",
+        "dataModelField": "creditScoreRange",
+        "properties": {
+          "readonly": true
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_106",
+        "name": "annual_income_display",
+        "label": "Annual Income",
+        "type": "currency",
+        "required": false,
+        "placeholder": "",
+        "description": "Applicant's reported annual income",
+        "dataModelField": "annualIncome",
+        "properties": {
+          "currencySymbol": "$",
+          "locale": "en-US",
+          "readonly": true
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_107",
+        "name": "debt_to_income_ratio",
+        "label": "Debt-to-Income Ratio",
+        "type": "text",
+        "required": false,
+        "placeholder": "",
+        "description": "Calculated DTI ratio",
+        "dataModelField": "debtToIncomeRatio",
+        "properties": {
+          "readonly": true,
+          "suffix": "%"
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_108",
+        "name": "risk_assessment_score",
+        "label": "Automated Risk Score",
+        "type": "number",
+        "required": false,
+        "placeholder": "",
+        "description": "System-calculated risk assessment score (0-100)",
+        "dataModelField": "riskScore",
+        "properties": {
+          "readonly": true,
+          "min": 0,
+          "max": 100
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_109",
+        "name": "review_decision",
+        "label": "Review Decision",
+        "type": "radio",
+        "required": true,
+        "placeholder": "",
+        "description": "Your decision on this loan application",
+        "dataModelField": "reviewDecision",
+        "properties": {
+          "options": [
+            {
+              "value": "approve",
+              "label": "Approve - Meets lending criteria"
+            },
+            {
+              "value": "approve_with_conditions",
+              "label": "Approve with Conditions - Requires additional terms"
+            },
+            {
+              "value": "reject",
+              "label": "Reject - Does not meet criteria"
+            },
+            {
+              "value": "request_more_info",
+              "label": "Request Additional Information"
+            }
+          ],
+          "layout": "vertical"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_110",
+        "name": "approved_loan_amount",
+        "label": "Approved Loan Amount",
+        "type": "currency",
+        "required": false,
+        "placeholder": "Enter approved amount",
+        "description": "Final approved amount (may differ from requested)",
+        "dataModelField": "approvedLoanAmount",
+        "properties": {
+          "currencySymbol": "$",
+          "locale": "en-US"
+        },
+        "validation": {
+          "min": 0
+        }
+      },
+      {
+        "id": "field_111",
+        "name": "interest_rate",
+        "label": "Proposed Interest Rate",
+        "type": "number",
+        "required": false,
+        "placeholder": "Enter interest rate",
+        "description": "Annual percentage rate (APR)",
+        "dataModelField": "interestRate",
+        "properties": {
+          "min": 0,
+          "max": 100,
+          "step": 0.01,
+          "suffix": "%"
+        },
+        "validation": {
+          "min": 0,
+          "max": 100
+        }
+      },
+      {
+        "id": "field_112",
+        "name": "loan_term_months",
+        "label": "Loan Term (Months)",
+        "type": "number",
+        "required": false,
+        "placeholder": "Enter term in months",
+        "description": "Duration of loan repayment period",
+        "dataModelField": "loanTermMonths",
+        "properties": {
+          "min": 6,
+          "max": 360,
+          "step": 6
+        },
+        "validation": {
+          "min": 6,
+          "max": 360
+        }
+      },
+      {
+        "id": "field_113",
+        "name": "special_conditions",
+        "label": "Special Conditions or Requirements",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "Enter any special conditions, collateral requirements, or additional terms",
+        "description": "Document any conditions attached to the approval",
+        "dataModelField": "specialConditions",
+        "properties": {
+          "rows": 4,
+          "maxLength": 1000
+        },
+        "validation": {
+          "maxLength": 1000
+        }
+      },
+      {
+        "id": "field_114",
+        "name": "risk_factors",
+        "label": "Identified Risk Factors",
+        "type": "checkbox",
+        "required": false,
+        "placeholder": "",
+        "description": "Select all risk factors identified",
+        "dataModelField": "riskFactors",
+        "properties": {
+          "options": [
+            {
+              "value": "high_dti",
+              "label": "High Debt-to-Income Ratio"
+            },
+            {
+              "value": "low_credit",
+              "label": "Below-Average Credit Score"
+            },
+            {
+              "value": "unstable_income",
+              "label": "Unstable Income History"
+            },
+            {
+              "value": "insufficient_collateral",
+              "label": "Insufficient Collateral"
+            },
+            {
+              "value": "previous_defaults",
+              "label": "Previous Loan Defaults"
+            },
+            {
+              "value": "incomplete_documentation",
+              "label": "Incomplete Documentation"
+            }
+          ],
+          "layout": "vertical"
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_115",
+        "name": "mitigating_factors",
+        "label": "Mitigating Factors",
+        "type": "checkbox",
+        "required": false,
+        "placeholder": "",
+        "description": "Select all positive factors identified",
+        "dataModelField": "mitigatingFactors",
+        "properties": {
+          "options": [
+            {
+              "value": "stable_employment",
+              "label": "Long-term Stable Employment"
+            },
+            {
+              "value": "strong_collateral",
+              "label": "Strong Collateral Value"
+            },
+            {
+              "value": "low_loan_to_value",
+              "label": "Low Loan-to-Value Ratio"
+            },
+            {
+              "value": "excellent_payment_history",
+              "label": "Excellent Payment History"
+            },
+            {
+              "value": "additional_income",
+              "label": "Additional Income Sources"
+            },
+            {
+              "value": "strong_co_signer",
+              "label": "Strong Co-signer"
+            }
+          ],
+          "layout": "vertical"
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_116",
+        "name": "officer_comments",
+        "label": "Loan Officer Comments",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "Provide detailed rationale for your decision",
+        "description": "Explain your assessment and decision reasoning",
+        "dataModelField": "officerComments",
+        "properties": {
+          "rows": 6,
+          "maxLength": 2000
+        },
+        "validation": {
+          "required": true,
+          "minLength": 50,
+          "maxLength": 2000
+        }
+      },
+      {
+        "id": "field_117",
+        "name": "additional_documents_required",
+        "label": "Additional Documents Required",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "List any additional documents needed from applicant",
+        "description": "Specify documents needed if requesting more information",
+        "dataModelField": "additionalDocumentsRequired",
+        "properties": {
+          "rows": 3,
+          "maxLength": 500
+        },
+        "validation": {
+          "maxLength": 500
+        }
+      },
+      {
+        "id": "field_118",
+        "name": "reviewer_name",
+        "label": "Reviewer Name",
+        "type": "text",
+        "required": true,
+        "placeholder": "Enter your full name",
+        "description": "Name of loan officer conducting review",
+        "dataModelField": "reviewerName",
+        "properties": {
+          "maxLength": 100
+        },
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      {
+        "id": "field_119",
+        "name": "review_date",
+        "label": "Review Date",
+        "type": "date",
+        "required": true,
+        "placeholder": "Select review date",
+        "description": "Date of manual review completion",
+        "dataModelField": "reviewDate",
+        "properties": {
+          "maxDate": "today",
+          "includeTime": true
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_120",
+        "name": "reviewer_signature",
+        "label": "Officer Signature",
+        "type": "esign",
+        "required": true,
+        "placeholder": "",
+        "description": "Digital signature to authorize decision",
+        "dataModelField": "reviewerSignature",
+        "properties": {
+          "canvasWidth": 400,
+          "canvasHeight": 150
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_121",
+        "name": "escalate_to_senior",
+        "label": "Escalate to Senior Officer",
+        "type": "switch",
+        "required": false,
+        "placeholder": "",
+        "description": "Flag for senior loan officer review",
+        "dataModelField": "escalateToSenior",
+        "properties": {
+          "defaultValue": false
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_122",
+        "name": "escalation_reason",
+        "label": "Escalation Reason",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "Explain why this requires senior officer review",
+        "description": "Provide reason for escalation if flagged",
+        "dataModelField": "escalationReason",
+        "properties": {
+          "rows": 3,
+          "maxLength": 500
+        },
+        "validation": {
+          "maxLength": 500
+        }
+      }
+    ],
+    "workflowId": "workflow_1703123456789",
+    "createdAt": "2025-11-03T11:09:15.547Z",
+    "updatedAt": "2025-11-03T11:09:15.547Z"
+  },
+  {
+    "id": "form_loan_mgmt_node-1",
+    "name": "loan_application_form",
+    "title": "Loan Application Form",
+    "description": "Submit your loan application with required information and documents",
+    "nodeId": "node-1",
+    "nodeType": "startProcess",
+    "dataModelId": "model_loan_001",
+    "fields": [
+      {
+        "id": "field_001",
+        "name": "application_date",
+        "label": "Application Date",
+        "type": "date",
+        "required": true,
+        "description": "Date of loan application submission",
+        "dataModelField": "application_date",
+        "properties": {
+          "includeTime": false,
+          "maxDate": "today"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_002",
+        "name": "applicant_full_name",
+        "label": "Full Name",
+        "type": "text",
+        "required": true,
+        "placeholder": "Enter your full legal name",
+        "description": "Your complete legal name as it appears on official documents",
+        "dataModelField": "applicant_name",
+        "properties": {},
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      {
+        "id": "field_003",
+        "name": "applicant_email",
+        "label": "Email Address",
+        "type": "email",
+        "required": true,
+        "placeholder": "your.email@example.com",
+        "description": "Primary email for loan application correspondence",
+        "dataModelField": "applicant_email",
+        "properties": {},
+        "validation": {
+          "required": true,
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2}$"
+        }
+      },
+      {
+        "id": "field_004",
+        "name": "applicant_phone",
+        "label": "Phone Number",
+        "type": "phoneInput",
+        "required": true,
+        "placeholder": "+1 (555) 123-4567",
+        "description": "Primary contact number",
+        "dataModelField": "applicant_phone",
+        "properties": {
+          "defaultCountry": "US",
+          "format": "international"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_005",
+        "name": "loan_amount",
+        "label": "Requested Loan Amount",
+        "type": "currency",
+        "required": true,
+        "placeholder": "0.00",
+        "description": "Amount you wish to borrow",
+        "dataModelField": "loan_amount",
+        "properties": {
+          "currencySymbol": "$",
+          "locale": "en-US"
+        },
+        "validation": {
+          "required": true,
+          "min": 1000,
+          "max": 1000000
+        }
+      },
+      {
+        "id": "field_006",
+        "name": "loan_purpose",
+        "label": "Loan Purpose",
+        "type": "dropdown",
+        "required": true,
+        "placeholder": "Select loan purpose",
+        "description": "Primary reason for requesting the loan",
+        "dataModelField": "loan_purpose",
+        "properties": {
+          "options": [
+            {
+              "value": "home_purchase",
+              "label": "Home Purchase"
+            },
+            {
+              "value": "home_improvement",
+              "label": "Home Improvement"
+            },
+            {
+              "value": "debt_consolidation",
+              "label": "Debt Consolidation"
+            },
+            {
+              "value": "business",
+              "label": "Business"
+            },
+            {
+              "value": "education",
+              "label": "Education"
+            },
+            {
+              "value": "vehicle",
+              "label": "Vehicle Purchase"
+            },
+            {
+              "value": "personal",
+              "label": "Personal"
+            },
+            {
+              "value": "other",
+              "label": "Other"
+            }
+          ]
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_007",
+        "name": "loan_term",
+        "label": "Desired Loan Term (Years)",
+        "type": "dropdown",
+        "required": true,
+        "placeholder": "Select term",
+        "description": "Repayment period in years",
+        "dataModelField": "loan_term",
+        "properties": {
+          "options": [
+            {
+              "value": "1",
+              "label": "1 Year"
+            },
+            {
+              "value": "2",
+              "label": "2 Years"
+            },
+            {
+              "value": "3",
+              "label": "3 Years"
+            },
+            {
+              "value": "5",
+              "label": "5 Years"
+            },
+            {
+              "value": "7",
+              "label": "7 Years"
+            },
+            {
+              "value": "10",
+              "label": "10 Years"
+            },
+            {
+              "value": "15",
+              "label": "15 Years"
+            },
+            {
+              "value": "20",
+              "label": "20 Years"
+            },
+            {
+              "value": "30",
+              "label": "30 Years"
+            }
+          ]
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_008",
+        "name": "annual_income",
+        "label": "Annual Income",
+        "type": "currency",
+        "required": true,
+        "placeholder": "0.00",
+        "description": "Your gross annual income",
+        "dataModelField": "annual_income",
+        "properties": {
+          "currencySymbol": "$",
+          "locale": "en-US"
+        },
+        "validation": {
+          "required": true,
+          "min": 0
+        }
+      },
+      {
+        "id": "field_009",
+        "name": "employment_status",
+        "label": "Employment Status",
+        "type": "radio",
+        "required": true,
+        "description": "Current employment situation",
+        "dataModelField": "employment_status",
+        "properties": {
+          "options": [
+            {
+              "value": "employed_full_time",
+              "label": "Employed Full-Time"
+            },
+            {
+              "value": "employed_part_time",
+              "label": "Employed Part-Time"
+            },
+            {
+              "value": "self_employed",
+              "label": "Self-Employed"
+            },
+            {
+              "value": "retired",
+              "label": "Retired"
+            },
+            {
+              "value": "unemployed",
+              "label": "Unemployed"
+            }
+          ],
+          "layout": "vertical"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_010",
+        "name": "employer_name",
+        "label": "Employer Name",
+        "type": "text",
+        "required": false,
+        "placeholder": "Company name",
+        "description": "Current employer (if applicable)",
+        "dataModelField": "employer_name",
+        "properties": {},
+        "validation": {
+          "maxLength": 100
+        }
+      },
+      {
+        "id": "field_011",
+        "name": "credit_score_range",
+        "label": "Estimated Credit Score Range",
+        "type": "dropdown",
+        "required": true,
+        "placeholder": "Select range",
+        "description": "Approximate credit score range",
+        "dataModelField": "credit_score_range",
+        "properties": {
+          "options": [
+            {
+              "value": "excellent",
+              "label": "Excellent (750+)"
+            },
+            {
+              "value": "good",
+              "label": "Good (700-749)"
+            },
+            {
+              "value": "fair",
+              "label": "Fair (650-699)"
+            },
+            {
+              "value": "poor",
+              "label": "Poor (600-649)"
+            },
+            {
+              "value": "very_poor",
+              "label": "Very Poor (<600)"
+            },
+            {
+              "value": "unknown",
+              "label": "I don't know"
+            }
+          ]
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_012",
+        "name": "existing_debts",
+        "label": "Total Existing Debt",
+        "type": "currency",
+        "required": true,
+        "placeholder": "0.00",
+        "description": "Sum of all current debts and financial obligations",
+        "dataModelField": "existing_debts",
+        "properties": {
+          "currencySymbol": "$",
+          "locale": "en-US"
+        },
+        "validation": {
+          "required": true,
+          "min": 0
+        }
+      },
+      {
+        "id": "field_013",
+        "name": "additional_details",
+        "label": "Additional Information",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "Provide any additional details relevant to your loan application",
+        "description": "Optional: Additional context or information for your application",
+        "dataModelField": "additional_details",
+        "properties": {
+          "rows": 4
+        },
+        "validation": {
+          "maxLength": 1000
+        }
+      },
+      {
+        "id": "field_014",
+        "name": "supporting_documents",
+        "label": "Supporting Documents",
+        "type": "file",
+        "required": true,
+        "description": "Upload required documents (ID, income proof, bank statements)",
+        "dataModelField": "supporting_documents",
+        "properties": {
+          "maxFiles": 5,
+          "maxSize": "10MB",
+          "allowedTypes": [
+            ".pdf",
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".doc",
+            ".docx"
+          ]
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_015",
+        "name": "terms_acceptance",
+        "label": "Terms and Conditions",
+        "type": "consent",
+        "required": true,
+        "description": "I agree to the terms and conditions and authorize credit check",
+        "dataModelField": "terms_acceptance",
+        "properties": {
+          "text": "I hereby certify that the information provided is true and accurate. I authorize the lender to verify the information and conduct a credit check.",
+          "required": true
+        },
+        "validation": {
+          "required": true
+        }
+      }
+    ],
+    "workflowId": "workflow_1703876543210",
+    "createdAt": "2025-11-03T11:33:07.767Z",
+    "updatedAt": "2025-11-03T11:33:07.767Z"
+  },
+  {
+    "id": "form_loan_app_node-5",
+    "name": "loan_officer_review_form",
+    "title": "Loan Officer Review & Decision",
+    "description": "Review the loan application and provide your decision with supporting comments.",
+    "nodeId": "node-5",
+    "nodeType": "userTask",
+    "dataModelId": "model_loan_001",
+    "fields": [
+      {
+        "id": "field_101",
+        "name": "applicant_summary",
+        "label": "Applicant Information",
+        "type": "label",
+        "required": false,
+        "placeholder": "",
+        "description": "Summary of applicant details from application",
+        "dataModelField": "applicantSummary",
+        "properties": {
+          "text": "Review applicant details and financial information below",
+          "fontSize": "16px",
+          "fontWeight": "bold",
+          "color": "#333333",
+          "alignment": "left"
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_102",
+        "name": "applicant_name_display",
+        "label": "Applicant Name",
+        "type": "text",
+        "required": false,
+        "placeholder": "",
+        "description": "",
+        "dataModelField": "applicantName",
+        "properties": {
+          "readonly": true
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_103",
+        "name": "loan_amount_display",
+        "label": "Requested Amount",
+        "type": "currency",
+        "required": false,
+        "placeholder": "",
+        "description": "",
+        "dataModelField": "loanAmount",
+        "properties": {
+          "currencySymbol": "$",
+          "locale": "en-US",
+          "readonly": true
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_104",
+        "name": "loan_type_display",
+        "label": "Loan Type",
+        "type": "text",
+        "required": false,
+        "placeholder": "",
+        "description": "",
+        "dataModelField": "loanType",
+        "properties": {
+          "readonly": true
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_105",
+        "name": "annual_income_display",
+        "label": "Annual Income",
+        "type": "currency",
+        "required": false,
+        "placeholder": "",
+        "description": "",
+        "dataModelField": "annualIncome",
+        "properties": {
+          "currencySymbol": "$",
+          "locale": "en-US",
+          "readonly": true
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_106",
+        "name": "credit_score_display",
+        "label": "Credit Score Range",
+        "type": "text",
+        "required": false,
+        "placeholder": "",
+        "description": "",
+        "dataModelField": "creditScoreRange",
+        "properties": {
+          "readonly": true
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_107",
+        "name": "review_decision",
+        "label": "Decision",
+        "type": "radio",
+        "required": true,
+        "placeholder": "",
+        "description": "Your final decision on this loan application",
+        "dataModelField": "reviewDecision",
+        "properties": {
+          "options": [
+            "Approve",
+            "Reject",
+            "Request More Information"
+          ],
+          "layout": "vertical"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_108",
+        "name": "approved_amount",
+        "label": "Approved Loan Amount",
+        "type": "currency",
+        "required": false,
+        "placeholder": "Enter approved amount",
+        "description": "Amount approved (if different from requested)",
+        "dataModelField": "approvedAmount",
+        "properties": {
+          "currencySymbol": "$",
+          "locale": "en-US"
+        },
+        "validation": {
+          "min": 0
+        }
+      },
+      {
+        "id": "field_109",
+        "name": "interest_rate",
+        "label": "Interest Rate (%)",
+        "type": "number",
+        "required": false,
+        "placeholder": "0.00",
+        "description": "Annual interest rate for approved loan",
+        "dataModelField": "interestRate",
+        "properties": {
+          "min": 0,
+          "max": 100,
+          "step": 0.01,
+          "suffix": "%"
+        },
+        "validation": {
+          "min": 0,
+          "max": 100
+        }
+      },
+      {
+        "id": "field_110",
+        "name": "loan_term",
+        "label": "Loan Term",
+        "type": "dropdown",
+        "required": false,
+        "placeholder": "Select loan term",
+        "description": "Duration of loan repayment",
+        "dataModelField": "loanTerm",
+        "properties": {
+          "options": [
+            "6 months",
+            "12 months",
+            "24 months",
+            "36 months",
+            "48 months",
+            "60 months",
+            "120 months",
+            "180 months",
+            "240 months",
+            "360 months"
+          ]
+        },
+        "validation": {}
+      },
+      {
+        "id": "field_111",
+        "name": "risk_assessment",
+        "label": "Risk Assessment",
+        "type": "dropdown",
+        "required": true,
+        "placeholder": "Select risk level",
+        "description": "Overall risk evaluation of this application",
+        "dataModelField": "riskAssessment",
+        "properties": {
+          "options": [
+            "Low Risk",
+            "Medium Risk",
+            "High Risk"
+          ]
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_112",
+        "name": "officer_comments",
+        "label": "Review Comments",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "Provide detailed comments on your decision",
+        "description": "Explain your decision rationale and any concerns",
+        "dataModelField": "officerComments",
+        "properties": {
+          "rows": 6,
+          "maxLength": 2000
+        },
+        "validation": {
+          "required": true,
+          "minLength": 50,
+          "maxLength": 2000
+        }
+      },
+      {
+        "id": "field_113",
+        "name": "conditions",
+        "label": "Approval Conditions",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "List any conditions for approval",
+        "description": "Any conditions that must be met (if applicable)",
+        "dataModelField": "approvalConditions",
+        "properties": {
+          "rows": 4,
+          "maxLength": 1000
+        },
+        "validation": {
+          "maxLength": 1000
+        }
+      },
+      {
+        "id": "field_114",
+        "name": "reviewer_name",
+        "label": "Loan Officer Name",
+        "type": "text",
+        "required": true,
+        "placeholder": "Enter your full name",
+        "description": "Your name as reviewing officer",
+        "dataModelField": "reviewerName",
+        "properties": {
+          "maxLength": 100
+        },
+        "validation": {
+          "required": true,
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      {
+        "id": "field_115",
+        "name": "review_date",
+        "label": "Review Date",
+        "type": "date",
+        "required": true,
+        "placeholder": "Select review date",
+        "description": "Date of review completion",
+        "dataModelField": "reviewDate",
+        "properties": {
+          "maxDate": "today",
+          "includeTime": true
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_116",
+        "name": "officer_signature",
+        "label": "Officer Signature",
+        "type": "esign",
+        "required": true,
+        "placeholder": "",
+        "description": "Sign to confirm your review decision",
+        "dataModelField": "officerSignature",
+        "properties": {
+          "canvasWidth": 400,
+          "canvasHeight": 150
+        },
+        "validation": {
+          "required": true
+        }
+      }
+    ],
+    "workflowId": "workflow_1734565892341",
+    "createdAt": "2025-11-03T11:37:59.095Z",
+    "updatedAt": "2025-11-03T11:37:59.095Z"
+  }
+]required documents",
+        "description": "Upload ID, proof of income, bank statements (PDF, JPG, PNG)",
+        "dataModelField": "supportingDocuments",
+        "properties": {
+          "maxFiles": 5,
+          "maxSize": 5242880,
+          "allowedTypes": [
+            "application/pdf",
+            "image/jpeg",
+            "image/png"
+          ]
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_017",
+        "name": "urgency",
+        "label": "Urgency Level",
+        "type": "radio",
+        "required": true,
+        "placeholder": "",
+        "description": "How urgently do you need this loan?",
+        "dataModelField": "urgency",
+        "properties": {
+          "options": [
+            "Urgent (Within 1 week)",
+            "Normal (1-2 weeks)",
+            "Flexible (Can wait)"
+          ],
+          "layout": "vertical"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "field_018",
+        "name": "terms_accepted",
+        "label": "Terms and Conditions",
+        "type": "consent",
+        "required": true,
+        "placeholder": "",
+        "description": "I agree to the terms and conditions and authorize credit check",
+        "dataModelField": "termsAccepted",
+        "properties": {
+          "text": "I certify that all information provided is accurate and I authorize the lender to verify my credit and employment history. I have read and agree to the terms and conditions.",
+          "required": true
+        },
+        "validation": {
+          "required": true
+        }
+      }
+    ],
+    "workflowId": "workflow_1734565892341",
+    "createdAt": "2025-11-03T11:37:59.094Z",
+    "updatedAt": "2025-11-03T11:37:59.095Z"
+  }
+]

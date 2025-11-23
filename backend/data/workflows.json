@@ -1,0 +1,4598 @@
+[
+  {
+    "id": "d4919751-7e04-4475-ae64-bc7131421f25",
+    "name": "Loan Approval Demo",
+    "nodes": [
+      {
+        "id": "start_1",
+        "type": "startProcess",
+        "data": {
+          "label": "Start: Loan Application"
+        }
+      },
+      {
+        "id": "script_1",
+        "type": "scriptTask",
+        "data": {
+          "label": "Calculate Risk Score",
+          "script": "processData.riskScore = (processData.creditScore / 850) * 100; processData.calculatedAt = new Date().toISOString();"
+        }
+      },
+      {
+        "id": "user_task_1",
+        "type": "userTask",
+        "data": {
+          "label": "Manager Review",
+          "taskName": "Review Loan Application",
+          "assignedTo": "loan-manager"
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "decision",
+        "data": {
+          "label": "Approve Loan?",
+          "gatewayType": "exclusive",
+          "condition": "processData.riskScore >= 70 && processData.managerApproval === true"
+        }
+      },
+      {
+        "id": "script_approve",
+        "type": "scriptTask",
+        "data": {
+          "label": "Process Approval",
+          "script": "processData.status = 'APPROVED'; processData.approvedAt = new Date().toISOString(); processData.message = 'Loan approved!';"
+        }
+      },
+      {
+        "id": "script_reject",
+        "type": "scriptTask",
+        "data": {
+          "label": "Process Rejection",
+          "script": "processData.status = 'REJECTED'; processData.rejectedAt = new Date().toISOString(); processData.message = 'Loan rejected due to risk score or manager decision.';"
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "endEvent",
+        "data": {
+          "label": "End"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn_1",
+        "source": "start_1",
+        "target": "script_1"
+      },
+      {
+        "id": "conn_2",
+        "source": "script_1",
+        "target": "user_task_1"
+      },
+      {
+        "id": "conn_3",
+        "source": "user_task_1",
+        "target": "decision_1"
+      },
+      {
+        "id": "conn_4",
+        "source": "decision_1",
+        "target": "script_approve"
+      },
+      {
+        "id": "conn_5",
+        "source": "decision_1",
+        "target": "script_reject"
+      },
+      {
+        "id": "conn_6",
+        "source": "script_approve",
+        "target": "end_1"
+      },
+      {
+        "id": "conn_7",
+        "source": "script_reject",
+        "target": "end_1"
+      }
+    ]
+  },
+  {
+    "id": "wf-001",
+    "name": "Customer Onboarding Process",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Ticket Submitted",
+          "trigger": "User submits support ticket via portal, email, or API",
+          "description": "Initiates the ticket management workflow when a new support request is received",
+          "formId": "workflow_1703456789123_form_001",
+          "formName": "ticket_creation_form"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 165
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Initial Validation",
+          "ruleType": "business_rules",
+          "rules": [
+            "Required fields present",
+            "Valid contact information",
+            "Description not empty",
+            "Category selected"
+          ],
+          "description": "Validates ticket contains all required information and follows submission guidelines"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 193
+      },
+      {
+        "id": "node_3",
+        "type": "decision",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "Validation Check",
+          "gatewayType": "exclusive",
+          "condition": "Determines if ticket passes initial validation checks",
+          "description": "Routes ticket based on validation results - valid tickets proceed, invalid return to user"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 150
+      },
+      {
+        "id": "node_4",
+        "type": "userTask",
+        "position": {
+          "x": 75,
+          "y": 850
+        },
+        "data": {
+          "label": "Request Additional Info",
+          "taskName": "ticket_clarification",
+          "assignedTo": "ticket_submitter",
+          "priority": "Medium",
+          "dueDate": "2 business days",
+          "instructions": "Please provide missing information or clarify your request",
+          "formId": "workflow_1703456789123_form_002",
+          "formName": "ticket_assignment_form"
+        },
+        "draggable": true,
+        "width": 281,
+        "height": 87
+      },
+      {
+        "id": "node_5",
+        "type": "scriptTask",
+        "position": {
+          "x": 425,
+          "y": 850
+        },
+        "data": {
+          "label": "Auto-Categorize & Prioritize",
+          "scriptType": "JavaScript",
+          "script": "t",
+          "description": "Automatically categorizes ticket and assigns initial priority using machine learning"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 117,
+        "selected": true,
+        "dragging": false
+      },
+      {
+        "id": "node_6",
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "data": {
+          "label": "Priority & Complexity Analysis",
+          "gatewayType": "exclusive",
+          "condition": "Routes based on ticket priority and complexity level",
+          "description": "Determines routing path: high priority escalation, standard processing, or simple auto-resolution"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 150
+      },
+      {
+        "id": "node_7",
+        "type": "scriptTask",
+        "position": {
+          "x": 0,
+          "y": 1350
+        },
+        "data": {
+          "label": "Auto-Resolution Attempt",
+          "scriptType": "Python",
+          "script": "Knowledge base lookup and automated solution matching",
+          "description": "Attempts to resolve simple, common issues automatically using knowledge base"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 117
+      },
+      {
+        "id": "node_8",
+        "type": "notification",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "data": {
+          "label": "Escalation Alert",
+          "channel": "Email+SMS",
+          "recipient": "tier2_managers",
+          "template": "High priority ticket requires immediate attention",
+          "description": "Alerts senior support staff of high-priority tickets requiring urgent attention"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 117
+      },
+      {
+        "id": "node_9",
+        "type": "decision",
+        "position": {
+          "x": 700,
+          "y": 1350
+        },
+        "data": {
+          "label": "Assignment Strategy",
+          "gatewayType": "parallel",
+          "branches": "Parallel assignment to multiple support teams and knowledge capture",
+          "description": "Simultaneously assigns to appropriate support team and initiates knowledge management processes"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 150
+      },
+      {
+        "id": "node_10",
+        "type": "userTask",
+        "position": {
+          "x": 50,
+          "y": 1600
+        },
+        "data": {
+          "label": "Technical Resolution",
+          "taskName": "resolve_ticket",
+          "assignedTo": "support_engineer",
+          "priority": "High",
+          "dueDate": "Based on SLA",
+          "instructions": "Investigate and resolve the technical issue following troubleshooting procedures",
+          "formId": "workflow_1703456789123_form_003",
+          "formName": "ticket_resolution_form"
+        },
+        "draggable": true,
+        "width": 280,
+        "height": 87
+      },
+      {
+        "id": "node_11",
+        "type": "dataProcess",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "data": {
+          "label": "Knowledge Base Update",
+          "operation": "knowledge_capture",
+          "input": "ticket_resolution_data",
+          "output": "knowledge_base",
+          "description": "Captures resolution steps and updates knowledge base for future similar issues"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 97
+      },
+      {
+        "id": "node_16",
+        "type": "notification",
+        "position": {
+          "x": 750,
+          "y": 1600
+        },
+        "data": {
+          "label": "Resolution Notification",
+          "channel": "Email",
+          "recipient": "ticket_submitter",
+          "template": "Your support ticket has been resolved",
+          "description": "Notifies customer that their issue has been resolved and ticket is closed"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 117
+      },
+      {
+        "id": "node_12",
+        "type": "timerEvent",
+        "position": {
+          "x": 100,
+          "y": 1850
+        },
+        "data": {
+          "label": "SLA Timer",
+          "timerType": "duration",
+          "duration": "PT4H",
+          "description": "Monitors ticket resolution time against SLA commitments"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 117
+      },
+      {
+        "id": "node_15",
+        "type": "userTask",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "data": {
+          "label": "Customer Satisfaction Survey",
+          "taskName": "satisfaction_survey",
+          "assignedTo": "customer",
+          "priority": "Low",
+          "dueDate": "7 days",
+          "instructions": "Please rate your satisfaction with the support provided",
+          "formId": "workflow_1703456789123_form_001",
+          "formName": "ticket_creation_form"
+        },
+        "draggable": true,
+        "width": 296,
+        "height": 87
+      },
+      {
+        "id": "node_17",
+        "type": "endEvent",
+        "position": {
+          "x": 800,
+          "y": 1850
+        },
+        "data": {
+          "label": "Ticket Closed",
+          "result": "Support ticket successfully processed and closed",
+          "description": "Ticket lifecycle complete - issue resolved and customer notified"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 97
+      },
+      {
+        "id": "node_13",
+        "type": "decision",
+        "position": {
+          "x": 500,
+          "y": 2100
+        },
+        "data": {
+          "label": "Resolution Status Check",
+          "gatewayType": "exclusive",
+          "condition": "Checks if ticket was successfully resolved or needs escalation",
+          "description": "Determines next steps based on resolution attempt results or SLA timeout"
+        },
+        "draggable": true,
+        "width": 320,
+        "height": 150
+      },
+      {
+        "id": "node_14",
+        "type": "userTask",
+        "position": {
+          "x": 550,
+          "y": 2350
+        },
+        "data": {
+          "label": "Escalate to Senior Team",
+          "taskName": "senior_escalation",
+          "assignedTo": "senior_engineer",
+          "priority": "High",
+          "dueDate": "Immediate",
+          "instructions": "Complex issue requiring senior technical expertise or management intervention",
+          "formId": "workflow_1703456789123_form_001",
+          "formName": "ticket_creation_form"
+        },
+        "draggable": true,
+        "width": 280,
+        "height": 87
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4",
+        "label": "Validation Failed",
+        "condition": "processData.validationStatus === 'failed'"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_5",
+        "label": "Validation Passed",
+        "condition": "processData.validationStatus === 'passed'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_6",
+        "target": "node_7",
+        "label": "Low Priority/Simple",
+        "condition": "processData.priority === 'Low' && processData.complexity === 'Simple'"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_8",
+        "label": "High Priority",
+        "condition": "processData.priority === 'High'"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_6",
+        "target": "node_9",
+        "label": "Standard Processing",
+        "condition": "processData.priority === 'Medium'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_10",
+        "source": "node_7",
+        "target": "node_16",
+        "label": "Auto-Resolved"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_8",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_9",
+        "target": "node_10",
+        "label": "Default",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        }
+      },
+      {
+        "id": "edge_13",
+        "source": "node_9",
+        "target": "node_11",
+        "label": "Parallel Knowledge Capture"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_10",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_13",
+        "target": "node_15",
+        "label": "Resolution Complete",
+        "condition": "processData.resolutionStatus === 'completed'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_17",
+        "source": "node_13",
+        "target": "node_14",
+        "label": "SLA Breach/Complex Issue",
+        "condition": "processData.slaBreached === true || processData.escalationNeeded === true"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_11",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_16",
+        "target": "node_17"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1703875200000",
+    "name": "Expense Approval Workflow",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 50
+        },
+        "data": {
+          "label": "Submit Expense Report",
+          "trigger": "Employee Form Submission",
+          "description": "Employee submits expense report for approval",
+          "formName": "expense_report_form"
+        }
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": 100,
+          "y": 150
+        },
+        "data": {
+          "label": "Validate Expense Data",
+          "ruleType": "business_rules",
+          "rules": [
+            "required_fields",
+            "receipt_attached",
+            "valid_amounts"
+          ],
+          "description": "Validates expense report for completeness and business rules"
+        }
+      },
+      {
+        "id": "node_3",
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 250
+        },
+        "data": {
+          "label": "Amount-Based Routing",
+          "gatewayType": "exclusive",
+          "condition": "Route based on expense amount",
+          "description": "Determines approval path based on expense amount"
+        }
+      },
+      {
+        "id": "node_4",
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 150
+        },
+        "data": {
+          "label": "Manager Approval",
+          "taskName": "approve_expense_manager",
+          "assignedTo": "direct_manager",
+          "priority": "Medium",
+          "dueDate": "3 business days",
+          "instructions": "Review and approve expense report under $1000",
+          "formId": "workflow_1703875200000_form_expense_submit",
+          "formName": "expense_submission_form"
+        }
+      },
+      {
+        "id": "node_5",
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 350
+        },
+        "data": {
+          "label": "Director Approval",
+          "taskName": "approve_expense_director",
+          "assignedTo": "department_director",
+          "priority": "High",
+          "dueDate": "2 business days",
+          "instructions": "Review and approve expense report $1000-$5000",
+          "formId": "workflow_1703875200000_form_expense_approve",
+          "formName": "expense_approval_form"
+        }
+      },
+      {
+        "id": "node_6",
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 450
+        },
+        "data": {
+          "label": "VP + Finance Approval",
+          "taskName": "approve_expense_vp",
+          "assignedTo": "vp_and_finance",
+          "priority": "High",
+          "dueDate": "1 business day",
+          "instructions": "Review and approve expense report over $5000",
+          "formId": "workflow_1703875200000_form_expense_reimburse",
+          "formName": "expense_reimbursement_form"
+        }
+      },
+      {
+        "id": "node_7",
+        "type": "decision",
+        "position": {
+          "x": 500,
+          "y": 300
+        },
+        "data": {
+          "label": "Approval Decision",
+          "gatewayType": "exclusive",
+          "condition": "Check if expense is approved or rejected",
+          "description": "Routes based on approval decision"
+        }
+      },
+      {
+        "id": "node_8",
+        "type": "notification",
+        "position": {
+          "x": 700,
+          "y": 200
+        },
+        "data": {
+          "label": "Approval Notification",
+          "channel": "Email",
+          "recipient": "expense_submitter",
+          "template": "expense_approved_template",
+          "description": "Notifies employee that expense was approved"
+        }
+      },
+      {
+        "id": "node_9",
+        "type": "scriptTask",
+        "position": {
+          "x": 700,
+          "y": 100
+        },
+        "data": {
+          "label": "Process Payment",
+          "scriptType": "JavaScript",
+          "script": "processExpensePayment(expenseData)",
+          "description": "Initiates payment processing for approved expense"
+        }
+      },
+      {
+        "id": "node_10",
+        "type": "notification",
+        "position": {
+          "x": 700,
+          "y": 400
+        },
+        "data": {
+          "label": "Rejection Notification",
+          "channel": "Email",
+          "recipient": "expense_submitter",
+          "template": "expense_rejected_template",
+          "description": "Notifies employee that expense was rejected with reason"
+        }
+      },
+      {
+        "id": "node_11",
+        "type": "userTask",
+        "position": {
+          "x": 500,
+          "y": 500
+        },
+        "data": {
+          "label": "Resubmit Expense",
+          "taskName": "resubmit_expense",
+          "assignedTo": "expense_submitter",
+          "priority": "Medium",
+          "dueDate": "7 business days",
+          "instructions": "Address rejection reasons and resubmit expense report",
+          "formId": "workflow_1703875200000_form_expense_submit",
+          "formName": "expense_submission_form"
+        }
+      },
+      {
+        "id": "node_12",
+        "type": "timerEvent",
+        "position": {
+          "x": 500,
+          "y": 50
+        },
+        "data": {
+          "label": "Approval Reminder",
+          "timerType": "duration",
+          "duration": "PT48H",
+          "description": "Sends reminder if approval is overdue"
+        }
+      },
+      {
+        "id": "node_13",
+        "type": "notification",
+        "position": {
+          "x": 700,
+          "y": 50
+        },
+        "data": {
+          "label": "Overdue Reminder",
+          "channel": "Email",
+          "recipient": "approver_and_manager",
+          "template": "approval_overdue_template",
+          "description": "Reminds approver and escalates to manager"
+        }
+      },
+      {
+        "id": "node_14",
+        "type": "endEvent",
+        "position": {
+          "x": 900,
+          "y": 150
+        },
+        "data": {
+          "label": "Expense Processed",
+          "result": "Expense approved and payment initiated",
+          "description": "Expense workflow completed successfully"
+        }
+      },
+      {
+        "id": "node_15",
+        "type": "endEvent",
+        "position": {
+          "x": 300,
+          "y": 600
+        },
+        "data": {
+          "label": "Expense Cancelled",
+          "result": "Employee chose not to resubmit",
+          "description": "Expense workflow terminated by employee"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4",
+        "label": "< $1000",
+        "condition": "processData.amount < 1000"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_5",
+        "label": "$1000-$5000",
+        "condition": "processData.amount >= 1000 && processData.amount <= 5000"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_3",
+        "target": "node_6",
+        "label": "> $5000",
+        "condition": "processData.amount > 5000",
+        "isDefault": true
+      },
+      {
+        "id": "edge_6",
+        "source": "node_4",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_7",
+        "target": "node_8",
+        "label": "Approved",
+        "condition": "processData.decision === 'approved'"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_7",
+        "target": "node_10",
+        "label": "Rejected",
+        "condition": "processData.decision === 'rejected'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_11",
+        "source": "node_8",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_9",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_10",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_11",
+        "target": "node_15",
+        "label": "Cancel"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_4",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_5",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_6",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_13",
+        "target": "node_7"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1734643200",
+    "name": "Leave Management Approval Workflow",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Submit Leave Request",
+          "trigger": "Employee form submission",
+          "description": "Employee initiates leave request through form",
+          "formName": "Leave Request Form"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Validate Leave Request",
+          "ruleType": "Business Rules",
+          "rules": [
+            "Required fields present",
+            "Valid date range",
+            "Sufficient leave balance"
+          ],
+          "description": "Validates leave request data and business rules"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "decision",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "Check Leave Duration",
+          "gatewayType": "exclusive",
+          "condition": "Duration and approval routing logic",
+          "description": "Routes based on leave duration and type"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "userTask",
+        "position": {
+          "x": 75,
+          "y": 850
+        },
+        "data": {
+          "label": "Manager Approval",
+          "taskName": "approve_leave_request",
+          "assignedTo": "Direct Manager",
+          "priority": "Medium",
+          "dueDate": "2 business days",
+          "instructions": "Review and approve/reject leave request",
+          "formId": "workflow_1734643200_form_001",
+          "formName": "leave_request_form"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "userTask",
+        "position": {
+          "x": 425,
+          "y": 850
+        },
+        "data": {
+          "label": "HR & Manager Approval",
+          "taskName": "approve_extended_leave",
+          "assignedTo": "HR Manager and Direct Manager",
+          "priority": "High",
+          "dueDate": "3 business days",
+          "instructions": "Review extended leave request (>5 days)",
+          "formId": "workflow_1734643200_form_002",
+          "formName": "manager_approval_form"
+        },
+        "width": 281,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "decision",
+        "position": {
+          "x": -50,
+          "y": 1100
+        },
+        "data": {
+          "label": "Manager Decision",
+          "gatewayType": "exclusive",
+          "condition": "Approval decision outcome",
+          "description": "Routes based on manager approval/rejection"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "data": {
+          "label": "HR & Manager Decision",
+          "gatewayType": "exclusive",
+          "condition": "Extended leave approval outcome",
+          "description": "Routes based on HR and manager approval/rejection"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "type": "timerEvent",
+        "position": {
+          "x": 650,
+          "y": 1100
+        },
+        "data": {
+          "label": "Approval Deadline",
+          "timerType": "duration",
+          "duration": "PT48H",
+          "description": "Escalates if no response within 48 hours"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "type": "notification",
+        "position": {
+          "x": 0,
+          "y": 1350
+        },
+        "data": {
+          "label": "Approval Notification",
+          "channel": "Email",
+          "recipient": "Employee",
+          "template": "Leave request approved - details and next steps",
+          "description": "Notifies employee of approved leave request"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "type": "notification",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "data": {
+          "label": "Rejection Notification",
+          "channel": "Email",
+          "recipient": "Employee",
+          "template": "Leave request rejected - reason and resubmission option",
+          "description": "Notifies employee of rejected request with feedback"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "type": "notification",
+        "position": {
+          "x": 700,
+          "y": 1350
+        },
+        "data": {
+          "label": "Escalation Alert",
+          "channel": "Email",
+          "recipient": "Senior Manager",
+          "template": "Leave approval overdue - requires attention",
+          "description": "Alerts senior management of overdue approval"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 1600
+        },
+        "data": {
+          "label": "Update Leave Balance",
+          "scriptType": "JavaScript",
+          "script": "Deduct approved leave days from employee balance",
+          "description": "Updates employee leave balance in system"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "userTask",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "data": {
+          "label": "Resubmit Leave Request",
+          "taskName": "resubmit_leave_request",
+          "assignedTo": "Employee",
+          "priority": "Low",
+          "dueDate": "No deadline",
+          "instructions": "Modify and resubmit leave request based on feedback",
+          "formId": "workflow_1734643200_form_003",
+          "formName": "hr_review_form"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "type": "endEvent",
+        "position": {
+          "x": 750,
+          "y": 1600
+        },
+        "data": {
+          "label": "Request Rejected",
+          "result": "Leave request rejected",
+          "description": "Leave request workflow ended with rejection"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "type": "notification",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "data": {
+          "label": "Calendar Update",
+          "channel": "Calendar System",
+          "recipient": "Team and HR",
+          "template": "Employee leave schedule notification",
+          "description": "Updates team calendar with approved leave dates"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "type": "endEvent",
+        "position": {
+          "x": 500,
+          "y": 2100
+        },
+        "data": {
+          "label": "Leave Request Completed",
+          "result": "Leave processed successfully",
+          "description": "Leave request workflow completed"
+        },
+        "width": 297,
+        "height": 80,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4",
+        "label": "≤5 days",
+        "condition": "processData.leaveDays <= 5"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_5",
+        "label": ">5 days",
+        "condition": "processData.leaveDays > 5",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_6",
+        "target": "node_8",
+        "label": "Approved",
+        "condition": "processData.managerDecision === 'approved'"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_9",
+        "label": "Rejected",
+        "condition": "processData.managerDecision === 'rejected'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "source": "node_7",
+        "target": "node_8",
+        "label": "Approved",
+        "condition": "processData.hrDecision === 'approved'"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_7",
+        "target": "node_9",
+        "label": "Rejected",
+        "condition": "processData.hrDecision === 'rejected'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_11",
+        "source": "node_8",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_10",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_11",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_9",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_9",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_4",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_14",
+        "target": "node_6"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1735040800000",
+    "name": "Leave Request Approval Workflow",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Submit Leave Request",
+          "trigger": "Form Submission",
+          "description": "Employee submits leave request with details",
+          "formName": "Leave Request Form"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Validate Leave Request",
+          "ruleType": "Business Rules",
+          "rules": [
+            "Required fields check",
+            "Date validation",
+            "Leave balance check"
+          ],
+          "description": "Validate leave request details and employee eligibility"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "decision",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "Check Leave Duration",
+          "gatewayType": "exclusive",
+          "condition": "Duration-based routing",
+          "description": "Route based on leave duration for appropriate approval level"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "userTask",
+        "position": {
+          "x": 75,
+          "y": 850
+        },
+        "data": {
+          "label": "Manager Approval",
+          "taskName": "Approve Short Leave",
+          "assignedTo": "Direct Manager",
+          "priority": "Medium",
+          "dueDate": "2 business days",
+          "instructions": "Review and approve/reject leave request (1-5 days)"
+        },
+        "width": 280,
+        "height": 54,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "userTask",
+        "position": {
+          "x": 425,
+          "y": 850
+        },
+        "data": {
+          "label": "HR + Manager Approval",
+          "taskName": "Approve Extended Leave",
+          "assignedTo": "HR Manager",
+          "priority": "High",
+          "dueDate": "3 business days",
+          "instructions": "Review and approve/reject extended leave request (5+ days)"
+        },
+        "width": 280,
+        "height": 54,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "decision",
+        "position": {
+          "x": -50,
+          "y": 1100
+        },
+        "data": {
+          "label": "Manager Decision",
+          "gatewayType": "exclusive",
+          "condition": "Approval status",
+          "description": "Manager approval or rejection decision"
+        },
+        "width": 320,
+        "height": 134,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "data": {
+          "label": "HR Decision",
+          "gatewayType": "exclusive",
+          "condition": "Approval status",
+          "description": "HR approval or rejection decision"
+        },
+        "width": 287,
+        "height": 134,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "type": "timerEvent",
+        "position": {
+          "x": 650,
+          "y": 1100
+        },
+        "data": {
+          "label": "Approval Deadline",
+          "timerType": "duration",
+          "duration": "PT48H",
+          "description": "2-day deadline for approval decision"
+        },
+        "width": 306,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "type": "notification",
+        "position": {
+          "x": 0,
+          "y": 1350
+        },
+        "data": {
+          "label": "Approval Notification",
+          "channel": "Email",
+          "recipient": "Employee",
+          "template": "Leave request approved - details and next steps",
+          "description": "Notify employee of approved leave request"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "type": "notification",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "data": {
+          "label": "Rejection Notification",
+          "channel": "Email",
+          "recipient": "Employee",
+          "template": "Leave request rejected - reason and resubmission option",
+          "description": "Notify employee of rejected leave request with reason"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "type": "notification",
+        "position": {
+          "x": 700,
+          "y": 1350
+        },
+        "data": {
+          "label": "Escalation Notice",
+          "channel": "Email",
+          "recipient": "Senior Manager",
+          "template": "Leave approval overdue - requires attention",
+          "description": "Escalate to senior manager if deadline exceeded"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "type": "userTask",
+        "position": {
+          "x": 225,
+          "y": 1600
+        },
+        "data": {
+          "label": "Resubmit Request",
+          "taskName": "Modify and Resubmit",
+          "assignedTo": "Employee",
+          "priority": "Low",
+          "dueDate": "7 days",
+          "instructions": "Modify leave request based on feedback and resubmit"
+        },
+        "width": 280,
+        "height": 54,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "type": "dataProcess",
+        "position": {
+          "x": 575,
+          "y": 1600
+        },
+        "data": {
+          "label": "Update Leave Records",
+          "operation": "Update Database",
+          "input": "Approved leave details",
+          "output": "HR System",
+          "description": "Update employee leave balance and calendar"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "notification",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "data": {
+          "label": "Calendar Update",
+          "channel": "System",
+          "recipient": "Team Calendar",
+          "template": "Employee leave period blocked in calendar",
+          "description": "Update team calendar with approved leave dates"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "type": "endEvent",
+        "position": {
+          "x": 500,
+          "y": 2100
+        },
+        "data": {
+          "label": "Leave Process Complete",
+          "result": "Leave request processed",
+          "description": "Leave management workflow completed successfully"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4",
+        "label": "Short Leave (1-5 days)",
+        "condition": "processData.leaveDays <= 5"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_5",
+        "label": "Extended Leave (5+ days)",
+        "condition": "processData.leaveDays > 5",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_6",
+        "target": "node_8",
+        "label": "Approved",
+        "condition": "processData.approvalStatus === 'approved'"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_9",
+        "label": "Rejected",
+        "condition": "processData.approvalStatus === 'rejected'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "source": "node_7",
+        "target": "node_8",
+        "label": "Approved",
+        "condition": "processData.approvalStatus === 'approved'"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_7",
+        "target": "node_9",
+        "label": "Rejected",
+        "condition": "processData.approvalStatus === 'rejected'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_11",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_8",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_12",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_4",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_5",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_14",
+        "target": "node_6"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1703854923",
+    "name": "Complex Ticket Management System Workflow",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": -75,
+          "y": 100
+        },
+        "data": {
+          "label": "New Ticket Submitted",
+          "trigger": "User ticket submission or system alert",
+          "description": "Initiates ticket processing workflow when new support request is received"
+        },
+        "width": 320,
+        "height": 132,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "type": "timerEvent",
+        "position": {
+          "x": 275,
+          "y": 100
+        },
+        "data": {
+          "label": "SLA Timer",
+          "timerType": "duration",
+          "duration": "PT4H",
+          "description": "Monitors ticket for SLA breach and triggers escalation if needed"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": -25,
+          "y": 350
+        },
+        "data": {
+          "label": "Validate Ticket Data",
+          "ruleType": "Input validation",
+          "rules": [
+            "Required fields present",
+            "Valid category",
+            "Description length > 10 chars"
+          ],
+          "description": "Validates ticket submission for completeness and format"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "type": "userTask",
+        "position": {
+          "x": 325,
+          "y": 350
+        },
+        "data": {
+          "label": "Escalate to Senior",
+          "taskName": "Senior Support Escalation",
+          "assignedTo": "Senior Support Engineer",
+          "priority": "High",
+          "dueDate": "1 hour",
+          "instructions": "Handle escalated ticket requiring senior expertise"
+        },
+        "width": 280,
+        "height": 54,
+        "draggable": true,
+        "selected": true
+      },
+      {
+        "id": "node_3",
+        "type": "scriptTask",
+        "position": {
+          "x": 25,
+          "y": 600
+        },
+        "data": {
+          "label": "Auto-Classify Ticket",
+          "scriptType": "JavaScript",
+          "script": "Analyze ticket content and assign category/priority",
+          "description": "Uses ML algorithm to categorize and prioritize ticket automatically"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_18",
+        "type": "scriptTask",
+        "position": {
+          "x": 375,
+          "y": 600
+        },
+        "data": {
+          "label": "Handle Validation Error",
+          "scriptType": "JavaScript",
+          "script": "Log error and send rejection notice to submitter",
+          "description": "Error handler for invalid ticket submissions"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "decision",
+        "position": {
+          "x": 75,
+          "y": 850
+        },
+        "data": {
+          "label": "Priority Assessment",
+          "gatewayType": "exclusive",
+          "condition": "Evaluate ticket priority and complexity",
+          "description": "Routes ticket based on priority level and complexity"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "type": "endEvent",
+        "position": {
+          "x": 425,
+          "y": 850
+        },
+        "data": {
+          "label": "Ticket Closed",
+          "result": "Ticket successfully resolved and closed",
+          "description": "End of ticket management workflow with successful resolution"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "scriptTask",
+        "position": {
+          "x": -50,
+          "y": 1100
+        },
+        "data": {
+          "label": "Auto-Resolve Simple Issues",
+          "scriptType": "JavaScript",
+          "script": "Check knowledge base for automated resolution",
+          "description": "Attempts automatic resolution for low priority common issues"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "data": {
+          "label": "Assignment Strategy",
+          "gatewayType": "parallel",
+          "branches": "Parallel assignment and notification paths",
+          "description": "Initiates parallel assignment and stakeholder notification"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node_9",
+        "type": "userTask",
+        "position": {
+          "x": 650,
+          "y": 1100
+        },
+        "data": {
+          "label": "Manual Manager Review",
+          "taskName": "High Priority Review",
+          "assignedTo": "Department Manager",
+          "priority": "High",
+          "dueDate": "2 hours",
+          "instructions": "Review high priority ticket and assign specialist"
+        },
+        "width": 280,
+        "height": 54,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "scriptTask",
+        "position": {
+          "x": -175,
+          "y": 1350
+        },
+        "data": {
+          "label": "Auto-Assign Agent",
+          "scriptType": "JavaScript",
+          "script": "Round-robin assignment based on workload and skills",
+          "description": "Automatically assigns ticket to best available agent"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "type": "notification",
+        "position": {
+          "x": 175,
+          "y": 1350
+        },
+        "data": {
+          "label": "Notify Stakeholders",
+          "channel": "Email/SMS",
+          "recipient": "Customer and assigned agent",
+          "template": "Ticket created and assigned notification",
+          "description": "Sends notifications to customer and assigned agent"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "type": "userTask",
+        "position": {
+          "x": 525,
+          "y": 1350
+        },
+        "data": {
+          "label": "Agent Work on Ticket",
+          "taskName": "Resolve Support Ticket",
+          "assignedTo": "Assigned Agent",
+          "priority": "Medium",
+          "dueDate": "Based on SLA",
+          "instructions": "Work on ticket resolution following standard procedures"
+        },
+        "width": 280,
+        "height": 54,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "type": "notification",
+        "position": {
+          "x": 875,
+          "y": 1350
+        },
+        "data": {
+          "label": "Resolution Notification",
+          "channel": "Email",
+          "recipient": "Customer",
+          "template": "Ticket resolution notification with solution details",
+          "description": "Notifies customer of ticket resolution and solution"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "decision",
+        "position": {
+          "x": 225,
+          "y": 1600
+        },
+        "data": {
+          "label": "Resolution Check",
+          "gatewayType": "exclusive",
+          "condition": "Check if ticket is resolved or needs escalation",
+          "description": "Determines if ticket is resolved or requires further action"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "type": "userTask",
+        "position": {
+          "x": 575,
+          "y": 1600
+        },
+        "data": {
+          "label": "Customer Feedback",
+          "taskName": "Rate Support Experience",
+          "assignedTo": "Customer",
+          "priority": "Low",
+          "dueDate": "7 days",
+          "instructions": "Please rate your support experience and provide feedback"
+        },
+        "width": 280,
+        "height": 54,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "type": "scriptTask",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "data": {
+          "label": "Close Ticket",
+          "scriptType": "JavaScript",
+          "script": "Update ticket status and generate closure report",
+          "description": "Finalizes ticket closure and updates system records"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3",
+        "condition": "validation.isValid === true"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_2",
+        "target": "node_18",
+        "label": "Validation Failed",
+        "condition": "validation.isValid === false"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_5",
+        "label": "Low Priority/Simple",
+        "condition": "processData.priority === 'Low' && processData.complexity === 'Simple'"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_4",
+        "target": "node_6",
+        "label": "Medium Priority",
+        "condition": "processData.priority === 'Medium'"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_4",
+        "target": "node_9",
+        "label": "High Priority/Critical",
+        "condition": "processData.priority === 'High' || processData.priority === 'Critical'"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_4",
+        "target": "node_6",
+        "isDefault": true,
+        "label": "Default Path"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_5",
+        "target": "node_14",
+        "condition": "autoResolution.success === true"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_5",
+        "target": "node_6",
+        "label": "Auto-resolution failed",
+        "condition": "autoResolution.success === false"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_6",
+        "target": "node_7",
+        "label": "Default",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        }
+      },
+      {
+        "id": "edge_12",
+        "source": "node_6",
+        "target": "node_8",
+        "label": "Notification Path"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_7",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_8",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_10",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_11",
+        "target": "node_13",
+        "label": "SLA Breach"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_12",
+        "target": "node_14",
+        "label": "Default",
+        "condition": "ticket.status === 'Resolved'",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        }
+      },
+      {
+        "id": "edge_19",
+        "source": "node_12",
+        "target": "node_13",
+        "label": "Needs Escalation",
+        "condition": "ticket.escalationNeeded === true"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_16",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_18",
+        "target": "node_17",
+        "label": "Rejected Ticket"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1734476234567",
+    "name": "AI-Powered Support Ticket Sentiment Analysis Workflow",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Ticket Submitted",
+          "trigger": "Customer submits support ticket",
+          "description": "New support ticket received through web portal or email",
+          "formId": "workflow_1734476234567_form_ticket_submission",
+          "formName": "support_ticket_submission"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Validate Ticket Data",
+          "ruleType": "Required field validation",
+          "rules": [
+            "customer_email required",
+            "ticket_description required",
+            "category required"
+          ],
+          "description": "Ensure all mandatory fields are present and properly formatted"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "decision",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "Validation Check",
+          "gatewayType": "exclusive",
+          "condition": "Check if ticket data is complete and valid",
+          "description": "Route based on validation results"
+        },
+        "width": 320,
+        "height": 134,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "userTask",
+        "position": {
+          "x": 75,
+          "y": 850
+        },
+        "data": {
+          "label": "Request Missing Information",
+          "taskName": "contact_customer",
+          "assignedTo": "Support Agent",
+          "priority": "Medium",
+          "dueDate": "4 hours",
+          "instructions": "Contact customer to obtain missing required information",
+          "formId": "workflow_1734476234567_form_sentiment_analysis",
+          "formName": "sentiment_analysis_review"
+        },
+        "width": 295,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "llmTask",
+        "position": {
+          "x": 425,
+          "y": 850
+        },
+        "data": {
+          "label": "AI Sentiment Analysis",
+          "model": "claude-sonnet-4-5",
+          "prompt": "Analyze the sentiment of this support ticket: {ticket_description}. Extract: 1) Overall sentiment (positive/neutral/negative/urgent), 2) Emotional intensity (1-10), 3) Key concerns, 4) Urgency indicators",
+          "input": {
+            "ticket_description": "processData.description",
+            "customer_info": "processData.customerProfile"
+          },
+          "output": {
+            "sentiment": "sentiment",
+            "intensity": "emotionalIntensity",
+            "concerns": "keyConcerns",
+            "urgency": "urgencyScore"
+          },
+          "temperature": 0.3,
+          "maxTokens": 500,
+          "description": "Analyze customer sentiment and extract emotional context from ticket"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node_6",
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "data": {
+          "label": "Sentiment Classification",
+          "gatewayType": "exclusive",
+          "condition": "Route based on sentiment analysis results",
+          "description": "Determine workflow path based on detected sentiment and urgency"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "decision",
+        "position": {
+          "x": -194.58652133022406,
+          "y": 1318.6411436447083
+        },
+        "data": {
+          "label": "Parallel Processing Split",
+          "gatewayType": "parallel",
+          "branches": "Simultaneous category classification and priority assignment",
+          "description": "Split workflow to handle classification and priority in parallel"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true,
+        "selected": false,
+        "positionAbsolute": {
+          "x": -194.58652133022406,
+          "y": 1318.6411436447083
+        },
+        "dragging": false
+      },
+      {
+        "id": "node_18",
+        "type": "notification",
+        "position": {
+          "x": 525,
+          "y": 1350
+        },
+        "data": {
+          "label": "Critical Alert",
+          "channel": "SMS",
+          "recipient": "Support Manager",
+          "template": "URGENT: Extremely negative sentiment detected in ticket #{ticket_id}",
+          "description": "Immediate alert for highly negative customer sentiment"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true,
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node_8",
+        "type": "llmTask",
+        "position": {
+          "x": -415.9030087071918,
+          "y": 1698.5564056880598
+        },
+        "data": {
+          "label": "Ticket Categorization",
+          "model": "claude-haiku",
+          "prompt": "Categorize this support ticket into one of: Technical Issue, Billing Inquiry, Feature Request, Bug Report, Account Access, General Question. Consider: {ticket_description} and sentiment: {sentiment}",
+          "input": {
+            "ticket_description": "processData.description",
+            "sentiment": "processData.sentiment"
+          },
+          "output": {
+            "category": "ticketCategory",
+            "confidence": "categoryConfidence"
+          },
+          "temperature": 0.2,
+          "maxTokens": 100,
+          "description": "Automatically categorize ticket based on content and sentiment"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true,
+        "selected": false,
+        "dragging": false,
+        "positionAbsolute": {
+          "x": -415.9030087071918,
+          "y": 1698.5564056880598
+        }
+      },
+      {
+        "id": "node_9",
+        "type": "scriptTask",
+        "position": {
+          "x": 90.89127306926707,
+          "y": 1689.5967324436906
+        },
+        "data": {
+          "label": "Calculate Priority Score",
+          "scriptType": "JavaScript",
+          "script": "const urgency = processData.urgencyScore; const intensity = processData.emotionalIntensity; return urgency * 0.6 + intensity * 0.4;",
+          "description": "Calculate composite priority score from urgency and emotional intensity"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 90.89127306926707,
+          "y": 1689.5967324436906
+        },
+        "dragging": false
+      },
+      {
+        "id": "node_19",
+        "type": "userTask",
+        "position": {
+          "x": 754.4798366221846,
+          "y": 1541.762123911601
+        },
+        "data": {
+          "label": "Immediate Manager Review",
+          "taskName": "manager_escalation",
+          "assignedTo": "Support Manager",
+          "priority": "Critical",
+          "dueDate": "15 minutes",
+          "instructions": "Critical escalation - customer extremely upset, requires immediate manager intervention",
+          "formId": "workflow_1734476234567_form_ticket_submission",
+          "formName": "support_ticket_submission"
+        },
+        "width": 296,
+        "height": 87,
+        "draggable": true,
+        "selected": true,
+        "positionAbsolute": {
+          "x": 754.4798366221846,
+          "y": 1541.762123911601
+        },
+        "dragging": false
+      },
+      {
+        "id": "node_10",
+        "type": "decision",
+        "position": {
+          "x": 485.8386929774763,
+          "y": 1872.3991831109226
+        },
+        "data": {
+          "label": "Parallel Join & Priority Check",
+          "gatewayType": "exclusive",
+          "condition": "Evaluate final priority score after parallel processing",
+          "description": "Merge parallel paths and route based on calculated priority"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 485.8386929774763,
+          "y": 1872.3991831109226
+        },
+        "dragging": false
+      },
+      {
+        "id": "node_11",
+        "type": "userTask",
+        "position": {
+          "x": 325,
+          "y": 2100
+        },
+        "data": {
+          "label": "High Priority Assignment",
+          "taskName": "urgent_ticket_assignment",
+          "assignedTo": "Senior Support Agent",
+          "priority": "High",
+          "dueDate": "1 hour",
+          "instructions": "High priority ticket requiring immediate attention - negative sentiment detected",
+          "formId": "workflow_1734476234567_form_ticket_submission",
+          "formName": "support_ticket_submission"
+        },
+        "width": 296,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "timerEvent",
+        "position": {
+          "x": 675,
+          "y": 2100
+        },
+        "data": {
+          "label": "Standard Queue Timer",
+          "timerType": "duration",
+          "duration": "PT4H",
+          "description": "Wait 4 hours before escalation if ticket remains unassigned"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "type": "userTask",
+        "position": {
+          "x": 805.0643157297154,
+          "y": 2365.6794281776456
+        },
+        "data": {
+          "label": "Regular Assignment",
+          "taskName": "standard_ticket_assignment",
+          "assignedTo": "Available Support Agent",
+          "priority": "Medium",
+          "dueDate": "8 hours",
+          "instructions": "Standard ticket assignment based on sentiment analysis and categorization",
+          "formId": "workflow_1734476234567_form_ticket_submission",
+          "formName": "support_ticket_submission"
+        },
+        "width": 296,
+        "height": 87,
+        "draggable": true,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 805.0643157297154,
+          "y": 2365.6794281776456
+        },
+        "dragging": false
+      },
+      {
+        "id": "node_14",
+        "type": "notification",
+        "position": {
+          "x": 317.334867381207,
+          "y": 2338.8004084445383
+        },
+        "data": {
+          "label": "Escalation Alert",
+          "channel": "Email",
+          "recipient": "Support Manager",
+          "template": "High priority ticket #{ticket_id} assigned with {sentiment} sentiment",
+          "description": "Notify management of high-priority ticket assignments"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 317.334867381207,
+          "y": 2338.8004084445383
+        },
+        "dragging": false
+      },
+      {
+        "id": "node_15",
+        "type": "dataProcess",
+        "position": {
+          "x": 600,
+          "y": 2600
+        },
+        "data": {
+          "label": "Update Ticket Database",
+          "operation": "Database update",
+          "input": "Sentiment analysis results and assignments",
+          "output": "Updated ticket record with AI insights",
+          "description": "Store sentiment analysis, category, and priority in ticket system"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "type": "notification",
+        "position": {
+          "x": 650,
+          "y": 2850
+        },
+        "data": {
+          "label": "Customer Acknowledgment",
+          "channel": "Email",
+          "recipient": "Customer",
+          "template": "Your ticket #{ticket_id} has been received and assigned to our {category} team",
+          "description": "Send automated confirmation to customer with ticket details"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "type": "endEvent",
+        "position": {
+          "x": 700,
+          "y": 3100
+        },
+        "data": {
+          "label": "Ticket Processed",
+          "result": "Ticket successfully analyzed, categorized, and assigned",
+          "description": "Initial ticket processing complete with AI-powered sentiment analysis"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4",
+        "label": "Validation Failed",
+        "condition": "processData.validationResult === 'failed'"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_5",
+        "label": "Validation Passed",
+        "condition": "processData.validationResult === 'passed'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_6",
+        "target": "node_18",
+        "label": "Extremely Negative",
+        "condition": "processData.sentiment === 'negative' && processData.emotionalIntensity >= 8"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_7",
+        "label": "Normal Processing",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "source": "node_18",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_19",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_7",
+        "target": "node_8",
+        "label": "Default",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        }
+      },
+      {
+        "id": "edge_12",
+        "source": "node_7",
+        "target": "node_9",
+        "label": "Priority Calculation Path"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_8",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_10",
+        "target": "node_11",
+        "label": "High Priority",
+        "condition": "processData.priorityScore >= 7"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_10",
+        "target": "node_12",
+        "label": "Standard Priority",
+        "isDefault": true
+      },
+      {
+        "id": "edge_17",
+        "source": "node_11",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_13",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_16",
+        "target": "node_17"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1703524800000",
+    "name": "Customer Feedback AI Analysis Workflow",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Start Feedback Processing",
+          "trigger": "Scheduled batch or real-time feedback ingestion",
+          "description": "Initiates customer feedback processing pipeline",
+          "formId": "workflow_1703524800000_form_feedback_001",
+          "formName": "customer_feedback_form"
+        },
+        "width": 320,
+        "height": 165,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "dataProcess",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Extract Feedback Data",
+          "operation": "Data extraction from multiple sources",
+          "input": "Surveys, reviews, social media, support tickets",
+          "output": "Raw feedback records",
+          "description": "Collect feedback from all configured sources"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "validation",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "Schema Validation",
+          "ruleType": "Data structure validation",
+          "rules": [
+            "Required fields present",
+            "Data types correct",
+            "Text length limits",
+            "Timestamp format"
+          ],
+          "description": "Validate basic data structure and format"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "decision",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "data": {
+          "label": "Schema Valid?",
+          "gatewayType": "exclusive",
+          "condition": "All validation rules pass",
+          "description": "Route based on schema validation results"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "dataProcess",
+        "position": {
+          "x": 125,
+          "y": 1100
+        },
+        "data": {
+          "label": "Log Validation Errors",
+          "operation": "Error logging and rejection",
+          "input": "Invalid records with error details",
+          "output": "Error logs and dead letter queue",
+          "description": "Log rejected records for investigation"
+        },
+        "width": 311,
+        "height": 80,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "dataProcess",
+        "position": {
+          "x": 475,
+          "y": 1100
+        },
+        "data": {
+          "label": "Data Cleansing",
+          "operation": "Text normalization and cleaning",
+          "input": "Valid feedback records",
+          "output": "Cleaned text data",
+          "description": "Remove HTML, normalize whitespace, handle encoding"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "notification",
+        "position": {
+          "x": 175,
+          "y": 1350
+        },
+        "data": {
+          "label": "Alert Data Quality Issues",
+          "channel": "Email",
+          "recipient": "Data quality team",
+          "template": "Schema validation failures detected",
+          "description": "Notify team of data quality issues"
+        },
+        "width": 289,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "type": "validation",
+        "position": {
+          "x": 525,
+          "y": 1350
+        },
+        "data": {
+          "label": "Business Rules Validation",
+          "ruleType": "Business logic validation",
+          "rules": [
+            "Minimum text length",
+            "Language detection",
+            "Spam detection",
+            "Duplicate detection"
+          ],
+          "description": "Apply business rules to cleaned data"
+        },
+        "width": 308,
+        "height": 177,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "type": "decision",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "data": {
+          "label": "Business Rules Pass?",
+          "gatewayType": "exclusive",
+          "condition": "All business validation rules pass",
+          "description": "Route based on business rules validation"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "type": "dataProcess",
+        "position": {
+          "x": 275,
+          "y": 1850
+        },
+        "data": {
+          "label": "Log Business Rule Violations",
+          "operation": "Business rule violation logging",
+          "input": "Records failing business rules",
+          "output": "Business rule violation logs",
+          "description": "Log records failing business validation"
+        },
+        "width": 316,
+        "height": 80,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "type": "llmTask",
+        "position": {
+          "x": 625,
+          "y": 1850
+        },
+        "data": {
+          "label": "AI Sentiment Analysis",
+          "model": "claude-sonnet-3-5",
+          "prompt": "Analyze the sentiment of this customer feedback: {feedback_text}. Return: {\"sentiment\": \"positive|negative|neutral\", \"confidence\": 0-1, \"reasoning\": \"explanation\"}",
+          "input": {
+            "feedback_text": "cleaned_text"
+          },
+          "output": {
+            "sentiment_result": "analysis_output"
+          },
+          "temperature": 0.1,
+          "maxTokens": 200,
+          "description": "Analyze customer sentiment using AI"
+        },
+        "width": 320,
+        "height": 142,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "llmTask",
+        "position": {
+          "x": 500,
+          "y": 2100
+        },
+        "data": {
+          "label": "AI Issue Extraction",
+          "model": "claude-sonnet-3-5",
+          "prompt": "Extract key issues and topics from this feedback: {feedback_text}. Return: {\"issues\": [{\"category\": \"category_name\", \"issue\": \"specific_issue\", \"severity\": \"low|medium|high\"}], \"topics\": [\"topic1\", \"topic2\"]}",
+          "input": {
+            "feedback_text": "cleaned_text"
+          },
+          "output": {
+            "issues_result": "extraction_output"
+          },
+          "temperature": 0.2,
+          "maxTokens": 300,
+          "description": "Extract key issues and topics using AI"
+        },
+        "width": 320,
+        "height": 142,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "type": "validation",
+        "position": {
+          "x": 550,
+          "y": 2350
+        },
+        "data": {
+          "label": "AI Results Validation",
+          "ruleType": "AI output validation",
+          "rules": [
+            "Valid JSON structure",
+            "Required fields present",
+            "Confidence thresholds",
+            "Category mappings"
+          ],
+          "description": "Validate AI analysis results"
+        },
+        "width": 287,
+        "height": 177,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "type": "decision",
+        "position": {
+          "x": 600,
+          "y": 2600
+        },
+        "data": {
+          "label": "AI Results Valid?",
+          "gatewayType": "exclusive",
+          "condition": "AI outputs pass validation checks",
+          "description": "Route based on AI results validation"
+        },
+        "width": 320,
+        "height": 134,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "type": "userTask",
+        "position": {
+          "x": 475,
+          "y": 2850
+        },
+        "data": {
+          "label": "Manual Review",
+          "taskName": "review_failed_ai_analysis",
+          "assignedTo": "Data analyst",
+          "priority": "Medium",
+          "instructions": "Review and correct failed AI analysis",
+          "description": "Human review of failed AI analysis",
+          "formId": "workflow_1703524800000_form_feedback_001",
+          "formName": "customer_feedback_form"
+        },
+        "width": 292,
+        "height": 113,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "type": "dataProcess",
+        "position": {
+          "x": 825,
+          "y": 2850
+        },
+        "data": {
+          "label": "Enrich with Metadata",
+          "operation": "Data enrichment and aggregation",
+          "input": "Validated feedback with AI analysis",
+          "output": "Enriched feedback records",
+          "description": "Add customer info, product info, and temporal data"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "type": "dataProcess",
+        "position": {
+          "x": 700,
+          "y": 3100
+        },
+        "data": {
+          "label": "Calculate Quality Scores",
+          "operation": "Data quality scoring",
+          "input": "Enriched feedback records",
+          "output": "Records with quality scores",
+          "description": "Calculate completeness, accuracy, and confidence scores"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_18",
+        "type": "validation",
+        "position": {
+          "x": 750,
+          "y": 3350
+        },
+        "data": {
+          "label": "Final Quality Check",
+          "ruleType": "Output quality validation",
+          "rules": [
+            "Minimum quality score",
+            "Complete analysis results",
+            "Data consistency"
+          ],
+          "description": "Final validation before data loading"
+        },
+        "width": 300,
+        "height": 177,
+        "draggable": true
+      },
+      {
+        "id": "node_19",
+        "type": "decision",
+        "position": {
+          "x": 800,
+          "y": 3600
+        },
+        "data": {
+          "label": "Quality Check Pass?",
+          "gatewayType": "exclusive",
+          "condition": "Final quality validation passes",
+          "description": "Final quality gate before loading"
+        },
+        "width": 320,
+        "height": 134,
+        "draggable": true
+      },
+      {
+        "id": "node_20",
+        "type": "dataProcess",
+        "position": {
+          "x": 675,
+          "y": 3850
+        },
+        "data": {
+          "label": "Quarantine Low Quality",
+          "operation": "Data quarantine",
+          "input": "Low quality records",
+          "output": "Quarantine storage",
+          "description": "Store low quality records for review"
+        },
+        "width": 300,
+        "height": 80,
+        "draggable": true
+      },
+      {
+        "id": "node_21",
+        "type": "dataProcess",
+        "position": {
+          "x": 1025,
+          "y": 3850
+        },
+        "data": {
+          "label": "Load to Analytics DB",
+          "operation": "Data loading",
+          "input": "High quality analyzed feedback",
+          "output": "Analytics database",
+          "description": "Load processed feedback to analytics database"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_22",
+        "type": "dataProcess",
+        "position": {
+          "x": 900,
+          "y": 4100
+        },
+        "data": {
+          "label": "Update Summary Tables",
+          "operation": "Data aggregation",
+          "input": "Newly loaded feedback",
+          "output": "Summary and dashboard tables",
+          "description": "Update aggregated metrics and dashboard data"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_23",
+        "type": "notification",
+        "position": {
+          "x": 950,
+          "y": 4350
+        },
+        "data": {
+          "label": "Processing Complete Notification",
+          "channel": "Email",
+          "recipient": "Business stakeholders",
+          "template": "Feedback processing batch completed successfully",
+          "description": "Notify stakeholders of successful processing"
+        },
+        "width": 320,
+        "height": 137,
+        "draggable": true
+      },
+      {
+        "id": "node_24",
+        "type": "endEvent",
+        "position": {
+          "x": 1000,
+          "y": 4600
+        },
+        "data": {
+          "label": "Processing Complete",
+          "result": "Customer feedback successfully analyzed and loaded",
+          "description": "End of feedback processing workflow"
+        },
+        "width": 312,
+        "height": 80,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_4",
+        "target": "node_5",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_7",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_8",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_9",
+        "target": "node_10",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_9",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_14",
+        "target": "node_15",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_14",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_16",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_17",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_18",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_19",
+        "target": "node_20",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_19",
+        "target": "node_21"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_21",
+        "target": "node_22"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_22",
+        "target": "node_23"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_23",
+        "target": "node_24"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1737174400000",
+    "name": "Library Management System",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Library Request Initiated",
+          "trigger": "User submits library request",
+          "description": "Starts the library management process for book checkout, return, or membership",
+          "formId": "workflow_1737174400000_book_form",
+          "formName": "Book Management Form"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Validate Request Data",
+          "ruleType": "Input validation",
+          "rules": [
+            "Check required fields",
+            "Validate user ID format",
+            "Verify request type"
+          ],
+          "description": "Validates incoming request data for completeness and format"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "decision",
+        "position": {
+          "x": 25,
+          "y": 600
+        },
+        "data": {
+          "label": "Request Type Router",
+          "gatewayType": "exclusive",
+          "condition": "Route based on request type",
+          "description": "Determines the type of library operation requested"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_20",
+        "type": "scriptTask",
+        "position": {
+          "x": 375,
+          "y": 600
+        },
+        "data": {
+          "label": "Error Recovery Handler",
+          "scriptType": "JavaScript",
+          "script": "handleSystemError(processData.errorType, processData.errorDetails)",
+          "description": "Handles system errors and attempts recovery or escalation"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "scriptTask",
+        "position": {
+          "x": -275,
+          "y": 850
+        },
+        "data": {
+          "label": "Check Book Availability",
+          "scriptType": "JavaScript",
+          "script": "queryBookInventory(processData.bookId)",
+          "description": "Queries database to check if requested book is available"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "type": "scriptTask",
+        "position": {
+          "x": 75,
+          "y": 850
+        },
+        "data": {
+          "label": "Process Book Return",
+          "scriptType": "JavaScript",
+          "script": "processReturn(processData.bookId, processData.userId)",
+          "description": "Handles book return processing including condition check"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "userTask",
+        "position": {
+          "x": 425,
+          "y": 850
+        },
+        "data": {
+          "label": "Process Membership Application",
+          "taskName": "membership_review",
+          "assignedTo": "Library Staff",
+          "priority": "Medium",
+          "dueDate": "24 hours",
+          "instructions": "Review membership application and verify eligibility",
+          "formId": "workflow_1737174400000_member_form",
+          "formName": "Member Registration Form"
+        },
+        "width": 317,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_18",
+        "type": "endEvent",
+        "position": {
+          "x": 775,
+          "y": 850
+        },
+        "data": {
+          "label": "Library Process Complete",
+          "result": "Transaction processed successfully",
+          "description": "Library management workflow completed with all operations finalized"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "decision",
+        "position": {
+          "x": -50,
+          "y": 1100
+        },
+        "data": {
+          "label": "Book Availability Check",
+          "gatewayType": "exclusive",
+          "condition": "Check if book is available and user eligible",
+          "description": "Determines if book can be checked out based on availability and user status"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "data": {
+          "label": "Return Condition Check",
+          "gatewayType": "exclusive",
+          "condition": "Check if book is damaged or overdue",
+          "description": "Evaluates book condition and return timeliness"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "type": "decision",
+        "position": {
+          "x": 650,
+          "y": 1100
+        },
+        "data": {
+          "label": "Membership Approval Decision",
+          "gatewayType": "exclusive",
+          "condition": "Based on staff review and eligibility criteria",
+          "description": "Determines whether to approve or reject membership application"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "decision",
+        "position": {
+          "x": -350,
+          "y": 1350
+        },
+        "data": {
+          "label": "Parallel Checkout Processing",
+          "gatewayType": "parallel",
+          "branches": "Update inventory and generate receipt simultaneously",
+          "description": "Processes checkout operations in parallel for efficiency"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "type": "scriptTask",
+        "position": {
+          "x": 0,
+          "y": 1350
+        },
+        "data": {
+          "label": "Calculate Late Fees",
+          "scriptType": "JavaScript",
+          "script": "calculateLateFees(processData.dueDate, processData.returnDate)",
+          "description": "Calculates any applicable late fees or damage charges"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "type": "timerEvent",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "data": {
+          "label": "Overdue Book Timer",
+          "timerType": "duration",
+          "duration": "PT24H",
+          "description": "Triggers overdue processing after 24 hours past due date"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "type": "llmTask",
+        "position": {
+          "x": 700,
+          "y": 1350
+        },
+        "data": {
+          "label": "AI Recommendation Engine",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Based on user's reading history: ${processData.readingHistory} and current checkout: ${processData.currentBook}, recommend 3 similar books with brief explanations",
+          "outputVariable": "bookRecommendations",
+          "temperature": 0.7,
+          "maxTokens": 1000,
+          "description": "Generates personalized book recommendations based on user preferences"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_19",
+        "type": "notification",
+        "position": {
+          "x": 1050,
+          "y": 1350
+        },
+        "data": {
+          "label": "Send Rejection Notice",
+          "channel": "Email",
+          "recipient": "Applicant",
+          "template": "Membership application rejection with reasons",
+          "description": "Notifies applicant of membership rejection with explanation"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "scriptTask",
+        "position": {
+          "x": -125,
+          "y": 1600
+        },
+        "data": {
+          "label": "Update Book Inventory",
+          "scriptType": "JavaScript",
+          "script": "updateInventoryStatus(processData.bookId, 'checked_out')",
+          "description": "Updates book status in inventory system"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "type": "scriptTask",
+        "position": {
+          "x": 225,
+          "y": 1600
+        },
+        "data": {
+          "label": "Generate Checkout Receipt",
+          "scriptType": "JavaScript",
+          "script": "generateReceipt(processData.userId, processData.bookId, processData.dueDate)",
+          "description": "Creates checkout receipt with due date information"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "type": "notification",
+        "position": {
+          "x": 575,
+          "y": 1600
+        },
+        "data": {
+          "label": "Send Overdue Notice",
+          "channel": "Email",
+          "recipient": "Book borrower",
+          "template": "Overdue book notification with late fee information",
+          "description": "Notifies user about overdue books and applicable fees"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "type": "notification",
+        "position": {
+          "x": 925,
+          "y": 1600
+        },
+        "data": {
+          "label": "Send Completion Notification",
+          "channel": "Email",
+          "recipient": "User",
+          "template": "Library transaction completed with recommendations",
+          "description": "Sends final notification with transaction summary and AI recommendations"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4",
+        "label": "Book Checkout",
+        "condition": "processData.requestType === 'checkout'"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_9",
+        "label": "Book Return",
+        "condition": "processData.requestType === 'return'"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_3",
+        "target": "node_12",
+        "label": "Membership",
+        "condition": "processData.requestType === 'membership'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_6",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_6",
+        "label": "Available & Eligible",
+        "condition": "processData.bookAvailable === true && processData.userEligible === true"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_5",
+        "target": "node_14",
+        "label": "Not Available",
+        "condition": "processData.bookAvailable === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "source": "node_6",
+        "target": "node_7",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_6",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_7",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_8",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_10",
+        "target": "node_16",
+        "label": "Normal Return",
+        "condition": "processData.isOverdue === false && processData.isDamaged === false"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_10",
+        "target": "node_11",
+        "label": "Overdue/Damaged",
+        "condition": "processData.isOverdue === true || processData.isDamaged === true",
+        "isDefault": true
+      },
+      {
+        "id": "edge_16",
+        "source": "node_11",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_13",
+        "target": "node_16",
+        "label": "Approved",
+        "condition": "processData.membershipApproved === true"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_13",
+        "target": "node_19",
+        "label": "Rejected",
+        "condition": "processData.membershipApproved === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_20",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_15",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_16",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_17",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_19",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_20",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_26",
+        "source": "node_2",
+        "target": "node_20",
+        "label": "Validation Error",
+        "condition": "processData.validationFailed === true"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1732905842000",
+    "name": "Enterprise Travel Management System",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": -75,
+          "y": 100
+        },
+        "data": {
+          "label": "Travel Request Initiated",
+          "trigger": "Employee submits travel request",
+          "description": "Starts the travel request approval and booking process",
+          "formId": "workflow_1732905842000_trip_request_form",
+          "formName": "Trip Request Form"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "type": "timerEvent",
+        "position": {
+          "x": 275,
+          "y": 100
+        },
+        "data": {
+          "label": "Approval Timeout Monitor",
+          "timerType": "duration",
+          "duration": "PT72H",
+          "description": "Escalates if approval takes longer than 3 business days"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": -25,
+          "y": 350
+        },
+        "data": {
+          "label": "Request Validation",
+          "ruleType": "Business Rules",
+          "rules": [
+            "Required fields present",
+            "Valid dates",
+            "Budget within limits",
+            "Advance booking period"
+          ],
+          "description": "Validates travel request data and business rules"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "type": "userTask",
+        "position": {
+          "x": 325,
+          "y": 350
+        },
+        "data": {
+          "label": "Escalation Review",
+          "taskName": "escalated_approval",
+          "assignedTo": "Senior Management",
+          "priority": "Urgent",
+          "dueDate": "4 hours",
+          "instructions": "Review escalated travel request due to timeout or special circumstances",
+          "formId": "workflow_1732905842000_trip_request_form",
+          "formName": "Trip Request Form"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "llmTask",
+        "position": {
+          "x": -513.7821714285712,
+          "y": 600
+        },
+        "data": {
+          "label": "AI Travel Risk Assessment",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze this travel request for risk factors: Destination: ${processData.destination}, Purpose: ${processData.purpose}, Duration: ${processData.duration}, Budget: ${processData.budget}. Assess safety, compliance, and cost risks.",
+          "outputVariable": "riskAssessment",
+          "temperature": 0.3,
+          "maxTokens": 500,
+          "description": "AI analyzes travel destination safety, compliance and cost risks"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true,
+        "selected": true,
+        "positionAbsolute": {
+          "x": -513.7821714285712,
+          "y": 600
+        },
+        "dragging": false
+      },
+      {
+        "id": "node_10",
+        "type": "decision",
+        "position": {
+          "x": 375,
+          "y": 600
+        },
+        "data": {
+          "label": "Approval Outcome Gateway",
+          "gatewayType": "exclusive",
+          "condition": "Check if all required approvals are granted",
+          "description": "Routes based on approval decision or timeout escalation"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "decision",
+        "position": {
+          "x": -148.1837714285714,
+          "y": 630.9828571428573
+        },
+        "data": {
+          "label": "Budget & Risk Approval Router",
+          "gatewayType": "exclusive",
+          "condition": "Route based on budget amount and risk level",
+          "description": "Determines approval path based on budget and AI risk assessment"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true,
+        "selected": false,
+        "positionAbsolute": {
+          "x": -148.1837714285714,
+          "y": 630.9828571428573
+        },
+        "dragging": false
+      },
+      {
+        "id": "node_11",
+        "type": "decision",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "data": {
+          "label": "Booking Channel Router",
+          "gatewayType": "parallel",
+          "branches": "Flight, Hotel, and Ground Transport booking in parallel",
+          "description": "Initiates parallel booking processes for approved travel"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "type": "notification",
+        "position": {
+          "x": 600,
+          "y": 850
+        },
+        "data": {
+          "label": "Rejection Notification",
+          "channel": "Email",
+          "recipient": "Employee",
+          "template": "Travel request denied with reason and next steps",
+          "description": "Notifies employee of request denial with detailed feedback"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "userTask",
+        "position": {
+          "x": -575,
+          "y": 1100
+        },
+        "data": {
+          "label": "Manager Approval",
+          "taskName": "approve_travel_standard",
+          "assignedTo": "Direct Manager",
+          "priority": "Medium",
+          "dueDate": "2 business days",
+          "instructions": "Review and approve standard travel request under $2000",
+          "formId": "workflow_1732905842000_expense_claim_form",
+          "formName": "Expense Claim Form"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "decision",
+        "position": {
+          "x": -225,
+          "y": 1100
+        },
+        "data": {
+          "label": "Executive Approval Split",
+          "gatewayType": "parallel",
+          "branches": "Finance Director and VP approval in parallel",
+          "description": "High-value requests require parallel approval from Finance and VP"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "scriptTask",
+        "position": {
+          "x": 125,
+          "y": 1100
+        },
+        "data": {
+          "label": "Flight Booking API",
+          "scriptType": "JavaScript",
+          "script": "bookFlight(processData.departure, processData.destination, processData.dates)",
+          "description": "Books flight through corporate travel agency API"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true,
+        "selected": false
+      },
+      {
+        "id": "node_13",
+        "type": "scriptTask",
+        "position": {
+          "x": 475,
+          "y": 1100
+        },
+        "data": {
+          "label": "Hotel Booking API",
+          "scriptType": "JavaScript",
+          "script": "bookHotel(processData.destination, processData.checkin, processData.checkout)",
+          "description": "Books accommodation through preferred hotel partners"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "type": "scriptTask",
+        "position": {
+          "x": 825,
+          "y": 1100
+        },
+        "data": {
+          "label": "Ground Transport Booking",
+          "scriptType": "JavaScript",
+          "script": "bookTransport(processData.destination, processData.transportType)",
+          "description": "Arranges car rental or taxi services"
+        },
+        "width": 297,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "node_19",
+        "type": "endEvent",
+        "position": {
+          "x": 1175,
+          "y": 1100
+        },
+        "data": {
+          "label": "Request Denied",
+          "result": "Travel request rejected",
+          "description": "Travel request was denied due to policy, budget, or risk factors"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "userTask",
+        "position": {
+          "x": 0,
+          "y": 1350
+        },
+        "data": {
+          "label": "Finance Director Approval",
+          "taskName": "approve_travel_finance",
+          "assignedTo": "Finance Director",
+          "priority": "High",
+          "dueDate": "1 business day",
+          "instructions": "Review high-value travel request for budget compliance",
+          "formId": "workflow_1732905842000_travel_policy_form",
+          "formName": "Travel Policy Form"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "type": "userTask",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "data": {
+          "label": "VP Level Approval",
+          "taskName": "approve_travel_executive",
+          "assignedTo": "Department VP",
+          "priority": "High",
+          "dueDate": "1 business day",
+          "instructions": "Review high-value/high-risk travel request for strategic alignment",
+          "formId": "workflow_1732905842000_trip_request_form",
+          "formName": "Trip Request Form"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "type": "notification",
+        "position": {
+          "x": 700,
+          "y": 1350
+        },
+        "data": {
+          "label": "Travel Confirmation Package",
+          "channel": "Email",
+          "recipient": "Employee and Manager",
+          "template": "Complete travel itinerary with booking confirmations",
+          "description": "Sends comprehensive travel package with all bookings and details"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_18",
+        "type": "endEvent",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "data": {
+          "label": "Travel Booked Successfully",
+          "result": "Complete travel arrangement confirmed",
+          "description": "Travel request approved and all bookings completed"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_4",
+        "target": "node_5",
+        "label": "Standard Request",
+        "condition": "processData.budget <= 2000 && processData.riskAssessment.level === 'low'"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_6",
+        "label": "High Value/Risk",
+        "condition": "processData.budget > 2000 || processData.riskAssessment.level === 'high'"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_4",
+        "target": "node_17",
+        "label": "Auto Reject",
+        "condition": "processData.riskAssessment.level === 'critical'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_7",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_6",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_7",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_8",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_9",
+        "target": "node_16",
+        "label": "Timeout Escalation"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_10",
+        "target": "node_11",
+        "label": "Approved",
+        "condition": "processData.approvalStatus === 'approved'"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_10",
+        "target": "node_17",
+        "label": "Rejected",
+        "condition": "processData.approvalStatus === 'rejected'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_15",
+        "source": "node_11",
+        "target": "node_12",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_11",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_11",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_12",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_13",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_15",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_16",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_17",
+        "target": "node_19"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1735689024",
+    "name": "Quirky Chatbot Response Generator",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "User Query Received",
+          "trigger": "User sends message to chatbot",
+          "description": "Initiates the workflow when a user submits a query to the chatbot",
+          "formId": "workflow_1735689024_form_chatbot_001",
+          "formName": "chatbot_query_form"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "llmTask",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Generate Quirky Response",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "You are a quirky, fun, and conversational chatbot. Respond to this user query in a playful, witty, and engaging way with personality and humor. User query: ${processData.userQuery}",
+          "outputVariable": "quirkyResponse",
+          "temperature": 0.8,
+          "maxTokens": 500,
+          "description": "Uses AI to generate a quirky, conversational response to the user's query"
+        },
+        "width": 320,
+        "height": 159,
+        "selected": true,
+        "dragging": false,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "notification",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "Send Response to User",
+          "channel": "Chat",
+          "recipient": "User",
+          "template": "${processData.quirkyResponse}",
+          "description": "Delivers the quirky chatbot response back to the user"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "endEvent",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "data": {
+          "label": "Response Delivered",
+          "result": "Quirky response sent to user",
+          "description": "Workflow completes after user receives the conversational chatbot response"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1735689234",
+    "name": "Quirky Chatbot Response Loop",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Start Chatbot",
+          "trigger": "User initiates chat",
+          "description": "Begin chatbot conversation loop"
+        },
+        "width": 283,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "userTask",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Receive User Input",
+          "taskName": "get_user_query",
+          "assignedTo": "User",
+          "priority": "High",
+          "instructions": "Enter your query for the chatbot",
+          "description": "Capture user's message input"
+        },
+        "width": 280,
+        "height": 80,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "llmTask",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "Generate Quirky Response",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Respond to this user query in an extremely quirky, whimsical, and humorous fashion. Be absurd and creative: ${processData.user_input}",
+          "outputVariable": "quirky_response",
+          "temperature": 0.9,
+          "maxTokens": 500,
+          "description": "Generate a quirky, funny response to user's query"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "scriptTask",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "data": {
+          "label": "Check for Magic Word",
+          "scriptType": "JavaScript",
+          "script": "const magicWord = 'exit'; const userInput = processData.user_input.toLowerCase(); processData.shouldExit = userInput.includes(magicWord);",
+          "description": "Check if user input contains magic word to exit loop"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "data": {
+          "label": "Magic Word Detected?",
+          "gatewayType": "exclusive",
+          "condition": "processData.shouldExit === true",
+          "description": "Decide whether to exit or continue loop"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "notification",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "data": {
+          "label": "Send Response",
+          "channel": "Chat",
+          "recipient": "User",
+          "template": "${processData.quirky_response}",
+          "description": "Display quirky response to user"
+        },
+        "width": 280,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "endEvent",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "data": {
+          "label": "Exit Chatbot",
+          "result": "Chatbot session ended with magic word",
+          "description": "End chatbot conversation when magic word is detected"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_5",
+        "target": "node_6",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_6",
+        "target": "node_7"
+      }
+    ]
+  }
+]
