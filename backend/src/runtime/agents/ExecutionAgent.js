@@ -170,6 +170,125 @@ class ExecutionAgent {
   }
 
   /**
+   * Get helper functions library for script execution
+   */
+  getHelperFunctions() {
+    return {
+      // Data manipulation
+      updateField: (data, field, value) => {
+        return { ...data, [field]: value };
+      },
+      getField: (data, field) => {
+        return data[field];
+      },
+      mergeData: (data, newData) => {
+        return { ...data, ...newData };
+      },
+
+      // Array operations
+      addToArray: (data, field, item) => {
+        const arr = data[field] || [];
+        return { ...data, [field]: [...arr, item] };
+      },
+      filterArray: (data, field, predicate) => {
+        const arr = data[field] || [];
+        return { ...data, [field]: arr.filter(predicate) };
+      },
+
+      // Validation
+      validateRequired: (data, fields) => {
+        const missing = fields.filter(f => !data[f]);
+        return { valid: missing.length === 0, missing };
+      },
+
+      // String operations
+      formatString: (template, data) => {
+        return template.replace(/\{(\w+)\}/g, (_, key) => data[key] || '');
+      },
+
+      // Date operations
+      getCurrentDate: () => new Date().toISOString(),
+      formatDate: (date) => new Date(date).toLocaleDateString(),
+
+      // Logging
+      log: (...args) => {
+        console.log('[ScriptTask]', ...args);
+      }
+    };
+  }
+
+  /**
+   * Use AI to fix a broken script
+   */
+  async fixScriptWithAI(originalScript, errorMessage, taskData, processData) {
+    if (!this.useLLM) {
+      console.log('[ExecutionAgent] AI not available for script recovery');
+      return null;
+    }
+
+    console.log('[ExecutionAgent] Attempting AI-powered script recovery...');
+
+    try {
+      const prompt = `You are a script repair expert. A JavaScript script failed during execution and you need to fix it.
+
+**Original Script:**
+\`\`\`javascript
+${originalScript}
+\`\`\`
+
+**Error:**
+${errorMessage}
+
+**Task Context:**
+- Task Label: ${taskData.label || 'Unknown'}
+- Task Description: ${taskData.description || 'No description'}
+
+**Available Data:**
+- processData: ${JSON.stringify(processData, null, 2)}
+
+**Available Helper Functions:**
+You can ONLY use these pre-defined functions:
+- updateField(data, field, value) - Update a single field
+- getField(data, field) - Get a field value
+- mergeData(data, newData) - Merge objects
+- addToArray(data, field, item) - Add item to array field
+- filterArray(data, field, predicate) - Filter array field
+- validateRequired(data, fields) - Validate required fields
+- formatString(template, data) - Format string with placeholders
+- getCurrentDate() - Get current ISO date
+- formatDate(date) - Format date to locale string
+- log(...args) - Log messages
+
+**Your Task:**
+Fix the script to accomplish the original intent while:
+1. Using ONLY the available helper functions (no undefined functions)
+2. Working with the processData object
+3. Returning a valid result
+4. Avoiding the error that occurred
+
+**Return ONLY the fixed JavaScript code, nothing else. Do not include markdown code blocks or explanations.**`;
+
+      const response = await this.anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        temperature: 0.3,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
+
+      const fixedScript = response.content[0].text.trim();
+      console.log('[ExecutionAgent] AI generated fixed script:', fixedScript.substring(0, 200) + '...');
+
+      return fixedScript;
+    } catch (aiError) {
+      console.error('[ExecutionAgent] AI script recovery failed:', aiError.message);
+      return null;
+    }
+  }
+
+  /**
    * Execute script task
    */
   async executeScriptTask(node, instance) {
@@ -177,14 +296,66 @@ class ExecutionAgent {
     const scriptType = taskData.scriptType || 'javascript';
 
     if (scriptType.toLowerCase() === 'javascript') {
-      // Sandboxed execution (in production, use vm2 or workers)
-      try {
-        const script = taskData.script || 'return { executed: true };';
-        const fn = new Function('processData', script);
-        const result = fn(instance.processData);
-        return result;
-      } catch (error) {
-        throw new Error(`Script execution failed: ${error.message}`);
+      const originalScript = taskData.script || 'return { executed: true };';
+      const helpers = this.getHelperFunctions();
+      let attemptCount = 0;
+      let currentScript = originalScript;
+
+      // Try up to 2 times: original script, then AI-fixed script
+      while (attemptCount < 2) {
+        attemptCount++;
+
+        try {
+          console.log(`[ExecutionAgent] Script execution attempt ${attemptCount}`);
+
+          // Create function with processData and helper functions
+          const fn = new Function(
+            'processData',
+            'helpers',
+            `
+            // Destructure helpers for easy access
+            const {
+              updateField, getField, mergeData,
+              addToArray, filterArray,
+              validateRequired, formatString,
+              getCurrentDate, formatDate,
+              log
+            } = helpers;
+
+            // Execute user script
+            ${currentScript}
+            `
+          );
+
+          const result = fn(instance.processData, helpers);
+
+          if (attemptCount > 1) {
+            console.log('[ExecutionAgent] ✓ AI-fixed script executed successfully!');
+          }
+
+          return result;
+        } catch (error) {
+          console.error(`[ExecutionAgent] Script execution attempt ${attemptCount} failed:`, error.message);
+
+          // If first attempt failed and AI is available, try to fix it
+          if (attemptCount === 1 && this.useLLM) {
+            const fixedScript = await this.fixScriptWithAI(
+              originalScript,
+              error.message,
+              taskData,
+              instance.processData
+            );
+
+            if (fixedScript) {
+              currentScript = fixedScript;
+              console.log('[ExecutionAgent] Retrying with AI-fixed script...');
+              continue; // Try again with fixed script
+            }
+          }
+
+          // If we've exhausted attempts or AI fix failed, throw error
+          throw new Error(`Script execution failed: ${error.message}`);
+        }
       }
     }
 

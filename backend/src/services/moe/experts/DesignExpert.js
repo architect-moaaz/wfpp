@@ -71,11 +71,44 @@ Return a JSON object with "forms" and "pages" arrays:
   "designAnalysis": {
     "source": "figma|pdf|auto-generated",
     "designSystem": {
-      "colors": { "primary": "#hex", "secondary": "#hex" },
-      "typography": { "headingFont": "Font", "bodyFont": "Font" },
-      "spacing": { "unit": "8px", "scale": [8, 16, 24, 32, 48, 64] }
+      "colors": {
+        "primary": "#1f2937",
+        "secondary": "#3b82f6",
+        "background": "#f8f9fa",
+        "cardBackground": "#ffffff",
+        "text": "#1f2937",
+        "textSecondary": "#6b7280",
+        "border": "#d1d5db",
+        "focus": "#3b82f6",
+        "error": "#ef4444",
+        "success": "#10b981"
+      },
+      "typography": {
+        "pageTitle": { "size": "24px", "weight": 600, "color": "#1a1a1a" },
+        "sectionHeader": { "size": "16px", "weight": 600, "color": "#374151" },
+        "sectionDescription": { "size": "14px", "weight": 400, "color": "#6b7280" },
+        "fieldLabel": { "size": "14px", "weight": 500, "color": "#374151" },
+        "inputText": { "size": "14px", "weight": 400, "color": "#1f2937" },
+        "helperText": { "size": "12px", "weight": 400, "color": "#9ca3af" }
+      },
+      "spacing": {
+        "unit": "8px",
+        "scale": [8, 12, 16, 20, 24, 32, 48, 64],
+        "sectionPadding": "24px",
+        "fieldGap": "16px",
+        "containerMaxWidth": "800px"
+      },
+      "borderRadius": {
+        "card": "8px",
+        "input": "6px",
+        "button": "6px"
+      },
+      "shadows": {
+        "card": "0 2px 8px rgba(0,0,0,0.08)",
+        "focus": "0 0 0 3px rgba(59, 130, 246, 0.1)"
+      }
     },
-    "theme": "light|dark|auto"
+    "theme": "light"
   },
   "forms": [
     {
@@ -84,10 +117,29 @@ Return a JSON object with "forms" and "pages" arrays:
       "description": "Form purpose",
       "designReference": "figma-node-id or pdf-page-number",
       "layout": {
-        "type": "single-column|two-column|grid|wizard",
-        "columns": 1,
-        "spacing": "comfortable|compact"
+        "type": "two-column",
+        "columns": 2,
+        "spacing": "comfortable",
+        "maxWidth": "800px",
+        "padding": "24px",
+        "background": "#ffffff",
+        "borderRadius": "8px",
+        "shadow": "0 2px 8px rgba(0,0,0,0.08)",
+        "responsive": {
+          "mobile": { "columns": 1, "padding": "16px" }
+        }
       },
+      "sections": [
+        {
+          "id": "section_id",
+          "title": "Section Title",
+          "description": "Brief description of this section",
+          "background": "#f9fafb",
+          "padding": "20px",
+          "borderRadius": "6px",
+          "fields": ["field_id_1", "field_id_2"]
+        }
+      ],
       "fields": [
         {
           "id": "field_id",
@@ -101,20 +153,74 @@ Return a JSON object with "forms" and "pages" arrays:
             "errorMessage": "Error message"
           },
           "styling": {
-            "width": "full|half|third",
-            "order": 1
+            "width": "half",
+            "order": 1,
+            "labelStyle": {
+              "fontSize": "14px",
+              "fontWeight": 500,
+              "color": "#374151",
+              "marginBottom": "6px"
+            },
+            "inputStyle": {
+              "fontSize": "14px",
+              "fontWeight": 400,
+              "color": "#1f2937",
+              "border": "1px solid #d1d5db",
+              "borderRadius": "6px",
+              "padding": "10px 12px",
+              "focusBorder": "2px solid #3b82f6",
+              "focusShadow": "0 0 0 3px rgba(59, 130, 246, 0.1)"
+            },
+            "helperTextStyle": {
+              "fontSize": "12px",
+              "color": "#9ca3af",
+              "marginTop": "4px"
+            }
           },
           "options": [] // For select, radio, checkbox
         }
       ],
       "actions": [
         {
-          "type": "submit|cancel|reset",
-          "label": "Button Label",
-          "style": "primary|secondary|outline",
-          "position": "left|center|right"
+          "type": "submit",
+          "label": "Submit Request",
+          "style": "primary",
+          "position": "right",
+          "styling": {
+            "background": "#1f2937",
+            "color": "#ffffff",
+            "border": "none",
+            "borderRadius": "6px",
+            "padding": "10px 24px",
+            "fontSize": "14px",
+            "fontWeight": 500,
+            "hoverBackground": "#111827",
+            "cursor": "pointer"
+          }
+        },
+        {
+          "type": "cancel",
+          "label": "Cancel",
+          "style": "secondary",
+          "position": "right",
+          "styling": {
+            "background": "#ffffff",
+            "color": "#374151",
+            "border": "1px solid #d1d5db",
+            "borderRadius": "6px",
+            "padding": "10px 24px",
+            "fontSize": "14px",
+            "fontWeight": 500,
+            "hoverBackground": "#f9fafb",
+            "cursor": "pointer"
+          }
         }
       ],
+      "actionGroup": {
+        "alignment": "right",
+        "gap": "12px",
+        "marginTop": "24px"
+      },
       "validation": {
         "onSubmit": true,
         "onBlur": false,
@@ -202,9 +308,99 @@ Return a JSON object with "forms" and "pages" arrays:
 - **Error States**: Graceful error handling
 
 ### Auto-Generation Guidelines (when no design provided):
+Use the **Reference Design Template** below as the foundation for all auto-generated forms and pages:
+
+**Reference Design: Professional Form Layout**
+Based on modern enterprise application design patterns:
+
+**Visual Design System:**
+- **Background**: Light gray (#f5f5f5 or #f8f9fa) for page background
+- **Form Container**: White (#ffffff) card with subtle shadow (0 2px 8px rgba(0,0,0,0.08))
+- **Border Radius**: 8px for cards and inputs
+- **Spacing**:
+  - Section padding: 24px
+  - Field spacing: 16px vertical gap
+  - Container max-width: 800px centered
+
+**Typography:**
+- **Page Title**: 24px, font-weight 600, dark gray (#1a1a1a)
+- **Section Headers**: 16px, font-weight 600, dark gray (#374151)
+- **Section Descriptions**: 14px, font-weight 400, gray (#6b7280)
+- **Field Labels**: 14px, font-weight 500, dark gray (#374151)
+- **Input Text**: 14px, font-weight 400, dark gray (#1f2937)
+- **Helper Text**: 12px, font-weight 400, light gray (#9ca3af)
+
+**Form Sections:**
+1. **Section Grouping**: Organize related fields into clearly labeled sections
+   - Section header with title and description
+   - Light background (#f9fafb) or border to visually separate
+   - Consistent padding (20px)
+
+2. **Field Layout:**
+   - **Two-column layout** for optimal space usage (50% width each on desktop)
+   - **Single column** on mobile (< 768px breakpoint)
+   - Labels above inputs (not side-by-side)
+   - Clear visual hierarchy
+
+3. **Input Fields:**
+   - Border: 1px solid #d1d5db
+   - Focus state: 2px border #3b82f6 (blue)
+   - Padding: 10px 12px
+   - Border radius: 6px
+   - Placeholder text: #9ca3af
+   - Full width within column
+
+4. **Dropdowns/Selects:**
+   - Same styling as text inputs
+   - Chevron icon on right
+   - Border and focus states match inputs
+
+5. **Radio Buttons:**
+   - Horizontal layout when few options (2-3)
+   - Vertical stack for many options
+   - Clear spacing between options (12px)
+   - Label on right of radio
+
+6. **Checkboxes:**
+   - Checkbox on left, label on right
+   - Helper text below in smaller font
+   - Blue accent color when checked (#3b82f6)
+
+7. **Text Areas:**
+   - Minimum height: 100px
+   - Resize vertical only
+   - Same border and focus styling
+
+8. **Action Buttons:**
+   - **Primary Button** (Submit):
+     - Background: #1f2937 (dark) or #3b82f6 (blue)
+     - Color: white
+     - Padding: 10px 24px
+     - Border radius: 6px
+     - Font weight: 500
+     - Hover: slightly darker
+   - **Secondary Button** (Cancel/Save Draft):
+     - Border: 1px solid #d1d5db
+     - Background: white
+     - Color: #374151
+     - Same size as primary
+   - **Button Group**: Right-aligned, 12px gap between buttons
+
+9. **Priority/Status Indicators:**
+   - Use badges/pills for priority levels
+   - Color coding: Low (gray), Medium (yellow), High (red), Urgent (red)
+
+10. **Info Messages:**
+    - Icon on left (info circle)
+    - Light blue background (#dbeafe)
+    - Blue border-left (4px solid #3b82f6)
+    - Padding: 12px 16px
+    - Border radius: 6px
+
+**Domain-Specific Patterns:**
 - **E-commerce**: Product grids, cart, checkout forms
 - **Dashboard**: Metric cards, charts, tables
-- **CRUD Apps**: List, detail, create/edit forms
+- **CRUD Apps**: List, detail, create/edit forms (use reference design)
 - **Auth**: Clean, centered login/register forms
 - **Mobile**: Bottom navigation, card-based layouts
 
@@ -875,6 +1071,16 @@ Since no design was provided, create an optimal design from scratch:
    - Touch-friendly controls
 
 **Design Guidelines**:
+- **CRITICAL**: Follow the Reference Design Template specified in the knowledge base
+- Use the professional form layout with:
+  - Light gray background (#f8f9fa)
+  - White form cards with shadow
+  - Two-column field layout on desktop, single column on mobile
+  - Section grouping with headers and descriptions
+  - Proper spacing (24px section padding, 16px field gaps)
+  - Professional typography (16px headers, 14px labels and inputs)
+  - Primary button (#1f2937 dark) and secondary button (white with border)
+  - Blue focus states (#3b82f6) on inputs
 - Follow modern UI/UX best practices
 - Use industry-standard patterns
 - Ensure accessibility (WCAG 2.1 AA)

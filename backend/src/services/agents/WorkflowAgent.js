@@ -32,15 +32,41 @@ ${JSON.stringify(workflowKnowledgeBase, null, 2)}
 For scriptTask nodes, you MUST include valid, executable JavaScript code in the "script" field:
 - The script field must contain actual JavaScript code that can be executed
 - Use 'processData' object to read and modify workflow data
-- Example: "script": "processData.category = 'approved';\\nprocessData.timestamp = new Date().toISOString();"
 - DO NOT use descriptions or pseudo-code - only valid JavaScript
-- Common patterns:
-  * Set values: processData.fieldName = 'value';
-  * Read values: const value = processData.fieldName;
-  * Conditionals: if (processData.amount > 1000) { processData.requiresApproval = true; }
-  * Calculations: processData.total = processData.price * processData.quantity;
-- Always end statements with semicolons
-- Use \\n for line breaks in the JSON string
+- DO NOT reference undefined functions or variables
+- Always return the modified processData or a result object
+
+### Available Helper Functions:
+Scripts have access to these pre-defined helper functions:
+- updateField(data, field, value) - Update a single field
+- getField(data, field) - Get a field value
+- mergeData(data, newData) - Merge objects
+- addToArray(data, field, item) - Add item to array field
+- filterArray(data, field, predicate) - Filter array field
+- validateRequired(data, fields) - Validate required fields
+- formatString(template, data) - Format string with placeholders
+- getCurrentDate() - Get current ISO date
+- formatDate(date) - Format date to locale string
+- log(...args) - Log messages
+
+### Valid Script Examples:
+1. Simple field update:
+   "script": "return updateField(processData, 'status', 'approved');"
+
+2. Multiple updates:
+   "script": "const updated = updateField(processData, 'status', 'approved');\\nreturn updateField(updated, 'timestamp', getCurrentDate());"
+
+3. Validation:
+   "script": "const validation = validateRequired(processData, ['requesterName', 'amount']);\\nreturn mergeData(processData, { isValid: validation.valid, errors: validation.missing });"
+
+4. Data transformation:
+   "script": "processData.totalAmount = (processData.quantity || 0) * (processData.unitPrice || 0);\\nprocessData.needsApproval = processData.totalAmount > 10000;\\nreturn processData;"
+
+### What NOT to do:
+- ❌ updateLibraryDatabase(processData) - undefined function
+- ❌ axios.post('/api/save', data) - no HTTP libraries available
+- ❌ fs.writeFile('file.txt', data) - no file system access
+- ✅ return updateField(processData, 'saved', true) - correct usage
 
 ## Output Format:
 Return ONLY valid JSON:

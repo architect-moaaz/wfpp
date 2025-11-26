@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import ReactFlow, { Background, Controls } from 'reactflow';
+import ReactFlow, { Background, Controls, Handle, Position } from 'reactflow';
 import 'reactflow/dist/style.css';
 import './WorkflowTestRunner.css';
 import { Play, Pause, RotateCcw, CheckCircle, Clock, AlertCircle, Loader } from 'lucide-react';
@@ -57,6 +57,7 @@ const TestRunNode = ({ data, id }) => {
         boxShadow: style.boxShadow || 'none'
       }}
     >
+      <Handle type="target" position={Position.Top} />
       <div className="node-header">
         {data.status === 'COMPLETED' && <CheckCircle size={14} />}
         {data.status === 'RUNNING' && <Loader size={14} className="spinning" />}
@@ -66,6 +67,7 @@ const TestRunNode = ({ data, id }) => {
       </div>
       <div className="node-label">{data.label}</div>
       {data.status && <div className="node-status">{data.status}</div>}
+      <Handle type="source" position={Position.Bottom} />
     </div>
   );
 };
@@ -83,6 +85,7 @@ const nodeTypes = {
   serviceTask: TestRunNode,
   sendTask: TestRunNode,
   businessRuleTask: TestRunNode,
+  llmTask: TestRunNode,
 };
 
 const WorkflowTestRunner = ({ workflow, onClose }) => {
@@ -128,31 +131,72 @@ const WorkflowTestRunner = ({ workflow, onClose }) => {
       }));
       setNodes(initialNodes);
 
+      console.log('[TestRunner] Loaded nodes count:', initialNodes.length);
+      console.log('[TestRunner] Node IDs:', initialNodes.map(n => n.id));
+
       // Format edges for ReactFlow (need source, target, id)
-      const connections = workflow.connections || workflow.edges || [];
+      // Check for non-empty arrays: empty array is truthy but we need actual data
+      const connections = (workflow.connections?.length > 0 ? workflow.connections : null)
+        || (workflow.edges?.length > 0 ? workflow.edges : null)
+        || [];
       console.log('[TestRunner] Workflow connections/edges:', connections);
       console.log('[TestRunner] Workflow has connections?', !!workflow.connections, 'Has edges?', !!workflow.edges);
+      console.log('[TestRunner] Connections length:', workflow.connections?.length, 'Edges length:', workflow.edges?.length);
+
+      // Debug first connection to see actual handle values
+      if (connections.length > 0) {
+        console.log('[TestRunner] Sample connection:', {
+          id: connections[0].id,
+          source: connections[0].source,
+          target: connections[0].target,
+          sourceHandle: connections[0].sourceHandle,
+          targetHandle: connections[0].targetHandle,
+          sourceHandleType: typeof connections[0].sourceHandle,
+          targetHandleType: typeof connections[0].targetHandle
+        });
+      }
 
       const formattedEdges = connections.map(conn => {
+        // Create edge without handles first
         const edge = {
           id: conn.id || `edge-${conn.source}-${conn.target}`,
           source: conn.source,
           target: conn.target,
-          label: conn.label || '',
           type: 'smoothstep',
           animated: false
         };
-        // Only include sourceHandle and targetHandle if they're actually defined and not the string "undefined"
-        if (conn.sourceHandle !== undefined && conn.sourceHandle !== null && conn.sourceHandle !== "undefined" && conn.sourceHandle !== "") {
-          edge.sourceHandle = conn.sourceHandle;
+
+        // Only add label if it's a non-empty string
+        if (conn.label && conn.label !== '') {
+          edge.label = conn.label;
         }
-        if (conn.targetHandle !== undefined && conn.targetHandle !== null && conn.targetHandle !== "undefined" && conn.targetHandle !== "") {
-          edge.targetHandle = conn.targetHandle;
-        }
+
+        // Completely omit sourceHandle and targetHandle to avoid React Flow errors
+        // React Flow will work fine without them for basic node connections
         return edge;
       });
 
       console.log('[TestRunner] Formatted edges for ReactFlow:', formattedEdges);
+      if (formattedEdges.length > 0) {
+        console.log('[TestRunner] First formatted edge keys:', Object.keys(formattedEdges[0]));
+        console.log('[TestRunner] First formatted edge stringified:', JSON.stringify(formattedEdges[0]));
+
+        // CRITICAL: Check if the node IDs referenced in edges actually exist in nodes
+        const firstEdge = formattedEdges[0];
+        const sourceNodeExists = initialNodes.some(n => n.id === firstEdge.source);
+        const targetNodeExists = initialNodes.some(n => n.id === firstEdge.target);
+        console.log('[TestRunner] Edge node validation:', {
+          edgeSource: firstEdge.source,
+          edgeTarget: firstEdge.target,
+          sourceNodeExists,
+          targetNodeExists,
+          availableNodeIds: initialNodes.map(n => n.id).slice(0, 5) // Show first 5 node IDs
+        });
+
+        if (!sourceNodeExists || !targetNodeExists) {
+          console.error('[TestRunner] NODE ID MISMATCH DETECTED! Edge references nodes that do not exist!');
+        }
+      }
       setEdges(formattedEdges);
 
       // Fetch start form if startProcess node has a formId
@@ -299,7 +343,9 @@ const WorkflowTestRunner = ({ workflow, onClose }) => {
         id: workflow.id,
         name: workflow.name,
         nodes: workflow.nodes,
-        connections: workflow.connections || workflow.edges || []
+        connections: (workflow.connections?.length > 0 ? workflow.connections : null)
+          || (workflow.edges?.length > 0 ? workflow.edges : null)
+          || []
       };
 
       const response = await fetch('http://localhost:5000/api/runtime/start', {

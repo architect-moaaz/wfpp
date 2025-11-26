@@ -51,11 +51,11 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
     return components.map((comp, index) => ({
       i: comp.id,
       x: 0,
-      y: index * 4, // Stack vertically with more spacing
+      y: index * 8, // Stack vertically with more spacing
       w: 24, // Full width
-      h: 4, // Increased height for better display
-      minW: 4, // Reduced to work with all breakpoints
-      minH: 2
+      h: 8, // Increased height for proper field display
+      minW: 6, // Minimum width
+      minH: 6  // Minimum height for comfortable display
     }));
   };
 
@@ -123,9 +123,9 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
       x: 0,
       y: Infinity, // Place at bottom
       w: componentType.defaultWidth || 24,
-      h: componentType.defaultHeight || 4,
+      h: componentType.defaultHeight || 8,
       minW: 6,
-      minH: 2
+      minH: 6
     };
     setLayout(prev => [...prev, newLayoutItem]);
 
@@ -207,9 +207,9 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
       x: 0,
       y: Infinity,
       w: 24,
-      h: 3,
-      minW: 2,
-      minH: 1
+      h: 8,
+      minW: 6,
+      minH: 6
     };
 
     setComponents(prev => [...prev, duplicatedComponent]);
@@ -335,7 +335,7 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
                   layouts={{ lg: layout }}
                   breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 600 }}
                   cols={{ lg: 24, md: 20, sm: 12, xs: 8 }}
-                  rowHeight={35}
+                  rowHeight={20}
                   onLayoutChange={handleLayoutChange}
                   isDraggable={!previewMode}
                   isResizable={!previewMode}

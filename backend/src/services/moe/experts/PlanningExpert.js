@@ -127,7 +127,7 @@ Create a detailed application plan in the following JSON format:
           "description": "Step description",
           "assignee": "role or user",
           "formRequired": true|false,
-          "automation": "Description of automation logic"
+          "automation": "Description of automation logic (for scriptTask, must use only available helper functions: updateField, getField, mergeData, addToArray, filterArray, validateRequired, formatString, getCurrentDate, formatDate, log)"
         }
       ],
       "dataModelsUsed": ["ModelName"],
