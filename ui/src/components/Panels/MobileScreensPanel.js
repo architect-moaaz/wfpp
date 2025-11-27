@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import './MobileScreensPanel.css';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Smartphone, Monitor, Tablet } from 'lucide-react';
+import { Smartphone, Monitor, Tablet, Network } from 'lucide-react';
+import MobileFlowCanvas from '../MobileFlow/MobileFlowCanvas';
 
 const MobileScreensPanel = () => {
   const { currentWorkflow } = useWorkflow();
   const [selectedScreen, setSelectedScreen] = useState(0);
   const [deviceFrame, setDeviceFrame] = useState('ios'); // ios, android, tablet
+  const [viewMode, setViewMode] = useState('preview'); // 'preview' or 'flow'
 
   const mobileUI = currentWorkflow?.mobileUI;
   const screens = mobileUI?.screens || [];
@@ -109,6 +111,331 @@ const MobileScreensPanel = () => {
     );
   };
 
+  // Visual Component Renderer - renders actual UI preview
+  const renderVisualComponent = (component, index = 0) => {
+    if (!component) return null;
+
+    const { type, props = {}, children = [], style = {}, layout = {} } = component;
+
+    const commonStyle = {
+      padding: layout.padding || 0,
+      margin: layout.margin || 0,
+      backgroundColor: style.backgroundColor,
+      ...style
+    };
+
+    switch (type?.toLowerCase()) {
+      case 'screen':
+      case 'safeareaview':
+      case 'scrollview':
+        return (
+          <div key={index} style={{ ...commonStyle, flex: 1 }}>
+            {children.map((child, idx) => renderVisualComponent(child, idx))}
+          </div>
+        );
+
+      case 'header':
+        return (
+          <div key={index} style={{
+            ...commonStyle,
+            padding: '16px',
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            fontWeight: '600',
+            fontSize: '18px',
+            borderBottom: '1px solid #e5e7eb'
+          }}>
+            {props.title || props.headerTitle || 'Header'}
+          </div>
+        );
+
+      case 'card':
+      case 'section':
+        return (
+          <div key={index} style={{
+            ...commonStyle,
+            padding: '16px',
+            margin: '12px 0',
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          }}>
+            {children.map((child, idx) => renderVisualComponent(child, idx))}
+          </div>
+        );
+
+      case 'stack':
+        return (
+          <div key={index} style={{
+            ...commonStyle,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            {children.map((child, idx) => renderVisualComponent(child, idx))}
+          </div>
+        );
+
+      case 'row':
+        return (
+          <div key={index} style={{
+            ...commonStyle,
+            display: 'flex',
+            flexDirection: 'row',
+            gap: '12px',
+            alignItems: 'center'
+          }}>
+            {children.map((child, idx) => renderVisualComponent(child, idx))}
+          </div>
+        );
+
+      case 'heading':
+        return (
+          <h3 key={index} style={{
+            ...commonStyle,
+            margin: '16px 0 8px',
+            fontSize: '20px',
+            fontWeight: '600',
+            color: '#111827'
+          }}>
+            {props.text || props.title || props.children || 'Heading'}
+          </h3>
+        );
+
+      case 'text':
+      case 'label':
+        return (
+          <p key={index} style={{
+            ...commonStyle,
+            margin: '4px 0',
+            fontSize: '14px',
+            color: props.color || '#374151',
+            fontWeight: props.bold ? '600' : '400'
+          }}>
+            {props.text || props.children || props.title || 'Text'}
+          </p>
+        );
+
+      case 'textinput':
+      case 'input':
+        return (
+          <input
+            key={index}
+            type="text"
+            placeholder={props.placeholder || 'Enter text...'}
+            style={{
+              ...commonStyle,
+              padding: '10px 14px',
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              fontSize: '14px',
+              width: '100%',
+              boxSizing: 'border-box'
+            }}
+            disabled
+          />
+        );
+
+      case 'textarea':
+        return (
+          <textarea
+            key={index}
+            placeholder={props.placeholder || 'Enter text...'}
+            rows={props.rows || 3}
+            style={{
+              ...commonStyle,
+              padding: '10px 14px',
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              fontSize: '14px',
+              width: '100%',
+              boxSizing: 'border-box',
+              fontFamily: 'inherit',
+              resize: 'vertical'
+            }}
+            disabled
+          />
+        );
+
+      case 'button':
+        return (
+          <button key={index} style={{
+            ...commonStyle,
+            padding: '12px 24px',
+            backgroundColor: props.primary ? '#3b82f6' : '#ffffff',
+            color: props.primary ? '#ffffff' : '#374151',
+            border: props.primary ? 'none' : '1px solid #d1d5db',
+            borderRadius: '6px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'not-allowed',
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+          }}>
+            {props.title || props.text || props.label || 'Button'}
+          </button>
+        );
+
+      case 'iconbutton':
+      case 'fab':
+        return (
+          <button key={index} style={{
+            ...commonStyle,
+            width: '48px',
+            height: '48px',
+            backgroundColor: '#3b82f6',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: type === 'fab' ? '50%' : '6px',
+            fontSize: '20px',
+            cursor: 'not-allowed',
+            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            {props.icon || '+'}
+          </button>
+        );
+
+      case 'list':
+      case 'listitem':
+        return (
+          <div key={index} style={{
+            ...commonStyle,
+            padding: '12px 16px',
+            backgroundColor: '#ffffff',
+            borderBottom: '1px solid #e5e7eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <span style={{ fontSize: '14px', color: '#111827' }}>
+              {props.title || props.text || 'List Item'}
+            </span>
+            {props.subtitle && (
+              <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                {props.subtitle}
+              </span>
+            )}
+          </div>
+        );
+
+      case 'badge':
+        return (
+          <span key={index} style={{
+            ...commonStyle,
+            display: 'inline-block',
+            padding: '4px 10px',
+            backgroundColor: props.color || '#3b82f6',
+            color: '#ffffff',
+            borderRadius: '12px',
+            fontSize: '12px',
+            fontWeight: '500'
+          }}>
+            {props.text || props.label || 'Badge'}
+          </span>
+        );
+
+      case 'divider':
+        return (
+          <hr key={index} style={{
+            ...commonStyle,
+            border: 'none',
+            borderTop: '1px solid #e5e7eb',
+            margin: '16px 0'
+          }} />
+        );
+
+      case 'image':
+        return (
+          <div key={index} style={{
+            ...commonStyle,
+            width: props.width || '100%',
+            height: props.height || '200px',
+            backgroundColor: '#f3f4f6',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#9ca3af',
+            fontSize: '14px'
+          }}>
+            📷 Image Placeholder
+          </div>
+        );
+
+      case 'switch':
+      case 'checkbox':
+        return (
+          <label key={index} style={{
+            ...commonStyle,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            fontSize: '14px',
+            color: '#374151'
+          }}>
+            <input
+              type="checkbox"
+              style={{ width: '20px', height: '20px', accentColor: '#3b82f6' }}
+              disabled
+            />
+            {props.label || props.title || 'Option'}
+          </label>
+        );
+
+      case 'picker':
+      case 'dropdown':
+        return (
+          <select key={index} style={{
+            ...commonStyle,
+            padding: '10px 14px',
+            border: '1px solid #d1d5db',
+            borderRadius: '6px',
+            fontSize: '14px',
+            width: '100%',
+            boxSizing: 'border-box'
+          }} disabled>
+            <option>{props.placeholder || 'Select an option...'}</option>
+          </select>
+        );
+
+      case 'searchbar':
+        return (
+          <input
+            key={index}
+            type="search"
+            placeholder={props.placeholder || 'Search...'}
+            style={{
+              ...commonStyle,
+              padding: '10px 14px 10px 38px',
+              border: '1px solid #d1d5db',
+              borderRadius: '20px',
+              fontSize: '14px',
+              width: '100%',
+              boxSizing: 'border-box',
+              backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%236b7280\' viewBox=\'0 0 16 16\'%3E%3Cpath d=\'M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z\'/%3E%3C/svg%3E")',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: '12px center'
+            }}
+            disabled
+          />
+        );
+
+      case 'view':
+      default:
+        if (children && children.length > 0) {
+          return (
+            <div key={index} style={commonStyle}>
+              {children.map((child, idx) => renderVisualComponent(child, idx))}
+            </div>
+          );
+        }
+        return null;
+    }
+  };
+
   const renderScreenPreview = () => {
     if (!currentScreen) return null;
 
@@ -128,34 +455,83 @@ const MobileScreensPanel = () => {
 
         <div className={frameClass}>
           <div className="device-screen">
-            <div className="screen-content">
-              <div className="screen-details">
-                <h4>Screen Structure</h4>
-                {currentScreen.components && renderComponentTree(currentScreen.components)}
-              </div>
-
-              {currentScreen.workflowNodeId && (
-                <div className="screen-metadata">
-                  <strong>Linked to:</strong> Node {currentScreen.workflowNodeId}
+            <div className="mobile-ui-preview">
+              {/* Render actual visual UI */}
+              {currentScreen.navigation?.showHeader && (
+                <div style={{
+                  padding: '16px',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  fontWeight: '600',
+                  fontSize: '18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  {currentScreen.navigation.showBackButton && <span>‹</span>}
+                  <span>{currentScreen.navigation.headerTitle || currentScreen.name}</span>
                 </div>
               )}
 
-              {currentScreen.formId && (
-                <div className="screen-metadata">
-                  <strong>Form:</strong> {currentScreen.formId}
-                </div>
-              )}
-
-              <div className="screen-json">
-                <h4>Screen Definition</h4>
-                <pre>{JSON.stringify(currentScreen, null, 2)}</pre>
+              <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
+                {currentScreen.components && currentScreen.components.map((comp, idx) =>
+                  renderVisualComponent(comp, idx)
+                )}
               </div>
             </div>
           </div>
         </div>
+
+        {/* Technical Details - Collapsible */}
+        <details style={{ marginTop: '24px' }}>
+          <summary style={{
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '14px',
+            padding: '12px',
+            backgroundColor: '#f9fafb',
+            borderRadius: '6px',
+            userSelect: 'none'
+          }}>
+            Technical Details
+          </summary>
+          <div style={{ padding: '16px', backgroundColor: '#ffffff', borderRadius: '6px', marginTop: '8px' }}>
+            <div className="screen-details">
+              <h4>Component Structure</h4>
+              {currentScreen.components && renderComponentTree(currentScreen.components)}
+            </div>
+
+            {currentScreen.workflowNodeId && (
+              <div className="screen-metadata">
+                <strong>Linked to:</strong> Node {currentScreen.workflowNodeId}
+              </div>
+            )}
+
+            {currentScreen.formId && (
+              <div className="screen-metadata">
+                <strong>Form:</strong> {currentScreen.formId}
+              </div>
+            )}
+
+            <div className="screen-json">
+              <h4>Screen Definition</h4>
+              <pre>{JSON.stringify(currentScreen, null, 2)}</pre>
+            </div>
+          </div>
+        </details>
       </div>
     );
   };
+
+  // Handle switching back from flow view
+  const handleBackFromFlow = () => {
+    setViewMode('preview');
+  };
+
+  // If in flow view, show the MobileFlowCanvas
+  if (viewMode === 'flow') {
+    return <MobileFlowCanvas onBack={handleBackFromFlow} />;
+  }
 
   return (
     <div className="mobile-screens-panel">
@@ -166,7 +542,16 @@ const MobileScreensPanel = () => {
             {screens.length} screen{screens.length !== 1 ? 's' : ''} generated
           </p>
         </div>
-        {renderDeviceFrameSelector()}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button
+            className="btn-view-flow"
+            onClick={() => setViewMode('flow')}
+          >
+            <Network size={18} />
+            View Flow
+          </button>
+          {renderDeviceFrameSelector()}
+        </div>
       </div>
 
       <div className="panel-content">

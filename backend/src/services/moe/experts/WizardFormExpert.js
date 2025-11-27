@@ -4,6 +4,7 @@
 
 const BaseAgent = require('../../agents/BaseAgent');
 const { FORM_COMPONENT_CATALOG } = require('../../../utils/form-components-knowledge-base');
+const { FORM_DESIGN_SYSTEM, generateFormLayout, generateFieldStyling, generateWizardStepIndicator } = require('../../../utils/form-layout-design-system');
 
 class WizardFormExpert extends BaseAgent {
   constructor() {
@@ -69,6 +70,84 @@ I am an expert in **multi-step wizard forms** with:
 
 ${FORM_COMPONENT_CATALOG}
 
+## CRITICAL: Layout and Styling Requirements
+
+You MUST generate comprehensive layout and styling metadata for ALL forms. This ensures forms are visually appealing with proper spacing and professional appearance.
+
+### Form Layout Configuration:
+For wizard forms, use SINGLE COLUMN layout for clarity and focus:
+- columns: 1
+- gap: "24px"
+- maxWidth: "600px"
+- padding: "32px"
+
+### Step Layout:
+Each step should include:
+- padding: "24px"
+- marginBottom: "40px"
+- gap between fields: "24px"
+
+### Field Styling (REQUIRED for each field):
+Every field MUST include a "styling" object with:
+{
+  "container": {
+    "marginBottom": "24px",
+    "columnSpan": 1
+  },
+  "label": {
+    "fontSize": "14px",
+    "fontWeight": "500",
+    "color": "#374151",
+    "marginBottom": "8px"
+  },
+  "input": {
+    "height": "40px",
+    "padding": "10px 14px",
+    "borderRadius": "6px",
+    "border": "1px solid #d1d5db",
+    "backgroundColor": "#ffffff",
+    "fontSize": "14px"
+  },
+  "helpText": {
+    "fontSize": "13px",
+    "color": "#6b7280",
+    "marginTop": "6px"
+  }
+}
+
+For textarea fields, override input.height to "minHeight": "100px"
+For full-width fields (textarea, description), set container.columnSpan to "all"
+
+### Form-Level Styling (REQUIRED):
+{
+  "form": {
+    "padding": "32px",
+    "maxWidth": "1200px",
+    "margin": "0 auto",
+    "backgroundColor": "#ffffff"
+  },
+  "section": {
+    "marginBottom": "40px",
+    "padding": "24px",
+    "gap": "24px"
+  },
+  "buttons": {
+    "gap": "12px",
+    "marginTop": "32px"
+  }
+}
+
+### Color Palette (use these colors):
+- Primary: #3b82f6
+- Primary Hover: #2563eb
+- Text Primary: #111827
+- Text Secondary: #6b7280
+- Border: #d1d5db
+- Background: #ffffff
+- Background Page: #f9fafb
+- Error: #ef4444
+- Success: #10b981
+
 ## Output Format:
 {
   "forms": [
@@ -79,12 +158,69 @@ ${FORM_COMPONENT_CATALOG}
       "description": "Brief description",
       "nodeId": "node_id",
       "formType": "wizard",
+      "layout": {
+        "type": "grid",
+        "columns": 1,
+        "gap": "24px",
+        "maxWidth": "600px",
+        "padding": "32px"
+      },
+      "styling": {
+        "form": {
+          "padding": "32px",
+          "maxWidth": "1200px",
+          "margin": "0 auto",
+          "backgroundColor": "#ffffff"
+        },
+        "section": {
+          "marginBottom": "40px",
+          "padding": "24px",
+          "gap": "24px"
+        },
+        "buttons": {
+          "gap": "12px",
+          "marginTop": "32px"
+        }
+      },
       "steps": [
         {
           "id": "step_1",
           "title": "Step Title",
           "description": "Step description",
-          "fields": [...],
+          "fields": [
+            {
+              "id": "field_1",
+              "type": "text",
+              "name": "fieldName",
+              "label": "Field Label",
+              "required": true,
+              "styling": {
+                "container": {
+                  "marginBottom": "24px",
+                  "columnSpan": 1
+                },
+                "label": {
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#374151",
+                  "marginBottom": "8px"
+                },
+                "input": {
+                  "height": "40px",
+                  "padding": "10px 14px",
+                  "borderRadius": "6px",
+                  "border": "1px solid #d1d5db",
+                  "backgroundColor": "#ffffff",
+                  "fontSize": "14px"
+                },
+                "helpText": {
+                  "fontSize": "13px",
+                  "color": "#6b7280",
+                  "marginTop": "6px"
+                }
+              }
+            }
+          ],
           "validation": {...}
         }
       ],
@@ -121,15 +257,48 @@ ${FORM_COMPONENT_CATALOG}
 Workflow Nodes:
 ${JSON.stringify(formNodes, null, 2)}
 
-Create wizard forms with:
-1. Multiple logical steps (3-6 steps)
-2. Progress indicator
-3. Step-by-step navigation
-4. Validation per step
-5. Review & submit final step
-6. Clear step titles and descriptions
+CRITICAL REQUIREMENTS:
 
-Return ONLY valid JSON.`;
+1. Form Structure:
+   - Multiple logical steps (3-6 steps)
+   - Progress indicator
+   - Step-by-step navigation
+   - Validation per step
+   - Review & submit final step
+   - Clear step titles and descriptions
+
+2. MUST INCLUDE Layout Configuration:
+   - layout.type: "grid"
+   - layout.columns: 1 (single column for wizard clarity)
+   - layout.gap: "24px"
+   - layout.maxWidth: "600px"
+   - layout.padding: "32px"
+
+3. MUST INCLUDE Form-Level Styling:
+   - styling.form.padding: "32px"
+   - styling.form.maxWidth: "1200px"
+   - styling.form.margin: "0 auto"
+   - styling.form.backgroundColor: "#ffffff"
+   - styling.section with marginBottom, padding, gap
+   - styling.buttons with gap and marginTop
+
+4. MUST INCLUDE Field-Level Styling for EVERY field:
+   Each field MUST have a "styling" object with:
+   - container: { marginBottom: "24px", columnSpan: 1 }
+   - label: { fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "8px" }
+   - input: { height: "40px", padding: "10px 14px", borderRadius: "6px", border: "1px solid #d1d5db", backgroundColor: "#ffffff", fontSize: "14px" }
+   - helpText: { fontSize: "13px", color: "#6b7280", marginTop: "6px" }
+
+   For textarea fields: use "minHeight": "100px" instead of "height"
+   For full-width fields: set container.columnSpan to "all"
+
+Use these colors:
+- Primary: #3b82f6, Hover: #2563eb
+- Text: #111827, Secondary: #6b7280
+- Border: #d1d5db, Background: #ffffff
+- Error: #ef4444, Success: #10b981
+
+Return ONLY valid JSON matching the exact output format from the knowledge base.`;
 
     const messages = [{
       role: 'user',

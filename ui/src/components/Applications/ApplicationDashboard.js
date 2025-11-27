@@ -127,7 +127,7 @@ const ApplicationDashboard = ({ applicationId, onBack }) => {
             <Workflow size={24} style={{ color: '#3b82f6' }} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{application.stats.workflowCount}</div>
+            <div className="stat-value">{application.stats?.workflowCount || 0}</div>
             <div className="stat-label">Workflows</div>
           </div>
         </div>
@@ -137,7 +137,7 @@ const ApplicationDashboard = ({ applicationId, onBack }) => {
             <FileText size={24} style={{ color: '#f59e0b' }} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{application.stats.formCount}</div>
+            <div className="stat-value">{application.stats?.formCount || 0}</div>
             <div className="stat-label">Forms</div>
           </div>
         </div>
@@ -147,7 +147,7 @@ const ApplicationDashboard = ({ applicationId, onBack }) => {
             <Layout size={24} style={{ color: '#10b981' }} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{application.stats.pageCount}</div>
+            <div className="stat-value">{application.stats?.pageCount || 0}</div>
             <div className="stat-label">Pages</div>
           </div>
         </div>
@@ -157,7 +157,7 @@ const ApplicationDashboard = ({ applicationId, onBack }) => {
             <Database size={24} style={{ color: '#a855f7' }} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{application.stats.dataModelCount}</div>
+            <div className="stat-value">{application.stats?.dataModelCount || 0}</div>
             <div className="stat-label">Data Models</div>
           </div>
         </div>
