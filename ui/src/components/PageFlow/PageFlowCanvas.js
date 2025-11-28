@@ -12,41 +12,46 @@ import 'reactflow/dist/style.css';
 import './PageFlowCanvas.css';
 import PageNode from './PageNode';
 import { ArrowLeft, Save, Zap, Trash2, RefreshCw, Plus, X } from 'lucide-react';
+import { useWorkflow } from '../../context/WorkflowContext';
 
 const nodeTypes = {
   pageNode: PageNode
 };
 
 const PageFlowCanvas = ({ onBack }) => {
+  const { connectedPages, currentWorkflow } = useWorkflow();
   const [pages, setPages] = useState([]);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedEdge, setSelectedEdge] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showPageModal, setShowPageModal] = useState(false);
   const [editingPage, setEditingPage] = useState(null);
   const [isNewPage, setIsNewPage] = useState(false);
 
+  // Update pages whenever connectedPages or currentWorkflow changes
   useEffect(() => {
-    fetchPages();
-  }, []);
-
-  const fetchPages = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('http://localhost:5000/api/pages');
-      const data = await response.json();
-
-      if (data.success) {
-        setPages(data.pages);
-        convertPagesToFlow(data.pages);
+    if (connectedPages && connectedPages.length > 0) {
+      // Filter pages by current workflow if a workflow is selected
+      let filteredPages = connectedPages;
+      if (currentWorkflow && currentWorkflow.id) {
+        // Show pages that belong to this workflow OR don't have a workflowId (legacy data)
+        filteredPages = connectedPages.filter(page =>
+          !page.workflowId || page.workflowId === currentWorkflow.id
+        );
+        console.log('[PageFlowCanvas] Filtering pages by workflow:', currentWorkflow.id, 'Found:', filteredPages.length);
       }
-    } catch (error) {
-      console.error('Failed to fetch pages:', error);
-    } finally {
+      setPages(filteredPages);
+      convertPagesToFlow(filteredPages);
+      setLoading(false);
+    } else {
+      // No pages available
+      setPages([]);
+      setNodes([]);
+      setEdges([]);
       setLoading(false);
     }
-  };
+  }, [connectedPages, currentWorkflow]);
 
   const convertPagesToFlow = (pagesData) => {
     // Create nodes from pages
@@ -312,7 +317,7 @@ const PageFlowCanvas = ({ onBack }) => {
         setShowPageModal(false);
         setEditingPage(null);
         setIsNewPage(false);
-        await fetchPages(); // Refresh pages
+        // Pages will auto-update via context
       }
     } catch (error) {
       console.error('Failed to save page:', error);
@@ -342,7 +347,7 @@ const PageFlowCanvas = ({ onBack }) => {
         setShowPageModal(false);
         setEditingPage(null);
         setIsNewPage(false);
-        await fetchPages(); // Refresh pages
+        // Pages will auto-update via context
       }
     } catch (error) {
       console.error('Failed to delete page:', error);
@@ -374,10 +379,6 @@ const PageFlowCanvas = ({ onBack }) => {
           <button className="btn-secondary" onClick={handleAddNewPage} title="Add New Page">
             <Plus size={18} />
             Add Page
-          </button>
-          <button className="btn-secondary" onClick={fetchPages} title="Refresh">
-            <RefreshCw size={18} />
-            Refresh
           </button>
           <button className="btn-secondary" onClick={handleAutoLayout} title="Auto Layout">
             <Zap size={18} />

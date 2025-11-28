@@ -1,266 +1,73 @@
 /**
- * PageExpert - Generic page/screen generation expert
- *
- * Generates pages (web/mobile screens) that contain forms, components, and data visualizations
- * Works for ANY domain - e-commerce, banking, healthcare, education, etc.
+ * Page Expert
+ * Generates pages individually or in batches
  */
 
-const BaseAgent = require('../../agents/BaseAgent');
+const Anthropic = require('@anthropic-ai/sdk');
 
-class PageExpert extends BaseAgent {
+class PageExpert {
   constructor() {
-    const knowledgeBase = `
-# Generic Page Expert
-
-## Specialization:
-I design complete pages/screens for ANY type of application. Pages are containers that:
-- Display information and data
-- Contain forms for user input
-- Provide navigation between screens
-- Handle user interactions and workflows
-
-## Universal Page Patterns I Understand:
-
-### 1. **List/Index Pages**
-Show collections of entities (users, products, orders, patients, students, etc.)
-- Data table or card grid
-- Search and filter controls
-- Pagination
-- Action buttons (view, edit, delete)
-- "Create New" button
-
-### 2. **Detail/View Pages**
-Show single entity details
-- Entity information display
-- Related data sections
-- Action buttons (edit, delete, share)
-- Navigation back to list
-
-### 3. **Create/Edit Form Pages**
-Dedicated pages for data entry
-- Form component (ref to existing form)
-- Validation feedback
-- Submit and cancel buttons
-- Success/error messaging
-
-### 4. **Dashboard Pages**
-Overview/summary screens
-- Key metrics cards
-- Charts and graphs
-- Recent activity lists
-- Quick action buttons
-
-### 5. **Settings/Configuration Pages**
-User preferences and system settings
-- Tabbed interface or sections
-- Various form inputs
-- Save/reset functionality
-
-### 6. **Authentication Pages**
-Login, register, forgot password
-- Authentication forms
-- Social login options
-- Navigation links
-
-### 7. **Confirmation/Result Pages**
-Success, error, or status pages
-- Message display
-- Next action buttons
-- Navigation options
-
-## Page Generation Logic:
-
-1. **Analyze Context**:
-   - What data models exist? (User, Product, Order, etc.)
-   - What forms are available?
-   - What workflows need to be triggered?
-   - What is the application domain?
-
-2. **Identify Required Pages**:
-   - CRUD operations → List + Detail + Create/Edit pages
-   - Authentication needed → Login/Register pages
-   - Data visualization → Dashboard pages
-   - Multi-step processes → Wizard/Stepper pages
-
-3. **Component Composition**:
-   - Use available forms
-   - Bind to data models
-   - Link to workflows
-   - Create logical navigation
-
-## Output Format:
-
-IMPORTANT: Return ONLY valid JSON array. No markdown, no explanations.
-
-[
-  {
-    "id": "page_<type>_<entity>_<action>",
-    "name": "Descriptive Name",
-    "type": "list|detail|form|dashboard|auth|confirmation",
-    "route": "/path",
-    "platform": "web|mobile|both",
-
-    "layout": {
-      "type": "single|two-column|grid|dashboard",
-      "responsive": true
-    },
-
-    "sections": [
-      {
-        "id": "section_id",
-        "type": "header|main|footer|sidebar",
-        "components": [
-          {
-            "type": "form|table|card|chart|text|button|input|list",
-            "formRef": "form_id", // if type is form
-            "dataBinding": "model.query", // data source
-            "config": { /* component-specific config */ }
-          }
-        ]
-      }
-    ],
-
-    "navigation": {
-      "onLoad": { "workflow": "workflow_id" },
-      "onAction": {
-        "actionName": { "type": "navigate|workflow", "target": "..." }
-      },
-      "menu": [
-        { "label": "Menu Item", "route": "/path", "icon": "icon-name" }
-      ]
-    },
-
-    "dataBindings": {
-      "bindingName": {
-        "model": "ModelName",
-        "query": "filter_or_method",
-        "fields": ["field1", "field2"]
-      }
-    },
-
-    "permissions": {
-      "view": ["role1", "role2"],
-      "edit": ["role1"]
-    },
-
-    "metadata": {
-      "entity": "EntityName",
-      "action": "list|view|create|edit|delete|dashboard",
-      "tags": ["tag1", "tag2"]
-    }
-  }
-]
-
-## Design Principles:
-- **Domain-agnostic**: Works for any industry or application type
-- **Consistency**: Similar patterns for similar operations across domains
-- **Accessibility**: Follow WCAG guidelines
-- **Responsiveness**: Mobile-first design
-- **Performance**: Lazy loading, pagination for large datasets
-- **User-centric**: Clear labels, helpful error messages, logical flow
-
-## Examples of Generic Page Generation:
-
-**E-commerce App**:
-- Product List Page → shows products, filters, search
-- Product Detail Page → shows single product, add to cart form
-- Checkout Page → contains checkout form, payment integration
-
-**Healthcare App**:
-- Patient List Page → shows patients, filters, search
-- Patient Detail Page → shows single patient, medical history
-- Appointment Form Page → contains appointment booking form
-
-**Education App**:
-- Course List Page → shows courses, filters, search
-- Course Detail Page → shows single course, enrollment form
-- Student Dashboard → shows enrolled courses, progress, assignments
-
-The PATTERN is the same, only the ENTITIES and FIELDS differ!
-`;
-
-    super('PageExpert', knowledgeBase, 'claude-sonnet-4-20250514');
+    this.name = 'PageExpert';
+    this.anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY
+    });
   }
 
-  async execute(sharedContext, onThinking) {
-    const { userRequirements, workflow, forms, dataModels } = sharedContext;
+  /**
+   * Generate a single page
+   */
+  async generateSingle(spec, componentPlan, existingComponents) {
+    console.log(`[PageExpert] Generating page: ${spec.name}...`);
 
-    if (onThinking) {
-      onThinking({
-        agent: this.name,
-        step: 'Analyzing Page Requirements',
-        content: 'Determining what pages are needed based on workflows, forms, and data models...'
-      });
+    const prompt = this.buildSinglePrompt(spec, componentPlan, existingComponents);
+
+    const response = await this.anthropic.messages.create({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 3000, // Increased from 2000 to handle dashboard pages
+      temperature: 0.3,
+      messages: [{
+        role: 'user',
+        content: prompt
+      }]
+    });
+
+    // Check for truncation
+    if (response.stop_reason === 'max_tokens') {
+      console.warn(`[PageExpert] Response truncated for ${spec.name}, retrying with stricter constraints...`);
+      return await this.generateSimplifiedPage(spec, componentPlan, existingComponents);
     }
 
-    // Build context for the AI
-    const context = {
-      userRequirements,
-      workflow: workflow ? {
-        name: workflow.name,
-        nodes: workflow.nodes?.length || 0,
-        domain: workflow.domain,
-        complexity: workflow.complexity
-      } : null,
-      forms: forms?.map(f => ({
-        id: f.id,
-        name: f.name,
-        fields: f.fields?.map(field => field.name)
-      })) || [],
-      dataModels: dataModels?.map(dm => ({
-        name: dm.name,
-        fields: dm.fields?.map(f => f.name)
-      })) || []
-    };
+    const pageText = response.content[0].text;
+    const page = this.parsePage(pageText);
 
-    const prompt = `Analyze this application and generate ALL necessary pages:
+    console.log(`[PageExpert] Generated page: ${page.name}`);
+    return page;
+  }
 
-**User Requirements**: "${userRequirements}"
+  /**
+   * Generate a simplified page when main generation is truncated
+   */
+  async generateSimplifiedPage(spec, componentPlan, existingComponents) {
+    console.log(`[PageExpert] Generating SIMPLIFIED page: ${spec.name}...`);
 
-**Available Context**:
-${JSON.stringify(context, null, 2)}
+    const simplifiedPrompt = `Generate a MINIMAL page for: ${spec.name}
 
-**Your Task**:
-1. Identify what pages are needed for this application
-2. For each data model, consider if CRUD pages are needed
-3. Create pages that use the available forms
-4. Add dashboard/overview pages if appropriate
-5. Include authentication pages if workflows require it
-6. Design logical navigation between pages
+Purpose: ${spec.purpose}
 
-**Page Types to Consider**:
-- List pages (show all entities)
-- Detail pages (show single entity)
-- Create/Edit pages (data entry using forms)
-- Dashboard pages (overview/summary)
-- Authentication pages (login, register)
-- Confirmation pages (success, error states)
+STRICT CONSTRAINTS:
+- MAX 3 components only across all sections
+- Use minimal config
+- Keep descriptions to 1 sentence
+- Include basic navigation if applicable
 
-**Guidelines**:
-- Match page purpose to application domain
-- Use available forms where appropriate
-- Bind to available data models
-- Create RESTful route patterns
-- Include proper navigation flow
-- Consider user roles and permissions
-
-**CRITICAL REQUIREMENTS**:
-1. Every page MUST have a "sections" array with at least one section
-2. Every section MUST have a "components" array with actual components
-3. Components must have proper "type" and "config" properties
-4. Use component types: text, button, card, table, list, input, form
-5. Include detailed configs for each component
-
-IMPORTANT: Return ONLY a valid JSON array of pages. No markdown, no explanations, just the JSON array.
-
-Example structures (adapt to the actual requirements):
-
-LIST PAGE:
+Return ONLY valid JSON:
 {
-  "id": "page_list_<entity>",
-  "name": "<Entity> List",
-  "type": "list",
-  "route": "/<entities>",
+  "id": "page-id",
+  "name": "${spec.name}",
+  "title": "Page Title",
+  "description": "One sentence",
+  "route": "/${spec.name.toLowerCase().replace(/\s+/g, '-')}",
+  "type": "list|detail|form|dashboard",
   "platform": "both",
   "sections": [
     {
@@ -269,12 +76,10 @@ LIST PAGE:
       "components": [
         {
           "type": "text",
-          "config": { "text": "All <Entities>", "variant": "h1" }
-        },
-        {
-          "type": "button",
-          "config": { "label": "Create New", "variant": "primary" },
-          "action": { "type": "navigate", "target": "/<entity>/new" }
+          "config": {
+            "text": "${spec.name}",
+            "variant": "h1"
+          }
         }
       ]
     },
@@ -283,67 +88,117 @@ LIST PAGE:
       "type": "main",
       "components": [
         {
-          "type": "table",
-          "dataBinding": "<entity>.all",
+          "type": "card|table|form",
           "config": {
-            "columns": [
-              { "key": "field1", "label": "Field 1" },
-              { "key": "field2", "label": "Field 2" },
-              { "key": "actions", "label": "Actions" }
-            ],
-            "actions": [
-              { "label": "View", "route": "/<entity>/:id" },
-              { "label": "Edit", "route": "/<entity>/:id/edit" }
-            ],
-            "pagination": true
+            "title": "Content"
           }
         }
       ]
     }
   ],
-  "dataBindings": {
-    "<entity>": { "model": "<Entity>", "query": "all", "fields": ["field1", "field2", "id"] }
+  "navigation": {
+    "onAction": {},
+    "menu": []
+  },
+  "layout": {
+    "type": "single-column",
+    "responsive": true
   }
-}
+}`;
 
-DASHBOARD PAGE:
+    const response = await this.anthropic.messages.create({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 2000,
+      temperature: 0.2,
+      messages: [{
+        role: 'user',
+        content: simplifiedPrompt
+      }]
+    });
+
+    const pageText = response.content[0].text;
+    const page = this.parsePage(pageText);
+
+    console.log(`[PageExpert] Generated simplified page: ${page.name}`);
+    return page;
+  }
+
+  /**
+   * Generate multiple pages in one call (for parallel strategy)
+   */
+  async generateBatch(specs, componentPlan) {
+    if (specs.length === 0) return [];
+    if (specs.length === 1) return [await this.generateSingle(specs[0], componentPlan, {})];
+
+    console.log(`[PageExpert] Generating ${specs.length} pages in batch...`);
+
+    const prompt = this.buildBatchPrompt(specs, componentPlan);
+
+    const response = await this.anthropic.messages.create({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 5000, // Increased from 4000 to handle multiple pages
+      temperature: 0.3,
+      messages: [{
+        role: 'user',
+        content: prompt
+      }]
+    });
+
+    const pagesText = response.content[0].text;
+    const pages = this.parsePages(pagesText);
+
+    console.log(`[PageExpert] Generated ${pages.length} pages`);
+    return pages;
+  }
+
+  buildSinglePrompt(spec, componentPlan, existingComponents) {
+    // Extract available pages for navigation
+    const otherPages = componentPlan.componentSpecs
+      .filter(c => c.type === 'page' && c.name !== spec.name)
+      .map(p => ({ name: p.name, route: `/${p.name.toLowerCase().replace(/\s+/g, '-')}` }));
+
+    return `Generate a page for: ${spec.name}
+
+Purpose: ${spec.purpose}
+${spec.description ? `Description: ${spec.description}` : ''}
+
+Context:
+- Application: ${componentPlan.overview.name}
+- Domain: ${componentPlan.overview.category || 'General'}
+${existingComponents.dataModels ? `- Available data models: ${existingComponents.dataModels.map(dm => dm.name).join(', ')}` : ''}
+${existingComponents.forms ? `- Available forms: ${existingComponents.forms.map(f => f.name).join(', ')}` : ''}
+${existingComponents.workflows ? `- Available workflows: ${existingComponents.workflows.map(w => w.name).join(', ')}` : ''}
+${otherPages.length > 0 ? `- Other pages in app: ${otherPages.map(p => p.name).join(', ')}` : ''}
+
+CRITICAL Requirements:
+1. Structure pages using SECTIONS (header, main, footer) with components inside sections
+2. Add NAVIGATION connections to other pages using navigation.onAction and navigation.menu
+3. Link forms using formRef in components
+4. Include actual content in components (text, labels, data bindings)
+5. Maximum 4-6 components total across all sections
+6. Use appropriate page type (list, detail, form, dashboard, auth, confirmation)
+
+Return ONLY valid JSON in this format:
 {
-  "id": "page_dashboard",
-  "name": "Dashboard",
-  "type": "dashboard",
-  "route": "/dashboard",
+  "id": "unique-id",
+  "name": "${spec.name}",
+  "title": "Page Title",
+  "description": "Brief description",
+  "route": "/${spec.name.toLowerCase().replace(/\s+/g, '-')}",
+  "type": "list|detail|form|dashboard|auth|confirmation",
+  "platform": "both",
   "sections": [
     {
       "id": "header",
       "type": "header",
       "components": [
-        { "type": "text", "config": { "text": "Dashboard Overview", "variant": "h1" } }
-      ]
-    },
-    {
-      "id": "metrics",
-      "type": "main",
-      "components": [
-        { "type": "card", "config": { "title": "Total Items", "metric": "count", "color": "blue" }, "dataBinding": "items.total" },
-        { "type": "card", "config": { "title": "Active", "metric": "count", "color": "green" }, "dataBinding": "items.active" },
-        { "type": "card", "config": { "title": "Pending", "metric": "count", "color": "yellow" }, "dataBinding": "items.pending" }
-      ]
-    }
-  ]
-}
-
-FORM PAGE:
-{
-  "id": "page_form_create",
-  "name": "Create <Entity>",
-  "type": "form",
-  "route": "/<entity>/new",
-  "sections": [
-    {
-      "id": "header",
-      "type": "header",
-      "components": [
-        { "type": "text", "config": { "text": "Create New <Entity>", "variant": "h1" } }
+        {
+          "type": "text",
+          "config": {
+            "text": "Page Title",
+            "variant": "h1"
+          }
+        }
       ]
     },
     {
@@ -351,153 +206,137 @@ FORM PAGE:
       "type": "main",
       "components": [
         {
-          "type": "form",
-          "formRef": "form_create_<entity>",
+          "type": "card|table|form|button|list",
           "config": {
-            "submitLabel": "Create",
-            "cancelLabel": "Cancel",
-            "cancelAction": { "type": "navigate", "target": "/<entities>" }
-          }
+            "title": "Component Title"
+          },
+          "dataBinding": "modelName.query",
+          "formRef": "form-id-if-applicable"
         }
       ]
     }
-  ]
+  ],
+  "navigation": {
+    "onAction": {
+      "submit": { "type": "navigate", "target": "/target-page-route" },
+      "view": { "type": "navigate", "target": "/details-page" }
+    },
+    "menu": [
+      { "label": "Menu Item", "route": "/other-page" }
+    ]
+  },
+  "layout": {
+    "type": "single-column|two-column|grid|dashboard",
+    "responsive": true,
+    "spacing": "normal"
+  }
 }`;
-
-    const messages = [{
-      role: 'user',
-      content: prompt
-    }];
-
-    if (onThinking) {
-      onThinking({
-        agent: this.name,
-        step: 'Generating Pages',
-        content: 'Creating page layouts and component compositions...'
-      });
-    }
-
-    const responseText = await this.getResponse(messages);
-    const pages = this.parseJsonResponse(responseText);
-
-    // Validate and enhance pages
-    const enhancedPages = this.enhancePages(pages, context);
-
-    if (onThinking) {
-      onThinking({
-        agent: this.name,
-        step: 'Pages Generated',
-        content: `Created ${enhancedPages.length} pages with navigation and data bindings`
-      });
-    }
-
-    return {
-      pages: enhancedPages,
-      expertType: 'PageExpert'
-    };
   }
 
-  enhancePages(pages, context) {
-    return pages.map((page, index) => {
-      // Ensure sections exist and have components
-      const sections = (page.sections || []).map(section => {
-        const components = section.components || [];
+  buildBatchPrompt(specs, componentPlan) {
+    const specList = specs.map(s => `- ${s.name}: ${s.purpose}`).join('\n');
+    const allPageNames = specs.map(s => s.name);
 
-        // If section has no components, add a default one based on section type
-        if (components.length === 0) {
-          const defaultComponent = this.getDefaultComponent(section.type, page.type);
-          if (defaultComponent) {
-            components.push(defaultComponent);
-          }
-        }
+    return `Generate ${specs.length} pages for: ${componentPlan.overview.name}
 
-        return {
-          ...section,
-          components
-        };
-      });
+Pages to generate:
+${specList}
 
-      // If no sections exist, create default sections based on page type
-      if (sections.length === 0) {
-        sections.push(...this.getDefaultSections(page.type, page.name));
-      }
+CRITICAL Requirements for EACH page:
+1. Structure with SECTIONS (header, main) containing components
+2. Add NAVIGATION to connect pages (navigation.onAction and navigation.menu)
+3. Include actual content in components (not empty)
+4. Link forms using formRef where applicable
+5. Use appropriate page types (list, detail, form, dashboard, auth, confirmation)
 
-      return {
-        ...page,
-        id: page.id || `page_${Date.now()}_${index}`,
-        platform: page.platform || 'both',
-        layout: page.layout || { type: 'single', responsive: true },
-        sections,
-        permissions: page.permissions || { view: ['authenticated'] },
-        metadata: {
-          ...page.metadata,
-          createdBy: 'PageExpert',
-          createdAt: new Date().toISOString(),
-          workflowId: context.workflow?.name
-        }
-      };
-    });
-  }
+Available pages for navigation: ${allPageNames.join(', ')}
 
-  getDefaultComponent(sectionType, pageType) {
-    if (sectionType === 'header') {
-      return {
-        type: 'text',
-        config: { text: 'Page Header', variant: 'h1' }
-      };
-    }
-    if (sectionType === 'main') {
-      if (pageType === 'list') {
-        return {
-          type: 'text',
-          config: { text: 'List view - configure table or list components', variant: 'p' }
-        };
-      }
-      if (pageType === 'dashboard') {
-        return {
-          type: 'card',
-          config: { title: 'Dashboard Card', content: 'Add metrics and charts here' }
-        };
-      }
-      if (pageType === 'form') {
-        return {
-          type: 'text',
-          config: { text: 'Form view - configure form components', variant: 'p' }
-        };
-      }
-      return {
-        type: 'text',
-        config: { text: 'Main content area', variant: 'p' }
-      };
-    }
-    return null;
-  }
-
-  getDefaultSections(pageType, pageName) {
-    const sections = [
+Return ONLY valid JSON array:
+[
+  {
+    "id": "unique-id",
+    "name": "PageName",
+    "title": "Page Title",
+    "description": "Brief description",
+    "route": "/page-name",
+    "type": "list|detail|form|dashboard|auth|confirmation",
+    "platform": "both",
+    "sections": [
       {
-        id: 'header',
-        type: 'header',
-        components: [
-          {
-            type: 'text',
-            config: { text: pageName || 'Page', variant: 'h1' }
-          }
-        ]
+        "id": "header",
+        "type": "header",
+        "components": [{ "type": "text", "config": { "text": "Title", "variant": "h1" } }]
       },
       {
-        id: 'main',
-        type: 'main',
-        components: [
-          {
-            type: 'text',
-            config: { text: 'This page was auto-generated. Use the Page Designer to customize it.', variant: 'p' }
-          }
-        ]
+        "id": "main",
+        "type": "main",
+        "components": [{ "type": "card|table|form", "config": { "title": "Content" }, "dataBinding": "model.query" }]
       }
-    ];
+    ],
+    "navigation": {
+      "onAction": {
+        "action": { "type": "navigate", "target": "/other-page" }
+      },
+      "menu": [{ "label": "Link", "route": "/other-page" }]
+    },
+    "layout": {
+      "type": "single-column|grid|dashboard",
+      "responsive": true,
+      "spacing": "normal"
+    }
+  }
+]`;
+  }
 
-    return sections;
+  parsePage(text) {
+    try {
+      // Extract JSON from markdown code blocks if present
+      let jsonText = text.trim();
+      if (jsonText.includes('```json')) {
+        const match = jsonText.match(/```json\s*([\s\S]*?)\s*```/);
+        if (match) jsonText = match[1].trim();
+      } else if (jsonText.includes('```')) {
+        const match = jsonText.match(/```\s*([\s\S]*?)\s*```/);
+        if (match) jsonText = match[1].trim();
+      }
+
+      // Find JSON object
+      if (!jsonText.startsWith('{')) {
+        const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) jsonText = jsonMatch[0];
+      }
+
+      return JSON.parse(jsonText);
+    } catch (error) {
+      console.error('[PageExpert] Parse error:', error);
+      console.error('[PageExpert] Text:', text.substring(0, 500));
+      throw new Error(`Failed to parse page: ${error.message}`);
+    }
+  }
+
+  parsePages(text) {
+    try {
+      let jsonText = text.trim();
+      if (jsonText.includes('```json')) {
+        const match = jsonText.match(/```json\s*([\s\S]*?)\s*```/);
+        if (match) jsonText = match[1].trim();
+      } else if (jsonText.includes('```')) {
+        const match = jsonText.match(/```\s*([\s\S]*?)\s*```/);
+        if (match) jsonText = match[1].trim();
+      }
+
+      // Find JSON array
+      if (!jsonText.startsWith('[')) {
+        const jsonMatch = jsonText.match(/\[[\s\S]*\]/);
+        if (jsonMatch) jsonText = jsonMatch[0];
+      }
+
+      return JSON.parse(jsonText);
+    } catch (error) {
+      console.error('[PageExpert] Parse error:', error);
+      console.error('[PageExpert] Text:', text.substring(0, 500));
+      throw new Error(`Failed to parse pages: ${error.message}`);
+    }
   }
 }
 
