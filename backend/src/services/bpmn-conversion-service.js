@@ -4,16 +4,16 @@
  * Ensures compatibility with KIE (jBPM/Drools) and BPMN.io
  */
 
-const AgentOrchestrator = require('../agents/AgentOrchestrator');
-const WorkflowParserAgent = require('../agents/WorkflowParserAgent');
-const BPMNGeneratorAgent = require('../agents/BPMNGeneratorAgent');
-const ValidationAgent = require('../agents/ValidationAgent');
-const KIECompatibilityAgent = require('../agents/KIECompatibilityAgent');
-const BPMNioCompatibilityAgent = require('../agents/BPMNioCompatibilityAgent');
+const BPMNConversionOrchestrator = require('./bpmn/BPMNConversionOrchestrator');
+const WorkflowParserAgent = require('./bpmn/WorkflowParserAgent');
+const BPMNGeneratorAgent = require('./bpmn/BPMNGeneratorAgent');
+const BPMNValidationAgent = require('./bpmn/BPMNValidationAgent');
+const KIECompatibilityAgent = require('./bpmn/KIECompatibilityAgent');
+const BPMNioCompatibilityAgent = require('./bpmn/BPMNioCompatibilityAgent');
 
 class BPMNConversionService {
   constructor() {
-    this.orchestrator = new AgentOrchestrator();
+    this.orchestrator = new BPMNConversionOrchestrator();
     this.initializeAgents();
   }
 
@@ -26,7 +26,7 @@ class BPMNConversionService {
     // Register agents
     this.orchestrator.registerAgent('WorkflowParser', new WorkflowParserAgent());
     this.orchestrator.registerAgent('BPMNGenerator', new BPMNGeneratorAgent());
-    this.orchestrator.registerAgent('Validation', new ValidationAgent());
+    this.orchestrator.registerAgent('Validation', new BPMNValidationAgent());
     this.orchestrator.registerAgent('KIECompatibility', new KIECompatibilityAgent());
     this.orchestrator.registerAgent('BPMNioCompatibility', new BPMNioCompatibilityAgent());
 
