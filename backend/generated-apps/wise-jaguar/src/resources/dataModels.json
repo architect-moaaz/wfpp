@@ -1,0 +1,509 @@
+[
+  {
+    "id": "new-hire",
+    "name": "NewHire",
+    "description": "Central data model capturing new employee information and onboarding status throughout the hiring and onboarding lifecycle",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the new hire record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "Complete legal name of the new employee",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Primary email address for communication and system access",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "positionTitle",
+        "type": "string",
+        "description": "Job title or position the new hire will fill",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "startDate",
+        "type": "date",
+        "description": "Official first day of employment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "onboardingStatus",
+        "type": "string",
+        "description": "Current stage in the onboarding process (e.g., pending, in_progress, completed)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "departmentId",
+        "type": "string",
+        "description": "Reference to the department the new hire will join",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "managerId",
+        "type": "string",
+        "description": "Reference to the direct manager or supervisor",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "email",
+      "startDate",
+      "onboardingStatus"
+    ],
+    "constraints": {
+      "uniqueFields": [
+        "email"
+      ],
+      "enumValues": {
+        "onboardingStatus": [
+          "pending",
+          "in_progress",
+          "completed",
+          "cancelled"
+        ]
+      }
+    },
+    "workflowId": "workflow_1734879456123"
+  },
+  {
+    "id": "onboarding-task",
+    "name": "OnboardingTask",
+    "description": "Tracks individual tasks and milestones in the onboarding workflow with status tracking, assignments, and completion records",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the onboarding task",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "newHireId",
+        "type": "string",
+        "description": "Reference to the new hire this task belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Name of the task (e.g., 'Complete I-9 Form', 'Manager Sign-off', 'Background Check')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedTo",
+        "type": "string",
+        "description": "User ID of the person responsible for completing the task (HR staff, manager, or new hire)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the task (pending, in_progress, completed, approved, rejected)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Deadline for task completion",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "completedAt",
+        "type": "date",
+        "description": "Timestamp when the task was completed",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "completedBy",
+        "type": "string",
+        "description": "User ID of the person who completed or approved the task",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "NewHire",
+        "foreignKey": "newHireId",
+        "description": "Each task belongs to one new hire"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "newHireId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "assignedTo",
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "dueDate"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "pending",
+          "in_progress",
+          "completed",
+          "approved",
+          "rejected"
+        ]
+      }
+    },
+    "workflowId": "workflow_1734879456123"
+  },
+  {
+    "id": "document",
+    "name": "Document",
+    "description": "Stores uploaded documents and tracks document submission requirements for new hires",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the document",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "newHireId",
+        "type": "string",
+        "description": "Reference to the new hire who submitted the document",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "documentType",
+        "type": "string",
+        "description": "Type of document (e.g., ID, tax_form, certification, contract)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileName",
+        "type": "string",
+        "description": "Original name of the uploaded file",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileUrl",
+        "type": "string",
+        "description": "Storage location or URL reference to the uploaded file",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Submission status (e.g., pending, approved, rejected)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "uploadedAt",
+        "type": "date",
+        "description": "Timestamp when the document was uploaded",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "reviewedAt",
+        "type": "date",
+        "description": "Timestamp when the document was reviewed/approved",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "NewHire",
+        "foreignKey": "newHireId",
+        "description": "Each document belongs to one new hire"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "newHireId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "documentType"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "status": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "documentType": [
+        "ID",
+        "tax_form",
+        "certification",
+        "contract",
+        "background_check",
+        "reference"
+      ]
+    },
+    "workflowId": "workflow_1734879456123"
+  },
+  {
+    "id": "equipment-request",
+    "name": "EquipmentRequest",
+    "description": "Manages IT and office equipment requests for new hires including approval, fulfillment, and delivery tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the equipment request",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "newHireId",
+        "type": "string",
+        "description": "Reference to the new hire receiving the equipment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "equipmentItems",
+        "type": "json",
+        "description": "List of requested equipment items (laptops, monitors, phones, software licenses, office supplies)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "approvalStatus",
+        "type": "string",
+        "description": "Current approval status (pending, approved, rejected)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "fulfillmentStatus",
+        "type": "string",
+        "description": "Current fulfillment status (not_started, in_progress, completed, delivered)",
+        "required": true,
+        "defaultValue": "not_started"
+      },
+      {
+        "name": "requestedDate",
+        "type": "date",
+        "description": "Date when the equipment request was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "targetDeliveryDate",
+        "type": "date",
+        "description": "Expected delivery date to ensure first-day readiness",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "notes",
+        "type": "string",
+        "description": "Additional notes or special instructions for the equipment request",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "NewHire",
+        "foreignKey": "newHireId",
+        "description": "Each equipment request belongs to one new hire"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "newHireId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "approvalStatus",
+          "fulfillmentStatus"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "targetDeliveryDate"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "approvalStatus": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "fulfillmentStatus": [
+        "not_started",
+        "in_progress",
+        "completed",
+        "delivered"
+      ]
+    },
+    "workflowId": "workflow_1734879456123"
+  },
+  {
+    "id": "training-assignment",
+    "name": "TrainingAssignment",
+    "description": "Manages training module assignments and completion tracking for new hires",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the training assignment",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "newHireId",
+        "type": "string",
+        "description": "Reference to the new hire assigned to this training",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "trainingModuleName",
+        "type": "string",
+        "description": "Name of the training module or course",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "enrollmentDate",
+        "type": "date",
+        "description": "Date when the training was assigned to the new hire",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Deadline for completing the training module",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "completionDate",
+        "type": "date",
+        "description": "Date when the training was completed",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the training assignment (Not Started, In Progress, Completed, Overdue)",
+        "required": true,
+        "defaultValue": "Not Started"
+      },
+      {
+        "name": "certificationUrl",
+        "type": "string",
+        "description": "URL or reference to the certification document upon completion",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "NewHire",
+        "foreignKey": "newHireId",
+        "description": "Each training assignment belongs to one new hire"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "newHireId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "dueDate"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "statusValues": [
+        "Not Started",
+        "In Progress",
+        "Completed",
+        "Overdue"
+      ],
+      "dueDateAfterEnrollment": "dueDate must be after enrollmentDate",
+      "completionDateValidation": "completionDate must be after enrollmentDate when set"
+    },
+    "workflowId": "workflow_1734879456123"
+  }
+]

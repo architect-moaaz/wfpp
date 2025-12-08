@@ -4,7 +4,9 @@ import MainLayout from './components/Layout/MainLayout';
 import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
 import { WorkflowProvider, useWorkflow } from './context/WorkflowContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { AresProvider } from './context/AresContext';
 import NotificationContainer from './components/Notifications/NotificationContainer';
+import AresChatbot from './components/ARES/AresChatbot';
 
 function AppContent() {
   const { currentApplication, setCurrentApplication, setActiveSidebar } = useWorkflow();
@@ -66,7 +68,7 @@ function AppContent() {
         // Set the new application as current
         setCurrentApplication(data.application);
         // Navigate to workflow editor
-        setActiveSidebar('workflow-editor');
+        setActiveSidebar('workflows');
       } else {
         alert('Failed to create application');
       }
@@ -100,7 +102,10 @@ function App() {
   return (
     <NotificationProvider>
       <WorkflowProvider currentApp={currentApp}>
-        <AppContent />
+        <AresProvider>
+          <AppContent />
+          <AresChatbot />
+        </AresProvider>
       </WorkflowProvider>
       <NotificationContainer />
     </NotificationProvider>

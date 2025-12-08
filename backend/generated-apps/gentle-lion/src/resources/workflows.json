@@ -1,0 +1,541 @@
+[
+  {
+    "id": "workflow_1703789234567",
+    "name": "Comprehensive E-commerce Order Processing Workflow",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_start",
+        "data": {
+          "label": "Order Received",
+          "formId": "payment-verification-form",
+          "trigger": "Customer order submission",
+          "formName": "PaymentVerificationForm",
+          "description": "Initiates the comprehensive order processing workflow when customer submits order"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_validate_order",
+        "data": {
+          "label": "Validate Order Data",
+          "rules": [
+            "Required fields present",
+            "Valid product IDs",
+            "Shipping address format",
+            "Customer information complete"
+          ],
+          "ruleType": "Business rules validation",
+          "description": "Validates all order data for completeness and correctness"
+        },
+        "type": "validation",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_payment_verification",
+        "data": {
+          "label": "Payment Verification",
+          "script": "Call payment gateway API to verify payment method and authorize transaction",
+          "scriptType": "API Integration",
+          "description": "Verifies payment method and authorizes the transaction amount"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 100,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_payment_decision",
+        "data": {
+          "label": "Payment Status Check",
+          "condition": "processData.paymentStatus",
+          "description": "Routes based on payment verification result",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_payment_failed",
+        "data": {
+          "label": "Payment Failed Notification",
+          "channel": "Email",
+          "template": "Payment verification failed for order ${processData.orderId}",
+          "recipient": "Customer",
+          "description": "Notifies customer of payment failure"
+        },
+        "type": "notification",
+        "position": {
+          "x": 350,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_parallel_check",
+        "data": {
+          "label": "Parallel Processing Split",
+          "branches": "Inventory check and fraud detection run simultaneously",
+          "description": "Splits workflow to run inventory and fraud checks in parallel",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_inventory_check",
+        "data": {
+          "label": "Inventory Availability Check",
+          "script": "Check inventory management system for product availability",
+          "scriptType": "Database Query",
+          "description": "Verifies product availability in inventory system"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_fraud_detection",
+        "data": {
+          "label": "AI Fraud Detection",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze this order for potential fraud indicators: Order value: ${processData.orderValue}, Customer location: ${processData.customerLocation}, Payment method: ${processData.paymentMethod}, Order history: ${processData.customerOrderHistory}",
+          "maxTokens": 500,
+          "description": "Uses AI to analyze order for potential fraud indicators",
+          "temperature": 0.3,
+          "outputVariable": "fraudAnalysis"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 250,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_parallel_merge",
+        "data": {
+          "label": "Parallel Processing Merge",
+          "branches": "Merges inventory and fraud detection results",
+          "description": "Waits for both parallel tasks to complete and merges results",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 150,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_order_decision",
+        "data": {
+          "label": "Order Processing Decision",
+          "condition": "processData.inventoryAvailable && processData.fraudAnalysis.riskLevel",
+          "description": "Determines order processing path based on inventory and fraud check results",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 150,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_manual_review",
+        "data": {
+          "label": "Manual Order Review",
+          "formId": "order-submission-form",
+          "dueDate": "2 hours",
+          "formName": "OrderSubmissionForm",
+          "priority": "High",
+          "taskName": "High-risk Order Review",
+          "assignedTo": "Sales Manager",
+          "instructions": "Review order for fraud indicators and make approval decision"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 400,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_auto_approve",
+        "data": {
+          "label": "Auto-Approve Order",
+          "script": "Automatically approve low-risk order with available inventory",
+          "scriptType": "Business Logic",
+          "description": "Automatically approves orders that pass all checks"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 150,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_approval_notification",
+        "data": {
+          "label": "Order Approved Notification",
+          "channel": "Email",
+          "template": "Order ${processData.orderId} approved and ready for fulfillment",
+          "recipient": "Customer and Warehouse",
+          "description": "Notifies customer and warehouse team of order approval"
+        },
+        "type": "notification",
+        "position": {
+          "x": 150,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_fulfillment_parallel",
+        "data": {
+          "label": "Fulfillment Parallel Split",
+          "branches": "Pick & pack and shipping label generation run simultaneously",
+          "description": "Splits fulfillment into parallel tasks for efficiency",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 150,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_pick_pack",
+        "data": {
+          "label": "Pick & Pack Order",
+          "formId": "order-approval-form",
+          "dueDate": "24 hours",
+          "formName": "OrderApprovalForm",
+          "priority": "Medium",
+          "taskName": "Warehouse Fulfillment",
+          "assignedTo": "Warehouse Staff",
+          "instructions": "Pick items from inventory and pack for shipping"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 50,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_shipping_label",
+        "data": {
+          "label": "Generate Shipping Label",
+          "script": "Call shipping provider API to generate shipping label and tracking number",
+          "scriptType": "API Integration",
+          "description": "Generates shipping label and obtains tracking number"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 250,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_fulfillment_merge",
+        "data": {
+          "label": "Fulfillment Merge",
+          "branches": "Merges pick & pack and shipping label tasks",
+          "description": "Waits for both fulfillment tasks to complete",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 150,
+          "y": 1250
+        }
+      },
+      {
+        "id": "node_ship_order",
+        "data": {
+          "label": "Ship Order",
+          "script": "Update order status to shipped and send tracking information",
+          "scriptType": "Status Update",
+          "description": "Marks order as shipped and provides tracking information"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 150,
+          "y": 1350
+        }
+      },
+      {
+        "id": "node_shipping_notification",
+        "data": {
+          "label": "Shipping Notification",
+          "channel": "Email and SMS",
+          "template": "Your order ${processData.orderId} has shipped. Tracking: ${processData.trackingNumber}",
+          "recipient": "Customer",
+          "description": "Notifies customer that order has shipped with tracking information"
+        },
+        "type": "notification",
+        "position": {
+          "x": 150,
+          "y": 1450
+        }
+      },
+      {
+        "id": "node_delivery_timer",
+        "data": {
+          "label": "Delivery Timeout",
+          "duration": "P7D",
+          "timerType": "duration",
+          "description": "Waits for delivery confirmation or triggers timeout after 7 days"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 150,
+          "y": 1550
+        }
+      },
+      {
+        "id": "node_delivery_confirmation",
+        "data": {
+          "label": "Delivery Confirmation",
+          "script": "Check delivery status and confirm receipt",
+          "scriptType": "Status Check",
+          "description": "Confirms delivery and updates order to completed status"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 150,
+          "y": 1650
+        }
+      },
+      {
+        "id": "node_completion_notification",
+        "data": {
+          "label": "Order Completion Notification",
+          "channel": "Email",
+          "template": "Order ${processData.orderId} has been successfully delivered and completed",
+          "recipient": "Customer and Sales Team",
+          "description": "Final notification confirming order completion"
+        },
+        "type": "notification",
+        "position": {
+          "x": 150,
+          "y": 1750
+        }
+      },
+      {
+        "id": "node_end_success",
+        "data": {
+          "label": "Order Completed Successfully",
+          "result": "Order processed and delivered successfully",
+          "description": "Successful completion of the order processing workflow"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 150,
+          "y": 1850
+        }
+      },
+      {
+        "id": "node_end_cancelled",
+        "data": {
+          "label": "Order Cancelled",
+          "result": "Order cancelled due to payment failure or rejection",
+          "description": "Order processing terminated due to failure in verification or approval"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 600,
+          "y": 800
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-28T01:32:22.887+05:30",
+    "updated_at": "2025-11-28T01:32:22.887+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_start",
+        "target": "node_validate_order"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_validate_order",
+        "target": "node_payment_verification"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_payment_verification",
+        "target": "node_payment_decision"
+      },
+      {
+        "id": "edge_4",
+        "label": "Payment Failed",
+        "source": "node_payment_decision",
+        "target": "node_payment_failed",
+        "condition": "processData.paymentStatus === 'failed'"
+      },
+      {
+        "id": "edge_5",
+        "label": "Payment Approved",
+        "source": "node_payment_decision",
+        "target": "node_parallel_check",
+        "condition": "processData.paymentStatus === 'approved'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_6",
+        "source": "node_payment_failed",
+        "target": "node_end_cancelled"
+      },
+      {
+        "id": "edge_7",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_parallel_check",
+        "target": "node_inventory_check",
+        "isDefault": true
+      },
+      {
+        "id": "edge_8",
+        "source": "node_parallel_check",
+        "target": "node_fraud_detection"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_inventory_check",
+        "target": "node_parallel_merge"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_fraud_detection",
+        "target": "node_parallel_merge"
+      },
+      {
+        "id": "edge_11",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_parallel_merge",
+        "target": "node_order_decision",
+        "isDefault": true
+      },
+      {
+        "id": "edge_12",
+        "label": "High Risk or Low Inventory",
+        "source": "node_order_decision",
+        "target": "node_manual_review",
+        "condition": "processData.fraudAnalysis.riskLevel === 'high' || processData.inventoryAvailable === false"
+      },
+      {
+        "id": "edge_13",
+        "label": "Low Risk and Available",
+        "source": "node_order_decision",
+        "target": "node_auto_approve",
+        "condition": "processData.fraudAnalysis.riskLevel === 'low' && processData.inventoryAvailable === true",
+        "isDefault": true
+      },
+      {
+        "id": "edge_14",
+        "label": "Approved",
+        "source": "node_manual_review",
+        "target": "node_approval_notification",
+        "condition": "processData.manualReviewResult === 'approved'"
+      },
+      {
+        "id": "edge_15",
+        "label": "Rejected",
+        "source": "node_manual_review",
+        "target": "node_end_cancelled",
+        "condition": "processData.manualReviewResult === 'rejected'"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_auto_approve",
+        "target": "node_approval_notification"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_approval_notification",
+        "target": "node_fulfillment_parallel"
+      },
+      {
+        "id": "edge_18",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_fulfillment_parallel",
+        "target": "node_pick_pack",
+        "isDefault": true
+      },
+      {
+        "id": "edge_19",
+        "source": "node_fulfillment_parallel",
+        "target": "node_shipping_label"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_pick_pack",
+        "target": "node_fulfillment_merge"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_shipping_label",
+        "target": "node_fulfillment_merge"
+      },
+      {
+        "id": "edge_22",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_fulfillment_merge",
+        "target": "node_ship_order",
+        "isDefault": true
+      },
+      {
+        "id": "edge_23",
+        "source": "node_ship_order",
+        "target": "node_shipping_notification"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_shipping_notification",
+        "target": "node_delivery_timer"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_delivery_timer",
+        "target": "node_delivery_confirmation"
+      },
+      {
+        "id": "edge_26",
+        "source": "node_delivery_confirmation",
+        "target": "node_completion_notification"
+      },
+      {
+        "id": "edge_27",
+        "source": "node_completion_notification",
+        "target": "node_end_success"
+      }
+    ],
+    "description": ""
+  }
+]

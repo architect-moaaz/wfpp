@@ -1,0 +1,871 @@
+[
+  {
+    "id": "user",
+    "name": "User",
+    "description": "Store user information for support agents, managers, and end users with authentication and role-based access control",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address for authentication and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "User's full name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "User role: end_user, agent, or manager",
+        "required": true,
+        "defaultValue": "end_user"
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the user account is active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "isAvailable",
+        "type": "boolean",
+        "description": "Agent availability status for ticket assignment (applicable to agents only)",
+        "required": false,
+        "defaultValue": true
+      },
+      {
+        "name": "currentWorkload",
+        "type": "number",
+        "description": "Number of active tickets assigned to agent (applicable to agents only)",
+        "required": false,
+        "defaultValue": 0
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the user account was created",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "email",
+      "role",
+      "isActive"
+    ],
+    "constraints": {
+      "unique": [
+        "email"
+      ],
+      "enum": {
+        "role": [
+          "end_user",
+          "agent",
+          "manager"
+        ]
+      }
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "category",
+    "name": "Category",
+    "description": "Define ticket categories for classification and routing with SLA configurations",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the category",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Category name (e.g., Hardware, Software, Network, Access)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the category scope and coverage",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "defaultPriority",
+        "type": "string",
+        "description": "Default priority level for tickets in this category (Low, Medium, High, Critical)",
+        "required": true,
+        "defaultValue": "Medium"
+      },
+      {
+        "name": "slaResponseTime",
+        "type": "number",
+        "description": "SLA response time in hours for this category",
+        "required": true,
+        "defaultValue": 24
+      },
+      {
+        "name": "slaResolutionTime",
+        "type": "number",
+        "description": "SLA resolution time in hours for this category",
+        "required": true,
+        "defaultValue": 72
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this category is currently active and available for ticket assignment",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "name",
+      "isActive"
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ],
+      "enum": {
+        "defaultPriority": [
+          "Low",
+          "Medium",
+          "High",
+          "Critical"
+        ]
+      }
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "priority",
+    "name": "Priority",
+    "description": "Defines priority levels with associated SLA timeframes and escalation rules for IT support tickets",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the priority level",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Priority level name (e.g., Critical, High, Medium, Low)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "description": "Numeric priority ranking (1=highest, 4=lowest) for sorting",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "slaResponseMinutes",
+        "type": "number",
+        "description": "SLA timeframe in minutes for initial response",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "slaResolutionMinutes",
+        "type": "number",
+        "description": "SLA timeframe in minutes for ticket resolution",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "escalationThresholdMinutes",
+        "type": "number",
+        "description": "Time in minutes before automatic escalation triggers",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if this priority level is currently active",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "level",
+      "isActive"
+    ],
+    "constraints": {
+      "unique": [
+        "name",
+        "level"
+      ],
+      "check": [
+        "level > 0",
+        "slaResponseMinutes > 0",
+        "slaResolutionMinutes > 0",
+        "escalationThresholdMinutes > 0"
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "status-history",
+    "name": "StatusHistory",
+    "description": "Records every status transition for IT support tickets with timestamp, user, and audit details for compliance and analytics",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the status history record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket that had a status change",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "previousStatus",
+        "type": "string",
+        "description": "Status before the change (e.g., Open, In Progress, Pending)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "newStatus",
+        "type": "string",
+        "description": "Status after the change (e.g., In Progress, Resolved, Closed)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changedBy",
+        "type": "string",
+        "description": "User ID of the person who made the status change",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changedAt",
+        "type": "date",
+        "description": "Timestamp when the status change occurred",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "notes",
+        "type": "string",
+        "description": "Optional notes or reason for the status change",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "changedBy",
+        "description": "Links to the user who made the status change"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "ticketId",
+          "changedAt"
+        ],
+        "description": "Optimize queries for ticket status history timeline"
+      },
+      {
+        "fields": [
+          "changedBy"
+        ],
+        "description": "Optimize queries for user activity tracking"
+      }
+    ],
+    "constraints": {
+      "newStatusRequired": "New status must be provided for every status change",
+      "validTimestamp": "Changed at timestamp must not be in the future"
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "comment",
+    "name": "Comment",
+    "description": "Store comments and updates in ticket conversation threads",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the comment",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket this comment belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "authorId",
+        "type": "string",
+        "description": "Reference to the user who created the comment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "content",
+        "type": "text",
+        "description": "The comment text content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isInternal",
+        "type": "boolean",
+        "description": "Whether the comment is internal (visible only to agents) or public (visible to requester)",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "isSystemGenerated",
+        "type": "boolean",
+        "description": "Whether the comment was automatically generated by the system",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the comment was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each comment belongs to one ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "authorId",
+        "description": "Each comment is authored by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_comment_ticket",
+        "fields": [
+          "ticketId",
+          "createdAt"
+        ],
+        "description": "Optimize retrieval of comments for a ticket in chronological order"
+      },
+      {
+        "name": "idx_comment_author",
+        "fields": [
+          "authorId"
+        ],
+        "description": "Optimize queries for comments by a specific author"
+      }
+    ],
+    "constraints": {
+      "foreignKeys": [
+        {
+          "field": "ticketId",
+          "references": "Ticket.id",
+          "onDelete": "CASCADE"
+        },
+        {
+          "field": "authorId",
+          "references": "User.id",
+          "onDelete": "SET_NULL"
+        }
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "assignment",
+    "name": "Assignment",
+    "description": "Track ticket assignment history and current ownership with timestamps, assignment reasons, and acceptance status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the assignment record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket being assigned",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedToUserId",
+        "type": "string",
+        "description": "Reference to the agent/user receiving the assignment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedByUserId",
+        "type": "string",
+        "description": "Reference to the user who made the assignment (null for auto-assignments)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedAt",
+        "type": "date",
+        "description": "Timestamp when the assignment was made",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignmentReason",
+        "type": "string",
+        "description": "Reason for assignment (e.g., 'auto-assigned', 'manual-reassignment', 'workload-balance')",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "acceptanceStatus",
+        "type": "string",
+        "description": "Status of assignment acceptance (e.g., 'pending', 'accepted', 'rejected')",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if this is the current active assignment for the ticket",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "assignedToUserId",
+        "description": "Agent assigned to the ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "assignedByUserId",
+        "description": "User who made the assignment"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "ticketId",
+          "isActive"
+        ],
+        "description": "Quick lookup of active assignment for a ticket"
+      },
+      {
+        "fields": [
+          "assignedToUserId",
+          "isActive"
+        ],
+        "description": "Query active assignments by agent for workload analysis"
+      },
+      {
+        "fields": [
+          "assignedAt"
+        ],
+        "description": "Time-based queries for assignment analytics"
+      }
+    ],
+    "constraints": {
+      "uniqueActiveAssignment": "Only one assignment per ticket can have isActive=true at a time",
+      "validAcceptanceStatus": "acceptanceStatus must be one of: 'pending', 'accepted', 'rejected'"
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "sla-tracking",
+    "name": "SLATracking",
+    "description": "Monitor SLA compliance and breach status for tickets",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for SLA tracking record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket being tracked",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "responseDeadline",
+        "type": "date",
+        "description": "Deadline for initial response to ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "resolutionDeadline",
+        "type": "date",
+        "description": "Deadline for ticket resolution",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "responseBreached",
+        "type": "boolean",
+        "description": "Indicates if response SLA has been breached",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "resolutionBreached",
+        "type": "boolean",
+        "description": "Indicates if resolution SLA has been breached",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "warningThresholdPercent",
+        "type": "number",
+        "description": "Percentage of time elapsed before warning alert (e.g., 80)",
+        "required": true,
+        "defaultValue": 80
+      },
+      {
+        "name": "escalated",
+        "type": "boolean",
+        "description": "Indicates if ticket has been escalated due to SLA risk",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each SLA tracking record belongs to one ticket"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_id",
+        "fields": [
+          "ticketId"
+        ]
+      },
+      {
+        "name": "idx_breach_status",
+        "fields": [
+          "responseBreached",
+          "resolutionBreached"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "ticketId"
+      ],
+      "check": [
+        "warningThresholdPercent >= 0 AND warningThresholdPercent <= 100"
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Store and manage notification queue for users across multiple channels with delivery and read status tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the recipient user",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Notification type (ticket_assigned, status_changed, comment_added, sla_warning, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "channel",
+        "type": "string",
+        "description": "Delivery channel (email, in_app, sms, push)",
+        "required": true,
+        "defaultValue": "in_app"
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "description": "Notification message content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Delivery status (pending, sent, failed, delivered)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "isRead",
+        "type": "boolean",
+        "description": "Whether the notification has been read by the user",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when notification was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Notification belongs to a user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_status",
+        "fields": [
+          "userId",
+          "status"
+        ]
+      },
+      {
+        "name": "idx_user_read",
+        "fields": [
+          "userId",
+          "isRead"
+        ]
+      },
+      {
+        "name": "idx_created_at",
+        "fields": [
+          "createdAt"
+        ]
+      }
+    ],
+    "constraints": {
+      "channel": [
+        "email",
+        "in_app",
+        "sms",
+        "push"
+      ],
+      "status": [
+        "pending",
+        "sent",
+        "failed",
+        "delivered"
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "ticket",
+    "name": "Ticket",
+    "description": "Central entity storing core ticket information and tracking the complete ticket lifecycle from submission to closure",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the ticket",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Brief summary of the ticket issue or request",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "description": "Detailed description of the issue, request, or problem",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the ticket (e.g., open, in_progress, resolved, closed)",
+        "required": true,
+        "defaultValue": "open"
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the ticket (e.g., low, medium, high, critical)",
+        "required": true,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "submitterId",
+        "type": "string",
+        "description": "Reference to the User who submitted the ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedAgentId",
+        "type": "string",
+        "description": "Reference to the User (agent) assigned to handle the ticket",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the ticket was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "submitterId",
+        "description": "Ticket is submitted by a User"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "assignedAgentId",
+        "description": "Ticket is assigned to an agent User"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "Comment",
+        "foreignKey": "ticketId",
+        "description": "Ticket can have multiple Comments"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "StatusHistory",
+        "foreignKey": "ticketId",
+        "description": "Ticket has status change history"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_status",
+        "fields": [
+          "status"
+        ]
+      },
+      {
+        "name": "idx_ticket_submitter",
+        "fields": [
+          "submitterId"
+        ]
+      },
+      {
+        "name": "idx_ticket_assigned_agent",
+        "fields": [
+          "assignedAgentId"
+        ]
+      },
+      {
+        "name": "idx_ticket_created_at",
+        "fields": [
+          "createdAt"
+        ]
+      }
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "open",
+          "in_progress",
+          "pending",
+          "resolved",
+          "closed",
+          "cancelled"
+        ]
+      },
+      "priority": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ]
+      }
+    },
+    "workflowId": "notification-dispatch-workflow"
+  }
+]

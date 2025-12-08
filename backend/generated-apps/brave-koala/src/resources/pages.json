@@ -1,0 +1,2473 @@
+[
+  {
+    "id": "ticketdashboardpage-1765082900123-abc123",
+    "name": "TicketDashboardPage",
+    "title": "Ticket Dashboard",
+    "description": "Overview of ticket metrics and status with role-specific views for agents and managers",
+    "route": "/dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "ticketsubmissionform-1765082747257-6hov79",
+      "ticketsearchfilterform-1765082818154-ky7ys3"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Ticket Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "New Ticket",
+              "variant": "primary",
+              "action": "navigate",
+              "target": "/new-ticket",
+              "style": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none",
+                "fontFamily": "Inter, -apple-system, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "cursor": "pointer"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Ticket Statistics",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Ticket.aggregateStats",
+            "content": [
+              {
+                "label": "Total Tickets",
+                "value": "{{Ticket.count}}",
+                "style": {
+                  "fontFamily": "Inter, -apple-system, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#6b7280",
+                  "fontWeight": "500"
+                }
+              },
+              {
+                "label": "Open",
+                "value": "{{Ticket.countByStatus.open}}",
+                "style": {
+                  "fontFamily": "Inter, -apple-system, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#6b7280",
+                  "fontWeight": "500"
+                }
+              },
+              {
+                "label": "In Progress",
+                "value": "{{Ticket.countByStatus.in_progress}}",
+                "style": {
+                  "fontFamily": "Inter, -apple-system, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#6b7280",
+                  "fontWeight": "500"
+                }
+              },
+              {
+                "label": "SLA Compliance",
+                "value": "{{SLATracking.complianceRate}}%",
+                "style": {
+                  "fontFamily": "Inter, -apple-system, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#6b7280",
+                  "fontWeight": "500"
+                }
+              }
+            ]
+          },
+          {
+            "type": "chart",
+            "config": {
+              "title": "Ticket Distribution",
+              "chartType": "bar",
+              "groupBy": [
+                "status",
+                "priority",
+                "category"
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px",
+                "fontFamily": "Inter, -apple-system, sans-serif"
+              }
+            },
+            "dataBinding": "Ticket.groupByStatus",
+            "colorScheme": {
+              "primary": "#2563eb",
+              "secondary": "#10b981",
+              "tertiary": "#f59e0b",
+              "quaternary": "#ef4444"
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Recent Activity",
+              "columns": [
+                {
+                  "field": "ticketId",
+                  "header": "Ticket ID",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "title",
+                  "header": "Title",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "status",
+                  "header": "Status",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "priority",
+                  "header": "Priority",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "updatedAt",
+                  "header": "Last Updated",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#6b7280"
+                  }
+                }
+              ],
+              "actions": [
+                "view"
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb"
+              }
+            },
+            "dataBinding": "Ticket.recentActivity",
+            "filters": {
+              "sortBy": "updatedAt",
+              "sortOrder": "desc",
+              "limit": 10
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "layout": "horizontal",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb",
+                "marginTop": "24px"
+              }
+            },
+            "content": [
+              {
+                "type": "button",
+                "label": "My Tickets",
+                "action": "navigate",
+                "target": "/my-tickets",
+                "style": {
+                  "backgroundColor": "#f3f4f6",
+                  "color": "#1a1a1a",
+                  "padding": "10px 20px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #e5e7eb",
+                  "fontFamily": "Inter, -apple-system, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "cursor": "pointer",
+                  "marginRight": "12px"
+                }
+              },
+              {
+                "type": "button",
+                "label": "Assignment Queue",
+                "action": "navigate",
+                "target": "/assignment-queue",
+                "style": {
+                  "backgroundColor": "#f3f4f6",
+                  "color": "#1a1a1a",
+                  "padding": "10px 20px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #e5e7eb",
+                  "fontFamily": "Inter, -apple-system, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "cursor": "pointer",
+                  "marginRight": "12px"
+                }
+              },
+              {
+                "type": "button",
+                "label": "View Reports",
+                "action": "navigate",
+                "target": "/reports",
+                "style": {
+                  "backgroundColor": "#f3f4f6",
+                  "color": "#1a1a1a",
+                  "padding": "10px 20px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #e5e7eb",
+                  "fontFamily": "Inter, -apple-system, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "cursor": "pointer"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-detail"
+        },
+        "create": {
+          "type": "navigate",
+          "target": "/new-ticket"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "New Ticket",
+          "route": "/new-ticket",
+          "icon": "add"
+        },
+        {
+          "label": "My Tickets",
+          "route": "/my-tickets",
+          "icon": "assignment"
+        },
+        {
+          "label": "All Tickets",
+          "route": "/tickets",
+          "icon": "list"
+        },
+        {
+          "label": "Assignment Queue",
+          "route": "/assignment-queue",
+          "icon": "queue"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "analytics"
+        },
+        {
+          "label": "Settings",
+          "route": "/admin-settings",
+          "icon": "settings"
+        }
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "newticketpage-1765082850000-n3wt1x",
+    "name": "NewTicketPage",
+    "title": "Create New Support Ticket",
+    "description": "Dedicated page for ticket submission with step-by-step guidance, AI-powered category suggestions, knowledge base article recommendations, and draft auto-save functionality",
+    "route": "/tickets/new",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "ticketsubmissionform-1765082747257-6hov79"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Create New Support Ticket",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Describe your issue below and we'll help you find the right solution. Your progress is automatically saved.",
+              "variant": "body",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "AI-Powered Suggestions",
+              "style": {
+                "backgroundColor": "#f8f9fa",
+                "borderRadius": "8px",
+                "padding": "16px",
+                "marginBottom": "24px",
+                "border": "1px solid #e0e0e0"
+              }
+            },
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "As you describe your issue, we'll suggest relevant categories and knowledge base articles that might help resolve your problem faster.",
+                  "variant": "body",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4a4a4a",
+                    "lineHeight": "1.6"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Ticket Details",
+              "submitLabel": "Submit Ticket",
+              "cancelLabel": "Save Draft",
+              "autoSave": true,
+              "autoSaveInterval": 30000,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "formRef": "ticketsubmissionform-1765082747257-6hov79",
+            "dataBinding": "Ticket.create",
+            "workflows": [
+              "AutoCategoryWorkflow",
+              "TicketSubmissionWorkflow",
+              "AutoAssignmentWorkflow",
+              "NotificationDispatchWorkflow"
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Recommended Articles",
+              "collapsible": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "20px",
+                "marginTop": "24px",
+                "border": "1px solid #e0e0e0"
+              }
+            },
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "emptyMessage": "Start typing your issue description to see relevant help articles",
+                  "itemStyle": {
+                    "padding": "12px",
+                    "borderBottom": "1px solid #f0f0f0",
+                    "cursor": "pointer",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#0066cc"
+                  }
+                },
+                "dataBinding": "KnowledgeBase.recommendations"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Need immediate assistance? Contact IT Support at ext. 5555 or email support@company.com",
+              "variant": "caption",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "12px",
+                "color": "#999999",
+                "textAlign": "center",
+                "padding": "16px"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/tickets/confirmation",
+          "message": "Ticket submitted successfully! You will receive a confirmation email shortly."
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/tickets/my-tickets",
+          "message": "Draft saved successfully"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "My Tickets",
+          "route": "/tickets/my-tickets",
+          "icon": "list"
+        },
+        {
+          "label": "All Tickets",
+          "route": "/tickets",
+          "icon": "folder"
+        },
+        {
+          "label": "Assignment Queue",
+          "route": "/tickets/queue",
+          "icon": "assignment"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "analytics"
+        },
+        {
+          "label": "Settings",
+          "route": "/admin/settings",
+          "icon": "settings"
+        }
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "adminsettingspage-1765082850000-admin01",
+    "name": "AdminSettingsPage",
+    "title": "System Settings",
+    "description": "Administrative interface for managing categories, priority levels, SLA configurations, assignment rules, notification templates, and user roles with validation and audit logging.",
+    "route": "/admin/settings",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "System Settings",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Configure system settings, categories, priorities, and administrative options",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Categories Management",
+              "description": "Configure ticket categories and subcategories",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "16px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "20px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            },
+            "dataBinding": "Category.list",
+            "actions": [
+              {
+                "label": "Add Category",
+                "type": "button",
+                "style": {
+                  "backgroundColor": "#3B82F6",
+                  "color": "#FFFFFF",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none"
+                }
+              },
+              {
+                "label": "Manage",
+                "type": "button",
+                "style": {
+                  "backgroundColor": "#F8FAFC",
+                  "color": "#475569",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "1px solid #E2E8F0"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Priority Levels",
+              "description": "Define priority levels and SLA configurations",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "16px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "20px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            },
+            "dataBinding": "Priority.list",
+            "actions": [
+              {
+                "label": "Add Priority",
+                "type": "button",
+                "style": {
+                  "backgroundColor": "#3B82F6",
+                  "color": "#FFFFFF",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none"
+                }
+              },
+              {
+                "label": "Configure SLA",
+                "type": "button",
+                "style": {
+                  "backgroundColor": "#F8FAFC",
+                  "color": "#475569",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "1px solid #E2E8F0"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Assignment Rules",
+              "description": "Configure automatic assignment rules and workflows",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "16px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "20px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            },
+            "actions": [
+              {
+                "label": "Configure Rules",
+                "type": "button",
+                "style": {
+                  "backgroundColor": "#3B82F6",
+                  "color": "#FFFFFF",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none"
+                }
+              },
+              {
+                "label": "Preview",
+                "type": "button",
+                "style": {
+                  "backgroundColor": "#F8FAFC",
+                  "color": "#475569",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "1px solid #E2E8F0"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Notification Templates",
+              "description": "Manage email and in-app notification templates",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "16px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "20px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            },
+            "dataBinding": "Notification.list",
+            "actions": [
+              {
+                "label": "Edit Templates",
+                "type": "button",
+                "style": {
+                  "backgroundColor": "#3B82F6",
+                  "color": "#FFFFFF",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none"
+                }
+              },
+              {
+                "label": "Test Send",
+                "type": "button",
+                "style": {
+                  "backgroundColor": "#F8FAFC",
+                  "color": "#475569",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "1px solid #E2E8F0"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "User Roles & Permissions",
+              "description": "Configure user roles, permissions, and access control",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "16px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "20px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            },
+            "dataBinding": "User.list",
+            "actions": [
+              {
+                "label": "Manage Roles",
+                "type": "button",
+                "style": {
+                  "backgroundColor": "#3B82F6",
+                  "color": "#FFFFFF",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none"
+                }
+              },
+              {
+                "label": "View Audit Log",
+                "type": "button",
+                "style": {
+                  "backgroundColor": "#F8FAFC",
+                  "color": "#475569",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "1px solid #E2E8F0"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "configure": {
+          "type": "navigate",
+          "target": "/admin/settings/configure"
+        },
+        "audit": {
+          "type": "navigate",
+          "target": "/admin/audit-log"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Ticket List",
+          "route": "/tickets"
+        },
+        {
+          "label": "My Tickets",
+          "route": "/my-tickets"
+        },
+        {
+          "label": "Assignment Queue",
+          "route": "/assignments"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "New Ticket",
+          "route": "/tickets/new"
+        }
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "myticketspage-1765082850000-a8xk2p",
+    "name": "MyTicketsPage",
+    "title": "My Tickets",
+    "description": "Agent-focused view displaying currently assigned tickets, workload metrics, SLA countdown timers, priority queue, and quick status update actions.",
+    "route": "/my-tickets",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "ticketupdateform-1765082800740-7l1xe1",
+      "commentform-1765082785513-e0gklw"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "My Tickets",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage your assigned tickets and track your workload",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Workload Overview",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Assignment.query",
+            "components": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 4,
+                  "gap": "16px",
+                  "items": [
+                    {
+                      "label": "Active Tickets",
+                      "value": "{{Assignment.count(status='active')}}",
+                      "icon": "ticket",
+                      "color": "#3B82F6",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#0F172A"
+                      }
+                    },
+                    {
+                      "label": "High Priority",
+                      "value": "{{Assignment.count(priority='high')}}",
+                      "icon": "alert",
+                      "color": "#EF4444",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#0F172A"
+                      }
+                    },
+                    {
+                      "label": "Due Today",
+                      "value": "{{SLATracking.count(dueDate='today')}}",
+                      "icon": "clock",
+                      "color": "#F59E0B",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#0F172A"
+                      }
+                    },
+                    {
+                      "label": "Resolved Today",
+                      "value": "{{Ticket.count(status='resolved', date='today')}}",
+                      "icon": "check",
+                      "color": "#10B981",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#0F172A"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "My Assigned Tickets",
+              "enableSearch": true,
+              "enableSort": true,
+              "enableFilter": true,
+              "enableDragDrop": true,
+              "enableBatchActions": true,
+              "pageSize": 20,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              },
+              "columns": [
+                {
+                  "field": "ticketId",
+                  "header": "Ticket ID",
+                  "sortable": true,
+                  "width": "100px",
+                  "style": {
+                    "fontWeight": "600",
+                    "color": "#3B82F6",
+                    "fontSize": "14px"
+                  }
+                },
+                {
+                  "field": "title",
+                  "header": "Title",
+                  "sortable": true,
+                  "width": "250px",
+                  "style": {
+                    "fontWeight": "500",
+                    "color": "#0F172A",
+                    "fontSize": "14px"
+                  }
+                },
+                {
+                  "field": "priority",
+                  "header": "Priority",
+                  "sortable": true,
+                  "width": "100px",
+                  "badge": true,
+                  "style": {
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "textTransform": "uppercase"
+                  }
+                },
+                {
+                  "field": "category",
+                  "header": "Category",
+                  "sortable": true,
+                  "width": "120px",
+                  "style": {
+                    "fontSize": "14px",
+                    "color": "#64748B"
+                  }
+                },
+                {
+                  "field": "status",
+                  "header": "Status",
+                  "sortable": true,
+                  "width": "120px",
+                  "badge": true,
+                  "style": {
+                    "fontSize": "12px",
+                    "fontWeight": "600"
+                  }
+                },
+                {
+                  "field": "slaRemaining",
+                  "header": "SLA Timer",
+                  "sortable": true,
+                  "width": "120px",
+                  "countdown": true,
+                  "style": {
+                    "fontSize": "14px",
+                    "fontWeight": "600"
+                  }
+                },
+                {
+                  "field": "assignedDate",
+                  "header": "Assigned",
+                  "sortable": true,
+                  "width": "100px",
+                  "format": "date",
+                  "style": {
+                    "fontSize": "14px",
+                    "color": "#64748B"
+                  }
+                },
+                {
+                  "field": "actions",
+                  "header": "Actions",
+                  "width": "150px",
+                  "actions": [
+                    {
+                      "label": "View",
+                      "icon": "eye",
+                      "action": "view",
+                      "style": {
+                        "backgroundColor": "#3B82F6",
+                        "color": "#FFFFFF",
+                        "borderRadius": "6px",
+                        "padding": "6px 12px",
+                        "fontSize": "12px",
+                        "fontWeight": "500",
+                        "border": "none"
+                      }
+                    },
+                    {
+                      "label": "Update",
+                      "icon": "edit",
+                      "action": "update",
+                      "formRef": "ticketupdateform-1765082800740-7l1xe1",
+                      "style": {
+                        "backgroundColor": "#FFFFFF",
+                        "color": "#3B82F6",
+                        "borderRadius": "6px",
+                        "padding": "6px 12px",
+                        "fontSize": "12px",
+                        "fontWeight": "500",
+                        "border": "1px solid #3B82F6"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "batchActions": [
+                {
+                  "label": "Update Status",
+                  "icon": "refresh",
+                  "formRef": "ticketupdateform-1765082800740-7l1xe1",
+                  "style": {
+                    "backgroundColor": "#3B82F6",
+                    "color": "#FFFFFF",
+                    "borderRadius": "6px",
+                    "padding": "8px 16px",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "Add Comment",
+                  "icon": "comment",
+                  "formRef": "commentform-1765082785513-e0gklw",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "color": "#3B82F6",
+                    "borderRadius": "6px",
+                    "padding": "8px 16px",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "1px solid #3B82F6"
+                  }
+                }
+              ],
+              "filters": [
+                {
+                  "field": "priority",
+                  "type": "select",
+                  "options": [
+                    "high",
+                    "medium",
+                    "low"
+                  ]
+                },
+                {
+                  "field": "status",
+                  "type": "select",
+                  "options": [
+                    "open",
+                    "in_progress",
+                    "pending",
+                    "resolved"
+                  ]
+                },
+                {
+                  "field": "category",
+                  "type": "select",
+                  "dataBinding": "Category.query"
+                }
+              ]
+            },
+            "dataBinding": "Ticket.query.filter(assignedTo=currentUser).join(Assignment).join(SLATracking)"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-detail/{{ticketId}}"
+        },
+        "update": {
+          "type": "modal",
+          "formRef": "ticketupdateform-1765082800740-7l1xe1"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "My Tickets",
+          "route": "/my-tickets",
+          "icon": "ticket",
+          "active": true
+        },
+        {
+          "label": "All Tickets",
+          "route": "/tickets",
+          "icon": "list"
+        },
+        {
+          "label": "Assignment Queue",
+          "route": "/assignment-queue",
+          "icon": "queue"
+        },
+        {
+          "label": "New Ticket",
+          "route": "/new-ticket",
+          "icon": "plus"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "chart"
+        },
+        {
+          "label": "Settings",
+          "route": "/admin-settings",
+          "icon": "settings"
+        }
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "assignmentqueuepage-1765082850000-aq9xyz",
+    "name": "AssignmentQueuePage",
+    "title": "Assignment Queue",
+    "description": "Manage unassigned tickets and manual assignment with agent availability and workload distribution",
+    "route": "/assignment-queue",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "manualassignmentform-1765082767967-j2kyw0"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Assignment Queue",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage unassigned tickets and distribute workload across available agents",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Agent Availability & Workload",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "User.query",
+            "components": [
+              {
+                "type": "chart",
+                "config": {
+                  "chartType": "bar",
+                  "title": "Current Workload Distribution",
+                  "xAxis": "agentName",
+                  "yAxis": "assignedTickets",
+                  "style": {
+                    "height": "300px",
+                    "fontFamily": "Inter, system-ui, sans-serif"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Unassigned Tickets",
+              "columns": [
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket #",
+                  "sortable": true
+                },
+                {
+                  "key": "title",
+                  "label": "Title",
+                  "sortable": true
+                },
+                {
+                  "key": "category",
+                  "label": "Category",
+                  "sortable": true
+                },
+                {
+                  "key": "priority",
+                  "label": "Priority",
+                  "sortable": true,
+                  "badge": true
+                },
+                {
+                  "key": "createdAt",
+                  "label": "Created",
+                  "sortable": true,
+                  "type": "date"
+                },
+                {
+                  "key": "slaTimeRemaining",
+                  "label": "SLA Time",
+                  "sortable": true
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Assign",
+                  "type": "primary",
+                  "action": "assign"
+                },
+                {
+                  "label": "View",
+                  "type": "secondary",
+                  "action": "view"
+                }
+              ],
+              "selectable": true,
+              "bulkActions": [
+                {
+                  "label": "Bulk Assign",
+                  "action": "bulkAssign"
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Ticket.query",
+            "filters": {
+              "status": "unassigned"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Manual Assignment",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0"
+              }
+            },
+            "components": [
+              {
+                "type": "form",
+                "config": {
+                  "submitLabel": "Assign Ticket",
+                  "cancelLabel": "Cancel",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif"
+                  }
+                },
+                "formRef": "manualassignmentform-1765082767967-j2kyw0"
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Auto-Assignment Failures",
+              "collapsible": true,
+              "style": {
+                "backgroundColor": "#FEF2F2",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #FEE2E2",
+                "marginTop": "24px"
+              }
+            },
+            "dataBinding": "Assignment.query",
+            "filters": {
+              "autoAssignmentFailed": true
+            },
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "itemTemplate": {
+                    "title": "{{ticketNumber}} - {{failureReason}}",
+                    "subtitle": "Failed at {{failedAt}}",
+                    "action": "Retry"
+                  },
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#0F172A"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "assign": {
+          "type": "modal",
+          "target": "manualassignmentform-1765082767967-j2kyw0"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-detail"
+        },
+        "bulkAssign": {
+          "type": "modal",
+          "target": "manualassignmentform-1765082767967-j2kyw0"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "My Tickets",
+          "route": "/my-tickets"
+        },
+        {
+          "label": "All Tickets",
+          "route": "/tickets"
+        },
+        {
+          "label": "New Ticket",
+          "route": "/new-ticket"
+        },
+        {
+          "label": "Assignment Queue",
+          "route": "/assignment-queue"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Settings",
+          "route": "/admin-settings"
+        }
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "ticketlistpage-1765082850123-a8bcd9",
+    "name": "TicketListPage",
+    "title": "All Tickets",
+    "description": "Display searchable and filterable list of tickets with sortable columns, inline status indicators, SLA warning badges, and bulk action capabilities",
+    "route": "/tickets",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "ticketsearchfilterform-1765082818154-ky7ys3",
+      "ticketsubmissionform-1765082747257-6hov79"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "All Tickets",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "New Ticket",
+              "variant": "primary",
+              "action": "navigate",
+              "target": "/new-ticket",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563EB",
+                "color": "#FFFFFF",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Search & Filter Tickets",
+              "layout": "inline",
+              "showLabels": false,
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#FFFFFF",
+                "padding": "20px",
+                "borderRadius": "12px",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "formRef": "ticketsearchfilterform-1765082818154-ky7ys3"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Tickets",
+              "columns": [
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket #",
+                  "sortable": true,
+                  "width": "10%"
+                },
+                {
+                  "key": "subject",
+                  "label": "Subject",
+                  "sortable": true,
+                  "width": "25%"
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "width": "12%",
+                  "badge": true
+                },
+                {
+                  "key": "priority",
+                  "label": "Priority",
+                  "sortable": true,
+                  "width": "10%",
+                  "badge": true
+                },
+                {
+                  "key": "category",
+                  "label": "Category",
+                  "sortable": true,
+                  "width": "15%"
+                },
+                {
+                  "key": "assignedTo",
+                  "label": "Assigned To",
+                  "sortable": true,
+                  "width": "13%"
+                },
+                {
+                  "key": "slaStatus",
+                  "label": "SLA",
+                  "sortable": true,
+                  "width": "10%",
+                  "badge": true
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "width": "5%"
+                }
+              ],
+              "selectable": true,
+              "bulkActions": [
+                {
+                  "label": "Assign",
+                  "action": "bulk-assign"
+                },
+                {
+                  "label": "Update Status",
+                  "action": "bulk-status-update"
+                },
+                {
+                  "label": "Export Selected",
+                  "action": "export-selected"
+                }
+              ],
+              "viewModes": [
+                "list",
+                "grid",
+                "kanban"
+              ],
+              "defaultView": "list",
+              "pagination": {
+                "enabled": true,
+                "pageSize": 25,
+                "pageSizeOptions": [
+                  10,
+                  25,
+                  50,
+                  100
+                ]
+              },
+              "export": {
+                "enabled": true,
+                "formats": [
+                  "csv",
+                  "xlsx",
+                  "pdf"
+                ]
+              },
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "border": "1px solid #E2E8F0",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              },
+              "headerStyle": {
+                "backgroundColor": "#F8FAFC",
+                "fontWeight": "600",
+                "fontSize": "13px",
+                "color": "#475569",
+                "padding": "12px 16px",
+                "borderBottom": "1px solid #E2E8F0"
+              },
+              "rowStyle": {
+                "fontSize": "14px",
+                "color": "#0F172A",
+                "padding": "12px 16px",
+                "borderBottom": "1px solid #F1F5F9"
+              },
+              "hoverStyle": {
+                "backgroundColor": "#F8FAFC"
+              }
+            },
+            "dataBinding": "Ticket.query",
+            "actions": [
+              {
+                "label": "View",
+                "action": "navigate",
+                "target": "/ticket-detail",
+                "icon": "eye"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-detail"
+        },
+        "create": {
+          "type": "navigate",
+          "target": "/new-ticket"
+        },
+        "bulk-assign": {
+          "type": "modal",
+          "formRef": "manualassignmentform-1765082767967-j2kyw0"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "My Tickets",
+          "route": "/my-tickets"
+        },
+        {
+          "label": "New Ticket",
+          "route": "/new-ticket"
+        },
+        {
+          "label": "Assignment Queue",
+          "route": "/assignment-queue"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Admin Settings",
+          "route": "/admin-settings"
+        }
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "reportspage-1765082900000-rpt001",
+    "name": "ReportsPage",
+    "title": "Reports & Analytics",
+    "description": "Comprehensive reporting interface with pre-built reports, custom report builder, and analytics on ticket metrics including SLA compliance, agent performance, and resolution times",
+    "route": "/reports",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Reports & Analytics",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Analyze ticket metrics, SLA compliance, and team performance",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Pre-Built Reports",
+              "subtitle": "Quick access to common analytics reports",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "items": [
+              {
+                "label": "SLA Compliance Report",
+                "description": "Track SLA adherence across all tickets",
+                "icon": "chart-line",
+                "action": "view_sla_report"
+              },
+              {
+                "label": "Agent Performance",
+                "description": "Analyze individual and team performance metrics",
+                "icon": "users",
+                "action": "view_agent_performance"
+              },
+              {
+                "label": "Category Trends",
+                "description": "View ticket distribution and trends by category",
+                "icon": "pie-chart",
+                "action": "view_category_trends"
+              },
+              {
+                "label": "Resolution Times",
+                "description": "Average resolution times by priority and category",
+                "icon": "clock",
+                "action": "view_resolution_times"
+              }
+            ]
+          },
+          {
+            "type": "chart",
+            "config": {
+              "title": "Ticket Volume Trends",
+              "chartType": "line",
+              "dateRangeSelector": true,
+              "exportOptions": [
+                "PDF",
+                "Excel",
+                "CSV"
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Ticket.aggregateByDate",
+            "filters": {
+              "dateRange": "last30days",
+              "groupBy": "createdAt"
+            }
+          },
+          {
+            "type": "grid",
+            "config": {
+              "columns": 2,
+              "gap": "24px",
+              "style": {
+                "marginBottom": "24px"
+              }
+            },
+            "items": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "SLA Compliance",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "SLATracking.complianceRate",
+                "content": {
+                  "metric": "{{complianceRate}}%",
+                  "label": "Overall Compliance",
+                  "trend": "{{trendDirection}}",
+                  "chartType": "donut"
+                }
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Avg Resolution Time",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "Ticket.averageResolutionTime",
+                "content": {
+                  "metric": "{{avgTime}} hours",
+                  "label": "Average Resolution Time",
+                  "trend": "{{trendDirection}}",
+                  "chartType": "bar"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Custom Report Builder",
+              "subtitle": "Create and schedule custom reports",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "items": [
+              {
+                "type": "select",
+                "label": "Report Type",
+                "options": [
+                  "Ticket Analysis",
+                  "Agent Performance",
+                  "SLA Tracking",
+                  "Category Distribution"
+                ],
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "marginBottom": "16px"
+                }
+              },
+              {
+                "type": "dateRange",
+                "label": "Date Range",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "marginBottom": "16px"
+                }
+              },
+              {
+                "type": "multiselect",
+                "label": "Metrics",
+                "options": [
+                  "Volume",
+                  "Resolution Time",
+                  "SLA Compliance",
+                  "Agent Workload",
+                  "Customer Satisfaction"
+                ],
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "marginBottom": "16px"
+                }
+              },
+              {
+                "type": "button",
+                "label": "Generate Report",
+                "variant": "primary",
+                "action": "generate_custom_report",
+                "style": {
+                  "backgroundColor": "#2563eb",
+                  "color": "#ffffff",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "padding": "10px 20px",
+                  "borderRadius": "8px",
+                  "border": "none",
+                  "cursor": "pointer",
+                  "marginRight": "12px"
+                }
+              },
+              {
+                "type": "button",
+                "label": "Schedule Delivery",
+                "variant": "secondary",
+                "action": "schedule_report",
+                "style": {
+                  "backgroundColor": "#ffffff",
+                  "color": "#2563eb",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "padding": "10px 20px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #2563eb",
+                  "cursor": "pointer"
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Recent Reports",
+              "columns": [
+                {
+                  "key": "reportName",
+                  "label": "Report Name",
+                  "sortable": true
+                },
+                {
+                  "key": "type",
+                  "label": "Type",
+                  "sortable": true
+                },
+                {
+                  "key": "dateRange",
+                  "label": "Date Range",
+                  "sortable": false
+                },
+                {
+                  "key": "generatedAt",
+                  "label": "Generated",
+                  "sortable": true
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "sortable": false
+                }
+              ],
+              "actions": [
+                "view",
+                "download",
+                "schedule"
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Report.list"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view_sla_report": {
+          "type": "navigate",
+          "target": "/reports/sla-compliance"
+        },
+        "view_agent_performance": {
+          "type": "navigate",
+          "target": "/reports/agent-performance"
+        },
+        "view_category_trends": {
+          "type": "navigate",
+          "target": "/reports/category-trends"
+        },
+        "view_resolution_times": {
+          "type": "navigate",
+          "target": "/reports/resolution-times"
+        },
+        "generate_custom_report": {
+          "type": "action",
+          "action": "generateReport"
+        },
+        "schedule_report": {
+          "type": "navigate",
+          "target": "/reports/schedule"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "My Tickets",
+          "route": "/my-tickets"
+        },
+        {
+          "label": "All Tickets",
+          "route": "/tickets"
+        },
+        {
+          "label": "Assignment Queue",
+          "route": "/assignment-queue"
+        },
+        {
+          "label": "New Ticket",
+          "route": "/new-ticket"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Admin Settings",
+          "route": "/admin"
+        }
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  },
+  {
+    "id": "ticketdetailpage-1765082850123-x9k2p4",
+    "name": "TicketDetailPage",
+    "title": "Ticket Details",
+    "description": "Display complete ticket information with status history, comments, assignments, and contextual actions based on user role",
+    "route": "/ticket/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "ticketupdateform-1765082800740-7l1xe1",
+      "commentform-1765082785513-e0gklw",
+      "manualassignmentform-1765082767967-j2kyw0"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Ticket #{{Ticket.ticketNumber}}",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "lineHeight": "1.3"
+              }
+            },
+            "dataBinding": "Ticket.findById"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Edit Ticket",
+              "variant": "primary",
+              "action": "openForm",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "10px 20px",
+                "border": "none"
+              }
+            },
+            "formRef": "ticketupdateform-1765082800740-7l1xe1"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Ticket Information",
+              "fields": [
+                {
+                  "label": "Subject",
+                  "value": "{{Ticket.subject}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Description",
+                  "value": "{{Ticket.description}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563",
+                    "lineHeight": "1.6"
+                  }
+                },
+                {
+                  "label": "Status",
+                  "value": "{{Ticket.status}}",
+                  "badge": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "13px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "6px",
+                    "backgroundColor": "#e0f2fe",
+                    "color": "#0369a1"
+                  }
+                },
+                {
+                  "label": "Priority",
+                  "value": "{{Priority.name}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Category",
+                  "value": "{{Category.name}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "label": "Assigned To",
+                  "value": "{{Assignment.assignedTo.name}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "label": "SLA Status",
+                  "value": "{{SLATracking.status}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#059669"
+                  }
+                },
+                {
+                  "label": "Created",
+                  "value": "{{Ticket.createdAt}}",
+                  "format": "datetime",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "13px",
+                    "color": "#6b7280"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Ticket.findById"
+          },
+          {
+            "type": "timeline",
+            "config": {
+              "title": "Status History",
+              "items": "{{StatusHistory.items}}",
+              "displayFields": [
+                "status",
+                "changedBy",
+                "timestamp",
+                "notes"
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px"
+              },
+              "itemStyle": {
+                "fontSize": "14px",
+                "color": "#4b5563",
+                "lineHeight": "1.6"
+              }
+            },
+            "dataBinding": "StatusHistory.query"
+          },
+          {
+            "type": "list",
+            "config": {
+              "title": "Comments",
+              "emptyMessage": "No comments yet",
+              "itemTemplate": {
+                "author": "{{Comment.author.name}}",
+                "content": "{{Comment.content}}",
+                "timestamp": "{{Comment.createdAt}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#1a1a1a",
+                  "backgroundColor": "#f9fafb",
+                  "borderRadius": "8px",
+                  "padding": "16px",
+                  "marginBottom": "12px"
+                }
+              },
+              "actions": [
+                {
+                  "label": "Add Comment",
+                  "variant": "secondary",
+                  "action": "openForm",
+                  "formRef": "commentform-1765082785513-e0gklw",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#ffffff",
+                    "color": "#2563eb",
+                    "border": "1px solid #2563eb",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Comment.query"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Related Tickets",
+              "items": "{{Ticket.relatedTickets}}",
+              "displayFields": [
+                "ticketNumber",
+                "subject",
+                "status"
+              ],
+              "emptyMessage": "No related tickets",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb"
+              },
+              "itemStyle": {
+                "fontSize": "14px",
+                "color": "#4b5563",
+                "padding": "12px",
+                "borderBottom": "1px solid #f3f4f6"
+              }
+            },
+            "dataBinding": "Ticket.findRelated"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/tickets"
+        },
+        "back": {
+          "type": "navigate",
+          "target": "/tickets"
+        },
+        "viewRelated": {
+          "type": "navigate",
+          "target": "/ticket/:relatedId"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "All Tickets",
+          "route": "/tickets"
+        },
+        {
+          "label": "My Tickets",
+          "route": "/my-tickets"
+        },
+        {
+          "label": "New Ticket",
+          "route": "/new-ticket"
+        },
+        {
+          "label": "Assignment Queue",
+          "route": "/assignment-queue"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Admin Settings",
+          "route": "/admin"
+        }
+      ]
+    },
+    "workflowId": "notification-dispatch-workflow"
+  }
+]

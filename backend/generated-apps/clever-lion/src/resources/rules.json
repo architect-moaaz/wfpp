@@ -1,0 +1,439 @@
+[
+  {
+    "id": "rule_parking_violation_detected",
+    "name": "Parking Violation Detected Rule",
+    "description": "Validate required fields when parking violation is detected and initialize ticket",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Vehicle.licensePlate",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Vehicle.licensePlate",
+          "message": "License plate number is required to create a parking ticket"
+        }
+      ]
+    },
+    "node_id": "node_start",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  },
+  {
+    "id": "rule_complete_ticket_issuance",
+    "name": "Complete Ticket Issuance Form Rule",
+    "description": "Validate ticket form completion with violation type and location",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ParkingTicket.violationType",
+          "operator": "isNull",
+          "value": true
+        },
+        {
+          "field": "ParkingTicket.location",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "ParkingTicket.violationType",
+          "message": "Violation type and location are mandatory fields"
+        },
+        {
+          "type": "throwError",
+          "field": "ParkingTicket",
+          "message": "Cannot proceed without complete ticket information"
+        }
+      ]
+    },
+    "node_id": "node_ticket_form",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  },
+  {
+    "id": "rule_validate_ticket_information",
+    "name": "Validate Ticket Information Rule",
+    "description": "Validate ticket amount is within acceptable range for violation type",
+    "type": "validation",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ParkingTicket.amount",
+          "operator": "greaterThan",
+          "value": 500
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "ParkingTicket.amount",
+          "message": "Ticket amount exceeds maximum allowed fine of $500"
+        },
+        {
+          "type": "logMessage",
+          "message": "Invalid ticket amount detected during validation"
+        }
+      ]
+    },
+    "node_id": "node_validate_ticket",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  },
+  {
+    "id": "rule_validation_check",
+    "name": "Validation Check Rule",
+    "description": "Determine if ticket passes all validation checks to proceed",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ParkingTicket.validationStatus",
+          "operator": "equals",
+          "value": "PASSED"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.nextStep",
+          "value": "PROCESS_TICKET"
+        },
+        {
+          "type": "logMessage",
+          "message": "Ticket validation successful, proceeding to processing"
+        }
+      ]
+    },
+    "node_id": "node_validation_decision",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  },
+  {
+    "id": "rule_parallel_processing_split",
+    "name": "Parallel Processing Split Rule",
+    "description": "Route ticket for parallel processing of notification and payment setup",
+    "type": "decision",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ParkingTicket.status",
+          "operator": "equals",
+          "value": "VALIDATED"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.parallelProcessing",
+          "value": true
+        },
+        {
+          "type": "setVariable",
+          "field": "workflow.branches",
+          "value": "NOTIFICATION,PAYMENT_SETUP"
+        }
+      ]
+    },
+    "node_id": "node_parallel_split",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  },
+  {
+    "id": "rule_parallel_processing_join",
+    "name": "Parallel Processing Join Rule",
+    "description": "Check if both parallel branches completed before continuing",
+    "type": "decision",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Notification.sent",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "Payment.setupComplete",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.parallelComplete",
+          "value": true
+        },
+        {
+          "type": "setVariable",
+          "field": "ParkingTicket.status",
+          "value": "ISSUED"
+        }
+      ]
+    },
+    "node_id": "node_parallel_join",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  },
+  {
+    "id": "rule_contact_information_available",
+    "name": "Contact Information Available Rule",
+    "description": "Determine if violator contact information exists for electronic notification",
+    "type": "decision",
+    "priority": 7,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Violator.email",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Notification.method",
+          "value": "EMAIL"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Violator.email",
+          "message": "Parking ticket notification sent electronically"
+        }
+      ]
+    },
+    "node_id": "node_contact_check",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  },
+  {
+    "id": "rule_manual_notice_required",
+    "name": "Manual Notice Required Rule",
+    "description": "Validate manual notice preparation when electronic contact unavailable",
+    "type": "validation",
+    "priority": 8,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Notification.method",
+          "operator": "equals",
+          "value": "PHYSICAL_MAIL"
+        },
+        {
+          "field": "Violator.mailingAddress",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Violator.mailingAddress",
+          "message": "Mailing address required for physical notice delivery"
+        },
+        {
+          "type": "setVariable",
+          "field": "ParkingTicket.requiresManualReview",
+          "value": true
+        }
+      ]
+    },
+    "node_id": "node_manual_notice",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  },
+  {
+    "id": "rule_ticket_status_check",
+    "name": "Ticket Status Check Rule",
+    "description": "Route ticket based on payment or appeal status",
+    "type": "decision",
+    "priority": 9,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ParkingTicket.status",
+          "operator": "equals",
+          "value": "APPEAL_SUBMITTED"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.nextStep",
+          "value": "REVIEW_APPEAL"
+        },
+        {
+          "type": "setVariable",
+          "field": "Payment.onHold",
+          "value": true
+        }
+      ]
+    },
+    "node_id": "node_status_check",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  },
+  {
+    "id": "rule_review_appeal_submission",
+    "name": "Review Appeal Submission Rule",
+    "description": "Validate appeal submission has required documentation",
+    "type": "validation",
+    "priority": 10,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Appeal.reason",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Appeal.reason",
+          "message": "Appeal reason is required to process the appeal request"
+        },
+        {
+          "type": "validateField",
+          "field": "AppealDocument",
+          "message": "Supporting documentation must be provided"
+        }
+      ]
+    },
+    "node_id": "node_appeal_review",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  },
+  {
+    "id": "rule_appeal_decision",
+    "name": "Appeal Decision Rule",
+    "description": "Route ticket based on appeal approval or denial decision",
+    "type": "decision",
+    "priority": 11,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Appeal.decision",
+          "operator": "equals",
+          "value": "APPROVED"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "ParkingTicket.status",
+          "value": "DISMISSED"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Violator.email",
+          "message": "Your parking ticket appeal has been approved and ticket dismissed"
+        },
+        {
+          "type": "updateData",
+          "field": "Payment.required",
+          "value": false
+        }
+      ]
+    },
+    "node_id": "node_appeal_decision",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  },
+  {
+    "id": "rule_retry_or_abort",
+    "name": "Retry or Abort Rule",
+    "description": "Determine if failed notification should retry or escalate",
+    "type": "decision",
+    "priority": 12,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Notification.retryCount",
+          "operator": "greaterThan",
+          "value": 3
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Notification.status",
+          "value": "FAILED"
+        },
+        {
+          "type": "setVariable",
+          "field": "ParkingTicket.requiresManualIntervention",
+          "value": true
+        },
+        {
+          "type": "logMessage",
+          "message": "Notification retry limit exceeded, manual intervention required"
+        }
+      ]
+    },
+    "node_id": "node_retry_decision",
+    "workflow_id": "workflow_1737026000",
+    "workflowId": "workflow_1737026000",
+    "application_id": "app_1765049489873"
+  }
+]

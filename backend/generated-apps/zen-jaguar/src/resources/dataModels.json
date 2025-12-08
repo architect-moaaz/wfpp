@@ -1,0 +1,764 @@
+[
+  {
+    "id": "user",
+    "name": "User",
+    "description": "Store user information for all system users including customers, agents, and managers",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address for authentication and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "passwordHash",
+        "type": "string",
+        "description": "Hashed password for authentication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "User's full name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "User role: customer, agent, or manager",
+        "required": true,
+        "defaultValue": "customer"
+      },
+      {
+        "name": "department",
+        "type": "string",
+        "description": "Department affiliation for agents and managers",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the user account is active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the user account was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_user_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_user_role",
+        "fields": [
+          "role"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "email": "Must be valid email format",
+      "role": "Must be one of: customer, agent, manager"
+    },
+    "workflowId": "workflow_1734890234567"
+  },
+  {
+    "id": "category",
+    "name": "Category",
+    "description": "Define ticket categories for routing and organization with associated routing rules and default priority levels",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the category",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Category name (e.g., Technical, Billing, General Inquiry, Bug Report)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of what this category covers",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "defaultPriority",
+        "type": "string",
+        "description": "Default priority level for tickets in this category (low, medium, high, urgent)",
+        "required": true,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "routingRules",
+        "type": "string",
+        "description": "JSON string containing routing rules for automatic ticket assignment",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this category is currently active and available for selection",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the category was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "name",
+      "isActive"
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ],
+      "check": [
+        "defaultPriority IN ('low', 'medium', 'high', 'urgent')"
+      ]
+    },
+    "workflowId": "workflow_1734890234567"
+  },
+  {
+    "id": "ticket",
+    "name": "Ticket",
+    "description": "Central data model storing support ticket information from submission to closure with complete lifecycle tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique ticket identifier",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Brief summary of the ticket issue",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the issue or request",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Ticket priority level: low, medium, high, urgent",
+        "required": true,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current ticket status: New, In Progress, Resolved, Closed",
+        "required": true,
+        "defaultValue": "New"
+      },
+      {
+        "name": "categoryId",
+        "type": "string",
+        "description": "Reference to ticket category",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedAgentId",
+        "type": "string",
+        "description": "Reference to assigned support agent user",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when ticket was created",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Category",
+        "foreignKey": "categoryId"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "assignedAgentId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "status",
+          "priority"
+        ],
+        "name": "idx_ticket_status_priority"
+      },
+      {
+        "fields": [
+          "assignedAgentId"
+        ],
+        "name": "idx_ticket_assigned_agent"
+      }
+    ],
+    "constraints": {
+      "priority": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "status": [
+        "New",
+        "In Progress",
+        "Resolved",
+        "Closed"
+      ]
+    },
+    "workflowId": "workflow_1734890234567"
+  },
+  {
+    "id": "comment",
+    "name": "Comment",
+    "description": "Store all comments and updates made on tickets including agent notes, customer responses, and status changes",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the comment",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket this comment belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "authorId",
+        "type": "string",
+        "description": "Reference to the user who created the comment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "content",
+        "type": "text",
+        "description": "The message content of the comment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isInternal",
+        "type": "boolean",
+        "description": "Visibility flag - true for internal notes, false for public comments visible to customers",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the comment was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each comment belongs to one ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "authorId",
+        "description": "Each comment is authored by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "ticketId",
+          "createdAt"
+        ],
+        "description": "Optimize retrieval of comments for a ticket in chronological order"
+      },
+      {
+        "fields": [
+          "authorId"
+        ],
+        "description": "Optimize queries for comments by a specific author"
+      }
+    ],
+    "constraints": {
+      "foreignKeys": [
+        {
+          "field": "ticketId",
+          "references": "Ticket.id",
+          "onDelete": "CASCADE"
+        },
+        {
+          "field": "authorId",
+          "references": "User.id",
+          "onDelete": "SET_NULL"
+        }
+      ]
+    },
+    "workflowId": "workflow_1734890234567"
+  },
+  {
+    "id": "attachment",
+    "name": "Attachment",
+    "description": "Store file attachments associated with tickets including metadata, storage location, and security controls",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the attachment",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket this attachment belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "commentId",
+        "type": "string",
+        "description": "Reference to the comment if attached to a specific comment",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "fileName",
+        "type": "string",
+        "description": "Original name of the uploaded file",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileSize",
+        "type": "number",
+        "description": "Size of the file in bytes",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "mimeType",
+        "type": "string",
+        "description": "MIME type of the file (e.g., image/png, application/pdf)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "storagePath",
+        "type": "string",
+        "description": "Storage location reference or URL where the file is stored",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "uploadedAt",
+        "type": "date",
+        "description": "Timestamp when the file was uploaded",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each attachment belongs to one ticket"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "Comment",
+        "foreignKey": "commentId",
+        "description": "Each attachment may belong to one comment"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_attachment_ticket",
+        "fields": [
+          "ticketId"
+        ]
+      },
+      {
+        "name": "idx_attachment_comment",
+        "fields": [
+          "commentId"
+        ]
+      }
+    ],
+    "constraints": {
+      "maxFileSize": "Maximum file size of 10MB",
+      "allowedMimeTypes": "Restrict to safe file types (images, PDFs, documents)",
+      "virusScan": "All uploads must pass virus scanning before storage"
+    },
+    "workflowId": "workflow_1734890234567"
+  },
+  {
+    "id": "ticket-assignment",
+    "name": "TicketAssignment",
+    "description": "Records all ticket assignments including agent assignments, reassignments, and queue transfers with timestamps and assignment types for workload tracking and reporting",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the assignment record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket being assigned",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedToUserId",
+        "type": "string",
+        "description": "Reference to the user/agent assigned to the ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedByUserId",
+        "type": "string",
+        "description": "Reference to the user who made the assignment",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "assignmentType",
+        "type": "string",
+        "description": "Type of assignment: manual, automatic, escalation, or reassignment",
+        "required": true,
+        "defaultValue": "manual"
+      },
+      {
+        "name": "assignedAt",
+        "type": "date",
+        "description": "Timestamp when the assignment was made",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "unassignedAt",
+        "type": "date",
+        "description": "Timestamp when the assignment ended (null if currently assigned)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "assignmentReason",
+        "type": "string",
+        "description": "Reason or notes for the assignment or transfer",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each assignment belongs to one ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "assignedToUserId",
+        "description": "Each assignment is assigned to one user/agent"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "assignedByUserId",
+        "description": "Each assignment is created by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_assignment_ticket",
+        "fields": [
+          "ticketId",
+          "assignedAt"
+        ],
+        "description": "Index for retrieving assignment history by ticket"
+      },
+      {
+        "name": "idx_ticket_assignment_user",
+        "fields": [
+          "assignedToUserId",
+          "unassignedAt"
+        ],
+        "description": "Index for finding active assignments by user"
+      },
+      {
+        "name": "idx_ticket_assignment_type",
+        "fields": [
+          "assignmentType",
+          "assignedAt"
+        ],
+        "description": "Index for reporting on assignment types"
+      }
+    ],
+    "constraints": {
+      "assignmentTypeValues": [
+        "manual",
+        "automatic",
+        "escalation",
+        "reassignment"
+      ],
+      "unassignedAtValidation": "unassignedAt must be null or greater than assignedAt"
+    },
+    "workflowId": "workflow_1734890234567"
+  },
+  {
+    "id": "notification-log",
+    "name": "NotificationLog",
+    "description": "Track all email notifications sent by the system with audit trail for debugging and compliance",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification log entry",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the related ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientEmail",
+        "type": "string",
+        "description": "Email address of the notification recipient",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "notificationType",
+        "type": "string",
+        "description": "Type of notification (e.g., ticket_created, ticket_assigned, status_changed, comment_added)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "deliveryStatus",
+        "type": "string",
+        "description": "Delivery status of the notification (sent, failed, pending)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "sentAt",
+        "type": "date",
+        "description": "Timestamp when the notification was sent",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "errorMessage",
+        "type": "string",
+        "description": "Error details if delivery failed",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each notification log entry is associated with one ticket"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_id",
+        "fields": [
+          "ticketId"
+        ]
+      },
+      {
+        "name": "idx_sent_at",
+        "fields": [
+          "sentAt"
+        ]
+      },
+      {
+        "name": "idx_delivery_status",
+        "fields": [
+          "deliveryStatus"
+        ]
+      }
+    ],
+    "constraints": {
+      "deliveryStatus": {
+        "enum": [
+          "sent",
+          "failed",
+          "pending"
+        ]
+      }
+    },
+    "workflowId": "workflow_1734890234567"
+  },
+  {
+    "id": "ticket-metrics",
+    "name": "TicketMetrics",
+    "description": "Store aggregated metrics for reporting and analytics on ticket performance, agent statistics, and SLA compliance",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the metrics record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "metricType",
+        "type": "string",
+        "description": "Type of metric (resolution_time, first_response_time, agent_performance, category_volume, sla_compliance)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "periodStart",
+        "type": "date",
+        "description": "Start date of the aggregation period",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "periodEnd",
+        "type": "date",
+        "description": "End date of the aggregation period",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entityId",
+        "type": "string",
+        "description": "Reference ID for the entity being measured (userId for agents, categoryId for categories, null for global metrics)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "metricValue",
+        "type": "number",
+        "description": "Calculated metric value (time in minutes, count, or percentage)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketCount",
+        "type": "number",
+        "description": "Number of tickets included in this metric calculation",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "calculatedAt",
+        "type": "date",
+        "description": "Timestamp when the metric was calculated",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_metric_type_period",
+        "fields": [
+          "metricType",
+          "periodStart",
+          "periodEnd"
+        ]
+      },
+      {
+        "name": "idx_entity_metric",
+        "fields": [
+          "entityId",
+          "metricType"
+        ]
+      },
+      {
+        "name": "idx_period_start",
+        "fields": [
+          "periodStart"
+        ]
+      }
+    ],
+    "constraints": {
+      "uniqueMetric": "UNIQUE(metricType, periodStart, periodEnd, entityId)"
+    },
+    "workflowId": "workflow_1734890234567"
+  }
+]

@@ -1,0 +1,746 @@
+[
+  {
+    "id": "app_1764158822986_model_001",
+    "name": "User",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_001",
+        "name": "id",
+        "type": "integer",
+        "unique": true,
+        "sqlType": "BIGINT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_002",
+        "name": "email",
+        "type": "string",
+        "unique": true,
+        "sqlType": "VARCHAR(255)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {
+          "format": "email"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field_003",
+        "name": "first_name",
+        "type": "string",
+        "unique": false,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_004",
+        "name": "last_name",
+        "type": "string",
+        "unique": false,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_005",
+        "name": "role",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('customer', 'agent', 'admin')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "customer"
+      },
+      {
+        "id": "field_006",
+        "name": "is_active",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": true
+      },
+      {
+        "id": "field_007",
+        "name": "created_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_008",
+        "name": "updated_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_user_role",
+        "fields": [
+          "role"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "System users including customers, agents, and administrators",
+    "relationships": []
+  },
+  {
+    "id": "app_1764158822986_model_002",
+    "name": "Category",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_009",
+        "name": "id",
+        "type": "integer",
+        "unique": true,
+        "sqlType": "BIGINT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_010",
+        "name": "name",
+        "type": "string",
+        "unique": true,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_011",
+        "name": "description",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_012",
+        "name": "is_active",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": true
+      },
+      {
+        "id": "field_013",
+        "name": "created_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_014",
+        "name": "updated_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_category_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Ticket categories for organization and routing",
+    "relationships": []
+  },
+  {
+    "id": "app_1764158822986_model_003",
+    "name": "Ticket",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_015",
+        "name": "id",
+        "type": "integer",
+        "unique": true,
+        "sqlType": "BIGINT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_016",
+        "name": "ticket_number",
+        "type": "string",
+        "unique": true,
+        "sqlType": "VARCHAR(20)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_017",
+        "name": "title",
+        "type": "string",
+        "unique": false,
+        "sqlType": "VARCHAR(255)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_018",
+        "name": "description",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_019",
+        "name": "status",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('open', 'in_progress', 'resolved', 'closed', 'cancelled')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "open"
+      },
+      {
+        "id": "field_020",
+        "name": "priority",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('low', 'medium', 'high', 'urgent')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "medium"
+      },
+      {
+        "id": "field_021",
+        "name": "requester_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_022",
+        "name": "assignee_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_023",
+        "name": "category_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_024",
+        "name": "due_date",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_025",
+        "name": "resolved_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_026",
+        "name": "created_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_027",
+        "name": "updated_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_number",
+        "fields": [
+          "ticket_number"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_ticket_status",
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_ticket_priority",
+        "fields": [
+          "priority"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_ticket_requester",
+        "fields": [
+          "requester_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_ticket_assignee",
+        "fields": [
+          "assignee_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_ticket_category",
+        "fields": [
+          "category_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_ticket_status_priority",
+        "fields": [
+          "status",
+          "priority"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_ticket_created_at",
+        "fields": [
+          "created_at"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "resolved_at IS NULL OR resolved_at >= created_at"
+      },
+      {
+        "type": "check",
+        "expression": "due_date IS NULL OR due_date >= created_at"
+      }
+    ],
+    "description": "Main ticket entity containing support requests",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "requester_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "assignee_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Category",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "category_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764158822986_model_004",
+    "name": "Comment",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_028",
+        "name": "id",
+        "type": "integer",
+        "unique": true,
+        "sqlType": "BIGINT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_029",
+        "name": "ticket_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_030",
+        "name": "author_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_031",
+        "name": "content",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_032",
+        "name": "is_internal",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": false
+      },
+      {
+        "id": "field_033",
+        "name": "created_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_034",
+        "name": "updated_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_comment_ticket",
+        "fields": [
+          "ticket_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_comment_author",
+        "fields": [
+          "author_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_comment_created_at",
+        "fields": [
+          "created_at"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Comments and updates on tickets",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Ticket",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "ticket_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "author_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764158822986_model_005",
+    "name": "Attachment",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_035",
+        "name": "id",
+        "type": "integer",
+        "unique": true,
+        "sqlType": "BIGINT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_036",
+        "name": "ticket_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_037",
+        "name": "comment_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_038",
+        "name": "filename",
+        "type": "string",
+        "unique": false,
+        "sqlType": "VARCHAR(255)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_039",
+        "name": "original_filename",
+        "type": "string",
+        "unique": false,
+        "sqlType": "VARCHAR(255)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_040",
+        "name": "file_size",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_041",
+        "name": "mime_type",
+        "type": "string",
+        "unique": false,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_042",
+        "name": "uploaded_by_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_043",
+        "name": "created_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_044",
+        "name": "updated_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_attachment_ticket",
+        "fields": [
+          "ticket_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_attachment_comment",
+        "fields": [
+          "comment_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_attachment_uploader",
+        "fields": [
+          "uploaded_by_id"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "file_size > 0"
+      }
+    ],
+    "description": "File attachments for tickets and comments",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Ticket",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "ticket_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Comment",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "comment_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "uploaded_by_id"
+      }
+    ]
+  }
+]

@@ -106,6 +106,19 @@ Return a JSON object with "forms" and "pages" arrays:
       "shadows": {
         "card": "0 2px 8px rgba(0,0,0,0.08)",
         "focus": "0 0 0 3px rgba(59, 130, 246, 0.1)"
+      },
+      "layout": {
+        "maxWidth": "800px",
+        "columns": {
+          "desktop": 2,
+          "tablet": 1,
+          "mobile": 1
+        },
+        "breakpoints": {
+          "mobile": "< 768px",
+          "tablet": "768px - 1024px",
+          "desktop": "> 1024px"
+        }
       }
     },
     "theme": "light"
@@ -495,11 +508,24 @@ When no design is provided:
     }
 
     if (actualOnThinking) {
-      actualOnThinking({
-        agent: this.name,
-        step: 'Design Analysis Complete',
-        content: `Generated ${designAnalysisResult.forms?.length || 0} forms and ${designAnalysisResult.pages?.length || 0} pages`
-      });
+      const formsCount = designAnalysisResult.forms?.length || 0;
+      const pagesCount = designAnalysisResult.pages?.length || 0;
+      const hasDesignSystem = !!designAnalysisResult.designAnalysis;
+
+      // Different messages for design extraction vs. design generation
+      if (formsCount > 0 || pagesCount > 0) {
+        actualOnThinking({
+          agent: this.name,
+          step: 'Design Analysis Complete',
+          content: `Extracted ${formsCount} forms and ${pagesCount} pages from design`
+        });
+      } else {
+        actualOnThinking({
+          agent: this.name,
+          step: 'Design System Complete',
+          content: hasDesignSystem ? 'Design system ready for FormExpert and PageExpert to use' : 'Design analysis complete'
+        });
+      }
     }
 
     return {
@@ -1026,86 +1052,185 @@ Return ONLY valid JSON with the same structure as PDF analysis.`;
     if (onThinking) {
       onThinking({
         agent: this.name,
-        step: 'Generating Optimal Design',
-        content: 'Creating UI/UX design based on best practices...'
+        step: 'Generating Design System',
+        content: 'Creating professional design system specifications...'
       });
     }
 
     const context = this.buildContext(userRequirements, dataModels, workflow);
 
-    const prompt = `Generate an optimal UI/UX design for this application:
+    const prompt = `Generate a comprehensive UI/UX design system for this application:
 
 **User Requirements**: "${userRequirements}"
 
 **Application Context**:
 ${JSON.stringify(context, null, 2)}
 
+**Your Role**: You are a UX Designer creating design specifications.
+**Important**: Generate ONLY the design system. Do NOT generate forms or pages.
+FormExpert and PageExpert will use your design specifications to generate those.
+
 **Task**:
-Since no design was provided, create an optimal design from scratch:
+Create a professional, modern design system including:
 
 1. **Analyze Domain**: Understand the application type (e-commerce, dashboard, CRUD, etc.)
-2. **Choose Patterns**: Select appropriate UI patterns for the domain
-3. **Design Forms**: Create forms for all data models
-   - Include all fields from data models
-   - Add proper validation rules
-   - Use appropriate input types
-   - Group related fields
-   - Include submit/cancel actions
+2. **Choose Color Palette**: Select appropriate colors for the domain
+   - Primary color (main brand color)
+   - Secondary color (accent color)
+   - Background colors (page, card, section backgrounds)
+   - Text colors (primary, secondary, disabled)
+   - Border colors
+   - State colors (focus, error, success, warning)
 
-4. **Design Pages**: Create pages for the application
-   - List pages for each entity
-   - Detail pages for viewing entities
-   - Create/Edit pages with forms
-   - Dashboard page if appropriate
-   - Authentication pages if needed
+3. **Define Typography**:
+   - Font family (modern, readable)
+   - Font sizes for different elements (page title, headings, labels, inputs, helper text)
+   - Font weights for different elements
+   - Line heights and letter spacing
 
-5. **Apply Design System**:
-   - Choose modern, professional colors
-   - Use clean, readable typography
-   - Apply consistent spacing
-   - Ensure accessibility
+4. **Specify Spacing**:
+   - Base spacing unit (typically 4px or 8px)
+   - Spacing scale (multiples of base unit)
+   - Container padding
+   - Field gaps
+   - Section gaps
+   - Input padding
 
-6. **Make it Responsive**:
-   - Mobile-first approach
-   - Responsive layouts
-   - Touch-friendly controls
+5. **Define Component Styles**:
+   - Input fields (border, radius, height, padding, focus state)
+   - Buttons (primary, secondary - background, color, padding, radius)
+   - Cards (background, shadow, radius, padding)
+   - Tables, lists, grids
 
-**Design Guidelines**:
-- **CRITICAL**: Follow the Reference Design Template specified in the knowledge base
-- Use the professional form layout with:
-  - Light gray background (#f8f9fa)
-  - White form cards with shadow
-  - Two-column field layout on desktop, single column on mobile
-  - Section grouping with headers and descriptions
-  - Proper spacing (24px section padding, 16px field gaps)
-  - Professional typography (16px headers, 14px labels and inputs)
-  - Primary button (#1f2937 dark) and secondary button (white with border)
-  - Blue focus states (#3b82f6) on inputs
-- Follow modern UI/UX best practices
-- Use industry-standard patterns
-- Ensure accessibility (WCAG 2.1 AA)
-- Create intuitive navigation
-- Include proper error states
-- Add loading states
-- Use appropriate visual hierarchy
+6. **Layout System**:
+   - Max width for containers
+   - Column layouts (desktop vs mobile)
+   - Responsive breakpoints
 
-**Critical Requirements**:
-1. Generate forms for ALL data models
-2. Each form must have ALL fields from its data model
-3. Create complete CRUD pages (list, detail, create, edit)
-4. Include proper navigation between pages
-5. Add a dashboard/home page
-6. Include authentication pages if workflows require it
+**Design Guidelines - Professional Standards**:
+Base your design system on modern enterprise application patterns:
 
-Return ONLY valid JSON with the complete structure.
-Include detailed "forms" and "pages" arrays with full component specifications.`;
+**Colors**: Professional, accessible, WCAG 2.1 AA compliant
+**Typography**: Clean, readable, proper hierarchy
+**Spacing**: Consistent, based on 8px grid system
+**Components**: Modern, touch-friendly, accessible
+**Responsive**: Mobile-first, fluid layouts
+
+Return ONLY valid JSON with this structure:
+
+{
+  "designAnalysis": {
+    "source": "auto-generated",
+    "domain": "identified domain from requirements",
+    "designSystem": {
+      "colors": {
+        "primary": "#hex",
+        "secondary": "#hex",
+        "background": "#hex",
+        "cardBackground": "#hex",
+        "text": "#hex",
+        "textSecondary": "#hex",
+        "border": "#hex",
+        "focus": "#hex",
+        "error": "#hex",
+        "success": "#hex",
+        "warning": "#hex"
+      },
+      "typography": {
+        "fontFamily": "font-family-name",
+        "fontSize": {
+          "base": "14px",
+          "h1": "24px",
+          "h2": "20px",
+          "h3": "16px",
+          "label": "14px",
+          "input": "14px",
+          "helper": "12px"
+        },
+        "fontWeight": {
+          "title": 600,
+          "heading": 600,
+          "label": 500,
+          "input": 400,
+          "helper": 400
+        },
+        "lineHeight": {
+          "tight": "1.2",
+          "normal": "1.5",
+          "relaxed": "1.75"
+        }
+      },
+      "spacing": {
+        "unit": "8px",
+        "scale": [4, 8, 12, 16, 20, 24, 32, 48, 64],
+        "container": "24px",
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "borderColor": "#d1d5db",
+          "height": "42px",
+          "focusBorderColor": "#3b82f6",
+          "focusShadow": "0 0 0 3px rgba(59, 130, 246, 0.1)"
+        },
+        "button": {
+          "primary": {
+            "background": "#hex",
+            "color": "#hex",
+            "padding": "10px 24px",
+            "borderRadius": "6px",
+            "fontSize": "14px",
+            "fontWeight": 500
+          },
+          "secondary": {
+            "background": "#hex",
+            "color": "#hex",
+            "border": "1px solid #hex",
+            "padding": "10px 24px",
+            "borderRadius": "6px"
+          }
+        },
+        "card": {
+          "background": "#ffffff",
+          "borderRadius": "8px",
+          "shadow": "0 2px 8px rgba(0,0,0,0.08)",
+          "padding": "24px"
+        }
+      },
+      "layout": {
+        "maxWidth": "800px",
+        "columns": {
+          "desktop": 2,
+          "tablet": 1,
+          "mobile": 1
+        },
+        "breakpoints": {
+          "mobile": "< 768px",
+          "tablet": "768px - 1024px",
+          "desktop": "> 1024px"
+        }
+      }
+    }
+  }
+}
+
+CRITICAL: Return ONLY the designAnalysis object. Do NOT include "forms" or "pages" arrays.`;
 
     const messages = [{ role: 'user', content: prompt }];
     const responseText = await this.getResponse(messages);
     const result = this.parseJsonResponse(responseText);
 
-    // Ensure all data models have forms
-    result.forms = this.ensureFormsForDataModels(result.forms || [], dataModels);
+    if (onThinking) {
+      onThinking({
+        agent: this.name,
+        step: 'Design System Complete',
+        content: 'Professional design system ready for FormExpert and PageExpert'
+      });
+    }
 
     return result;
   }

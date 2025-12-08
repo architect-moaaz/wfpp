@@ -1,0 +1,436 @@
+[
+  {
+    "id": "workflow_1734473821000",
+    "name": "Municipal Parking Ticket Management System",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Start Parking Violation Process",
+          "formId": "ticket-issuance-form",
+          "trigger": "Officer detects parking violation",
+          "formName": "TicketIssuanceForm",
+          "description": "Parking officer identifies a parking violation and initiates the ticket issuance process"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Issue Parking Ticket",
+          "formId": "payment-appeal-form",
+          "dueDate": "15 minutes",
+          "formName": "PaymentAppealForm",
+          "priority": "Medium",
+          "taskName": "ticket_issuance",
+          "assignedTo": "parking_officer",
+          "instructions": "Complete ticket details including violation type, location, vehicle information, and time of violation"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Capture Photo Evidence",
+          "script": "capturePhotos(ticketId, violationLocation, vehicleData)",
+          "scriptType": "JavaScript",
+          "description": "Capture and store photo evidence of the parking violation including vehicle license plate and violation context"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 100,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Validate Ticket Data",
+          "rules": [
+            "license_plate_format",
+            "violation_type_valid",
+            "location_valid",
+            "photo_required"
+          ],
+          "ruleType": "business_rules",
+          "description": "Validate that all required ticket information is complete and accurate before processing"
+        },
+        "type": "validation",
+        "position": {
+          "x": 100,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Ticket Validation Check",
+          "condition": "processData.validationResult === 'valid'",
+          "description": "Check if ticket data validation passed or failed",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Error Handling - Fix Data",
+          "script": "handleValidationErrors(validationErrors)",
+          "scriptType": "JavaScript",
+          "description": "Handle validation errors by flagging issues and requiring data correction"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 350,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Generate Ticket ID",
+          "script": "generateUniqueTicketId(locationCode, dateTime)",
+          "scriptType": "JavaScript",
+          "description": "Generate unique ticket identifier and save ticket to database"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 100,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Notification Gateway",
+          "branches": "Send citizen notification and update violation tracking",
+          "description": "Parallel processing for citizen notification and violation tracking",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Notify Citizen",
+          "channel": "Email/SMS",
+          "template": "parking_violation_notice",
+          "recipient": "vehicle_owner",
+          "description": "Send parking ticket notification to registered vehicle owner with payment and appeal options"
+        },
+        "type": "notification",
+        "position": {
+          "x": 300,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "input": "ticket_data",
+          "label": "Update Violation History",
+          "output": "violation_database",
+          "operation": "violation_tracking",
+          "description": "Update citizen's violation history and check for repeat offenders"
+        },
+        "type": "dataProcess",
+        "position": {
+          "x": -100,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Payment Grace Period",
+          "duration": "PT168H",
+          "timerType": "duration",
+          "description": "7-day grace period for initial payment before late fees apply"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 100,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Payment Status Check",
+          "condition": "processData.paymentStatus === 'paid'",
+          "description": "Check if ticket has been paid during grace period",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "AI Appeal Analysis",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze this parking ticket appeal for validity and recommend action. Ticket details: ${processData.ticketDetails}, Appeal reason: ${processData.appealReason}, Supporting evidence: ${processData.appealEvidence}",
+          "maxTokens": 1000,
+          "description": "AI analysis of citizen appeal to determine validity and provide recommendation for human reviewer",
+          "temperature": 0.3,
+          "outputVariable": "appealAnalysis"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 350,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Review Appeal",
+          "formId": "ticket-issuance-form",
+          "dueDate": "5 business days",
+          "formName": "TicketIssuanceForm",
+          "priority": "Medium",
+          "taskName": "appeal_review",
+          "assignedTo": "appeals_officer",
+          "instructions": "Review citizen appeal with AI analysis and make final decision on ticket validity"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 350,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Send Payment Reminder",
+          "channel": "Email/SMS",
+          "template": "overdue_payment_notice",
+          "recipient": "vehicle_owner",
+          "description": "Send overdue payment reminder with late fees and escalation warning"
+        },
+        "type": "notification",
+        "position": {
+          "x": -100,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Appeal Decision",
+          "condition": "processData.appealDecision === 'approved'",
+          "description": "Final decision on citizen appeal - approved or denied",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 350,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Cancel Ticket",
+          "script": "cancelTicket(ticketId, appealApproved)",
+          "scriptType": "JavaScript",
+          "description": "Cancel ticket and process refund if payment was already made"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 550,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Finalize Ticket",
+          "script": "finalizeTicket(ticketId, lateFees)",
+          "scriptType": "JavaScript",
+          "description": "Finalize ticket with any applicable late fees and update collections status"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 150,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Ticket Process Complete",
+          "result": "Ticket processed - paid, cancelled, or sent to collections",
+          "description": "Parking ticket process completed with final resolution"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 350,
+          "y": 1250
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-28T18:44:16.128+05:30",
+    "updated_at": "2025-11-28T18:44:16.128+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_5",
+        "label": "Validation Failed",
+        "source": "node_5",
+        "target": "node_6",
+        "condition": "processData.validationResult === 'invalid'"
+      },
+      {
+        "id": "edge_6",
+        "label": "Validation Passed",
+        "source": "node_5",
+        "target": "node_7",
+        "condition": "processData.validationResult === 'valid'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_8",
+        "source": "node_7",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_9",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_8",
+        "target": "node_9",
+        "isDefault": true
+      },
+      {
+        "id": "edge_10",
+        "label": "Violation Tracking Branch",
+        "source": "node_8",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_9",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_10",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_14",
+        "label": "Payment Received",
+        "source": "node_12",
+        "target": "node_19",
+        "condition": "processData.paymentStatus === 'paid'"
+      },
+      {
+        "id": "edge_15",
+        "label": "No Payment - Send Reminder",
+        "source": "node_12",
+        "target": "node_15",
+        "condition": "processData.paymentStatus === 'unpaid' && processData.appealStatus === 'none'"
+      },
+      {
+        "id": "edge_16",
+        "label": "Appeal Submitted",
+        "source": "node_12",
+        "target": "node_13",
+        "condition": "processData.appealStatus === 'submitted'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_17",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_14",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_19",
+        "label": "Proceed to Collections",
+        "source": "node_15",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_20",
+        "label": "Appeal Approved",
+        "source": "node_16",
+        "target": "node_17",
+        "condition": "processData.appealDecision === 'approved'"
+      },
+      {
+        "id": "edge_21",
+        "label": "Appeal Denied",
+        "source": "node_16",
+        "target": "node_18",
+        "condition": "processData.appealDecision === 'denied'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_22",
+        "source": "node_17",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_18",
+        "target": "node_19"
+      }
+    ],
+    "description": ""
+  }
+]

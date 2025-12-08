@@ -1,0 +1,229 @@
+[
+  {
+    "id": "app_1764271629943_customer-detail-page",
+    "name": "CustomerDetailPage",
+    "forms": [
+      "customer-profile-update-form",
+      "customer-registration-form",
+      "interaction-logging-form"
+    ],
+    "route": "/customers/:id",
+    "title": "Customer Profile",
+    "config": {},
+    "layout": {
+      "type": "two-column",
+      "spacing": "normal",
+      "responsive": true
+    },
+    "styling": {},
+    "metadata": {},
+    "workflows": [],
+    "components": [
+      {
+        "id": "customer-profile-card",
+        "type": "card",
+        "label": "Customer Information",
+        "config": {
+          "variant": "default",
+          "position": "top"
+        },
+        "actions": [
+          {
+            "id": "edit-profile-btn",
+            "type": "button",
+            "label": "Edit Profile",
+            "formRef": "CustomerProfileUpdateForm"
+          }
+        ],
+        "dataBinding": "Customer.findById"
+      },
+      {
+        "id": "insights-summary-card",
+        "type": "card",
+        "label": "Customer Insights",
+        "config": {
+          "variant": "summary",
+          "position": "top"
+        },
+        "dataBinding": "Customer.insights"
+      },
+      {
+        "id": "interaction-history-table",
+        "type": "table",
+        "label": "Interaction History",
+        "config": {
+          "variant": "default",
+          "pagination": true
+        },
+        "dataBinding": "CustomerInteraction.findByCustomerId"
+      },
+      {
+        "id": "notes-timeline-list",
+        "type": "list",
+        "label": "Notes & Activity Timeline",
+        "config": {
+          "variant": "timeline",
+          "sortOrder": "desc"
+        },
+        "dataBinding": "CustomerNote.findByCustomerId"
+      },
+      {
+        "id": "log-interaction-btn",
+        "type": "button",
+        "label": "Log New Interaction",
+        "config": {
+          "variant": "primary",
+          "position": "bottom"
+        },
+        "formRef": "InteractionLoggingForm"
+      }
+    ],
+    "description": "Display comprehensive view of individual customer profile with interaction history and activity timeline",
+    "data_sources": []
+  },
+  {
+    "id": "app_1764271629943_customer-insights-page",
+    "name": "CustomerInsightsPage",
+    "forms": [
+      "customer-profile-update-form",
+      "customer-registration-form",
+      "interaction-logging-form"
+    ],
+    "route": "/customers/insights",
+    "title": "Customer Insights",
+    "config": {},
+    "layout": {
+      "type": "dashboard",
+      "spacing": "normal",
+      "responsive": true
+    },
+    "styling": {},
+    "metadata": {},
+    "workflows": [],
+    "components": [
+      {
+        "id": "customer-status-distribution",
+        "type": "card",
+        "label": "Customer Status Distribution",
+        "config": {
+          "variant": "chart",
+          "chartType": "pie"
+        },
+        "dataBinding": "Customer.aggregateByStatus"
+      },
+      {
+        "id": "interaction-frequency",
+        "type": "card",
+        "label": "Interaction Frequency",
+        "config": {
+          "variant": "chart",
+          "chartType": "bar"
+        },
+        "dataBinding": "CustomerInteraction.aggregateByFrequency"
+      },
+      {
+        "id": "activity-trends",
+        "type": "card",
+        "label": "Customer Activity Trends",
+        "config": {
+          "variant": "chart",
+          "chartType": "line"
+        },
+        "dataBinding": "CustomerInteraction.aggregateByDate"
+      },
+      {
+        "id": "key-metrics",
+        "type": "card",
+        "label": "Key Metrics",
+        "config": {
+          "columns": 4,
+          "variant": "stats"
+        },
+        "dataBinding": "Customer.summaryMetrics"
+      }
+    ],
+    "description": "Analytics dashboard displaying customer metrics, trends, and insights for business decision-making",
+    "data_sources": []
+  },
+  {
+    "id": "app_1764271629943_customer-list-page",
+    "name": "CustomerListPage",
+    "forms": [
+      "customer-profile-update-form",
+      "customer-registration-form",
+      "interaction-logging-form"
+    ],
+    "route": "/customers",
+    "title": "Customers",
+    "config": {},
+    "layout": {
+      "type": "single-column",
+      "spacing": "normal",
+      "responsive": true
+    },
+    "styling": {},
+    "metadata": {},
+    "workflows": [],
+    "components": [
+      {
+        "id": "page-header",
+        "type": "text",
+        "label": "Customers",
+        "config": {
+          "variant": "h1",
+          "position": "top"
+        }
+      },
+      {
+        "id": "search-input",
+        "type": "input",
+        "label": "Search customers",
+        "config": {
+          "variant": "search",
+          "placeholder": "Search by name, email, or company"
+        },
+        "dataBinding": "Customer.query"
+      },
+      {
+        "id": "filter-card",
+        "type": "card",
+        "label": "Filters",
+        "config": {
+          "variant": "compact",
+          "collapsible": true
+        },
+        "dataBinding": "Customer.filters"
+      },
+      {
+        "id": "customer-table",
+        "type": "table",
+        "label": "Customer List",
+        "config": {
+          "columns": [
+            "name",
+            "email",
+            "status",
+            "lastInteraction",
+            "actions"
+          ],
+          "variant": "default",
+          "sortable": true,
+          "paginated": true
+        },
+        "dataBinding": "Customer.list"
+      },
+      {
+        "id": "add-customer-btn",
+        "type": "button",
+        "label": "Add Customer",
+        "config": {
+          "variant": "primary",
+          "position": "top"
+        },
+        "formRef": "CustomerRegistrationForm"
+      }
+    ],
+    "description": "Display searchable and filterable list of all customers with quick access to profiles and key metrics",
+    "data_sources": []
+  }
+]

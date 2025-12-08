@@ -1,0 +1,476 @@
+[
+  {
+    "id": "workflow_1704123456789",
+    "name": "Library Management System",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Start Library Process",
+          "formId": "workflow_1704123456789_form_001",
+          "trigger": "User initiates library operation",
+          "formName": "member_registration_form",
+          "description": "Begins library management workflow for book requests, returns, or administrative tasks"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 50,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Submit Library Request",
+          "formId": "workflow_1704123456789_form_002",
+          "dueDate": "1 day",
+          "formName": "book_acquisition_form",
+          "priority": "Medium",
+          "taskName": "library_request_form",
+          "assignedTo": "Library User",
+          "instructions": "Select operation type and provide required details"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 50,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Validate Request Data",
+          "rules": [
+            "Required fields present",
+            "Valid member ID",
+            "Valid ISBN format"
+          ],
+          "ruleType": "Form Validation",
+          "description": "Validates user input and member credentials"
+        },
+        "type": "validation",
+        "position": {
+          "x": 50,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Route by Operation Type",
+          "condition": "processData.operationType",
+          "description": "Routes workflow based on selected library operation",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Check Book Availability",
+          "script": "Query catalog database for book availability and location",
+          "scriptType": "JavaScript",
+          "description": "Searches library catalog and checks book status"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -150,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Book Available?",
+          "condition": "processData.bookAvailable === true",
+          "description": "Checks if requested book is available for checkout",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": -150,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Process Parallel Tasks",
+          "branches": "Reserve book, Update catalog, Generate checkout slip",
+          "description": "Parallel processing for book checkout operations",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": -300,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Reserve Book",
+          "script": "Mark book as reserved in system and set hold timer",
+          "scriptType": "JavaScript",
+          "description": "Places hold on book for user pickup"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -450,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "input": "Book reservation data",
+          "label": "Update Catalog Status",
+          "output": "Updated catalog record",
+          "operation": "Database Update",
+          "description": "Updates book status in library catalog system"
+        },
+        "type": "dataProcess",
+        "position": {
+          "x": -300,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Generate Checkout Slip",
+          "script": "Create digital checkout receipt with due date",
+          "scriptType": "JavaScript",
+          "description": "Generates checkout documentation for user"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -150,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Process Book Return",
+          "script": "Scan returned book, check condition, calculate fees",
+          "scriptType": "JavaScript",
+          "description": "Handles book return processing and fee calculation"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Late Return?",
+          "condition": "processData.returnDate > processData.dueDate",
+          "description": "Checks if book is returned after due date",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Calculate Late Fees",
+          "script": "Calculate overdue fees based on library policy",
+          "scriptType": "JavaScript",
+          "description": "Computes late return penalties"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 200,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "AI Book Recommendation",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Based on user's borrowing history: ${processData.userHistory}, recommend 3 books in similar genres with brief descriptions",
+          "maxTokens": 1000,
+          "description": "Generates personalized book recommendations using AI",
+          "temperature": 0.7,
+          "outputVariable": "recommendations"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 250,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Admin Approval Required",
+          "formId": "workflow_1704123456789_form_003",
+          "dueDate": "4 hours",
+          "formName": "book_checkout_system",
+          "priority": "High",
+          "taskName": "admin_approval",
+          "assignedTo": "Library Administrator",
+          "instructions": "Review special request and approve/deny based on library policy"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 400,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Approval Timeout",
+          "duration": "PT4H",
+          "timerType": "duration",
+          "description": "4-hour timeout for admin approval response"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 400,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Send Confirmation",
+          "channel": "Email",
+          "template": "Library transaction confirmation with details",
+          "recipient": "User and Library Staff",
+          "description": "Sends confirmation notification to all parties"
+        },
+        "type": "notification",
+        "position": {
+          "x": -300,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Add to Waitlist",
+          "channel": "Email",
+          "template": "Book unavailable - added to waitlist notification",
+          "recipient": "Requesting User",
+          "description": "Notifies user of waitlist placement"
+        },
+        "type": "notification",
+        "position": {
+          "x": 0,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Escalation Alert",
+          "channel": "Email",
+          "template": "Approval timeout - manual intervention required",
+          "recipient": "Head Librarian",
+          "description": "Escalates unresolved admin approval to head librarian"
+        },
+        "type": "notification",
+        "position": {
+          "x": 550,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_20",
+        "data": {
+          "label": "Library Process Complete",
+          "result": "Library operation successfully completed",
+          "description": "All library management tasks finalized"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 200,
+          "y": 950
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-27T09:08:46.688+05:30",
+    "updated_at": "2025-11-27T09:08:46.688+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "label": "Book Checkout",
+        "source": "node_4",
+        "target": "node_5",
+        "condition": "processData.operationType === 'checkout'"
+      },
+      {
+        "id": "edge_5",
+        "label": "Book Return",
+        "source": "node_4",
+        "target": "node_11",
+        "condition": "processData.operationType === 'return'"
+      },
+      {
+        "id": "edge_6",
+        "label": "Recommendations",
+        "source": "node_4",
+        "target": "node_14",
+        "condition": "processData.operationType === 'recommend'"
+      },
+      {
+        "id": "edge_7",
+        "label": "Admin Request",
+        "source": "node_4",
+        "target": "node_15",
+        "condition": "processData.operationType === 'admin'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_8",
+        "source": "node_5",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_9",
+        "label": "Available",
+        "source": "node_6",
+        "target": "node_7",
+        "condition": "processData.bookAvailable === true"
+      },
+      {
+        "id": "edge_10",
+        "label": "Unavailable",
+        "source": "node_6",
+        "target": "node_18",
+        "condition": "processData.bookAvailable === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_11",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_7",
+        "target": "node_8",
+        "isDefault": true
+      },
+      {
+        "id": "edge_12",
+        "source": "node_7",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_7",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_8",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_9",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_10",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_18",
+        "label": "Late Return",
+        "source": "node_12",
+        "target": "node_13",
+        "condition": "processData.returnDate > processData.dueDate"
+      },
+      {
+        "id": "edge_19",
+        "label": "On Time",
+        "source": "node_12",
+        "target": "node_17",
+        "condition": "processData.returnDate <= processData.dueDate",
+        "isDefault": true
+      },
+      {
+        "id": "edge_20",
+        "source": "node_13",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_14",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_23",
+        "label": "Approved",
+        "source": "node_15",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_16",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_17",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_26",
+        "source": "node_18",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_27",
+        "source": "node_19",
+        "target": "node_20"
+      }
+    ],
+    "description": ""
+  }
+]

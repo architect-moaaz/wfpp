@@ -1,0 +1,191 @@
+[
+  {
+    "id": "app_1764281341247_ticket",
+    "name": "Ticket",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the ticket",
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "description": "Brief summary of the ticket issue",
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": true,
+        "description": "Detailed description of the issue or request",
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": true,
+        "description": "Current ticket status: new, assigned, in-progress, or resolved",
+        "defaultValue": "new"
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "required": true,
+        "description": "Priority level: low, medium, or high",
+        "defaultValue": "medium"
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "required": false,
+        "description": "Ticket category or type for classification",
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the customer who submitted the ticket",
+        "defaultValue": null
+      },
+      {
+        "name": "assignedAgentId",
+        "type": "string",
+        "required": false,
+        "description": "Reference to the support agent assigned to the ticket",
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "required": true,
+        "description": "Timestamp when the ticket was created",
+        "defaultValue": "now"
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "required": true,
+        "description": "Timestamp of the last ticket update",
+        "defaultValue": "now"
+      }
+    ],
+    "indexes": [
+      "status",
+      "priority",
+      "customerId",
+      "assignedAgentId",
+      "createdAt"
+    ],
+    "metadata": {},
+    "constraints": {
+      "status": [
+        "new",
+        "assigned",
+        "in-progress",
+        "resolved"
+      ],
+      "priority": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "description": "Central data model capturing ticket details from submission through resolution with status tracking and assignment information",
+    "relationships": []
+  },
+  {
+    "id": "app_1764281341247_user",
+    "name": "User",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the user",
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "required": true,
+        "description": "User's email address for login and communication",
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "description": "Full name of the user",
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "required": true,
+        "description": "User role: customer, agent, or manager",
+        "defaultValue": "customer"
+      },
+      {
+        "name": "passwordHash",
+        "type": "string",
+        "required": true,
+        "description": "Hashed password for authentication",
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "required": true,
+        "description": "Indicates if the user account is active",
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "required": true,
+        "description": "Timestamp when the user account was created",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "role"
+        ]
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "role": "Must be one of: customer, agent, manager",
+      "email": "Must be valid email format and unique"
+    },
+    "description": "Store user profiles for customers, agents, and managers with role-based access and contact information",
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "foreignKey": "customerId",
+        "description": "Tickets created by this user as a customer",
+        "relatedModel": "Ticket"
+      },
+      {
+        "type": "oneToMany",
+        "foreignKey": "assignedAgentId",
+        "description": "Tickets assigned to this user as an agent",
+        "relatedModel": "Ticket"
+      }
+    ]
+  }
+]

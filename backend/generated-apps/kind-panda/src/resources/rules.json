@@ -1,0 +1,44 @@
+[
+  {
+    "id": "rule_1765051795072",
+    "name": "check-validation-result Rule",
+    "description": "Evaluates member registration validation results to determine if registration should proceed or be rejected",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validationStatus",
+          "operator": "equals",
+          "value": "passed"
+        },
+        {
+          "field": "Member.email",
+          "operator": "isNotNull",
+          "value": null
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "registrationApproved",
+          "value": true,
+          "message": "Member validation passed - proceeding with registration"
+        },
+        {
+          "type": "logMessage",
+          "field": "workflowLog",
+          "value": "info",
+          "message": "Validation successful for member registration"
+        }
+      ]
+    },
+    "node_id": "check-validation-result",
+    "workflow_id": "member-registration-workflow",
+    "workflowId": "member-registration-workflow",
+    "application_id": "app_1765050983685"
+  }
+]

@@ -1,0 +1,290 @@
+[
+  {
+    "id": "parking-ticket",
+    "name": "ParkingTicket",
+    "description": "Stores parking violation ticket information including vehicle details, violation type, and payment status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique ticket identifier/number",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "licensePlate",
+        "type": "string",
+        "description": "Vehicle license plate number",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "violationType",
+        "type": "string",
+        "description": "Type of parking violation (e.g., expired meter, no parking zone)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "location",
+        "type": "string",
+        "description": "Street address or coordinates where violation occurred",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "issuedAt",
+        "type": "date",
+        "description": "Date and time when ticket was issued",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fineAmount",
+        "type": "number",
+        "description": "Monetary amount of the fine in dollars",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current ticket status (e.g., unpaid, paid, appealed, dismissed)",
+        "required": true,
+        "defaultValue": "unpaid"
+      },
+      {
+        "name": "issuingOfficerId",
+        "type": "string",
+        "description": "ID of the officer who issued the ticket",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "workflow_1735024800000"
+  },
+  {
+    "id": "enforcement-officer",
+    "name": "EnforcementOfficer",
+    "description": "Maintains enforcement officer profiles and assignment information for parking ticket issuance tracking and accountability",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the enforcement officer",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "badgeNumber",
+        "type": "string",
+        "description": "Official badge number for officer identification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "Full name of the enforcement officer",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "contactPhone",
+        "type": "string",
+        "description": "Contact phone number for the officer",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedZones",
+        "type": "string",
+        "description": "Comma-separated list of zone codes assigned to the officer",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates whether the officer is currently active for duty",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "ticketsIssued",
+        "type": "number",
+        "description": "Total count of parking tickets issued by this officer",
+        "required": true,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "workflow_1735024800000"
+  },
+  {
+    "id": "payment",
+    "name": "Payment",
+    "description": "Tracks all payment transactions associated with parking tickets including amount, method, status, and payment history",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the payment transaction",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "parkingTicketId",
+        "type": "string",
+        "description": "Reference to the associated parking ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "description": "Payment amount in currency units",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentMethod",
+        "type": "string",
+        "description": "Method of payment (credit_card, debit_card, cash, online, check)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "transactionId",
+        "type": "string",
+        "description": "External transaction identifier from payment processor",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentStatus",
+        "type": "string",
+        "description": "Current status of payment (pending, completed, failed, refunded)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "paymentDate",
+        "type": "date",
+        "description": "Date and time when payment was made",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "ParkingTicket",
+        "foreignKey": "parkingTicketId",
+        "description": "Each payment is associated with one parking ticket"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "parkingTicketId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "transactionId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "paymentDate"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "amount": "Must be greater than 0",
+      "paymentMethod": "Must be one of: credit_card, debit_card, cash, online, check",
+      "paymentStatus": "Must be one of: pending, completed, failed, refunded"
+    },
+    "workflowId": "workflow_1735024800000"
+  },
+  {
+    "id": "appeal",
+    "name": "Appeal",
+    "description": "Manages citizen appeals and disputes for parking tickets with complete audit trail",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the appeal",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the parking ticket being appealed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "reason",
+        "type": "string",
+        "description": "Citizen's explanation for disputing the ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "submissionDate",
+        "type": "date",
+        "description": "Date and time when the appeal was submitted",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current review status (pending, under_review, approved, rejected)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "reviewerId",
+        "type": "string",
+        "description": "Reference to the enforcement officer or reviewer assigned to the appeal",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "decision",
+        "type": "string",
+        "description": "Final resolution decision with notes explaining the outcome",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "decisionDate",
+        "type": "date",
+        "description": "Date when the appeal decision was made",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "workflow_1735024800000"
+  }
+]

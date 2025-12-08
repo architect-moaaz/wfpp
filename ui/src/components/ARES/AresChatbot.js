@@ -7,15 +7,13 @@ import {
   Minimize2,
   Maximize2,
   Sparkles,
-  Loader,
   Plus,
-  FolderOpen,
-  Workflow,
   Trash2
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { useAres } from '../../context/AresContext';
 import { useWorkflow } from '../../context/WorkflowContext';
+import GameProgress from './GameProgress';
 
 const AresChatbot = () => {
   const {
@@ -38,12 +36,15 @@ const AresChatbot = () => {
     setCurrentWorkflow,
     setConnectedForms,
     setDataModels,
-    setConnectedPages
+    setConnectedPages,
+    loadApplicationData
   } = useWorkflow();
 
   const [input, setInput] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
   const [progressMessages, setProgressMessages] = useState([]);
+  const [currentThinkingStep, setCurrentThinkingStep] = useState(null);
+  const [generationEvents, setGenerationEvents] = useState([]);
   const [socket, setSocket] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -69,60 +70,30 @@ const AresChatbot = () => {
     newSocket.on('ares:progress', (event) => {
       console.log('[ARES] Progress event:', event);
 
+      // Add event to generation events for GameProgress
+      setGenerationEvents(prev => [...prev, event]);
+
       if (event.type === 'completed') {
-        // Clear progress messages
+        // Clear progress messages and thinking step
         setProgressMessages([]);
+        setCurrentThinkingStep(null);
+        setIsProcessing(false);
 
         // Auto-load the generated resources
         if (event.resources && event.applicationId) {
           console.log('[ARES] Auto-loading generated resources:', event.resources);
 
-          // Load the updated application immediately
+          // Use the centralized loadApplicationData function to reload everything
           (async () => {
             try {
-              const response = await fetch(`http://localhost:5000/api/applications/${event.applicationId}`);
-              const data = await response.json();
+              console.log('[ARES] Reloading application data...');
+              await loadApplicationData(event.applicationId);
 
-              if (data.success && data.application) {
-                console.log('[ARES] Fetched updated application:', data.application);
+              // Navigate to workflow editor to show the generated workflow
+              console.log('[ARES] Navigating to workflow editor');
+              setActiveSidebar('workflows');
 
-                // Update application in context first
-                setCurrentApplication(data.application);
-
-                // Load all resources from the updated application
-                const resources = data.application.resources || {};
-
-                // Load the most recently added workflow (last in array)
-                if (resources.workflows && resources.workflows.length > 0) {
-                  const latestWorkflow = resources.workflows[resources.workflows.length - 1];
-                  console.log('[ARES] Auto-loading workflow:', latestWorkflow.name, latestWorkflow);
-                  setCurrentWorkflow(latestWorkflow);
-                }
-
-                // Load all forms
-                if (resources.forms && resources.forms.length > 0) {
-                  console.log('[ARES] Auto-loading forms:', resources.forms.length);
-                  setConnectedForms(resources.forms);
-                }
-
-                // Load all data models
-                if (resources.dataModels && resources.dataModels.length > 0) {
-                  console.log('[ARES] Auto-loading data models:', resources.dataModels.length);
-                  setDataModels(resources.dataModels);
-                }
-
-                // Load all pages
-                if (resources.pages && resources.pages.length > 0) {
-                  console.log('[ARES] Auto-loading pages:', resources.pages.length);
-                  setConnectedPages(resources.pages);
-                }
-
-                // Navigate to workflow editor to show the generated workflow
-                console.log('[ARES] Navigating to workflow editor');
-                setActiveSidebar('workflow-editor');
-
-                console.log('[ARES] Auto-load complete!');
-              }
+              console.log('[ARES] Auto-load complete!');
             } catch (error) {
               console.error('[ARES] Error auto-loading resources:', error);
             }
@@ -146,10 +117,20 @@ The resources have been automatically loaded into their respective editors.`,
         );
       } else if (event.type === 'error') {
         setProgressMessages([]);
+        setCurrentThinkingStep(null);
+        setGenerationEvents([]);
+        setIsProcessing(false);
         addAssistantMessage(`Error: ${event.message}`);
       } else if (event.type === 'thinking-step') {
-        // Skip thinking-step events - these are internal diagnostic events
+        // Update current thinking step display
         console.log('[ARES] Thinking step:', event.data || event);
+        if (event.data) {
+          setCurrentThinkingStep({
+            agent: event.data.agent || 'MoE System',
+            step: event.data.step || event.data.content || '',
+            content: event.data.content || event.data.step || ''
+          });
+        }
       } else if (event.message) {
         // Add progress message only if it has a message
         setProgressMessages(prev => [...prev, {
@@ -409,7 +390,7 @@ The resources have been automatically loaded into their respective editors.`,
               }
 
               // Navigate to workflow editor
-              setActiveSidebar('workflow-editor');
+              setActiveSidebar('workflows');
 
               const workflowCount = resources.workflows?.length || 0;
               const formCount = resources.forms?.length || 0;
@@ -434,7 +415,7 @@ The resources have been automatically loaded into their respective editors.`,
           break;
 
         case 'view_workflow':
-          setActiveSidebar('workflow-editor');
+          setActiveSidebar('workflows');
           setIsProcessing(false);
           break;
 
@@ -463,8 +444,9 @@ The resources have been automatically loaded into their respective editors.`,
         return;
       }
 
-      // Clear previous progress messages
+      // Clear previous progress messages and events
       setProgressMessages([]);
+      setGenerationEvents([]);
 
       addAssistantMessage('Starting generation using our Mixture of Experts system...');
 
@@ -488,23 +470,21 @@ The resources have been automatically loaded into their respective editors.`,
       const data = await response.json();
 
       if (data.success) {
-        // Reload application to show new resources
-        const appResponse = await fetch(`http://localhost:5000/api/applications/${currentApplication.id}`);
-        const appData = await appResponse.json();
-        if (appData.success) {
-          setCurrentApplication(appData.application);
-        }
+        // Generation started - completion will be notified via WebSocket
+        console.log('[ARES] Generation started, waiting for WebSocket completion...');
+        // Don't set isProcessing to false here - wait for WebSocket 'completed' or 'error' event
       } else {
         setProgressMessages([]);
-        addAssistantMessage(`Sorry, I encountered an error generating the workflow: ${data.message}`);
+        setIsProcessing(false);
+        addAssistantMessage(`Sorry, I encountered an error starting generation: ${data.message}`);
       }
     } catch (error) {
-      console.error('Error generating with MoE:', error);
+      console.error('Error starting generation:', error);
       setProgressMessages([]);
-      addAssistantMessage('Sorry, I encountered an error generating the workflow. Please try again.');
-    } finally {
       setIsProcessing(false);
+      addAssistantMessage('Sorry, I encountered an error starting generation. Please try again.');
     }
+    // Note: isProcessing will be set to false by the WebSocket 'completed' or 'error' handler
   };
 
   const createApplication = async () => {
@@ -548,7 +528,7 @@ The resources have been automatically loaded into their respective editors.`,
         }
 
         // Navigate to workflow editor
-        setActiveSidebar('workflow-editor');
+        setActiveSidebar('workflows');
 
         addAssistantMessage(
           `Perfect! I've created a new application called "${appName}". You're now in the workflow designer. What kind of workflow would you like to build?`,
@@ -627,7 +607,7 @@ The resources have been automatically loaded into their respective editors.`,
         }
 
         // Navigate to workflow editor
-        setActiveSidebar('workflow-editor');
+        setActiveSidebar('workflows');
 
         const workflowCount = data.application.resources?.workflows?.length || 0;
         const formCount = data.application.resources?.forms?.length || 0;
@@ -798,33 +778,10 @@ The resources have been automatically loaded into their respective editors.`,
                 </div>
               ))}
 
-              {/* Progress messages from MoE generation */}
-              {progressMessages.map((progress) => (
-                <div
-                  key={progress.id}
-                  className="ares-message-wrapper assistant progress"
-                >
-                  <div className="message-avatar assistant">
-                    <Loader size={18} className="spin" />
-                  </div>
-                  <div className="message-group">
-                    <div className="message-header">
-                      <span className="message-sender">MoE System</span>
-                      <span className="message-time">
-                        {new Date(progress.timestamp).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                    </div>
-                    <div className="message-bubble progress-bubble">
-                      <div className="message-text">{progress.message}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              {/* GameProgress component for MoE generation */}
+              <GameProgress events={generationEvents} isGenerating={isProcessing} />
 
-              {isProcessing && progressMessages.length === 0 && (
+              {isProcessing && !currentThinkingStep && progressMessages.length === 0 && (
                 <div className="ares-message-wrapper assistant">
                   <div className="message-avatar assistant">
                     <Sparkles size={18} />

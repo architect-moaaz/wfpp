@@ -1,0 +1,3026 @@
+[
+  {
+    "id": "paymenthistorypage-1764936100000-ph9x2k",
+    "name": "PaymentHistoryPage",
+    "title": "Payment History & Financial Records",
+    "description": "Financial reporting page showing payment transactions, revenue summaries, refunds, and payment method breakdowns with export functionality for accounting integration.",
+    "route": "/payment-history",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "reportparametersform-1764935906274-sh7y7n"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Payment History & Financial Records",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "View payment transactions, revenue summaries, and export financial data for accounting reconciliation",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Revenue Summary",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Payment.aggregation",
+            "components": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 4,
+                  "gap": "16px",
+                  "items": [
+                    {
+                      "label": "Total Revenue",
+                      "value": "{{Payment.sum(amount)}}",
+                      "format": "currency",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#10b981"
+                      }
+                    },
+                    {
+                      "label": "Total Transactions",
+                      "value": "{{Payment.count()}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#3b82f6"
+                      }
+                    },
+                    {
+                      "label": "Refunds Issued",
+                      "value": "{{Payment.count(status='refunded')}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#f59e0b"
+                      }
+                    },
+                    {
+                      "label": "Pending Payments",
+                      "value": "{{Payment.count(status='pending')}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#8b5cf6"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Filter & Export",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "reportparametersform-1764935906274-sh7y7n",
+            "components": [
+              {
+                "type": "button",
+                "config": {
+                  "label": "Export to CSV",
+                  "variant": "primary",
+                  "action": "export",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#3b82f6",
+                    "color": "#ffffff",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "border": "none",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease",
+                    "marginRight": "12px"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Export to Excel",
+                  "variant": "secondary",
+                  "action": "export",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#ffffff",
+                    "color": "#3b82f6",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "border": "2px solid #3b82f6",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Payment Transactions",
+              "searchable": true,
+              "sortable": true,
+              "pagination": true,
+              "pageSize": 25,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              },
+              "columns": [
+                {
+                  "key": "transactionId",
+                  "label": "Transaction ID",
+                  "sortable": true,
+                  "style": {
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket Number",
+                  "sortable": true,
+                  "linkTo": "/ticket-detail/{{ticketId}}",
+                  "style": {
+                    "color": "#3b82f6",
+                    "textDecoration": "underline"
+                  }
+                },
+                {
+                  "key": "paymentDate",
+                  "label": "Date",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "amount",
+                  "label": "Amount",
+                  "sortable": true,
+                  "format": "currency",
+                  "style": {
+                    "fontWeight": "600",
+                    "color": "#10b981"
+                  }
+                },
+                {
+                  "key": "paymentMethod",
+                  "label": "Payment Method",
+                  "sortable": true,
+                  "style": {
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "format": "badge",
+                  "style": {
+                    "padding": "4px 12px",
+                    "borderRadius": "16px",
+                    "fontSize": "14px",
+                    "fontWeight": "600"
+                  },
+                  "statusColors": {
+                    "completed": "#10b981",
+                    "pending": "#f59e0b",
+                    "refunded": "#ef4444",
+                    "failed": "#dc2626"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "View Receipt",
+                      "icon": "receipt",
+                      "action": "view"
+                    },
+                    {
+                      "label": "Download",
+                      "icon": "download",
+                      "action": "download"
+                    }
+                  ]
+                }
+              ]
+            },
+            "dataBinding": "Payment.query",
+            "filters": {
+              "status": "all",
+              "dateRange": "last30days",
+              "paymentMethod": "all"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-detail/{{ticketId}}"
+        },
+        "export": {
+          "type": "workflow",
+          "workflow": "GenerateReportWorkflow"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports-analytics"
+        },
+        {
+          "label": "Dispute Management",
+          "route": "/dispute-management"
+        },
+        {
+          "label": "Officer Management",
+          "route": "/officer-management"
+        },
+        {
+          "label": "Citizen Portal",
+          "route": "/citizen-portal"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "officermanagementpage-1764936100000-mgmt01",
+    "name": "OfficerManagementPage",
+    "title": "Officer Management",
+    "description": "Administrative interface for viewing, creating, updating, and deactivating officer accounts. Includes officer performance metrics and ticket issuance history.",
+    "route": "/officer-management",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "officerregistrationform-1764935945557-4kqx50"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Officer Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage parking enforcement officer accounts, permissions, and performance metrics",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Add New Officer",
+              "variant": "primary",
+              "icon": "add",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "24px",
+                "cursor": "pointer"
+              }
+            },
+            "formRef": "officerregistrationform-1764935945557-4kqx50"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Active Officers",
+              "columns": [
+                {
+                  "key": "badgeNumber",
+                  "label": "Badge #",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "fullName",
+                  "label": "Officer Name",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "email",
+                  "label": "Email",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "assignedZone",
+                  "label": "Assigned Zone",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "ticketsIssued",
+                  "label": "Tickets Issued",
+                  "sortable": true,
+                  "align": "center",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#2563eb"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    "view",
+                    "edit",
+                    "deactivate"
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 15,
+              "searchable": true,
+              "filterable": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "Officer.query"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Officer Performance Summary",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "padding": "24px",
+                "marginTop": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              },
+              "metrics": [
+                {
+                  "label": "Total Active Officers",
+                  "value": "{{Officer.count({status: 'active'})}}",
+                  "icon": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#2563eb"
+                  }
+                },
+                {
+                  "label": "Avg Tickets/Officer (30d)",
+                  "value": "{{Ticket.avgByOfficer(30)}}",
+                  "icon": "trending_up",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#059669"
+                  }
+                },
+                {
+                  "label": "Top Performer",
+                  "value": "{{Officer.topPerformer.name}}",
+                  "icon": "star",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#f59e0b"
+                  }
+                },
+                {
+                  "label": "Inactive Officers",
+                  "value": "{{Officer.count({status: 'inactive'})}}",
+                  "icon": "person_off",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#dc2626"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "Officer.metrics"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/officer-dashboard"
+        },
+        "edit": {
+          "type": "modal",
+          "formRef": "officerregistrationform-1764935945557-4kqx50"
+        },
+        "deactivate": {
+          "type": "confirm",
+          "message": "Are you sure you want to deactivate this officer?",
+          "onConfirm": {
+            "type": "workflow",
+            "workflow": "TicketStatusUpdateWorkflow"
+          }
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer-dashboard",
+          "icon": "badge"
+        },
+        {
+          "label": "Violation Types",
+          "route": "/violation-type-management",
+          "icon": "gavel"
+        },
+        {
+          "label": "Dispute Management",
+          "route": "/dispute-management",
+          "icon": "balance"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports-analytics",
+          "icon": "analytics"
+        },
+        {
+          "label": "Payment History",
+          "route": "/payment-history",
+          "icon": "payment"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "violationtypemanagementpage-1764936100000-vt8m2p",
+    "name": "ViolationTypeManagementPage",
+    "title": "Violation Type Management",
+    "description": "Administrative interface for maintaining violation type catalog including codes, descriptions, fine amounts, and late fee schedules",
+    "route": "/admin/violation-types",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "violationtypemanagementform-1764935965930-7atf3u"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Violation Type Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage violation codes, descriptions, fine amounts, and late fee schedules",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Add New Violation Type",
+              "variant": "primary",
+              "icon": "add",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "24px",
+                "cursor": "pointer"
+              }
+            },
+            "formRef": "violationtypemanagementform-1764935965930-7atf3u"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Violation Types",
+              "columns": [
+                {
+                  "key": "code",
+                  "label": "Code",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "description",
+                  "label": "Description",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "fineAmount",
+                  "label": "Fine Amount",
+                  "sortable": true,
+                  "format": "currency",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "lateFeeSchedule",
+                  "label": "Late Fee Schedule",
+                  "sortable": false,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "500",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px",
+                    "backgroundColor": "#ecfdf5",
+                    "color": "#059669"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "sortable": false
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Edit",
+                  "icon": "edit",
+                  "type": "edit",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#2563eb",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "View History",
+                  "icon": "history",
+                  "type": "view",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#666666",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Delete",
+                  "icon": "delete",
+                  "type": "delete",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#dc2626",
+                    "cursor": "pointer"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "filterable": true,
+              "bulkActions": true,
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "ViolationType.query"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Bulk Operations",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "backgroundColor": "#f9fafb",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "padding": "20px",
+                "marginTop": "24px"
+              },
+              "content": [
+                {
+                  "type": "button",
+                  "label": "Import Violation Types",
+                  "variant": "secondary",
+                  "icon": "upload",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#ffffff",
+                    "color": "#1a1a1a",
+                    "padding": "8px 16px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #d1d5db",
+                    "marginRight": "12px",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "type": "button",
+                  "label": "Export to CSV",
+                  "variant": "secondary",
+                  "icon": "download",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#ffffff",
+                    "color": "#1a1a1a",
+                    "padding": "8px 16px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #d1d5db",
+                    "marginRight": "12px",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "type": "button",
+                  "label": "Bulk Update Fees",
+                  "variant": "secondary",
+                  "icon": "update",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#ffffff",
+                    "color": "#1a1a1a",
+                    "padding": "8px 16px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #d1d5db",
+                    "cursor": "pointer"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "edit": {
+          "type": "modal",
+          "formRef": "violationtypemanagementform-1764935965930-7atf3u"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/admin/violation-types/history"
+        },
+        "delete": {
+          "type": "confirm",
+          "message": "Are you sure you want to delete this violation type?"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Officer Management",
+          "route": "/admin/officers",
+          "icon": "people"
+        },
+        {
+          "label": "Dispute Management",
+          "route": "/admin/disputes",
+          "icon": "gavel"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/admin/reports",
+          "icon": "analytics"
+        },
+        {
+          "label": "Payment History",
+          "route": "/admin/payments",
+          "icon": "payment"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "disputemanagementpage-1764936100000-dmg9x2",
+    "name": "DisputeManagementPage",
+    "title": "Dispute Management",
+    "description": "Administrative interface for reviewing and processing ticket disputes with filtering and sorting capabilities",
+    "route": "/admin/disputes",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "disputereviewform-1764936032997-ah84fi"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Dispute Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Review and process ticket disputes submitted by citizens",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Filter Disputes",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "filter",
+                "config": {
+                  "filters": [
+                    {
+                      "field": "status",
+                      "label": "Status",
+                      "type": "select",
+                      "options": [
+                        {
+                          "label": "All Statuses",
+                          "value": ""
+                        },
+                        {
+                          "label": "Pending Review",
+                          "value": "pending"
+                        },
+                        {
+                          "label": "Under Review",
+                          "value": "under_review"
+                        },
+                        {
+                          "label": "Approved",
+                          "value": "approved"
+                        },
+                        {
+                          "label": "Rejected",
+                          "value": "rejected"
+                        }
+                      ]
+                    },
+                    {
+                      "field": "submittedDate",
+                      "label": "Submission Date",
+                      "type": "dateRange"
+                    },
+                    {
+                      "field": "ticketNumber",
+                      "label": "Ticket Number",
+                      "type": "text"
+                    }
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Disputes",
+              "columns": [
+                {
+                  "key": "disputeId",
+                  "label": "Dispute ID",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket Number",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "submittedBy",
+                  "label": "Submitted By",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "submittedDate",
+                  "label": "Submission Date",
+                  "sortable": true,
+                  "type": "date",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px"
+                  },
+                  "statusColors": {
+                    "pending": {
+                      "bg": "#FEF3C7",
+                      "text": "#92400E"
+                    },
+                    "under_review": {
+                      "bg": "#DBEAFE",
+                      "text": "#1E40AF"
+                    },
+                    "approved": {
+                      "bg": "#D1FAE5",
+                      "text": "#065F46"
+                    },
+                    "rejected": {
+                      "bg": "#FEE2E2",
+                      "text": "#991B1B"
+                    }
+                  }
+                },
+                {
+                  "key": "reason",
+                  "label": "Reason",
+                  "sortable": false,
+                  "truncate": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "Review",
+                      "action": "review",
+                      "style": {
+                        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#2563eb",
+                        "backgroundColor": "transparent",
+                        "border": "none",
+                        "cursor": "pointer"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Dispute.query",
+            "formRef": "disputereviewform-1764936032997-ah84fi"
+          }
+        ]
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Review disputes carefully and provide detailed explanations for all decisions",
+              "variant": "caption",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "12px",
+                "fontWeight": "400",
+                "color": "#999999",
+                "textAlign": "center",
+                "marginTop": "24px"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "review": {
+          "type": "modal",
+          "formRef": "disputereviewform-1764936032997-ah84fi"
+        },
+        "submit": {
+          "type": "refresh"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin/dashboard"
+        },
+        {
+          "label": "Ticket Management",
+          "route": "/admin/tickets"
+        },
+        {
+          "label": "Officer Management",
+          "route": "/admin/officers"
+        },
+        {
+          "label": "Violation Types",
+          "route": "/admin/violation-types"
+        },
+        {
+          "label": "Payment History",
+          "route": "/admin/payments"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/admin/reports"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "officerdashboard-1764936100000-abc123",
+    "name": "OfficerDashboard",
+    "title": "Officer Dashboard",
+    "description": "Dashboard displaying officer's issued tickets, recent activity, pending actions, and performance metrics with quick access to ticket issuance.",
+    "route": "/officer-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "issueticketform-1764936055136-vzv3b9",
+      "ticketsearchform-1764935926576-p54wjh"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Officer Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Issue New Ticket",
+              "variant": "primary",
+              "action": "openForm",
+              "formRef": "issueticketform-1764936055136-vzv3b9",
+              "style": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "cursor": "pointer"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Performance Metrics",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Officer.currentUser",
+            "items": [
+              {
+                "label": "Tickets Issued Today",
+                "value": "{{ticketsIssuedToday}}",
+                "icon": "ticket",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#6b7280"
+                }
+              },
+              {
+                "label": "This Week",
+                "value": "{{ticketsIssuedWeek}}",
+                "icon": "calendar",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#6b7280"
+                }
+              },
+              {
+                "label": "Pending Disputes",
+                "value": "{{pendingDisputes}}",
+                "icon": "alert",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#6b7280"
+                }
+              },
+              {
+                "label": "Total Issued",
+                "value": "{{totalTicketsIssued}}",
+                "icon": "check",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#6b7280"
+                }
+              }
+            ]
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Quick Ticket Search",
+              "inline": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "ticketsearchform-1764935926576-p54wjh"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Recent Tickets Issued",
+              "columns": [
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket #",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "vehicle.licensePlate",
+                  "label": "License Plate",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "violationType.name",
+                  "label": "Violation",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "location.name",
+                  "label": "Location",
+                  "sortable": false,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "issuedAt",
+                  "label": "Date/Time",
+                  "sortable": true,
+                  "format": "datetime",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#6b7280"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "badge": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "type": "navigate",
+                  "target": "/ticket-detail/{{id}}",
+                  "style": {
+                    "color": "#2563eb",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb"
+              }
+            },
+            "dataBinding": "Ticket.query",
+            "filters": {
+              "officerId": "{{currentUser.id}}",
+              "orderBy": "issuedAt",
+              "orderDirection": "desc",
+              "limit": 10
+            }
+          },
+          {
+            "type": "list",
+            "config": {
+              "title": "Pending Actions",
+              "emptyMessage": "No pending actions",
+              "itemTemplate": {
+                "title": "{{action}}",
+                "subtitle": "Ticket #{{ticketNumber}} - {{vehicle.licensePlate}}",
+                "badge": "{{priority}}",
+                "action": {
+                  "label": "Review",
+                  "type": "navigate",
+                  "target": "/ticket-detail/{{ticketId}}"
+                }
+              },
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Dispute.query",
+            "filters": {
+              "status": "pending",
+              "assignedOfficerId": "{{currentUser.id}}",
+              "limit": 5
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-detail"
+        },
+        "issueTicket": {
+          "type": "openForm",
+          "formId": "issueticketform-1764936055136-vzv3b9"
+        },
+        "search": {
+          "type": "navigate",
+          "target": "/ticket-detail"
+        }
+      },
+      "menu": [
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Issue Ticket",
+          "route": "/issue-ticket",
+          "icon": "add"
+        },
+        {
+          "label": "Dispute Management",
+          "route": "/dispute-management",
+          "icon": "gavel"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports-analytics",
+          "icon": "chart"
+        },
+        {
+          "label": "Officer Management",
+          "route": "/officer-management",
+          "icon": "people"
+        },
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard",
+          "icon": "settings"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "admindashboard-1764936100000-admin",
+    "name": "AdminDashboard",
+    "title": "Administrator Dashboard",
+    "description": "Comprehensive administrative dashboard showing system metrics, pending disputes, overdue tickets, revenue statistics, and quick access to management functions.",
+    "route": "/admin/dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Administrator Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "System overview and management capabilities",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "System Metrics",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Ticket.aggregate",
+            "content": [
+              {
+                "label": "Total Tickets",
+                "value": "{{Ticket.count}}",
+                "icon": "receipt",
+                "color": "#2563eb",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "28px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a"
+                }
+              },
+              {
+                "label": "Pending Disputes",
+                "value": "{{Dispute.count(status='pending')}}",
+                "icon": "gavel",
+                "color": "#dc2626",
+                "alert": true,
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "28px",
+                  "fontWeight": "700",
+                  "color": "#dc2626"
+                }
+              },
+              {
+                "label": "Overdue Tickets",
+                "value": "{{Ticket.count(status='overdue')}}",
+                "icon": "warning",
+                "color": "#ea580c",
+                "alert": true,
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "28px",
+                  "fontWeight": "700",
+                  "color": "#ea580c"
+                }
+              },
+              {
+                "label": "Total Revenue",
+                "value": "${{Payment.sum(amount)}}",
+                "icon": "attach_money",
+                "color": "#16a34a",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "28px",
+                  "fontWeight": "700",
+                  "color": "#16a34a"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Items Requiring Attention",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "content": [
+              {
+                "type": "alert",
+                "severity": "error",
+                "message": "{{Dispute.count(status='pending')}} disputes pending review",
+                "action": {
+                  "label": "Review Disputes",
+                  "route": "/disputes"
+                },
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "backgroundColor": "#fef2f2",
+                  "color": "#991b1b",
+                  "padding": "12px 16px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #fecaca",
+                  "marginBottom": "12px"
+                }
+              },
+              {
+                "type": "alert",
+                "severity": "warning",
+                "message": "{{Ticket.count(status='overdue')}} tickets are overdue",
+                "action": {
+                  "label": "View Overdue",
+                  "route": "/tickets?status=overdue"
+                },
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "backgroundColor": "#fff7ed",
+                  "color": "#9a3412",
+                  "padding": "12px 16px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #fed7aa",
+                  "marginBottom": "12px"
+                }
+              },
+              {
+                "type": "alert",
+                "severity": "info",
+                "message": "{{Payment.count(status='pending')}} payments pending processing",
+                "action": {
+                  "label": "Process Payments",
+                  "route": "/payments"
+                },
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "backgroundColor": "#eff6ff",
+                  "color": "#1e40af",
+                  "padding": "12px 16px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #bfdbfe"
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Recent Disputes",
+              "columns": [
+                {
+                  "field": "id",
+                  "header": "Dispute ID",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "ticket.ticketNumber",
+                  "header": "Ticket Number",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "reason",
+                  "header": "Reason",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "status",
+                  "header": "Status",
+                  "badge": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "16px",
+                    "backgroundColor": "#fef3c7",
+                    "color": "#92400e"
+                  }
+                },
+                {
+                  "field": "submittedAt",
+                  "header": "Submitted",
+                  "type": "date",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Review",
+                  "type": "primary",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "8px 16px",
+                    "borderRadius": "8px",
+                    "border": "none"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 5,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Dispute.query(status='pending', orderBy='submittedAt:desc', limit=5)"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "layout": "grid",
+              "columns": 3,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "content": [
+              {
+                "type": "button",
+                "label": "Manage Officers",
+                "icon": "badge",
+                "route": "/admin/officers",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "backgroundColor": "#2563eb",
+                  "color": "#ffffff",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "none",
+                  "width": "100%"
+                }
+              },
+              {
+                "type": "button",
+                "label": "Manage Violations",
+                "icon": "rule",
+                "route": "/admin/violations",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "backgroundColor": "#2563eb",
+                  "color": "#ffffff",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "none",
+                  "width": "100%"
+                }
+              },
+              {
+                "type": "button",
+                "label": "View Reports",
+                "icon": "assessment",
+                "route": "/admin/reports",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "backgroundColor": "#2563eb",
+                  "color": "#ffffff",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "none",
+                  "width": "100%"
+                }
+              },
+              {
+                "type": "button",
+                "label": "Review Disputes",
+                "icon": "gavel",
+                "route": "/admin/disputes",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "backgroundColor": "#16a34a",
+                  "color": "#ffffff",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "none",
+                  "width": "100%"
+                }
+              },
+              {
+                "type": "button",
+                "label": "Payment History",
+                "icon": "payment",
+                "route": "/payments/history",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "backgroundColor": "#16a34a",
+                  "color": "#ffffff",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "none",
+                  "width": "100%"
+                }
+              },
+              {
+                "type": "button",
+                "label": "Audit Logs",
+                "icon": "history",
+                "route": "/admin/audit-logs",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "backgroundColor": "#16a34a",
+                  "color": "#ffffff",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "none",
+                  "width": "100%"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view_dispute": {
+          "type": "navigate",
+          "target": "/admin/disputes"
+        },
+        "view_officers": {
+          "type": "navigate",
+          "target": "/admin/officers"
+        },
+        "view_reports": {
+          "type": "navigate",
+          "target": "/admin/reports"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Officer Management",
+          "route": "/admin/officers",
+          "icon": "badge"
+        },
+        {
+          "label": "Violation Types",
+          "route": "/admin/violations",
+          "icon": "rule"
+        },
+        {
+          "label": "Dispute Management",
+          "route": "/admin/disputes",
+          "icon": "gavel"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/admin/reports",
+          "icon": "assessment"
+        },
+        {
+          "label": "Payment History",
+          "route": "/payments/history",
+          "icon": "payment"
+        },
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer/dashboard",
+          "icon": "local_police"
+        },
+        {
+          "label": "Citizen Portal",
+          "route": "/citizen/portal",
+          "icon": "person"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "ticketdetailpage-1764936100000-abc123",
+    "name": "TicketDetailPage",
+    "title": "Ticket Details",
+    "description": "Detailed view of individual ticket showing all violation details, vehicle information, payment status, dispute history, and available actions based on user role and ticket status",
+    "route": "/tickets/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "ticketpaymentform-1764935987536-cmjwfm",
+      "disputesubmissionform-1764936013180-h6wtl2",
+      "disputereviewform-1764936032997-ah84fi"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Ticket #{{Ticket.ticketNumber}}",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            },
+            "dataBinding": "Ticket.findById"
+          },
+          {
+            "type": "badge",
+            "config": {
+              "text": "{{Ticket.status}}",
+              "variant": "status",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "padding": "6px 16px",
+                "borderRadius": "8px",
+                "backgroundColor": "{{Ticket.status === 'PAID' ? '#10b981' : Ticket.status === 'PENDING' ? '#f59e0b' : Ticket.status === 'DISPUTED' ? '#3b82f6' : '#ef4444'}}",
+                "color": "#ffffff"
+              }
+            },
+            "dataBinding": "Ticket.status"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Violation Details",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e7eb"
+              },
+              "fields": [
+                {
+                  "label": "Violation Type",
+                  "value": "{{ViolationType.description}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#6b7280",
+                    "marginBottom": "4px"
+                  }
+                },
+                {
+                  "label": "Location",
+                  "value": "{{ParkingLocation.address}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "color": "#1a1a1a",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "label": "Date & Time",
+                  "value": "{{Ticket.issueDate}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Issuing Officer",
+                  "value": "{{Officer.firstName}}, {{Officer.lastName}} ({{Officer.badgeNumber}})",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Vehicle",
+                  "value": "{{Vehicle.licensePlate}} - {{Vehicle.make}}, {{Vehicle.model}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Fine Amount",
+                  "value": "${{Ticket.fineAmount}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "20px",
+                    "color": "#dc2626",
+                    "fontWeight": "700"
+                  }
+                },
+                {
+                  "label": "Late Fees",
+                  "value": "${{LateFee.amount}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "color": "#f59e0b",
+                    "fontWeight": "600"
+                  }
+                },
+                {
+                  "label": "Total Due",
+                  "value": "${{Ticket.totalAmount}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "color": "#1a1a1a",
+                    "fontWeight": "700"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "Ticket.findById"
+          },
+          {
+            "type": "timeline",
+            "config": {
+              "title": "Ticket History",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e7eb"
+              },
+              "itemStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#1a1a1a",
+                "padding": "12px 0",
+                "borderLeft": "2px solid #3b82f6"
+              },
+              "events": [
+                {
+                  "date": "{{AuditLog.timestamp}}",
+                  "action": "{{AuditLog.action}}",
+                  "user": "{{AuditLog.performedBy}}",
+                  "details": "{{AuditLog.details}}"
+                }
+              ]
+            },
+            "dataBinding": "AuditLog.query"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Payment & Dispute Information",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e7eb"
+              },
+              "sections": [
+                {
+                  "title": "Payment Status",
+                  "visible": "{{Payment.id}}",
+                  "fields": [
+                    {
+                      "label": "Payment Date",
+                      "value": "{{Payment.paymentDate}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "label": "Amount Paid",
+                      "value": "${{Payment.amount}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "16px",
+                        "color": "#10b981",
+                        "fontWeight": "600"
+                      }
+                    },
+                    {
+                      "label": "Payment Method",
+                      "value": "{{Payment.paymentMethod}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#1a1a1a"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "title": "Dispute Status",
+                  "visible": "{{Dispute.id}}",
+                  "fields": [
+                    {
+                      "label": "Dispute Status",
+                      "value": "{{Dispute.status}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#3b82f6",
+                        "fontWeight": "600"
+                      }
+                    },
+                    {
+                      "label": "Submitted Date",
+                      "value": "{{Dispute.submittedDate}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "label": "Reason",
+                      "value": "{{Dispute.reason}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "label": "Resolution",
+                      "value": "{{Dispute.resolution}}",
+                      "visible": "{{Dispute.status === 'RESOLVED'}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#1a1a1a"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "dataBinding": "Ticket.findById"
+          },
+          {
+            "type": "buttonGroup",
+            "config": {
+              "orientation": "horizontal",
+              "style": {
+                "display": "flex",
+                "gap": "12px",
+                "marginTop": "24px",
+                "flexWrap": "wrap"
+              },
+              "buttons": [
+                {
+                  "label": "Pay Ticket",
+                  "action": "openPaymentForm",
+                  "visible": "{{Ticket.status === 'PENDING' || Ticket.status === 'OVERDUE'}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "backgroundColor": "#3b82f6",
+                    "color": "#ffffff",
+                    "border": "none",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  },
+                  "formRef": "ticketpaymentform-1764935987536-cmjwfm"
+                },
+                {
+                  "label": "Submit Dispute",
+                  "action": "openDisputeForm",
+                  "visible": "{{Ticket.status === 'PENDING' && !Dispute.id}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "backgroundColor": "#ffffff",
+                    "color": "#3b82f6",
+                    "border": "2px solid #3b82f6",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  },
+                  "formRef": "disputesubmissionform-1764936013180-h6wtl2"
+                },
+                {
+                  "label": "Review Dispute",
+                  "action": "openReviewForm",
+                  "visible": "{{userRole === 'ADMIN' && Dispute.status === 'PENDING'}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "backgroundColor": "#f59e0b",
+                    "color": "#ffffff",
+                    "border": "none",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  },
+                  "formRef": "disputereviewform-1764936032997-ah84fi"
+                },
+                {
+                  "label": "View Payment History",
+                  "action": "viewPaymentHistory",
+                  "visible": "{{Payment.id}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "backgroundColor": "#ffffff",
+                    "color": "#6b7280",
+                    "border": "2px solid #e5e7eb",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "openPaymentForm": {
+          "type": "modal",
+          "formRef": "ticketpaymentform-1764935987536-cmjwfm"
+        },
+        "openDisputeForm": {
+          "type": "modal",
+          "formRef": "disputesubmissionform-1764936013180-h6wtl2"
+        },
+        "openReviewForm": {
+          "type": "modal",
+          "formRef": "disputereviewform-1764936032997-ah84fi"
+        },
+        "viewPaymentHistory": {
+          "type": "navigate",
+          "target": "/payment-history"
+        }
+      },
+      "menu": [
+        {
+          "label": "Citizen Portal",
+          "route": "/citizen-portal"
+        },
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer-dashboard"
+        },
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Payment History",
+          "route": "/payment-history"
+        },
+        {
+          "label": "Dispute Management",
+          "route": "/dispute-management"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports-analytics"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "reportsanalyticspage-1764936100000-rpt001",
+    "name": "ReportsAnalyticsPage",
+    "title": "Reports & Analytics",
+    "description": "Generate and view reports on violations, revenue, and enforcement trends with pre-built templates and custom report builder.",
+    "route": "/reports-analytics",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "reportparametersform-1764935906274-sh7y7n"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Reports & Analytics",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Generate comprehensive reports on violations, revenue, and enforcement trends",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Report Parameters",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
+              }
+            },
+            "formRef": "reportparametersform-1764935906274-sh7y7n"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Pre-Built Report Templates",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
+              }
+            },
+            "components": [
+              {
+                "type": "button",
+                "config": {
+                  "label": "Violation Trends Report",
+                  "variant": "outlined",
+                  "action": "generateReport",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "padding": "10px 20px",
+                    "borderRadius": "6px",
+                    "border": "1px solid #0066cc",
+                    "color": "#0066cc",
+                    "backgroundColor": "#ffffff",
+                    "marginRight": "12px",
+                    "marginBottom": "12px",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Revenue Analysis",
+                  "variant": "outlined",
+                  "action": "generateReport",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "padding": "10px 20px",
+                    "borderRadius": "6px",
+                    "border": "1px solid #0066cc",
+                    "color": "#0066cc",
+                    "backgroundColor": "#ffffff",
+                    "marginRight": "12px",
+                    "marginBottom": "12px",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Officer Performance",
+                  "variant": "outlined",
+                  "action": "generateReport",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "padding": "10px 20px",
+                    "borderRadius": "6px",
+                    "border": "1px solid #0066cc",
+                    "color": "#0066cc",
+                    "backgroundColor": "#ffffff",
+                    "marginRight": "12px",
+                    "marginBottom": "12px",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Location Statistics",
+                  "variant": "outlined",
+                  "action": "generateReport",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "padding": "10px 20px",
+                    "borderRadius": "6px",
+                    "border": "1px solid #0066cc",
+                    "color": "#0066cc",
+                    "backgroundColor": "#ffffff",
+                    "marginBottom": "12px",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Report Results",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
+              }
+            },
+            "components": [
+              {
+                "type": "chart",
+                "config": {
+                  "chartType": "bar",
+                  "title": "Violations by Type",
+                  "xAxis": "Violation Type",
+                  "yAxis": "Count",
+                  "style": {
+                    "height": "300px",
+                    "marginBottom": "24px"
+                  }
+                },
+                "dataBinding": "ViolationType.aggregateByType"
+              },
+              {
+                "type": "chart",
+                "config": {
+                  "chartType": "line",
+                  "title": "Revenue Trend",
+                  "xAxis": "Date",
+                  "yAxis": "Revenue ($)",
+                  "style": {
+                    "height": "300px",
+                    "marginBottom": "24px"
+                  }
+                },
+                "dataBinding": "Payment.aggregateByDate"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Detailed Report Data",
+              "columns": [
+                {
+                  "field": "date",
+                  "header": "Date",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "category",
+                  "header": "Category",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "count",
+                  "header": "Count",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "revenue",
+                  "header": "Revenue",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#0066cc"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Export",
+                  "type": "export",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "13px",
+                    "fontWeight": "500",
+                    "color": "#0066cc",
+                    "cursor": "pointer"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "overflow": "hidden",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
+              },
+              "headerStyle": {
+                "backgroundColor": "#f8f9fa",
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "13px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "textTransform": "uppercase",
+                "letterSpacing": "0.5px",
+                "padding": "12px 16px",
+                "borderBottom": "2px solid #e0e0e0"
+              },
+              "rowStyle": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "color": "#1a1a1a",
+                "padding": "12px 16px",
+                "borderBottom": "1px solid #f0f0f0"
+              }
+            },
+            "dataBinding": "Ticket.reportData"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "generateReport": {
+          "type": "workflow",
+          "workflow": "GenerateReportWorkflow"
+        },
+        "export": {
+          "type": "download",
+          "format": "csv"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer-dashboard"
+        },
+        {
+          "label": "Ticket Management",
+          "route": "/citizen-portal"
+        },
+        {
+          "label": "Payment History",
+          "route": "/payment-history"
+        },
+        {
+          "label": "Dispute Management",
+          "route": "/dispute-management"
+        },
+        {
+          "label": "Officer Management",
+          "route": "/officer-management"
+        },
+        {
+          "label": "Violation Types",
+          "route": "/violation-type-management"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "citizenportal-1764936100000-abc123",
+    "name": "CitizenPortal",
+    "title": "Citizen Portal - Parking Tickets",
+    "description": "Public-facing portal enabling citizens to view, pay, and dispute parking tickets by license plate or ticket number",
+    "route": "/citizen-portal",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "ticketsearchform-1764935926576-p54wjh",
+      "ticketpaymentform-1764935987536-cmjwfm",
+      "disputesubmissionform-1764936013180-h6wtl2"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Parking Ticket Portal",
+              "variant": "h1",
+              "alignment": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Search, pay, and dispute your parking tickets",
+              "variant": "body1",
+              "alignment": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Search Your Tickets",
+              "description": "Enter your license plate or ticket number to view your parking tickets",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "ticketsearchform-1764935926576-p54wjh"
+          },
+          {
+            "type": "list",
+            "config": {
+              "title": "Your Tickets",
+              "emptyMessage": "No tickets found. Use the search above to find your tickets.",
+              "itemLayout": "card",
+              "showActions": true,
+              "actions": [
+                {
+                  "label": "View Details",
+                  "type": "navigate",
+                  "style": {
+                    "backgroundColor": "#0066cc",
+                    "color": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "Pay Now",
+                  "type": "action",
+                  "style": {
+                    "backgroundColor": "#28a745",
+                    "color": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "Dispute",
+                  "type": "action",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "color": "#0066cc",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "1px solid #0066cc"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Ticket.query",
+            "filters": {
+              "status": [
+                "issued",
+                "pending",
+                "overdue"
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "layout": "horizontal",
+              "items": [
+                {
+                  "icon": "payment",
+                  "label": "Payment History",
+                  "action": "navigate",
+                  "target": "/payment-history"
+                },
+                {
+                  "icon": "dispute",
+                  "label": "My Disputes",
+                  "action": "navigate",
+                  "target": "/dispute-management"
+                },
+                {
+                  "icon": "notifications",
+                  "label": "Notification Settings",
+                  "action": "modal",
+                  "target": "notification-preferences"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#f8f9fa",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "border": "1px solid #e5e5e5",
+                "marginTop": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Need help? Contact us at parking@city.gov or call (555) 123-4567",
+              "variant": "body2",
+              "alignment": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5",
+                "marginTop": "32px"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-detail"
+        },
+        "pay": {
+          "type": "modal",
+          "target": "ticketpaymentform-1764935987536-cmjwfm"
+        },
+        "dispute": {
+          "type": "modal",
+          "target": "disputesubmissionform-1764936013180-h6wtl2"
+        }
+      },
+      "menu": [
+        {
+          "label": "Home",
+          "route": "/citizen-portal",
+          "icon": "home"
+        },
+        {
+          "label": "Payment History",
+          "route": "/payment-history",
+          "icon": "payment"
+        },
+        {
+          "label": "My Disputes",
+          "route": "/dispute-management",
+          "icon": "dispute"
+        },
+        {
+          "label": "Ticket Details",
+          "route": "/ticket-detail",
+          "icon": "ticket"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735227156483"
+  }
+]

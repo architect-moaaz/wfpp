@@ -1,0 +1,592 @@
+[
+  {
+    "id": "user",
+    "name": "User",
+    "description": "Store user information for both support agents and customers/employees",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address for authentication and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "User's full name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "User role: 'agent' or 'customer' for access control",
+        "required": true,
+        "defaultValue": "customer"
+      },
+      {
+        "name": "passwordHash",
+        "type": "string",
+        "description": "Hashed password for authentication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Account status indicating if user can access the system",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the user account was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_user_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_user_role",
+        "fields": [
+          "role"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "email": "Must be valid email format and unique",
+      "role": "Must be either 'agent' or 'customer'"
+    },
+    "workflowId": "ticket-auto-close-workflow"
+  },
+  {
+    "id": "ticket-category",
+    "name": "TicketCategory",
+    "description": "Defines ticket categories for organizing and routing support tickets by type or department",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the ticket category",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Display name of the category (e.g., Hardware, Software, Network)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "parentCategoryId",
+        "type": "string",
+        "description": "Reference to parent category for hierarchical organization (null for top-level categories)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of what tickets belong in this category",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the category is currently active and available for ticket assignment",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "routingDepartment",
+        "type": "string",
+        "description": "Default department or team to route tickets in this category",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "displayOrder",
+        "type": "number",
+        "description": "Sort order for displaying categories in lists and dropdowns",
+        "required": true,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [
+      {
+        "type": "self-referencing",
+        "name": "parentCategory",
+        "relatedModel": "TicketCategory",
+        "foreignKey": "parentCategoryId",
+        "description": "Supports hierarchical category structure"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_parent_category",
+        "fields": [
+          "parentCategoryId"
+        ]
+      },
+      {
+        "name": "idx_active_categories",
+        "fields": [
+          "isActive",
+          "displayOrder"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ],
+      "check": [
+        "displayOrder >= 0"
+      ]
+    },
+    "workflowId": "ticket-auto-close-workflow"
+  },
+  {
+    "id": "ticket",
+    "name": "Ticket",
+    "description": "Central data model for storing and tracking IT support requests through their lifecycle",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the ticket",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Brief summary of the support request",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the issue or request",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the ticket (e.g., open, in_progress, resolved, closed)",
+        "required": true,
+        "defaultValue": "open"
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the ticket (e.g., low, medium, high, critical)",
+        "required": true,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "submitterId",
+        "type": "string",
+        "description": "Reference to the User who submitted the ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedAgentId",
+        "type": "string",
+        "description": "Reference to the User (agent) assigned to handle the ticket",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "categoryId",
+        "type": "string",
+        "description": "Reference to the TicketCategory for classification",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "submitterId",
+        "description": "Ticket is submitted by a User"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "assignedAgentId",
+        "description": "Ticket is assigned to an agent (User)"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "TicketCategory",
+        "foreignKey": "categoryId",
+        "description": "Ticket belongs to a category"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "status"
+        ],
+        "description": "Index on status for efficient filtering"
+      },
+      {
+        "fields": [
+          "submitterId"
+        ],
+        "description": "Index on submitter for user ticket lookups"
+      },
+      {
+        "fields": [
+          "assignedAgentId"
+        ],
+        "description": "Index on assigned agent for workload queries"
+      }
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "open",
+          "in_progress",
+          "resolved",
+          "closed"
+        ]
+      },
+      "priority": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ]
+      }
+    },
+    "workflowId": "ticket-auto-close-workflow"
+  },
+  {
+    "id": "ticket-comment",
+    "name": "TicketComment",
+    "description": "Store comments and updates made on tickets by agents and customers",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the comment",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket this comment belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "authorId",
+        "type": "string",
+        "description": "Reference to the user who created the comment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "commentText",
+        "type": "string",
+        "description": "The actual content of the comment or update",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isInternal",
+        "type": "boolean",
+        "description": "Visibility flag - true for internal agent notes, false for customer-visible comments",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the comment was created",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each comment belongs to one ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "authorId",
+        "description": "Each comment is authored by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "ticketId",
+          "createdAt"
+        ],
+        "description": "Optimize retrieval of comments for a ticket in chronological order"
+      },
+      {
+        "fields": [
+          "authorId"
+        ],
+        "description": "Optimize queries for comments by a specific user"
+      }
+    ],
+    "constraints": {
+      "commentText": "Maximum length of 10000 characters",
+      "createdAt": "Cannot be a future date"
+    },
+    "workflowId": "ticket-auto-close-workflow"
+  },
+  {
+    "id": "ticket-history",
+    "name": "TicketHistory",
+    "description": "Maintains complete audit trail of all ticket changes and status transitions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the history record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket that was modified",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fieldName",
+        "type": "string",
+        "description": "Name of the field that was changed (e.g., status, priority, assignee)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "oldValue",
+        "type": "string",
+        "description": "Previous value before the change",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "newValue",
+        "type": "string",
+        "description": "New value after the change",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changedBy",
+        "type": "string",
+        "description": "Reference to the user who made the change",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changedAt",
+        "type": "date",
+        "description": "Timestamp when the change occurred",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each history record belongs to one ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "changedBy",
+        "description": "Each history record is created by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_history_ticket_id",
+        "fields": [
+          "ticketId"
+        ]
+      },
+      {
+        "name": "idx_ticket_history_changed_at",
+        "fields": [
+          "changedAt"
+        ]
+      }
+    ],
+    "constraints": {
+      "immutable": true,
+      "retentionPolicy": "Retain indefinitely for compliance and audit purposes"
+    },
+    "workflowId": "ticket-auto-close-workflow"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Store and track notifications sent to users about ticket events",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "ID of the user receiving the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "ID of the ticket related to this notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of notification (ticket_created, ticket_assigned, ticket_updated, comment_added, status_changed)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "channel",
+        "type": "string",
+        "description": "Delivery channel for the notification (email, in-app, both)",
+        "required": true,
+        "defaultValue": "in-app"
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "description": "Notification message content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sentAt",
+        "type": "date",
+        "description": "Timestamp when the notification was sent",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isRead",
+        "type": "boolean",
+        "description": "Whether the notification has been read by the user",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Notification belongs to a user"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Notification is related to a ticket"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_id",
+        "fields": [
+          "userId"
+        ]
+      },
+      {
+        "name": "idx_ticket_id",
+        "fields": [
+          "ticketId"
+        ]
+      },
+      {
+        "name": "idx_user_isread",
+        "fields": [
+          "userId",
+          "isRead"
+        ]
+      },
+      {
+        "name": "idx_sent_at",
+        "fields": [
+          "sentAt"
+        ]
+      }
+    ],
+    "constraints": {
+      "type": {
+        "enum": [
+          "ticket_created",
+          "ticket_assigned",
+          "ticket_updated",
+          "comment_added",
+          "status_changed"
+        ]
+      },
+      "channel": {
+        "enum": [
+          "email",
+          "in-app",
+          "both"
+        ]
+      }
+    },
+    "workflowId": "ticket-auto-close-workflow"
+  }
+]

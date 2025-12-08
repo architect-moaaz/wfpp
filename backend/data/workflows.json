@@ -4594,5 +4594,5902 @@
         "target": "node_7"
       }
     ]
+  },
+  {
+    "id": "workflow_1704820000000",
+    "name": "Comprehensive Loan Management System",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Loan Application Submitted",
+          "trigger": "Customer submits loan application",
+          "description": "Initiates the comprehensive loan processing workflow",
+          "formId": "workflow_1704820000000_customer_form",
+          "formName": "Customer Registration"
+        },
+        "width": 320,
+        "height": 165,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Initial Application Validation",
+          "ruleType": "Business Rules",
+          "rules": [
+            "Required fields check",
+            "Document completeness",
+            "Basic eligibility"
+          ],
+          "description": "Validates application completeness and basic requirements"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "decision",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "Application Valid?",
+          "gatewayType": "exclusive",
+          "condition": "Check validation results",
+          "description": "Route based on initial validation outcome"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "llmTask",
+        "position": {
+          "x": 75,
+          "y": 850
+        },
+        "data": {
+          "label": "AI Document Analysis",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze loan application documents and extract key financial information: Income: ${processData.income}, Credit Score: ${processData.creditScore}, Loan Amount: ${processData.loanAmount}, Purpose: ${processData.loanPurpose}. Identify any red flags or missing information.",
+          "outputVariable": "documentAnalysis",
+          "temperature": 0.3,
+          "maxTokens": 1500,
+          "description": "AI-powered analysis of loan documents for completeness and risk factors"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "decision",
+        "position": {
+          "x": 425,
+          "y": 850
+        },
+        "data": {
+          "label": "Loan Amount Assessment",
+          "gatewayType": "exclusive",
+          "condition": "Route based on loan amount and complexity",
+          "description": "Determines processing path based on loan amount thresholds"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "scriptTask",
+        "position": {
+          "x": -50,
+          "y": 1100
+        },
+        "data": {
+          "label": "Automated Credit Check",
+          "scriptType": "API Integration",
+          "script": "Call credit bureau APIs for comprehensive credit report",
+          "description": "Retrieves credit scores and history from multiple bureaus"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "data": {
+          "label": "High-Value Loan Gateway",
+          "gatewayType": "parallel",
+          "branches": "Parallel processing for loans > $100k",
+          "description": "Initiates parallel verification processes for high-value loans"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "type": "timerEvent",
+        "position": {
+          "x": 650,
+          "y": 1100
+        },
+        "data": {
+          "label": "Application Timeout",
+          "timerType": "duration",
+          "duration": "PT72H",
+          "description": "Timeout handler for incomplete applications after 72 hours"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "type": "userTask",
+        "position": {
+          "x": -350,
+          "y": 1350
+        },
+        "data": {
+          "label": "Employment Verification",
+          "taskName": "verify_employment",
+          "assignedTo": "Verification Specialist",
+          "priority": "High",
+          "dueDate": "2 business days",
+          "instructions": "Contact employer to verify income and employment status",
+          "formId": "workflow_1704820000000_loan_application_form",
+          "formName": "Loan Application"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "type": "userTask",
+        "position": {
+          "x": 0,
+          "y": 1350
+        },
+        "data": {
+          "label": "Collateral Assessment",
+          "taskName": "assess_collateral",
+          "assignedTo": "Property Appraiser",
+          "priority": "High",
+          "dueDate": "3 business days",
+          "instructions": "Conduct property appraisal and assessment",
+          "formId": "workflow_1704820000000_payment_form",
+          "formName": "Loan Payment"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "type": "scriptTask",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "data": {
+          "label": "Financial Analysis Engine",
+          "scriptType": "Python",
+          "script": "Calculate debt-to-income ratio, payment capacity, risk score",
+          "description": "Automated financial analysis and risk scoring"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "type": "decision",
+        "position": {
+          "x": 700,
+          "y": 1350
+        },
+        "data": {
+          "label": "Merge & Risk Assessment",
+          "gatewayType": "exclusive",
+          "condition": "Evaluate combined verification results",
+          "description": "Merges parallel verification results and assesses overall risk"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_18",
+        "type": "notification",
+        "position": {
+          "x": 1050,
+          "y": 1350
+        },
+        "data": {
+          "label": "Timeout Notification",
+          "channel": "Email",
+          "recipient": "Applicant and Loan Officer",
+          "template": "Application timeout alert",
+          "description": "Alerts about application timeout requiring action"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "llmTask",
+        "position": {
+          "x": -125,
+          "y": 1600
+        },
+        "data": {
+          "label": "AI Risk Evaluation",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Based on the following loan data, provide a comprehensive risk assessment and recommendation: Credit Score: ${processData.creditScore}, DTI Ratio: ${processData.debtToIncomeRatio}, Employment Status: ${processData.employmentVerified}, Collateral Value: ${processData.collateralValue}, Loan Amount: ${processData.loanAmount}. Rate the risk as LOW, MEDIUM, or HIGH and provide justification.",
+          "outputVariable": "riskAssessment",
+          "temperature": 0.2,
+          "maxTokens": 2000,
+          "description": "AI-powered comprehensive risk assessment and recommendation"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "type": "userTask",
+        "position": {
+          "x": 225,
+          "y": 1600
+        },
+        "data": {
+          "label": "Senior Manager Review",
+          "taskName": "manager_review",
+          "assignedTo": "Senior Loan Manager",
+          "priority": "High",
+          "dueDate": "1 business day",
+          "instructions": "Review AI assessment and make final approval/rejection decision",
+          "formId": "workflow_1704820000000_login_form",
+          "formName": "Login"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "type": "notification",
+        "position": {
+          "x": 575,
+          "y": 1600
+        },
+        "data": {
+          "label": "Rejection Notification",
+          "channel": "Email",
+          "recipient": "Loan Applicant",
+          "template": "Loan application rejection with reasons",
+          "description": "Notifies applicant of rejection with detailed reasons"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_20",
+        "type": "endEvent",
+        "position": {
+          "x": 925,
+          "y": 1600
+        },
+        "data": {
+          "label": "Loan Process Complete",
+          "result": "Loan application fully processed",
+          "description": "Workflow completed - loan approved, rejected, or timed out"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "type": "decision",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "data": {
+          "label": "Final Approval Decision",
+          "gatewayType": "exclusive",
+          "condition": "Based on manager decision",
+          "description": "Routes to approval or rejection path"
+        },
+        "width": 320,
+        "height": 134,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "type": "scriptTask",
+        "position": {
+          "x": 500,
+          "y": 2100
+        },
+        "data": {
+          "label": "Generate Loan Contract",
+          "scriptType": "Document Generation",
+          "script": "Generate loan agreement with approved terms",
+          "description": "Creates loan documentation and contracts"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_19",
+        "type": "notification",
+        "position": {
+          "x": 550,
+          "y": 2350
+        },
+        "data": {
+          "label": "Approval Notification",
+          "channel": "Email",
+          "recipient": "Loan Applicant",
+          "template": "Loan approval with next steps",
+          "description": "Notifies applicant of approval and contract signing process"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_5",
+        "label": "Default",
+        "condition": "processData.validationPassed === true",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        }
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_4",
+        "label": "Requires Review",
+        "condition": "processData.validationPassed === false"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_6",
+        "label": "Standard Loan (<$100k)",
+        "condition": "processData.loanAmount < 100000"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_7",
+        "label": "High-Value Loan (≥$100k)",
+        "condition": "processData.loanAmount >= 100000"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_5",
+        "target": "node_17",
+        "label": "Timeout Path",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "source": "node_7",
+        "target": "node_8",
+        "label": "Default",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        }
+      },
+      {
+        "id": "edge_10",
+        "source": "node_7",
+        "target": "node_9",
+        "label": "Collateral Check"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_7",
+        "target": "node_10",
+        "label": "Financial Analysis"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_6",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_8",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_9",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_10",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_11",
+        "target": "node_12",
+        "label": "Auto-Approve Eligible",
+        "condition": "processData.riskScore < 0.3"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_11",
+        "target": "node_13",
+        "label": "Requires Review",
+        "condition": "processData.riskScore >= 0.3"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_11",
+        "target": "node_16",
+        "label": "Auto-Reject",
+        "condition": "processData.riskScore > 0.8",
+        "isDefault": true
+      },
+      {
+        "id": "edge_19",
+        "source": "node_12",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_14",
+        "target": "node_15",
+        "label": "Approved",
+        "condition": "processData.managerDecision === 'approved'"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_14",
+        "target": "node_16",
+        "label": "Rejected",
+        "condition": "processData.managerDecision === 'rejected'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_23",
+        "source": "node_15",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_16",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_17",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_26",
+        "source": "node_18",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_27",
+        "source": "node_19",
+        "target": "node_20"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1734910234567",
+    "name": "Enterprise Feedback Management System",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Feedback Received",
+          "trigger": "Customer submits feedback through any channel",
+          "description": "Initiates feedback processing workflow when customer feedback is received",
+          "formId": "workflow_1734910234567_feedback_form",
+          "formName": "Feedback Submission"
+        },
+        "width": 320,
+        "height": 165,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Validate Feedback",
+          "ruleType": "data quality",
+          "rules": [
+            "Required fields present",
+            "Valid contact info",
+            "Feedback length > 10 chars"
+          ],
+          "description": "Ensures feedback data meets quality standards before processing"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "llmTask",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "AI Feedback Analysis",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze this customer feedback and classify it: Feedback: ${processData.feedbackText}, Customer Type: ${processData.customerType}. Provide: 1) Sentiment (positive/negative/neutral), 2) Category (product/service/billing/technical), 3) Priority (low/medium/high/critical), 4) Key issues extracted, 5) Urgency level",
+          "outputVariable": "aiAnalysis",
+          "temperature": 0.3,
+          "maxTokens": 1500,
+          "description": "AI analyzes sentiment, categorizes feedback, determines priority and extracts key issues"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "decision",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "data": {
+          "label": "Severity Assessment",
+          "gatewayType": "exclusive",
+          "condition": "Route based on AI-determined priority and urgency",
+          "description": "Routes feedback based on severity: critical issues for immediate escalation, others for standard processing"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "userTask",
+        "position": {
+          "x": 125,
+          "y": 1100
+        },
+        "data": {
+          "label": "Critical Issue Escalation",
+          "taskName": "escalate_critical",
+          "assignedTo": "senior_manager",
+          "priority": "Critical",
+          "dueDate": "1 hour",
+          "instructions": "Review critical customer feedback immediately and coordinate response",
+          "formId": "workflow_1734910234567_feedback_response_form",
+          "formName": "Feedback Response"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "decision",
+        "position": {
+          "x": 475,
+          "y": 1100
+        },
+        "data": {
+          "label": "Parallel Processing Gateway",
+          "gatewayType": "parallel",
+          "branches": "Customer response and internal routing happen simultaneously",
+          "description": "Splits workflow to handle customer communication and internal assignment in parallel"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "llmTask",
+        "position": {
+          "x": 0,
+          "y": 1350
+        },
+        "data": {
+          "label": "Generate Response",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Generate a professional, empathetic response to this customer feedback: ${processData.feedbackText}. Analysis shows: ${processData.aiAnalysis}. Customer profile: ${processData.customerType}. Include acknowledgment, next steps, and expected timeline.",
+          "outputVariable": "responseText",
+          "temperature": 0.7,
+          "maxTokens": 800,
+          "description": "AI generates personalized response based on feedback analysis and customer profile"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "type": "userTask",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "data": {
+          "label": "Assign to Specialist",
+          "taskName": "assign_specialist",
+          "assignedTo": "team_lead",
+          "priority": "Medium",
+          "dueDate": "4 hours",
+          "instructions": "Assign feedback to appropriate specialist based on category and complexity",
+          "formId": "workflow_1734910234567_feedback_form",
+          "formName": "Feedback Submission"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "type": "endEvent",
+        "position": {
+          "x": 700,
+          "y": 1350
+        },
+        "data": {
+          "label": "Feedback Processed",
+          "result": "Feedback successfully processed and customer notified",
+          "description": "Workflow completes with feedback resolved and all stakeholders notified"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "type": "notification",
+        "position": {
+          "x": 225,
+          "y": 1600
+        },
+        "data": {
+          "label": "Send Customer Response",
+          "channel": "Email",
+          "recipient": "${processData.customerEmail}",
+          "template": "${processData.responseText}",
+          "description": "Sends AI-generated personalized response to customer via email"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "type": "scriptTask",
+        "position": {
+          "x": 575,
+          "y": 1600
+        },
+        "data": {
+          "label": "Parallel Join Gateway",
+          "scriptType": "JavaScript",
+          "script": "// Join parallel paths - customer response sent and specialist assigned",
+          "description": "Synchronizes parallel execution paths before continuing to resolution tracking"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "type": "userTask",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "data": {
+          "label": "Resolve Feedback",
+          "taskName": "resolve_feedback",
+          "assignedTo": "${processData.assignedSpecialist}",
+          "priority": "${processData.aiAnalysis.priority}",
+          "dueDate": "24 hours",
+          "instructions": "Address customer feedback based on analysis and category. Document resolution actions taken.",
+          "formId": "workflow_1734910234567_feedback_form",
+          "formName": "Feedback Submission"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "decision",
+        "position": {
+          "x": 500,
+          "y": 2100
+        },
+        "data": {
+          "label": "Resolution Check",
+          "gatewayType": "exclusive",
+          "condition": "Check if feedback is resolved or requires escalation",
+          "description": "Determines if issue is fully resolved or needs further escalation"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "type": "timerEvent",
+        "position": {
+          "x": 375,
+          "y": 2350
+        },
+        "data": {
+          "label": "Escalation Timer",
+          "timerType": "duration",
+          "duration": "PT48H",
+          "description": "Wait 48 hours before escalating unresolved feedback"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "type": "dataProcess",
+        "position": {
+          "x": 725,
+          "y": 2350
+        },
+        "data": {
+          "label": "Update Analytics",
+          "operation": "data aggregation",
+          "input": "feedback resolution data",
+          "output": "analytics dashboard",
+          "description": "Updates feedback analytics with resolution data for reporting and insights"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "type": "userTask",
+        "position": {
+          "x": 425,
+          "y": 2600
+        },
+        "data": {
+          "label": "Management Escalation",
+          "taskName": "escalate_management",
+          "assignedTo": "department_manager",
+          "priority": "High",
+          "dueDate": "8 hours",
+          "instructions": "Review unresolved feedback and coordinate resolution with relevant teams",
+          "formId": "workflow_1734910234567_feedback_form",
+          "formName": "Feedback Submission"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "type": "notification",
+        "position": {
+          "x": 775,
+          "y": 2600
+        },
+        "data": {
+          "label": "Resolution Notification",
+          "channel": "Email",
+          "recipient": "${processData.customerEmail}",
+          "template": "resolution_confirmation",
+          "description": "Notifies customer that their feedback has been addressed and resolved"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2",
+        "label": "Feedback submitted"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3",
+        "label": "Valid feedback"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4",
+        "label": "Analysis complete"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_4",
+        "target": "node_5",
+        "label": "Critical priority",
+        "condition": "processData.aiAnalysis.priority === 'critical' || processData.aiAnalysis.urgency === 'immediate'"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_6",
+        "label": "Standard processing",
+        "isDefault": true
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_17",
+        "label": "Escalated to leadership"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_6",
+        "target": "node_7",
+        "label": "Default",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        }
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_8",
+        "label": "Assignment path"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_7",
+        "target": "node_9",
+        "label": "Response generated"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_9",
+        "target": "node_10",
+        "label": "Customer notified"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_8",
+        "target": "node_10",
+        "label": "Specialist assigned"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_10",
+        "target": "node_11",
+        "label": "Paths synchronized"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_11",
+        "target": "node_12",
+        "label": "Resolution attempted"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_12",
+        "target": "node_15",
+        "label": "Resolved",
+        "condition": "processData.resolutionStatus === 'resolved'"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_12",
+        "target": "node_13",
+        "label": "Needs escalation",
+        "isDefault": true
+      },
+      {
+        "id": "edge_16",
+        "source": "node_13",
+        "target": "node_14",
+        "label": "Timer expired"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_14",
+        "target": "node_15",
+        "label": "Management resolved"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_15",
+        "target": "node_16",
+        "label": "Analytics updated"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_16",
+        "target": "node_17",
+        "label": "Customer notified"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1737158400",
+    "name": "Comprehensive Library Management System",
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Start Library Operation",
+          "formId": "workflow_1737158400_book_form",
+          "trigger": "User initiates library operation",
+          "formName": "Book Management Form",
+          "description": "Entry point for all library management operations including book requests, returns, and registrations"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Collect Operation Details",
+          "formId": "workflow_1737158400_member_form",
+          "dueDate": "5 minutes",
+          "formName": "Member Registration Form",
+          "priority": "Medium",
+          "taskName": "operation_input",
+          "assignedTo": "library_staff",
+          "instructions": "Enter operation type, user ID, book details, and other relevant information"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "width": 293,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Validate Input Data",
+          "rules": [
+            "User ID format",
+            "Book ISBN format",
+            "Operation type allowed"
+          ],
+          "ruleType": "data_validation",
+          "description": "Validates all input data against library system rules"
+        },
+        "type": "validation",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Route by Operation Type",
+          "condition": "processData.operationType",
+          "description": "Routes workflow based on type of library operation requested",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Process Book Checkout",
+          "formId": "workflow_1737158400_loan_form",
+          "dueDate": "10 minutes",
+          "formName": "Book Loan Form",
+          "priority": "High",
+          "taskName": "book_checkout",
+          "assignedTo": "librarian",
+          "instructions": "Verify user eligibility, check book availability, and process checkout"
+        },
+        "type": "userTask",
+        "position": {
+          "x": -50,
+          "y": 1100
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Process Book Return",
+          "script": "updateBookStatus(bookId, 'available'); calculateLateFees(userId, returnDate);",
+          "scriptType": "JavaScript",
+          "description": "Automatically processes book returns and calculates any late fees"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "New User Registration",
+          "formId": "workflow_1737158400_return_form",
+          "dueDate": "15 minutes",
+          "formName": "Book Return Form",
+          "priority": "Medium",
+          "taskName": "user_registration",
+          "assignedTo": "registration_staff",
+          "instructions": "Collect user details, verify identity, create library card"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 650,
+          "y": 1100
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Check User Eligibility",
+          "condition": "processData.userStatus === 'eligible'",
+          "description": "Determines if user can checkout books based on account status",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 0,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Late Fee Assessment",
+          "condition": "processData.lateFee > 0",
+          "description": "Checks if late fees need to be collected for returned books",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "AI Registration Review",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Review user registration data: ${processData.registrationData}. Check for completeness, flag any potential issues, and recommend approval or additional verification needed.",
+          "maxTokens": 500,
+          "description": "AI-powered review of new user registration for completeness and fraud detection",
+          "temperature": 0.3,
+          "outputVariable": "registrationReview"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 700,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Parallel Processing Gateway",
+          "branches": "Update inventory and send notifications simultaneously",
+          "description": "Splits flow for parallel book processing and notification tasks",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": -300,
+          "y": 1600
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Collect Late Fee Payment",
+          "formId": "workflow_1737158400_book_form",
+          "dueDate": "20 minutes",
+          "formName": "Book Management Form",
+          "priority": "High",
+          "taskName": "fee_collection",
+          "assignedTo": "cashier",
+          "instructions": "Process late fee payment and update user account"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 50,
+          "y": 1600
+        },
+        "width": 282,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Escalation Timer",
+          "duration": "PT30M",
+          "timerType": "duration",
+          "description": "30-minute timer for escalating unresolved eligibility issues"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Manager Override Decision",
+          "formId": "workflow_1737158400_book_form",
+          "dueDate": "15 minutes",
+          "formName": "Book Management Form",
+          "priority": "High",
+          "taskName": "manager_override",
+          "assignedTo": "library_manager",
+          "instructions": "Review ineligible user case and decide on override or rejection"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 750,
+          "y": 1600
+        },
+        "width": 282,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Library Operation Complete",
+          "result": "Operation successfully completed",
+          "description": "All library management tasks completed successfully"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 1100,
+          "y": 1600
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Update Book Inventory",
+          "script": "updateInventoryStatus(bookId, 'checked_out'); logTransaction(userId, bookId, 'checkout');",
+          "scriptType": "JavaScript",
+          "description": "Updates book inventory status and logs the transaction"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 100,
+          "y": 1850
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Send Checkout Confirmation",
+          "channel": "Email",
+          "template": "Book checkout confirmation with due date",
+          "recipient": "processData.userEmail",
+          "description": "Sends confirmation email to user with checkout details"
+        },
+        "type": "notification",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Send Payment Confirmation",
+          "channel": "SMS",
+          "template": "Late fee payment received confirmation",
+          "recipient": "processData.userPhone",
+          "description": "Confirms late fee payment via SMS"
+        },
+        "type": "notification",
+        "position": {
+          "x": 800,
+          "y": 1850
+        },
+        "width": 298,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "input": "Parallel task outputs",
+          "label": "Merge Processing Results",
+          "output": "Combined transaction record",
+          "operation": "data_merge",
+          "description": "Merges inventory updates and notification confirmations into final record"
+        },
+        "type": "dataProcess",
+        "position": {
+          "x": 500,
+          "y": 2100
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "label": "Checkout",
+        "source": "node_4",
+        "target": "node_5",
+        "condition": "processData.operationType === 'checkout'"
+      },
+      {
+        "id": "edge_5",
+        "label": "Return",
+        "source": "node_4",
+        "target": "node_6",
+        "condition": "processData.operationType === 'return'"
+      },
+      {
+        "id": "edge_6",
+        "label": "Registration",
+        "source": "node_4",
+        "target": "node_7",
+        "condition": "processData.operationType === 'registration'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_7",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_10",
+        "label": "Eligible",
+        "source": "node_8",
+        "target": "node_10",
+        "condition": "processData.userStatus === 'eligible'"
+      },
+      {
+        "id": "edge_11",
+        "label": "Ineligible",
+        "source": "node_8",
+        "target": "node_15",
+        "condition": "processData.userStatus === 'ineligible'"
+      },
+      {
+        "id": "edge_12",
+        "label": "Override",
+        "source": "node_8",
+        "target": "node_16",
+        "isDefault": true
+      },
+      {
+        "id": "edge_13",
+        "label": "Has Late Fee",
+        "source": "node_9",
+        "target": "node_13",
+        "condition": "processData.lateFee > 0"
+      },
+      {
+        "id": "edge_14",
+        "label": "No Fee",
+        "source": "node_9",
+        "target": "node_19",
+        "condition": "processData.lateFee === 0",
+        "isDefault": true
+      },
+      {
+        "id": "edge_15",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_10",
+        "target": "node_11",
+        "isDefault": true
+      },
+      {
+        "id": "edge_16",
+        "source": "node_10",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_11",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_12",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_13",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_14",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_22",
+        "label": "Approved",
+        "source": "node_16",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_23",
+        "label": "Rejected",
+        "source": "node_16",
+        "target": "node_19",
+        "isDefault": true
+      },
+      {
+        "id": "edge_24",
+        "source": "node_17",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_18",
+        "target": "node_19"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1703567890123",
+    "name": "Comprehensive Library Management System",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Library Request Initiated",
+          "trigger": "User submits library request",
+          "description": "Starts the comprehensive library management workflow for book requests, returns, reservations, and administrative tasks",
+          "formId": "workflow_1703567890123_form_001",
+          "formName": "book_registration_form"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Validate User Credentials",
+          "ruleType": "User Authentication",
+          "rules": [
+            "Valid library card",
+            "Account in good standing",
+            "No outstanding fines > $50"
+          ],
+          "description": "Validates user eligibility and account status before processing request"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "decision",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "Route by Request Type",
+          "gatewayType": "exclusive",
+          "condition": "Route based on processData.requestType",
+          "description": "Routes workflow based on the type of library service requested"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "scriptTask",
+        "position": {
+          "x": -275,
+          "y": 850
+        },
+        "data": {
+          "label": "Check Book Availability",
+          "scriptType": "JavaScript",
+          "script": "checkBookInventory(processData.bookId, processData.requestDate)",
+          "description": "Queries library database to check book availability and due dates"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "decision",
+        "position": {
+          "x": 75,
+          "y": 850
+        },
+        "data": {
+          "label": "Parallel Return Processing",
+          "gatewayType": "parallel",
+          "branches": "Process return validation, calculate fines, update inventory simultaneously",
+          "description": "Handles multiple aspects of book return processing in parallel"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "type": "userTask",
+        "position": {
+          "x": 425,
+          "y": 850
+        },
+        "data": {
+          "label": "Librarian Approval Required",
+          "taskName": "Special Request Review",
+          "assignedTo": "Head Librarian",
+          "priority": "Medium",
+          "dueDate": "2 business days",
+          "instructions": "Review special collection access request and verify research credentials",
+          "formId": "workflow_1703567890123_form_002",
+          "formName": "member_registration_form"
+        },
+        "width": 294,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "type": "llmTask",
+        "position": {
+          "x": 775,
+          "y": 850
+        },
+        "data": {
+          "label": "AI Request Categorization",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze this library request and categorize it: Type: ${processData.requestType}, Description: ${processData.description}, User History: ${processData.userHistory}. Determine priority level and recommend processing path.",
+          "outputVariable": "aiAnalysis",
+          "temperature": 0.3,
+          "maxTokens": 500,
+          "description": "Uses AI to analyze and categorize complex library requests for optimal routing"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "decision",
+        "position": {
+          "x": -400,
+          "y": 1100
+        },
+        "data": {
+          "label": "Book Status Decision",
+          "gatewayType": "exclusive",
+          "condition": "Based on book availability status",
+          "description": "Determines next action based on book availability - available, reserved, or needs approval"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "scriptTask",
+        "position": {
+          "x": -50,
+          "y": 1100
+        },
+        "data": {
+          "label": "Calculate Late Fees",
+          "scriptType": "JavaScript",
+          "script": "calculateLateFees(processData.dueDate, processData.returnDate, processData.bookType)",
+          "description": "Calculates any late fees based on return date and book type"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "type": "validation",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "data": {
+          "label": "Inspect Book Condition",
+          "ruleType": "Physical Condition",
+          "rules": [
+            "No water damage",
+            "All pages intact",
+            "Cover in good condition",
+            "No excessive wear"
+          ],
+          "description": "Validates physical condition of returned book"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "type": "timerEvent",
+        "position": {
+          "x": 650,
+          "y": 1100
+        },
+        "data": {
+          "label": "Approval Timeout Timer",
+          "timerType": "duration",
+          "duration": "PT48H",
+          "description": "Waits 48 hours for librarian approval before escalation"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "notification",
+        "position": {
+          "x": 1000,
+          "y": 1100
+        },
+        "data": {
+          "label": "Send Status Notification",
+          "channel": "Email",
+          "recipient": "processData.userEmail",
+          "template": "Library request status update with tracking number",
+          "description": "Notifies user of request status and next steps"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "type": "decision",
+        "position": {
+          "x": 0,
+          "y": 1350
+        },
+        "data": {
+          "label": "Merge Return Processing",
+          "gatewayType": "parallel",
+          "branches": "Merge parallel return processing results",
+          "description": "Combines results from parallel return processing tasks"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "type": "scriptTask",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "data": {
+          "label": "Update Library Records",
+          "scriptType": "JavaScript",
+          "script": "updateLibraryDatabase(processData.bookId, processData.userId, processData.transactionType)",
+          "description": "Updates central library database with transaction details"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "type": "userTask",
+        "position": {
+          "x": 700,
+          "y": 1350
+        },
+        "data": {
+          "label": "Handle Escalated Request",
+          "taskName": "Senior Librarian Review",
+          "assignedTo": "Senior Librarian",
+          "priority": "High",
+          "dueDate": "1 business day",
+          "instructions": "Review escalated request that timed out - make final decision on approval",
+          "formId": "workflow_1703567890123_form_003",
+          "formName": "checkout_return_form"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "type": "dataProcess",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "data": {
+          "label": "Generate Usage Analytics",
+          "operation": "Data Aggregation",
+          "input": "Transaction logs and user data",
+          "output": "Analytics dashboard",
+          "description": "Processes transaction data for library usage analytics and reporting"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "type": "endEvent",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "data": {
+          "label": "Library Process Completed",
+          "result": "Request processed successfully",
+          "description": "Library management workflow completed with all tasks processed and records updated"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4",
+        "label": "Book Request",
+        "condition": "processData.requestType === 'checkout'"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_6",
+        "label": "Book Return",
+        "condition": "processData.requestType === 'return'"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_3",
+        "target": "node_9",
+        "label": "Special Collection",
+        "condition": "processData.requestType === 'special'"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_3",
+        "target": "node_11",
+        "label": "Other Requests",
+        "isDefault": true
+      },
+      {
+        "id": "edge_7",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_5",
+        "target": "node_12",
+        "label": "Available",
+        "condition": "processData.bookStatus === 'available'"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_5",
+        "target": "node_9",
+        "label": "Needs Approval",
+        "condition": "processData.bookStatus === 'restricted'"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_5",
+        "target": "node_12",
+        "label": "Create Reservation",
+        "isDefault": true
+      },
+      {
+        "id": "edge_11",
+        "source": "node_6",
+        "target": "node_7",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_6",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_7",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_8",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_10",
+        "target": "node_12",
+        "label": "Approved in Time",
+        "condition": "processData.approvalStatus === 'approved'"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_10",
+        "target": "node_16",
+        "label": "Timeout Escalation",
+        "isDefault": true
+      },
+      {
+        "id": "edge_18",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_12",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_13",
+        "target": "node_14",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_15",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_16",
+        "target": "node_12",
+        "label": "Final Decision",
+        "condition": "processData.escalationDecision !== null"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1735065434",
+    "name": "Travel Ticket Booking Management System",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Start Booking Request",
+          "trigger": "User initiates ticket booking",
+          "description": "Begins the travel ticket booking process",
+          "formId": "workflow_1735065434_form_001",
+          "formName": "customer_booking_request"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Validate Booking Data",
+          "ruleType": "comprehensive",
+          "rules": [
+            "Check required fields",
+            "Validate dates",
+            "Verify passenger info",
+            "Check destination validity"
+          ],
+          "description": "Validates all booking request data for completeness and accuracy"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "decision",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "Booking Type Decision",
+          "gatewayType": "exclusive",
+          "condition": "Route based on booking complexity",
+          "description": "Determines processing path based on booking type and value"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "scriptTask",
+        "position": {
+          "x": 75,
+          "y": 850
+        },
+        "data": {
+          "label": "Check Flight Availability",
+          "scriptType": "API",
+          "script": "Query airline systems for available flights",
+          "description": "Searches for available flights matching criteria"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "decision",
+        "position": {
+          "x": 425,
+          "y": 850
+        },
+        "data": {
+          "label": "Multi-City Processing",
+          "gatewayType": "parallel",
+          "branches": "Process multiple segments simultaneously",
+          "description": "Parallel processing for complex multi-city bookings"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "decision",
+        "position": {
+          "x": -50,
+          "y": 1100
+        },
+        "data": {
+          "label": "Availability Check",
+          "gatewayType": "exclusive",
+          "condition": "Check if seats available",
+          "description": "Determines if requested flights have available seats"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "scriptTask",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "data": {
+          "label": "Check Hotels",
+          "scriptType": "API",
+          "script": "Query hotel booking systems",
+          "description": "Searches for available hotel accommodations"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "type": "scriptTask",
+        "position": {
+          "x": 650,
+          "y": 1100
+        },
+        "data": {
+          "label": "Check Car Rentals",
+          "scriptType": "API",
+          "script": "Query car rental systems",
+          "description": "Searches for available car rental options"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "type": "userTask",
+        "position": {
+          "x": 0,
+          "y": 1350
+        },
+        "data": {
+          "label": "Customer Selection",
+          "taskName": "select_booking_options",
+          "assignedTo": "customer",
+          "priority": "High",
+          "dueDate": "30 minutes",
+          "instructions": "Select preferred flights and options from available choices",
+          "formId": "workflow_1735065434_form_002",
+          "formName": "booking_confirmation_form"
+        },
+        "width": 299,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "type": "decision",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "data": {
+          "label": "Merge Parallel Results",
+          "gatewayType": "parallel",
+          "branches": "Join all booking component results",
+          "description": "Combines results from parallel booking checks"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_19",
+        "type": "notification",
+        "position": {
+          "x": 700,
+          "y": 1350
+        },
+        "data": {
+          "label": "No Availability Alert",
+          "channel": "Email",
+          "recipient": "customer",
+          "template": "no_availability",
+          "description": "Notifies customer that requested flights are not available"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "type": "timerEvent",
+        "position": {
+          "x": 50,
+          "y": 1600
+        },
+        "data": {
+          "label": "Selection Timeout",
+          "timerType": "duration",
+          "duration": "PT30M",
+          "description": "30-minute timeout for customer selection"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "llmTask",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "data": {
+          "label": "AI Booking Optimization",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze the booking options and recommend the best combination based on cost, convenience, and customer preferences: ${processData.bookingOptions}",
+          "outputVariable": "aiRecommendation",
+          "temperature": 0.3,
+          "maxTokens": 1000,
+          "description": "Uses AI to optimize booking selection and provide recommendations"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_20",
+        "type": "endEvent",
+        "position": {
+          "x": 750,
+          "y": 1600
+        },
+        "data": {
+          "label": "Booking Failed",
+          "result": "No availability - booking unsuccessful",
+          "description": "Booking process ended due to lack of availability"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "type": "decision",
+        "position": {
+          "x": 275,
+          "y": 1850
+        },
+        "data": {
+          "label": "Payment Decision",
+          "gatewayType": "exclusive",
+          "condition": "Check payment amount threshold",
+          "description": "Routes to appropriate payment processing based on amount"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_21",
+        "type": "notification",
+        "position": {
+          "x": 625,
+          "y": 1850
+        },
+        "data": {
+          "label": "Timeout Notification",
+          "channel": "Email",
+          "recipient": "customer",
+          "template": "selection_timeout",
+          "description": "Notifies customer that selection time has expired"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "type": "scriptTask",
+        "position": {
+          "x": 150,
+          "y": 2100
+        },
+        "data": {
+          "label": "Process Payment",
+          "scriptType": "API",
+          "script": "Process payment through payment gateway",
+          "description": "Handles payment processing and fraud detection"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "type": "userTask",
+        "position": {
+          "x": 500,
+          "y": 2100
+        },
+        "data": {
+          "label": "Manager Approval",
+          "taskName": "approve_high_value_booking",
+          "assignedTo": "booking_manager",
+          "priority": "High",
+          "dueDate": "2 hours",
+          "instructions": "Review and approve high-value booking request",
+          "formId": "workflow_1735065434_form_003",
+          "formName": "ticket_management_form"
+        },
+        "width": 288,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_22",
+        "type": "endEvent",
+        "position": {
+          "x": 850,
+          "y": 2100
+        },
+        "data": {
+          "label": "Timeout End",
+          "result": "Booking cancelled due to timeout",
+          "description": "Booking process ended due to customer timeout"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "type": "scriptTask",
+        "position": {
+          "x": 550,
+          "y": 2350
+        },
+        "data": {
+          "label": "Confirm Booking",
+          "scriptType": "API",
+          "script": "Confirm booking with all providers",
+          "description": "Finalizes booking with airlines, hotels, and car rental companies"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "type": "notification",
+        "position": {
+          "x": 600,
+          "y": 2600
+        },
+        "data": {
+          "label": "Send Confirmation",
+          "channel": "Email",
+          "recipient": "customer",
+          "template": "booking_confirmation",
+          "description": "Sends booking confirmation email with tickets and details"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_18",
+        "type": "endEvent",
+        "position": {
+          "x": 650,
+          "y": 2850
+        },
+        "data": {
+          "label": "Booking Complete",
+          "result": "Successful booking completion",
+          "description": "Travel booking process completed successfully"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4",
+        "label": "Simple Booking",
+        "condition": "processData.bookingType === 'simple'"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_6",
+        "label": "Multi-City Booking",
+        "condition": "processData.bookingType === 'multi-city'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_9",
+        "label": "Available",
+        "condition": "processData.seatsAvailable === true"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_19",
+        "label": "Not Available",
+        "condition": "processData.seatsAvailable === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_7",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_6",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_7",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_8",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_10",
+        "target": "node_21"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_11",
+        "target": "node_12",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_9",
+        "target": "node_12",
+        "label": "Selection Made"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_13",
+        "target": "node_14",
+        "label": "Standard Amount",
+        "condition": "processData.totalAmount < 5000"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_13",
+        "target": "node_15",
+        "label": "High Value",
+        "condition": "processData.totalAmount >= 5000",
+        "isDefault": true
+      },
+      {
+        "id": "edge_19",
+        "source": "node_14",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_16",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_17",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_19",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_21",
+        "target": "node_22"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1704123456789",
+    "name": "Library Management System",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Start Library Process",
+          "trigger": "User initiates library operation",
+          "description": "Begins library management workflow for book requests, returns, or administrative tasks",
+          "formId": "workflow_1704123456789_form_001",
+          "formName": "member_registration_form"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "type": "userTask",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "data": {
+          "label": "Submit Library Request",
+          "taskName": "library_request_form",
+          "assignedTo": "Library User",
+          "priority": "Medium",
+          "dueDate": "1 day",
+          "instructions": "Select operation type and provide required details",
+          "formId": "workflow_1704123456789_form_002",
+          "formName": "book_acquisition_form"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "type": "validation",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "data": {
+          "label": "Validate Request Data",
+          "ruleType": "Form Validation",
+          "rules": [
+            "Required fields present",
+            "Valid member ID",
+            "Valid ISBN format"
+          ],
+          "description": "Validates user input and member credentials"
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "type": "decision",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "data": {
+          "label": "Route by Operation Type",
+          "gatewayType": "exclusive",
+          "condition": "processData.operationType",
+          "description": "Routes workflow based on selected library operation"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "type": "scriptTask",
+        "position": {
+          "x": -225,
+          "y": 1100
+        },
+        "data": {
+          "label": "Check Book Availability",
+          "scriptType": "JavaScript",
+          "script": "Query catalog database for book availability and location",
+          "description": "Searches library catalog and checks book status"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "type": "scriptTask",
+        "position": {
+          "x": 125,
+          "y": 1100
+        },
+        "data": {
+          "label": "Process Book Return",
+          "scriptType": "JavaScript",
+          "script": "Scan returned book, check condition, calculate fees",
+          "description": "Handles book return processing and fee calculation"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "type": "llmTask",
+        "position": {
+          "x": 475,
+          "y": 1100
+        },
+        "data": {
+          "label": "AI Book Recommendation",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Based on user's borrowing history: ${processData.userHistory}, recommend 3 books in similar genres with brief descriptions",
+          "outputVariable": "recommendations",
+          "temperature": 0.7,
+          "maxTokens": 1000,
+          "description": "Generates personalized book recommendations using AI"
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "type": "userTask",
+        "position": {
+          "x": 825,
+          "y": 1100
+        },
+        "data": {
+          "label": "Admin Approval Required",
+          "taskName": "admin_approval",
+          "assignedTo": "Library Administrator",
+          "priority": "High",
+          "dueDate": "4 hours",
+          "instructions": "Review special request and approve/deny based on library policy",
+          "formId": "workflow_1704123456789_form_003",
+          "formName": "book_checkout_system"
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "type": "decision",
+        "position": {
+          "x": -175,
+          "y": 1350
+        },
+        "data": {
+          "label": "Book Available?",
+          "gatewayType": "exclusive",
+          "condition": "processData.bookAvailable === true",
+          "description": "Checks if requested book is available for checkout"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "type": "decision",
+        "position": {
+          "x": 175,
+          "y": 1350
+        },
+        "data": {
+          "label": "Late Return?",
+          "gatewayType": "exclusive",
+          "condition": "processData.returnDate > processData.dueDate",
+          "description": "Checks if book is returned after due date"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "type": "timerEvent",
+        "position": {
+          "x": 525,
+          "y": 1350
+        },
+        "data": {
+          "label": "Approval Timeout",
+          "timerType": "duration",
+          "duration": "PT4H",
+          "description": "4-hour timeout for admin approval response"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "type": "notification",
+        "position": {
+          "x": 875,
+          "y": 1350
+        },
+        "data": {
+          "label": "Send Confirmation",
+          "channel": "Email",
+          "recipient": "User and Library Staff",
+          "template": "Library transaction confirmation with details",
+          "description": "Sends confirmation notification to all parties"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "type": "decision",
+        "position": {
+          "x": -300,
+          "y": 1600
+        },
+        "data": {
+          "label": "Process Parallel Tasks",
+          "gatewayType": "parallel",
+          "branches": "Reserve book, Update catalog, Generate checkout slip",
+          "description": "Parallel processing for book checkout operations"
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 1600
+        },
+        "data": {
+          "label": "Calculate Late Fees",
+          "scriptType": "JavaScript",
+          "script": "Calculate overdue fees based on library policy",
+          "description": "Computes late return penalties"
+        },
+        "width": 280,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "node_18",
+        "type": "notification",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "data": {
+          "label": "Add to Waitlist",
+          "channel": "Email",
+          "recipient": "Requesting User",
+          "template": "Book unavailable - added to waitlist notification",
+          "description": "Notifies user of waitlist placement"
+        },
+        "width": 292,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "node_19",
+        "type": "notification",
+        "position": {
+          "x": 750,
+          "y": 1600
+        },
+        "data": {
+          "label": "Escalation Alert",
+          "channel": "Email",
+          "recipient": "Head Librarian",
+          "template": "Approval timeout - manual intervention required",
+          "description": "Escalates unresolved admin approval to head librarian"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_20",
+        "type": "endEvent",
+        "position": {
+          "x": 1100,
+          "y": 1600
+        },
+        "data": {
+          "label": "Library Process Complete",
+          "result": "Library operation successfully completed",
+          "description": "All library management tasks finalized"
+        },
+        "width": 314,
+        "height": 80,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "type": "scriptTask",
+        "position": {
+          "x": 100,
+          "y": 1850
+        },
+        "data": {
+          "label": "Reserve Book",
+          "scriptType": "JavaScript",
+          "script": "Mark book as reserved in system and set hold timer",
+          "description": "Places hold on book for user pickup"
+        },
+        "width": 302,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "type": "dataProcess",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "data": {
+          "label": "Update Catalog Status",
+          "operation": "Database Update",
+          "input": "Book reservation data",
+          "output": "Updated catalog record",
+          "description": "Updates book status in library catalog system"
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "type": "scriptTask",
+        "position": {
+          "x": 800,
+          "y": 1850
+        },
+        "data": {
+          "label": "Generate Checkout Slip",
+          "scriptType": "JavaScript",
+          "script": "Create digital checkout receipt with due date",
+          "description": "Generates checkout documentation for user"
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_4",
+        "target": "node_5",
+        "label": "Book Checkout",
+        "condition": "processData.operationType === 'checkout'"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_11",
+        "label": "Book Return",
+        "condition": "processData.operationType === 'return'"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_4",
+        "target": "node_14",
+        "label": "Recommendations",
+        "condition": "processData.operationType === 'recommend'"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_4",
+        "target": "node_15",
+        "label": "Admin Request",
+        "condition": "processData.operationType === 'admin'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_8",
+        "source": "node_5",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_6",
+        "target": "node_7",
+        "label": "Available",
+        "condition": "processData.bookAvailable === true"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_6",
+        "target": "node_18",
+        "label": "Unavailable",
+        "condition": "processData.bookAvailable === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_11",
+        "source": "node_7",
+        "target": "node_8",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_7",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_7",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_8",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_9",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_10",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_12",
+        "target": "node_13",
+        "label": "Late Return",
+        "condition": "processData.returnDate > processData.dueDate"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_12",
+        "target": "node_17",
+        "label": "On Time",
+        "condition": "processData.returnDate <= processData.dueDate",
+        "isDefault": true
+      },
+      {
+        "id": "edge_20",
+        "source": "node_13",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_14",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_15",
+        "target": "node_17",
+        "label": "Approved"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_16",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_17",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_26",
+        "source": "node_18",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_27",
+        "source": "node_19",
+        "target": "node_20"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1703820000000",
+    "name": "Library Management System Complex Workflow",
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Library Member Request",
+          "formId": "member-registration-form",
+          "trigger": "Member initiates book search and checkout request",
+          "formName": "MemberRegistrationForm",
+          "description": "Starts when a library member wants to search catalog or checkout books"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "width": 320,
+        "height": 165,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Validate Member Status",
+          "rules": [
+            "Check active membership",
+            "Verify member not suspended",
+            "Check outstanding fines"
+          ],
+          "ruleType": "membership_validation",
+          "description": "Validates member eligibility for library services"
+        },
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "width": 320,
+        "height": 207,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Member Status Check",
+          "condition": "processData.memberStatus === 'active' && processData.outstandingFines < 50",
+          "description": "Routes based on member eligibility",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "width": 320,
+        "height": 134,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Catalog Search",
+          "formId": "book-checkout-form",
+          "formName": "BookCheckoutForm",
+          "priority": "Medium",
+          "taskName": "search_catalog",
+          "assignedTo": "member",
+          "instructions": "Search for books by title, author, or category"
+        },
+        "type": "userTask",
+        "position": {
+          "x": -100,
+          "y": 850
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Handle Book Return",
+          "formId": "member-registration-form",
+          "formName": "MemberRegistrationForm",
+          "priority": "Medium",
+          "taskName": "process_return",
+          "assignedTo": "librarian",
+          "instructions": "Process book return and check condition"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "width": 287,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Send Membership Issue Notice",
+          "channel": "Email",
+          "template": "membership_issue",
+          "recipient": "processData.memberEmail",
+          "description": "Notifies member about membership or fine issues"
+        },
+        "type": "notification",
+        "position": {
+          "x": 600,
+          "y": 850
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Check Book Availability",
+          "script": "checkBookAvailability(processData.selectedBooks)",
+          "scriptType": "JavaScript",
+          "description": "Verifies selected books are available for checkout"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -50,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Update Book Status",
+          "script": "updateBookStatus(processData.returnedBooks, 'available')",
+          "scriptType": "JavaScript",
+          "description": "Marks returned books as available in system"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_20",
+        "data": {
+          "label": "Workflow Complete",
+          "result": "Library operation completed successfully",
+          "description": "All library transactions and notifications processed"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 650,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Book Availability Decision",
+          "condition": "processData.booksAvailable === true",
+          "description": "Routes based on book availability",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 134,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Librarian Approval",
+          "formId": "book-return-form",
+          "formName": "BookReturnForm",
+          "priority": "High",
+          "taskName": "approve_checkout",
+          "assignedTo": "librarian",
+          "instructions": "Review and approve book checkout request"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 225,
+          "y": 1600
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Create Book Reservation",
+          "formId": "member-registration-form",
+          "formName": "MemberRegistrationForm",
+          "priority": "Low",
+          "taskName": "create_reservation",
+          "assignedTo": "member",
+          "instructions": "Place reservation for unavailable book"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 575,
+          "y": 1600
+        },
+        "width": 287,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Approval Decision",
+          "branches": "Process checkout and setup tracking",
+          "description": "Parallel processing after approval",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "width": 320,
+        "height": 134,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Process Checkout",
+          "script": "processBookCheckout(processData.selectedBooks, processData.memberId)",
+          "scriptType": "JavaScript",
+          "description": "Updates book status and creates transaction record"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 150,
+          "y": 2100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Setup Due Date Tracking",
+          "script": "setupDueDateTracking(processData.transactionId)",
+          "scriptType": "JavaScript",
+          "description": "Creates due date reminders and tracking"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 500,
+          "y": 2100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Send Checkout Confirmation",
+          "channel": "Email",
+          "template": "checkout_confirmation",
+          "recipient": "processData.memberEmail",
+          "description": "Confirms successful book checkout to member"
+        },
+        "type": "notification",
+        "position": {
+          "x": 850,
+          "y": 2100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Due Date Monitor",
+          "duration": "P13D",
+          "timerType": "duration",
+          "description": "Waits until 1 day before due date for reminder"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 550,
+          "y": 2350
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "AI Overdue Assessment",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze member ${processData.memberId} checkout history and current status. Generate personalized overdue notice if books are overdue: ${processData.checkedOutBooks}",
+          "maxTokens": 500,
+          "description": "AI analyzes member behavior and generates appropriate overdue communications",
+          "temperature": 0.3,
+          "outputVariable": "overdueAnalysis"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 600,
+          "y": 2600
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Overdue Status Check",
+          "condition": "processData.isOverdue === true",
+          "description": "Routes based on whether books are actually overdue",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 650,
+          "y": 2850
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Send Overdue Notice",
+          "channel": "Email",
+          "template": "overdue_notice",
+          "recipient": "processData.memberEmail",
+          "description": "Sends personalized overdue notice with fees"
+        },
+        "type": "notification",
+        "position": {
+          "x": 700,
+          "y": 3100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "label": "Active Member",
+        "source": "node_3",
+        "target": "node_4",
+        "condition": "processData.memberStatus === 'active' && processData.outstandingFines < 50"
+      },
+      {
+        "id": "edge_4",
+        "label": "Membership Issue",
+        "source": "node_3",
+        "target": "node_19",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_7",
+        "label": "Books Available",
+        "source": "node_6",
+        "target": "node_7",
+        "condition": "processData.booksAvailable === true"
+      },
+      {
+        "id": "edge_8",
+        "label": "Books Unavailable",
+        "source": "node_6",
+        "target": "node_18",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "source": "node_7",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_10",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_8",
+        "target": "node_9",
+        "isDefault": true
+      },
+      {
+        "id": "edge_11",
+        "label": "Setup Tracking",
+        "source": "node_8",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_12",
+        "label": "Send Confirmation",
+        "source": "node_8",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_9",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_10",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_18",
+        "label": "Books Overdue",
+        "source": "node_14",
+        "target": "node_15",
+        "condition": "processData.isOverdue === true"
+      },
+      {
+        "id": "edge_19",
+        "label": "No Action Needed",
+        "source": "node_14",
+        "target": "node_20",
+        "isDefault": true
+      },
+      {
+        "id": "edge_20",
+        "source": "node_15",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_21",
+        "label": "Return Process",
+        "source": "node_3",
+        "target": "node_16",
+        "condition": "processData.action === 'return'"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_16",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_17",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_18",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_19",
+        "target": "node_20"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1736376245",
+    "name": "Customer Management System Workflow",
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Start Customer Management Process",
+          "formId": "customer-registration-form-001",
+          "trigger": "Customer service team initiates customer onboarding or profile management",
+          "formName": "CustomerRegistrationForm",
+          "description": "Entry point for customer management system workflows"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "width": 320,
+        "height": 199,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Process Type Decision",
+          "condition": "processData.action_type",
+          "description": "Determine if this is new customer onboarding or existing customer management",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Validate Customer Data",
+          "rules": [
+            "Email format validation",
+            "Phone number format",
+            "Required fields check"
+          ],
+          "ruleType": "Customer Information",
+          "description": "Validates incoming customer registration data for completeness and format"
+        },
+        "type": "validation",
+        "position": {
+          "x": 25,
+          "y": 600
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Customer Profile Management",
+          "formId": "interaction-log-form",
+          "dueDate": "1 day",
+          "formName": "InteractionLogForm",
+          "priority": "Medium",
+          "taskName": "update_profile",
+          "assignedTo": "Customer Service Representative",
+          "instructions": "Update existing customer profile with new information or handle profile maintenance"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 375,
+          "y": 600
+        },
+        "width": 301,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Data Validation Result",
+          "condition": "processData.validation_status",
+          "description": "Check if customer data validation passed or failed",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 75,
+          "y": 850
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Log Customer Activity",
+          "script": "logCustomerInteraction(processData)",
+          "scriptType": "JavaScript",
+          "description": "Records customer interaction and activity in the system log for tracking purposes"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 425,
+          "y": 850
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "AI Customer Categorization",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze the customer profile and categorize them based on: Industry: ${processData.industry}, Company size: ${processData.company_size}, Location: ${processData.address}. Assign appropriate customer segment (Enterprise, SMB, Individual) and priority level.",
+          "maxTokens": 500,
+          "description": "Uses AI to automatically categorize new customers and assign priority levels",
+          "temperature": 0.3,
+          "outputVariable": "customer_category"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": -50,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Status Update Required",
+          "condition": "processData.status_change_required",
+          "description": "Determine if customer status needs to be updated (active, inactive, pending)",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Validation Timeout",
+          "duration": "PT10M",
+          "timerType": "duration",
+          "description": "Timeout for validation process to prevent workflow hanging"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 650,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Parallel Profile Setup",
+          "branches": "Profile creation, access setup, and notification preparation",
+          "description": "Execute multiple profile setup tasks in parallel for efficiency",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": -175,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Manager Approval for Status Change",
+          "formId": "customer-registration-form-001",
+          "dueDate": "4 hours",
+          "formName": "CustomerRegistrationForm",
+          "priority": "High",
+          "taskName": "approve_status_change",
+          "assignedTo": "Customer Service Manager",
+          "instructions": "Review and approve customer status change based on interaction history and business rules"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 175,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 106,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "AI Analytics & Reporting",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze customer data and generate insights: Customer interactions: ${processData.interaction_history}, Status changes: ${processData.status_history}, Profile data: ${processData.customer_profile}. Provide recommendations for customer engagement and identify trends.",
+          "maxTokens": 1500,
+          "description": "Generates AI-powered analytics and insights about customer patterns and recommendations",
+          "temperature": 0.5,
+          "outputVariable": "analytics_report"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 525,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Error Alert",
+          "channel": "Email",
+          "template": "Validation timeout or error occurred in customer management workflow",
+          "recipient": "IT Support Team",
+          "description": "Alerts IT team when validation fails or times out"
+        },
+        "type": "notification",
+        "position": {
+          "x": 875,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Create Customer Profile",
+          "script": "createCustomerProfile(processData)",
+          "scriptType": "JavaScript",
+          "description": "Creates new customer record in the database with all validated information"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -125,
+          "y": 1600
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Setup Role-Based Access",
+          "formId": "customer-profile-form",
+          "dueDate": "2 hours",
+          "formName": "CustomerProfileForm",
+          "priority": "Medium",
+          "taskName": "configure_access",
+          "assignedTo": "IT Admin",
+          "instructions": "Configure appropriate access levels based on customer category and internal policies"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 225,
+          "y": 1600
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Welcome Notification",
+          "channel": "Email",
+          "template": "Welcome email with account details and next steps",
+          "recipient": "processData.customer_email",
+          "description": "Sends welcome email to new customer with relevant information"
+        },
+        "type": "notification",
+        "position": {
+          "x": 575,
+          "y": 1600
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Customer Management Complete",
+          "result": "Customer successfully processed and managed in the system",
+          "description": "Successful completion of customer management workflow with all tasks completed"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 925,
+          "y": 1600
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Merge Parallel Tasks",
+          "branches": "Convergence point for parallel profile setup tasks",
+          "description": "Wait for all parallel profile setup tasks to complete before proceeding",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "label": "New Customer",
+        "source": "node_2",
+        "target": "node_3",
+        "condition": "processData.action_type === 'new_customer'"
+      },
+      {
+        "id": "edge_3",
+        "label": "Existing Customer",
+        "source": "node_2",
+        "target": "node_11",
+        "condition": "processData.action_type === 'existing_customer'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_5",
+        "label": "Validation Passed",
+        "source": "node_4",
+        "target": "node_5",
+        "condition": "processData.validation_status === 'passed'"
+      },
+      {
+        "id": "edge_6",
+        "label": "Validation Failed",
+        "source": "node_4",
+        "target": "node_16",
+        "condition": "processData.validation_status === 'failed'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_8",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_6",
+        "target": "node_7",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "label": "Access Setup Path",
+        "source": "node_6",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_10",
+        "label": "Notification Path",
+        "source": "node_6",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_7",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_8",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_14",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_10",
+        "target": "node_15",
+        "isDefault": true
+      },
+      {
+        "id": "edge_15",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_17",
+        "label": "Status Change Required",
+        "source": "node_13",
+        "target": "node_14",
+        "condition": "processData.status_change_required === true"
+      },
+      {
+        "id": "edge_18",
+        "label": "No Status Change",
+        "source": "node_13",
+        "target": "node_15",
+        "condition": "processData.status_change_required === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_19",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_15",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_16",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_17",
+        "target": "node_18"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1736783492",
+    "name": "Employee Onboarding System",
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "New Hire Onboarding Request",
+          "formId": "new-hire-intake-form",
+          "trigger": "New employee start date scheduled",
+          "formName": "NewHireIntakeForm",
+          "description": "Initiates the comprehensive employee onboarding workflow"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "width": 320,
+        "height": 165,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Submit Personal Information",
+          "formId": "task-management-form",
+          "dueDate": "3 days before start date",
+          "formName": "TaskManagementForm",
+          "priority": "High",
+          "taskName": "new_hire_registration",
+          "assignedTo": "New Employee",
+          "instructions": "Complete personal information form with contact details, emergency contacts, and basic employment information"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "width": 287,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Validate Submission",
+          "rules": [
+            "All required fields completed",
+            "Valid email format",
+            "Emergency contact provided"
+          ],
+          "ruleType": "completeness_check",
+          "description": "Validates new hire information for completeness and accuracy"
+        },
+        "type": "validation",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "width": 320,
+        "height": 193,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Information Complete?",
+          "condition": "processData.validation_status === 'complete'",
+          "description": "Checks if all required information has been provided correctly",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Document Review & Verification",
+          "formId": "new-hire-intake-form",
+          "dueDate": "2 days",
+          "formName": "NewHireIntakeForm",
+          "priority": "High",
+          "taskName": "hr_document_review",
+          "assignedTo": "HR Administrator",
+          "instructions": "Review submitted documents, verify identity, and approve employment eligibility"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 125,
+          "y": 1100
+        },
+        "width": 311,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_22",
+        "data": {
+          "label": "Request Information Correction",
+          "channel": "Email",
+          "template": "Please complete missing information or correct errors in your onboarding form",
+          "recipient": "New Employee",
+          "description": "Notifies new hire of incomplete or incorrect information"
+        },
+        "type": "notification",
+        "position": {
+          "x": 475,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "AI Document Analysis",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze these employment documents and extract key information: Employee Name: ${processData.full_name}, Position: ${processData.position}, Department: ${processData.department}, Documents uploaded: ${processData.documents_list}. Identify any missing required documents and compliance issues.",
+          "maxTokens": 1500,
+          "description": "AI-powered analysis of submitted documents for completeness and compliance",
+          "temperature": 0.3,
+          "outputVariable": "document_analysis"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Documents Approved?",
+          "condition": "processData.hr_approval === 'approved'",
+          "description": "Determines if HR has approved all submitted documentation",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Create Employee Profile",
+          "script": "createEmployeeRecord(processData.employee_info, processData.hr_approval_data)",
+          "scriptType": "JavaScript",
+          "description": "Automatically creates employee profile in HR system with approved information"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 275,
+          "y": 1850
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_23",
+        "data": {
+          "label": "Document Rejection Notice",
+          "channel": "Email",
+          "template": "Documents require additional review or resubmission",
+          "recipient": "New Employee, HR Administrator",
+          "description": "Alerts of document issues requiring correction"
+        },
+        "type": "notification",
+        "position": {
+          "x": 625,
+          "y": 1850
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Parallel Provisioning Split",
+          "branches": "IT Setup, Equipment Assignment, Training Assignment, Mentor Assignment",
+          "description": "Initiates parallel provisioning processes for new employee",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 500,
+          "y": 2100
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "IT Account Provisioning",
+          "formId": "new-hire-intake-form",
+          "dueDate": "1 day before start date",
+          "formName": "NewHireIntakeForm",
+          "priority": "High",
+          "taskName": "it_account_setup",
+          "assignedTo": "IT Support",
+          "instructions": "Create user accounts, email, system access based on role and department requirements"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 25,
+          "y": 2350
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Equipment Assignment",
+          "formId": "new-hire-intake-form",
+          "dueDate": "1 day before start date",
+          "formName": "NewHireIntakeForm",
+          "priority": "Medium",
+          "taskName": "equipment_provisioning",
+          "assignedTo": "Facilities Team",
+          "instructions": "Assign laptop, monitor, phone, office supplies, and workspace based on role requirements"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 375,
+          "y": 2350
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "AI Training Path Assignment",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Based on employee role: ${processData.position}, department: ${processData.department}, and experience level: ${processData.experience_level}, recommend appropriate training modules from our catalog: ${processData.training_catalog}. Consider compliance requirements and role-specific skills needed.",
+          "maxTokens": 1000,
+          "description": "AI determines optimal training path based on role, department, and experience",
+          "temperature": 0.4,
+          "outputVariable": "training_assignments"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 725,
+          "y": 2350
+        },
+        "width": 320,
+        "height": 159,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Mentor Assignment",
+          "formId": "new-hire-intake-form",
+          "dueDate": "2 days",
+          "formName": "NewHireIntakeForm",
+          "priority": "Medium",
+          "taskName": "mentor_assignment",
+          "assignedTo": "Department Manager",
+          "instructions": "Assign experienced team member as mentor and schedule initial meeting"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 1075,
+          "y": 2350
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Wait for Provisioning",
+          "duration": "PT24H",
+          "timerType": "duration",
+          "description": "Allows time for all provisioning tasks to complete before first day"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 600,
+          "y": 2600
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "All Systems Ready?",
+          "condition": "processData.it_ready === 'true' && processData.equipment_ready === 'true'",
+          "description": "Verifies all systems and equipment are ready for employee start date",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 650,
+          "y": 2850
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "First Day Orientation",
+          "formId": "new-hire-intake-form",
+          "dueDate": "Employee start date",
+          "formName": "NewHireIntakeForm",
+          "priority": "High",
+          "taskName": "first_day_orientation",
+          "assignedTo": "Department Manager",
+          "instructions": "Conduct welcome session, office tour, team introductions, and initial setup"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 525,
+          "y": 3100
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_24",
+        "data": {
+          "label": "Escalation Alert",
+          "channel": "Email",
+          "template": "Onboarding delayed - systems not ready for new employee start date",
+          "recipient": "HR Manager, IT Manager",
+          "description": "Escalates when provisioning is not completed on time"
+        },
+        "type": "notification",
+        "position": {
+          "x": 875,
+          "y": 3100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Complete Required Training",
+          "formId": "new-hire-intake-form",
+          "dueDate": "Within first week",
+          "formName": "NewHireIntakeForm",
+          "priority": "High",
+          "taskName": "mandatory_training",
+          "assignedTo": "New Employee",
+          "instructions": "Complete all assigned training modules including compliance, safety, and role-specific training"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 750,
+          "y": 3350
+        },
+        "width": 283,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "30-Day Check-in Timer",
+          "duration": "P30D",
+          "timerType": "duration",
+          "description": "Triggers 30-day onboarding review and feedback collection"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 800,
+          "y": 3600
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "30-Day Review",
+          "formId": "new-hire-intake-form",
+          "dueDate": "Day 30",
+          "formName": "NewHireIntakeForm",
+          "priority": "Medium",
+          "taskName": "thirty_day_review",
+          "assignedTo": "Department Manager",
+          "instructions": "Conduct 30-day check-in, gather feedback, address any concerns, and update training plan if needed"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 850,
+          "y": 3850
+        },
+        "width": 280,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_20",
+        "data": {
+          "label": "Onboarding Completion Notification",
+          "channel": "Email",
+          "template": "Employee onboarding completed successfully. All milestones achieved.",
+          "recipient": "HR Administrator, Department Manager, New Employee",
+          "description": "Notifies stakeholders of successful onboarding completion"
+        },
+        "type": "notification",
+        "position": {
+          "x": 900,
+          "y": 4100
+        },
+        "width": 320,
+        "height": 151,
+        "draggable": true
+      },
+      {
+        "id": "node_21",
+        "data": {
+          "label": "Onboarding Complete",
+          "result": "Employee successfully onboarded",
+          "description": "New employee is fully integrated and ready for productive work"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 950,
+          "y": 4350
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "label": "Complete",
+        "source": "node_4",
+        "target": "node_5",
+        "condition": "processData.validation_status === 'complete'"
+      },
+      {
+        "id": "edge_5",
+        "label": "Incomplete",
+        "source": "node_4",
+        "target": "node_22",
+        "isDefault": true
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_9",
+        "label": "Approved",
+        "source": "node_7",
+        "target": "node_8",
+        "condition": "processData.hr_approval === 'approved'"
+      },
+      {
+        "id": "edge_10",
+        "label": "Rejected",
+        "source": "node_7",
+        "target": "node_23",
+        "isDefault": true
+      },
+      {
+        "id": "edge_12",
+        "source": "node_8",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_13",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_9",
+        "target": "node_10",
+        "isDefault": true
+      },
+      {
+        "id": "edge_14",
+        "label": "Equipment Branch",
+        "source": "node_9",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_15",
+        "label": "Training Branch",
+        "source": "node_9",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_16",
+        "label": "Mentor Branch",
+        "source": "node_9",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_10",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_11",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_12",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_22",
+        "label": "Ready",
+        "source": "node_15",
+        "target": "node_16",
+        "condition": "processData.it_ready === 'true' && processData.equipment_ready === 'true'"
+      },
+      {
+        "id": "edge_23",
+        "label": "Not Ready",
+        "source": "node_15",
+        "target": "node_24",
+        "isDefault": true
+      },
+      {
+        "id": "edge_25",
+        "source": "node_16",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_26",
+        "source": "node_17",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_27",
+        "source": "node_18",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_28",
+        "source": "node_19",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_29",
+        "source": "node_20",
+        "target": "node_21"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1734746875432",
+    "name": "Employee Leave Management Approval Workflow",
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Employee Submits Leave Request",
+          "trigger": "Leave Request Form Submission",
+          "formName": "Leave Request Submission Form",
+          "description": "Employee initiates leave request with dates, type, and reason"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "width": 320,
+        "height": 170,
+        "draggable": true
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Validate Leave Request",
+          "rules": [
+            "Check leave balance availability",
+            "Validate date ranges",
+            "Verify leave type permissions"
+          ],
+          "ruleType": "Business Rules",
+          "description": "System validates leave balance and request parameters"
+        },
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "width": 320,
+        "height": 207,
+        "draggable": true
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Leave Balance Check",
+          "condition": "processData.hasValidBalance",
+          "description": "Check if employee has sufficient leave balance",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Insufficient Balance Notification",
+          "channel": "Email",
+          "template": "Your leave request cannot be processed due to insufficient leave balance",
+          "recipient": "Requesting Employee",
+          "description": "Notify employee of insufficient balance"
+        },
+        "type": "notification",
+        "position": {
+          "x": 75,
+          "y": 850
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Manager Notification",
+          "channel": "Email",
+          "template": "New leave request pending your approval from ${processData.employeeName}",
+          "recipient": "Line Manager",
+          "description": "Notify manager of pending leave request for approval"
+        },
+        "type": "notification",
+        "position": {
+          "x": 425,
+          "y": 850
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Request Denied - Insufficient Balance",
+          "result": "Rejected",
+          "description": "Request ends due to insufficient leave balance"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 125,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Manager Review & Decision",
+          "formId": "leavepolicyform-1764505528831-vqdg1f",
+          "dueDate": "3 business days",
+          "formName": "LeavePolicyForm",
+          "priority": "Medium",
+          "taskName": "approve_leave_request",
+          "assignedTo": "Line Manager",
+          "instructions": "Review leave request details and approve or reject with comments"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 475,
+          "y": 1100
+        },
+        "width": 283,
+        "height": 87,
+        "draggable": true
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Manager Approval Decision",
+          "condition": "processData.managerDecision",
+          "description": "Route based on manager's approval or rejection",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 350,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "HR Final Notification",
+          "channel": "Email",
+          "template": "Leave request approved for ${processData.employeeName} from ${processData.startDate} to ${processData.endDate}",
+          "recipient": "HR Administrator",
+          "description": "Notify HR of approved leave request"
+        },
+        "type": "notification",
+        "position": {
+          "x": 225,
+          "y": 1600
+        },
+        "width": 305,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Rejection Notification",
+          "channel": "Email",
+          "template": "Your leave request has been rejected. Reason: ${processData.rejectionReason}",
+          "recipient": "Requesting Employee",
+          "description": "Notify employee of rejected leave request"
+        },
+        "type": "notification",
+        "position": {
+          "x": 575,
+          "y": 1600
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Update Leave Balance & Calendar",
+          "script": "updateLeaveBalance(); updateTeamCalendar(); logApprovalHistory();",
+          "scriptType": "JavaScript",
+          "description": "Update system records with approved leave"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 275,
+          "y": 1850
+        },
+        "width": 320,
+        "height": 137,
+        "draggable": true
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Employee Re-submission Decision",
+          "condition": "processData.employeeWantsResubmit",
+          "description": "Check if employee wants to modify and resubmit request",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 625,
+          "y": 1850
+        },
+        "width": 320,
+        "height": 170,
+        "draggable": true
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Employee Approval Notification",
+          "channel": "Email",
+          "template": "Your leave request has been approved by your manager",
+          "recipient": "Requesting Employee",
+          "description": "Notify employee of approved leave request"
+        },
+        "type": "notification",
+        "position": {
+          "x": 325,
+          "y": 2100
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Leave Request Rejected",
+          "result": "Rejected",
+          "description": "Leave request rejected and not resubmitted"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 675,
+          "y": 2100
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Leave Request Approved",
+          "result": "Approved",
+          "description": "Leave request successfully approved and processed"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 550,
+          "y": 2350
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "label": "Insufficient Balance",
+        "source": "node_3",
+        "target": "node_4",
+        "condition": "processData.hasValidBalance === false"
+      },
+      {
+        "id": "edge_4",
+        "label": "Valid Balance",
+        "source": "node_3",
+        "target": "node_6",
+        "condition": "processData.hasValidBalance === true",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_6",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_7",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_8",
+        "label": "Approved",
+        "source": "node_8",
+        "target": "node_9",
+        "condition": "processData.managerDecision === 'approved'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "label": "Rejected",
+        "source": "node_8",
+        "target": "node_13",
+        "condition": "processData.managerDecision === 'rejected'"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_10",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_15",
+        "label": "No Resubmission",
+        "source": "node_14",
+        "target": "node_15",
+        "condition": "processData.employeeWantsResubmit === false",
+        "isDefault": true
+      }
+    ]
+  },
+  {
+    "id": "workflow_1704976800000",
+    "name": "Comprehensive Employee Onboarding Workflow",
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Initiate Onboarding",
+          "formId": null,
+          "trigger": "HR creates new employee record",
+          "formName": "NewEmployeeInformationForm",
+          "description": "Start comprehensive employee onboarding process with automated HR, IT, and Manager coordination"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 50,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Collect Employee Information",
+          "formId": "documentuploadform-1764961356717-pzuaos",
+          "dueDate": "24 hours",
+          "formName": "DocumentUploadForm",
+          "priority": "High",
+          "taskName": "employee_info_collection",
+          "assignedTo": "HR Staff",
+          "instructions": "Collect basic employee information, personal details, and contact information"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 50,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Document Verification",
+          "formId": "itequipmentrequestform-1764961376741-23pd6p",
+          "dueDate": "48 hours",
+          "formName": "ITEquipmentRequestForm",
+          "priority": "High",
+          "taskName": "document_verification",
+          "assignedTo": "HR Staff",
+          "instructions": "Verify ID proof, tax forms, employment contract, emergency contacts, and bank details"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 50,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Validate Documents",
+          "rules": [
+            "ID proof uploaded",
+            "Tax forms complete",
+            "Contract signed",
+            "Emergency contacts provided",
+            "Bank details verified"
+          ],
+          "ruleType": "business_rules",
+          "description": "Ensure all required documents are complete and valid"
+        },
+        "type": "validation",
+        "position": {
+          "x": 50,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Document Validation Check",
+          "condition": "processData.documentsValid === true",
+          "description": "Check if all documents are validated successfully",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "HR Documentation Complete",
+          "channel": "Email",
+          "template": "HR documentation phase completed - IT provisioning to begin",
+          "recipient": "IT Team, Manager, Employee",
+          "description": "Notify stakeholders that HR phase is complete"
+        },
+        "type": "notification",
+        "position": {
+          "x": 300,
+          "y": 400
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "IT Equipment Provisioning",
+          "formId": "buddyassignmentform-1764961397010-4myusz",
+          "dueDate": "72 hours",
+          "formName": "BuddyAssignmentForm",
+          "priority": "High",
+          "taskName": "it_equipment_setup",
+          "assignedTo": "IT Team",
+          "instructions": "Provision laptop, phone, software licenses, and system access for new employee"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 500
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Create System Accounts",
+          "script": "createUserAccounts(employeeData)",
+          "scriptType": "automation",
+          "description": "Automatically create email, Active Directory, and application accounts"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 300,
+          "y": 600
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "IT Provisioning Complete",
+          "condition": "processData.itSetupComplete === true",
+          "description": "Check if IT equipment and system setup is complete",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 700
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "IT Setup Timeout",
+          "duration": "PT72H",
+          "timerType": "duration",
+          "description": "Timeout if IT setup takes longer than 72 hours"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 550,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "IT Setup Complete",
+          "channel": "Email",
+          "template": "IT provisioning completed - Manager onboarding to begin",
+          "recipient": "Manager, HR Staff, Employee",
+          "description": "Notify stakeholders that IT phase is complete"
+        },
+        "type": "notification",
+        "position": {
+          "x": 550,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Parallel Manager Tasks",
+          "branches": "Training plan creation and Buddy assignment",
+          "description": "Split into parallel manager tasks",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 550,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Create Training Plan",
+          "formId": null,
+          "dueDate": "48 hours",
+          "formName": "TrainingPlanForm",
+          "priority": "Medium",
+          "taskName": "training_plan_creation",
+          "assignedTo": "Manager",
+          "instructions": "Create comprehensive training plan including company orientation, role-specific training, and compliance modules"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 400,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Assign Onboarding Buddy",
+          "formId": null,
+          "dueDate": "24 hours",
+          "formName": "NewEmployeeInformationForm",
+          "priority": "Medium",
+          "taskName": "buddy_assignment",
+          "assignedTo": "Manager",
+          "instructions": "Assign an experienced team member as onboarding buddy/mentor"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 700,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "AI Training Recommendations",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Based on the employee role '${processData.jobTitle}' and department '${processData.department}', recommend additional relevant training modules beyond the standard orientation",
+          "maxTokens": 1000,
+          "description": "Generate personalized training recommendations using AI",
+          "temperature": 0.7,
+          "outputVariable": "aiTrainingRecommendations"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 400,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Merge Manager Tasks",
+          "branches": "Join parallel manager tasks",
+          "description": "Wait for both training plan and buddy assignment to complete",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 550,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Onboarding Complete Notification",
+          "channel": "Email",
+          "template": "Employee onboarding process completed successfully",
+          "recipient": "All Stakeholders, Employee",
+          "description": "Final notification that onboarding is complete"
+        },
+        "type": "notification",
+        "position": {
+          "x": 550,
+          "y": 1250
+        }
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Onboarding Complete",
+          "result": "Employee successfully onboarded",
+          "description": "Employee onboarding process completed with all documentation, IT setup, and training plan in place"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 550,
+          "y": 1350
+        }
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Document Correction",
+          "formId": null,
+          "dueDate": "24 hours",
+          "formName": "NewEmployeeInformationForm",
+          "priority": "High",
+          "taskName": "document_correction",
+          "assignedTo": "HR Staff",
+          "instructions": "Request missing or corrected documents from employee"
+        },
+        "type": "userTask",
+        "position": {
+          "x": -200,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_20",
+        "data": {
+          "label": "IT Setup Escalation",
+          "formId": null,
+          "dueDate": "12 hours",
+          "formName": "NewEmployeeInformationForm",
+          "priority": "High",
+          "taskName": "it_escalation",
+          "assignedTo": "IT Manager",
+          "instructions": "Resolve IT provisioning issues and expedite setup"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 50,
+          "y": 700
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_5",
+        "label": "Documents Valid",
+        "source": "node_5",
+        "target": "node_6",
+        "condition": "processData.documentsValid === true"
+      },
+      {
+        "id": "edge_6",
+        "label": "Documents Invalid",
+        "source": "node_5",
+        "target": "node_19",
+        "condition": "processData.documentsValid === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_7",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_8",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_11",
+        "label": "IT Complete",
+        "source": "node_9",
+        "target": "node_11",
+        "condition": "processData.itSetupComplete === true"
+      },
+      {
+        "id": "edge_12",
+        "label": "IT Issues",
+        "source": "node_9",
+        "target": "node_20",
+        "condition": "processData.itSetupComplete === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_13",
+        "label": "Timeout Path",
+        "source": "node_7",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_14",
+        "label": "Escalate",
+        "source": "node_10",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_17",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_12",
+        "target": "node_13",
+        "isDefault": true
+      },
+      {
+        "id": "edge_18",
+        "label": "Buddy Path",
+        "source": "node_12",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_13",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_14",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_22",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_16",
+        "target": "node_17",
+        "isDefault": true
+      },
+      {
+        "id": "edge_23",
+        "source": "node_17",
+        "target": "node_18"
+      }
+    ]
+  },
+  {
+    "id": "workflow_1735671234567",
+    "name": "Advanced Customer Management System Workflow",
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Start CRM Process",
+          "formId": "customerregistrationform-1765047719263-li8p0s",
+          "trigger": "Customer engagement trigger",
+          "formName": "CustomerRegistrationForm",
+          "description": "Initiates comprehensive customer management workflow for new or existing customers"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Customer Type Gateway",
+          "condition": "processData.customerType",
+          "description": "Routes flow based on whether customer is new or existing",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Customer Registration",
+          "formId": "customersearchform-1765047736586-axbfpq",
+          "dueDate": "24 hours",
+          "formName": "CustomerSearchForm",
+          "priority": "High",
+          "taskName": "register_new_customer",
+          "assignedTo": "Sales Representative",
+          "instructions": "Complete customer registration form with all required details"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 100,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Customer Data Validation",
+          "rules": [
+            "email_format",
+            "phone_format",
+            "required_fields"
+          ],
+          "ruleType": "data_integrity",
+          "description": "Validates customer registration data for completeness and accuracy"
+        },
+        "type": "validation",
+        "position": {
+          "x": 100,
+          "y": 400
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Fetch Customer Profile",
+          "script": "fetchCustomerData(processData.customerId)",
+          "scriptType": "JavaScript",
+          "description": "Retrieves existing customer profile and interaction history"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 500,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Data Quality Check",
+          "condition": "processData.validationResult",
+          "description": "Checks if customer data meets quality standards",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Data Correction",
+          "formId": "dealupdateform-1765047754852-6kwdyh",
+          "dueDate": "4 hours",
+          "formName": "DealUpdateForm",
+          "priority": "Medium",
+          "taskName": "correct_customer_data",
+          "assignedTo": "Data Administrator",
+          "instructions": "Correct validation errors in customer data"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 100,
+          "y": 700
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Activity Type Router",
+          "branches": "interaction_logging, deal_management, task_assignment",
+          "description": "Parallel processing of customer activities",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 600,
+          "y": 400
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Log Customer Interaction",
+          "formId": "interactionlogform-1765047771710-l45ark",
+          "dueDate": "2 hours",
+          "formName": "InteractionLogForm",
+          "priority": "Medium",
+          "taskName": "log_interaction",
+          "assignedTo": "Account Manager",
+          "instructions": "Record customer interaction details and outcomes"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 450,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Create/Update Deal",
+          "formId": "dealcreationform-1765047789256-la61ug",
+          "dueDate": "6 hours",
+          "formName": "DealCreationForm",
+          "priority": "High",
+          "taskName": "manage_deal",
+          "assignedTo": "Sales Manager",
+          "instructions": "Create new deal or update existing deal stages and values"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 600,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Assign Follow-up Tasks",
+          "formId": "taskassignmentform-1765047811159-cp0uwd",
+          "dueDate": "1 hour",
+          "formName": "TaskAssignmentForm",
+          "priority": "Medium",
+          "taskName": "assign_tasks",
+          "assignedTo": "Team Lead",
+          "instructions": "Assign follow-up tasks and set reminder schedules"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 750,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "AI Deal Risk Analysis",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze deal data and customer interaction history to assess deal risk and provide recommendations: Deal Value: ${processData.dealValue}, Stage: ${processData.dealStage}, Customer History: ${processData.customerHistory}",
+          "maxTokens": 500,
+          "description": "AI-powered analysis of deal risk factors and success probability",
+          "temperature": 0.3,
+          "outputVariable": "dealRiskAnalysis"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 600,
+          "y": 700
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Deal Risk Gateway",
+          "condition": "processData.dealRiskAnalysis.risk_level",
+          "description": "Routes based on AI-determined deal risk level",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 600,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "High-Risk Deal Review",
+          "formId": "customerregistrationform-1765047719263-li8p0s",
+          "dueDate": "2 hours",
+          "formName": "CustomerRegistrationForm",
+          "priority": "Critical",
+          "taskName": "review_high_risk_deal",
+          "assignedTo": "Senior Sales Manager",
+          "instructions": "Review high-risk deal and implement mitigation strategies"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 400,
+          "y": 1000
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Follow-up Timer",
+          "duration": "P7D",
+          "timerType": "duration",
+          "description": "Wait 7 days before automatic follow-up"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 800,
+          "y": 1000
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Customer Update Notification",
+          "channel": "Email",
+          "template": "customer_status_update",
+          "recipient": "Sales Team",
+          "description": "Notify team of customer management activities completion"
+        },
+        "type": "notification",
+        "position": {
+          "x": 600,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "input": "processData",
+          "label": "Update CRM Database",
+          "output": "CRM_database",
+          "operation": "data_sync",
+          "description": "Synchronize all customer data and activities to central CRM database"
+        },
+        "type": "dataProcess",
+        "position": {
+          "x": 600,
+          "y": 1300
+        }
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "CRM Process Complete",
+          "result": "Customer management activities completed successfully",
+          "description": "All customer data, interactions, and deals have been processed and stored"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 600,
+          "y": 1450
+        }
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Error Resolution",
+          "formId": "customerregistrationform-1765047719263-li8p0s",
+          "dueDate": "1 hour",
+          "formName": "CustomerRegistrationForm",
+          "priority": "Critical",
+          "taskName": "resolve_data_error",
+          "assignedTo": "System Administrator",
+          "instructions": "Resolve critical data validation or processing errors"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 50,
+          "y": 850
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "label": "New Customer",
+        "source": "node_2",
+        "target": "node_3",
+        "condition": "processData.customerType === 'new'"
+      },
+      {
+        "id": "edge_3",
+        "label": "Existing Customer",
+        "source": "node_2",
+        "target": "node_5",
+        "condition": "processData.customerType === 'existing'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_4",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_7",
+        "label": "Valid Data",
+        "source": "node_6",
+        "target": "node_8",
+        "condition": "processData.validationResult === 'valid'"
+      },
+      {
+        "id": "edge_8",
+        "label": "Invalid Data",
+        "source": "node_6",
+        "target": "node_7",
+        "condition": "processData.validationResult === 'invalid'"
+      },
+      {
+        "id": "edge_9",
+        "label": "Critical Error",
+        "source": "node_6",
+        "target": "node_19",
+        "condition": "processData.validationResult === 'error'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_11",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_8",
+        "target": "node_9",
+        "isDefault": true
+      },
+      {
+        "id": "edge_12",
+        "label": "Deal Path",
+        "source": "node_8",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_13",
+        "label": "Task Path",
+        "source": "node_8",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_9",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_10",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_11",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_18",
+        "label": "High Risk",
+        "source": "node_13",
+        "target": "node_14",
+        "condition": "processData.dealRiskAnalysis.risk_level === 'high'"
+      },
+      {
+        "id": "edge_19",
+        "label": "Low/Medium Risk",
+        "source": "node_13",
+        "target": "node_16",
+        "condition": "processData.dealRiskAnalysis.risk_level !== 'high'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_20",
+        "source": "node_14",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_16",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_17",
+        "target": "node_18"
+      }
+    ]
   }
 ]

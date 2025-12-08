@@ -5,7 +5,7 @@ import { useWorkflow } from '../../context/WorkflowContext';
 import './FormsList.css';
 
 const FormsList = () => {
-  const { connectedForms, currentApplication } = useWorkflow();
+  const { connectedForms, currentApplication, currentWorkflow } = useWorkflow();
   const [forms, setForms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedForm, setSelectedForm] = useState(null);
@@ -13,13 +13,27 @@ const FormsList = () => {
   const [selectedFormIds, setSelectedFormIds] = useState([]);
   const [selectionMode, setSelectionMode] = useState(false);
 
-  // Update forms whenever connectedForms changes
+  // Update forms whenever connectedForms or currentWorkflow changes
   useEffect(() => {
     if (connectedForms && connectedForms.length > 0) {
-      setForms(connectedForms);
+      // Filter forms by current workflow if a workflow is selected
+      let filteredForms = connectedForms;
+      if (currentWorkflow && currentWorkflow.id) {
+        // Show forms that belong to this workflow OR don't have a workflowId (legacy data)
+        filteredForms = connectedForms.filter(form =>
+          !form.workflowId || form.workflowId === currentWorkflow.id
+        );
+        console.log('[FormsList] Total forms:', connectedForms.length);
+        console.log('[FormsList] Form workflowIds:', connectedForms.map(f => ({ name: f.name, workflowId: f.workflowId })));
+        console.log('[FormsList] Current workflow ID:', currentWorkflow.id);
+        console.log('[FormsList] Filtered forms count:', filteredForms.length);
+        console.log('[FormsList] Filtered forms:', filteredForms.map(f => f.name));
+      }
+      setForms(filteredForms);
       setLoading(false);
     } else if (currentApplication) {
       // If there's an application but no forms, show empty state
+      console.log('[FormsList] No connectedForms available. Application:', currentApplication.name);
       setForms([]);
       setLoading(false);
     } else {
@@ -27,7 +41,7 @@ const FormsList = () => {
       setForms([]);
       setLoading(false);
     }
-  }, [connectedForms, currentApplication]);
+  }, [connectedForms, currentApplication, currentWorkflow]);
 
   const handleFormClick = (form, e) => {
     // If in selection mode or clicking checkbox, toggle selection

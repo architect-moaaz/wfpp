@@ -178,15 +178,15 @@ Create mobile UI with:
 4. Navigation structure
 5. Touch-friendly interactions
 
-Return ONLY valid JSON.`;
+IMPORTANT: Return ONLY valid JSON with proper syntax. Ensure all commas, brackets, and braces are correct.`;
 
     const messages = [{
       role: 'user',
       content: prompt
     }];
 
-    const responseText = await this.getResponse(messages);
-    const result = this.parseJsonResponse(responseText);
+    // Use self-healing execution with AI correction for JSON errors
+    const result = await this.executeWithSelfHealing(messages, onThinking);
 
     if (onThinking) {
       onThinking({

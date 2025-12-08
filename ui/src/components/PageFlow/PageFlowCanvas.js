@@ -74,62 +74,153 @@ const PageFlowCanvas = ({ onBack }) => {
     // Create edges from navigation data
     const flowEdges = [];
     let edgeId = 0;
+    const edgeMap = new Set(); // Track unique edges to avoid duplicates
+
+    const addEdge = (source, target, label, style = {}) => {
+      const edgeKey = `${source}-${target}`;
+      if (edgeMap.has(edgeKey)) return;
+
+      edgeMap.add(edgeKey);
+      flowEdges.push({
+        id: `edge-${edgeId++}`,
+        source,
+        target,
+        label,
+        type: 'smoothstep',
+        animated: false,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20
+        },
+        style: { stroke: '#6b7280', ...style }
+      });
+    };
+
+    // Smart route matching function
+    const findPageByRoute = (targetRoute) => {
+      if (!targetRoute) return null;
+
+      // Normalize the target route (remove template syntax like {{id}})
+      let normalizedTarget = targetRoute.replace(/\{\{[^}]+\}\}/g, ':id');
+
+      // 1. Try exact match first
+      let found = pagesData.find(p => p.route === normalizedTarget);
+      if (found) return found;
+
+      // 2. Try matching base paths (without parameters)
+      const targetBase = normalizedTarget.split('/').filter(s => !s.startsWith(':')).join('/');
+      found = pagesData.find(p => {
+        const pageBase = p.route.split('/').filter(s => !s.startsWith(':')).join('/');
+        return pageBase === targetBase;
+      });
+      if (found) return found;
+
+      // 3. Try fuzzy matching for similar routes
+      const targetParts = targetBase.split('/').filter(Boolean);
+      found = pagesData.find(p => {
+        const pageParts = p.route.split('/').filter(s => !s.startsWith(':')).filter(Boolean);
+        // Check if routes are similar (accounting for singular/plural, etc.)
+        if (targetParts.length === 0 || pageParts.length === 0) return false;
+
+        // Compare last significant part (main entity name)
+        const targetEntity = targetParts[targetParts.length - 1].toLowerCase().replace(/-/g, '');
+        const pageEntity = pageParts[pageParts.length - 1].toLowerCase().replace(/-/g, '');
+
+        // Match if one is singular/plural of the other, or very similar
+        return targetEntity === pageEntity ||
+               targetEntity + 's' === pageEntity ||
+               targetEntity === pageEntity + 's' ||
+               targetEntity.replace(/s$/, '') === pageEntity.replace(/s$/, '');
+      });
+
+      return found;
+    };
+
+    console.log('[PageFlowCanvas] Processing', pagesData.length, 'pages for navigation extraction');
+    console.log('[PageFlowCanvas] Page routes:', pagesData.map(p => p.route));
 
     pagesData.forEach((page) => {
+      // Debug: log navigation structure
+      if (page.navigation) {
+        console.log('[PageFlowCanvas] Page', page.route, 'has navigation:', page.navigation);
+      } else {
+        console.log('[PageFlowCanvas] Page', page.route, 'has NO navigation property');
+      }
+
+      // 1. Check page-level navigation.onAction
       if (page.navigation && page.navigation.onAction) {
+        console.log('[PageFlowCanvas] Page', page.route, 'has onAction:', Object.keys(page.navigation.onAction));
         Object.entries(page.navigation.onAction).forEach(([actionName, actionData]) => {
+          console.log('[PageFlowCanvas] Action', actionName, 'type:', actionData.type, 'target:', actionData.target);
           if (actionData.type === 'navigate') {
-            // Find target page by route
-            const targetPage = pagesData.find(p => p.route === actionData.target);
+            const targetPage = findPageByRoute(actionData.target);
             if (targetPage) {
-              flowEdges.push({
-                id: `edge-${edgeId++}`,
-                source: page.id,
-                target: targetPage.id,
-                label: actionName,
-                type: 'smoothstep',
-                animated: false,
-                markerEnd: {
-                  type: MarkerType.ArrowClosed,
-                  width: 20,
-                  height: 20
-                },
-                style: { stroke: '#6b7280' }
-              });
+              console.log('[PageFlowCanvas] Found edge:', page.route, '→', targetPage.route, `(${actionName})`);
+              addEdge(page.id, targetPage.id, actionName);
+            } else {
+              console.warn('[PageFlowCanvas] No match for navigation target:', actionData.target, 'from page:', page.route);
             }
           }
         });
       }
 
-      // Also check for menu navigation
+      // 2. Check page-level navigation.menu
       if (page.navigation && page.navigation.menu) {
         page.navigation.menu.forEach((menuItem) => {
-          const targetPage = pagesData.find(p => p.route === menuItem.route);
+          const targetPage = findPageByRoute(menuItem.route);
           if (targetPage && targetPage.id !== page.id) {
-            // Avoid duplicate edges
-            const exists = flowEdges.some(e =>
-              e.source === page.id && e.target === targetPage.id
-            );
-            if (!exists) {
-              flowEdges.push({
-                id: `edge-${edgeId++}`,
-                source: page.id,
-                target: targetPage.id,
-                label: menuItem.label || 'menu',
-                type: 'smoothstep',
-                animated: false,
-                markerEnd: {
-                  type: MarkerType.ArrowClosed,
-                  width: 20,
-                  height: 20
-                },
-                style: { stroke: '#9ca3af', strokeDasharray: '5,5' }
-              });
-            }
+            addEdge(page.id, targetPage.id, menuItem.label || 'menu', { strokeDasharray: '5,5', stroke: '#9ca3af' });
+          }
+        });
+      }
+
+      // 3. ENHANCED: Extract navigation from component actions
+      if (page.sections) {
+        page.sections.forEach((section) => {
+          if (section.components) {
+            section.components.forEach((component) => {
+              // Check component-level actions
+              if (component.action && component.action.type === 'navigate' && component.action.target) {
+                const targetPage = findPageByRoute(component.action.target);
+                if (targetPage) {
+                  const label = component.config?.label || component.type;
+                  addEdge(page.id, targetPage.id, label, { stroke: '#3b82f6' });
+                }
+              }
+
+              // Check component-level events (like onClick, onSubmit, etc.)
+              if (component.events) {
+                Object.values(component.events).forEach((event) => {
+                  if (event.type === 'navigate' && event.target) {
+                    const targetPage = findPageByRoute(event.target);
+                    if (targetPage) {
+                      const label = component.config?.label || component.type;
+                      addEdge(page.id, targetPage.id, label, { stroke: '#10b981' });
+                    }
+                  }
+                });
+              }
+
+              // Check nested components (like tables with row actions)
+              if (component.config && component.config.actions) {
+                component.config.actions.forEach((action) => {
+                  if (action.type === 'navigate' && action.target) {
+                    const targetPage = findPageByRoute(action.target);
+                    if (targetPage) {
+                      addEdge(page.id, targetPage.id, action.label || 'action', { stroke: '#f59e0b' });
+                    }
+                  }
+                });
+              }
+            });
           }
         });
       }
     });
+
+    console.log('[PageFlowCanvas] Created', flowEdges.length, 'edges from navigation data');
+    console.log('[PageFlowCanvas] Edges:', flowEdges.map(e => `${e.source} → ${e.target} (${e.label})`));
 
     setNodes(flowNodes);
     setEdges(flowEdges);

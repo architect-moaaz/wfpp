@@ -1,0 +1,368 @@
+[
+  {
+    "id": "app_1764404034850_book",
+    "name": "Book",
+    "config": {},
+    "fields": [
+      {
+        "name": "isbn",
+        "type": "string",
+        "required": true,
+        "description": "International Standard Book Number - unique identifier for the book",
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "description": "Title of the book",
+        "defaultValue": null
+      },
+      {
+        "name": "author",
+        "type": "string",
+        "required": true,
+        "description": "Primary author or authors of the book",
+        "defaultValue": null
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "required": true,
+        "description": "Genre or classification category (e.g., Fiction, Science, History)",
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": true,
+        "description": "Current availability status: available, checked_out, or reserved",
+        "defaultValue": "available"
+      },
+      {
+        "name": "publicationYear",
+        "type": "number",
+        "required": false,
+        "description": "Year the book was published",
+        "defaultValue": null
+      },
+      {
+        "name": "copiesTotal",
+        "type": "number",
+        "required": true,
+        "description": "Total number of copies owned by the library",
+        "defaultValue": 1
+      },
+      {
+        "name": "copiesAvailable",
+        "type": "number",
+        "required": true,
+        "description": "Number of copies currently available for checkout",
+        "defaultValue": 1
+      }
+    ],
+    "indexes": [
+      "isbn",
+      "title",
+      "author",
+      "category",
+      "status"
+    ],
+    "metadata": {},
+    "constraints": {
+      "enum": {
+        "status": [
+          "available",
+          "checked_out",
+          "reserved"
+        ]
+      },
+      "unique": [
+        "isbn"
+      ],
+      "validation": {
+        "copiesAvailable": "Must be less than or equal to copiesTotal"
+      }
+    },
+    "description": "Represents books in the library collection with catalog information and availability tracking",
+    "relationships": []
+  },
+  {
+    "id": "app_1764404034850_member",
+    "name": "Member",
+    "config": {},
+    "fields": [
+      {
+        "name": "memberId",
+        "type": "string",
+        "required": true,
+        "description": "Unique membership identification number",
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "required": true,
+        "description": "Full name of the library member",
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "required": true,
+        "description": "Email address for communication and notifications",
+        "defaultValue": null
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "required": false,
+        "description": "Contact phone number",
+        "defaultValue": null
+      },
+      {
+        "name": "membershipStartDate",
+        "type": "date",
+        "required": true,
+        "description": "Date when membership was activated",
+        "defaultValue": null
+      },
+      {
+        "name": "membershipExpiryDate",
+        "type": "date",
+        "required": true,
+        "description": "Date when membership expires",
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "required": true,
+        "description": "Indicates if member account is currently active and eligible for borrowing",
+        "defaultValue": true
+      }
+    ],
+    "indexes": [
+      "memberId",
+      "email"
+    ],
+    "metadata": {},
+    "constraints": {
+      "email": "Must be valid email format",
+      "unique": [
+        "memberId",
+        "email"
+      ],
+      "membershipExpiryDate": "Must be after membershipStartDate"
+    },
+    "description": "Represents library patrons with personal details, membership ID, contact information, and account status",
+    "relationships": []
+  },
+  {
+    "id": "app_1764404034850_reservation",
+    "name": "Reservation",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the reservation",
+        "defaultValue": null
+      },
+      {
+        "name": "bookId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the reserved book",
+        "defaultValue": null
+      },
+      {
+        "name": "memberId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the member who made the reservation",
+        "defaultValue": null
+      },
+      {
+        "name": "reservationDate",
+        "type": "date",
+        "required": true,
+        "description": "Date and time when the reservation was made",
+        "defaultValue": null
+      },
+      {
+        "name": "queuePosition",
+        "type": "number",
+        "required": true,
+        "description": "Position in the reservation queue for this book",
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": true,
+        "description": "Current status of the reservation (pending, notified, fulfilled, cancelled, expired)",
+        "defaultValue": "pending"
+      },
+      {
+        "name": "notifiedDate",
+        "type": "date",
+        "required": false,
+        "description": "Date when member was notified that the book is available",
+        "defaultValue": null
+      },
+      {
+        "name": "expiryDate",
+        "type": "date",
+        "required": false,
+        "description": "Date when the reservation expires if not fulfilled",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "bookId",
+          "queuePosition"
+        ],
+        "unique": false,
+        "description": "Optimize queue position lookups for a specific book"
+      },
+      {
+        "fields": [
+          "memberId",
+          "status"
+        ],
+        "unique": false,
+        "description": "Quickly retrieve member's active reservations"
+      },
+      {
+        "fields": [
+          "status",
+          "expiryDate"
+        ],
+        "unique": false,
+        "description": "Efficiently find expired reservations for cleanup"
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "validStatus": "Status must be one of: pending, notified, fulfilled, cancelled, expired",
+      "positiveQueuePosition": "Queue position must be a positive integer",
+      "uniqueActiveReservation": "A member can only have one active reservation per book"
+    },
+    "description": "Manages book reservations when items are currently unavailable, tracking the queue and notification status",
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "entity": "Book",
+        "foreignKey": "bookId",
+        "description": "Each reservation is for one book"
+      },
+      {
+        "type": "many-to-one",
+        "entity": "Member",
+        "foreignKey": "memberId",
+        "description": "Each reservation belongs to one member"
+      }
+    ]
+  },
+  {
+    "id": "app_1764404034850_transaction",
+    "name": "Transaction",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the transaction",
+        "defaultValue": null
+      },
+      {
+        "name": "memberId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the member who borrowed the book",
+        "defaultValue": null
+      },
+      {
+        "name": "bookId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the book being borrowed",
+        "defaultValue": null
+      },
+      {
+        "name": "checkoutDate",
+        "type": "date",
+        "required": true,
+        "description": "Date when the book was checked out",
+        "defaultValue": null
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "required": true,
+        "description": "Date when the book is due for return",
+        "defaultValue": null
+      },
+      {
+        "name": "returnDate",
+        "type": "date",
+        "required": false,
+        "description": "Actual date when the book was returned (null if not yet returned)",
+        "defaultValue": null
+      },
+      {
+        "name": "lateFee",
+        "type": "number",
+        "required": false,
+        "description": "Late fee amount charged for overdue returns",
+        "defaultValue": 0
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "memberId"
+        ],
+        "description": "Fast lookup of transactions by member"
+      },
+      {
+        "fields": [
+          "bookId"
+        ],
+        "description": "Fast lookup of transactions by book"
+      },
+      {
+        "fields": [
+          "returnDate"
+        ],
+        "description": "Quick identification of active checkouts (null returnDate)"
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "lateFeeNonNegative": "lateFee must be greater than or equal to 0",
+      "dueDateAfterCheckout": "dueDate must be after checkoutDate",
+      "returnDateAfterCheckout": "returnDate must be after or equal to checkoutDate when set"
+    },
+    "description": "Records book checkout and return activities with dates and fees for library circulation tracking",
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "foreignKey": "memberId",
+        "description": "Each transaction belongs to one member",
+        "relatedModel": "Member"
+      },
+      {
+        "type": "many-to-one",
+        "foreignKey": "bookId",
+        "description": "Each transaction involves one book",
+        "relatedModel": "Book"
+      }
+    ]
+  }
+]

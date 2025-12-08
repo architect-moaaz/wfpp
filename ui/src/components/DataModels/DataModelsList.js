@@ -1,6 +1,6 @@
 import React from 'react';
-import { Database, Edit, Trash2, ArrowRight, CheckSquare, Square } from 'lucide-react';
-import './DataModelsList.css';
+import { Database, Edit, Trash2, Calendar, CheckSquare, Square } from 'lucide-react';
+import '../Forms/FormsList.css';
 
 const DataModelsList = ({
   dataModels,
@@ -13,7 +13,7 @@ const DataModelsList = ({
 
   const handleCardClick = (model, e) => {
     // If in selection mode or clicking checkbox, toggle selection
-    if (selectionMode || e?.target?.closest('.model-checkbox')) {
+    if (selectionMode || e?.target?.closest('.form-checkbox')) {
       onToggleSelect(model.id);
       return;
     }
@@ -22,20 +22,25 @@ const DataModelsList = ({
     onEditModel(model);
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+  };
+
   return (
-    <div className="data-models-list">
+    <div className="forms-grid">
       {dataModels.map(model => {
         const isSelected = selectedModelIds.includes(model.id);
         return (
           <div
             key={model.id}
-            className={`model-card ${isSelected ? 'selected' : ''} ${selectionMode ? 'selection-mode' : ''}`}
+            className={`form-card ${isSelected ? 'selected' : ''} ${selectionMode ? 'selection-mode' : ''}`}
             onClick={(e) => handleCardClick(model, e)}
           >
-            <div className="model-card-header">
+            <div className="form-card-header">
               {selectionMode && (
                 <div
-                  className="model-checkbox"
+                  className="form-checkbox"
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleSelect(model.id);
@@ -48,17 +53,11 @@ const DataModelsList = ({
                   )}
                 </div>
               )}
-              <div className="model-icon">
-                <Database size={20} />
-              </div>
-              <div className="model-info">
-                <h3 className="model-title">{model.displayName || model.name}</h3>
-                <p className="model-description">{model.description}</p>
-              </div>
+              <Database size={20} />
               {!selectionMode && (
-                <div className="model-actions">
+                <div className="form-card-actions">
                   <button
-                    className="action-btn"
+                    className="btn-icon"
                     onClick={(e) => {
                       e.stopPropagation();
                       onEditModel(model);
@@ -68,7 +67,7 @@ const DataModelsList = ({
                     <Edit size={16} />
                   </button>
                   <button
-                    className="action-btn delete-btn"
+                    className="btn-icon btn-delete"
                     onClick={(e) => {
                       e.stopPropagation();
                       onDeleteModel(model.id);
@@ -81,55 +80,40 @@ const DataModelsList = ({
               )}
             </div>
 
-          <div className="model-card-body">
-            <div className="fields-section">
-              <h4 className="section-title">Fields ({model.fields.length})</h4>
-              <div className="fields-grid">
-                {model.fields.slice(0, 6).map((field, idx) => (
-                  <div key={idx} className="field-item">
-                    <span className={`field-badge ${field.primaryKey ? 'primary' : ''} ${field.foreignKey ? 'foreign' : ''}`}>
-                      {field.primaryKey ? '🔑' : field.foreignKey ? '🔗' : ''}
-                      {field.name}
-                    </span>
-                    <span className="field-type-badge">{field.type}</span>
-                  </div>
-                ))}
-                {model.fields.length > 6 && (
-                  <div className="field-item-more">
-                    +{model.fields.length - 6} more fields
-                  </div>
-                )}
+            <h3 className="form-card-title">{model.displayName || model.name}</h3>
+            {model.description && (
+              <p className="form-card-description">{model.description}</p>
+            )}
+
+            <div className="form-card-meta">
+              <div className="meta-item">
+                <span className="meta-label">Fields:</span>
+                <span className="meta-value">{model.fields?.length || 0}</span>
+              </div>
+              <div className="meta-item">
+                <span className="meta-label">Relations:</span>
+                <span className="meta-value">{model.relationships?.length || 0}</span>
               </div>
             </div>
 
-            {model.relationships && model.relationships.length > 0 && (
-              <div className="relationships-section">
-                <h4 className="section-title">Relationships ({model.relationships.length})</h4>
-                <div className="relationships-list">
-                  {model.relationships.map((rel, idx) => (
-                    <div key={idx} className="relationship-item">
-                      <span className="rel-source">{model.name}</span>
-                      <ArrowRight size={14} className="rel-arrow" />
-                      <span className="rel-target">{rel.targetModel || rel.target}</span>
-                      <span className="rel-type-badge">{rel.type}</span>
-                    </div>
-                  ))}
-                </div>
+            {model.workflowId && (
+              <div className="form-card-workflow">
+                <span className="workflow-badge">Workflow: {model.workflowId}</span>
               </div>
             )}
-          </div>
 
-          <div className="model-card-footer">
-            <div className="footer-meta">
-              <span className="meta-item">Version: {model.version || '1.0'}</span>
-              {model.workflowId && (
-                <span className="meta-item">Workflow: {model.workflowId}</span>
-              )}
+            <div className="form-card-footer">
+              <div className="footer-item">
+                <Calendar size={14} />
+                <span>{formatDate(model.createdAt)}</span>
+              </div>
+              <div className="footer-item">
+                <span className="version-badge">v{model.version || '1.0'}</span>
+              </div>
             </div>
           </div>
-        </div>
-      );
-    })}
+        );
+      })}
     </div>
   );
 };

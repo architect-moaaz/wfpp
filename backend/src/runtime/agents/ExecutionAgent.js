@@ -5,7 +5,9 @@
 
 const axios = require('axios');
 const formDatabase = require('../../database/FormDatabase');
+const executionLogDB = require('../../database/ExecutionLogDatabase');
 const Anthropic = require('@anthropic-ai/sdk');
+const RulesEvaluator = require('../../services/RulesEvaluator');
 
 class ExecutionAgent {
   constructor() {
@@ -14,6 +16,8 @@ class ExecutionAgent {
       apiKey: process.env.ANTHROPIC_API_KEY
     });
     this.useLLM = !!process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_api_key_here';
+    this.executionLogDB = executionLogDB;
+    this.rulesEvaluator = new RulesEvaluator();
   }
 
   /**
@@ -218,18 +222,49 @@ class ExecutionAgent {
   }
 
   /**
-   * Use AI to fix a broken script
+   * Use AI to fix a broken script with historical learning
    */
-  async fixScriptWithAI(originalScript, errorMessage, taskData, processData) {
+  async fixScriptWithAI(originalScript, errorMessage, taskData, processData, workflowId) {
     if (!this.useLLM) {
       console.log('[ExecutionAgent] AI not available for script recovery');
-      return null;
+      return { script: null, method: null };
     }
 
     console.log('[ExecutionAgent] Attempting AI-powered script recovery...');
 
+    // Step 1: Check historical fixes for similar errors
+    const similarFixes = this.executionLogDB.findSimilarFixes(errorMessage, originalScript, 3);
+
+    if (similarFixes.length > 0) {
+      console.log(`[ExecutionAgent] Found ${similarFixes.length} similar historical fixes`);
+
+      // Try the most successful fix first
+      const bestFix = similarFixes[0];
+      console.log(`[ExecutionAgent] Using cached fix (success count: ${bestFix.successCount})`);
+
+      return {
+        script: bestFix.fixedScript,
+        method: 'cached',
+        reference: bestFix
+      };
+    }
+
+    // Step 2: No historical fix found, use AI to generate new fix
+    console.log('[ExecutionAgent] No historical fix found, generating AI solution...');
+
     try {
-      const prompt = `You are a script repair expert. A JavaScript script failed during execution and you need to fix it.
+      // Build prompt with historical context if available
+      let historicalContext = '';
+      if (similarFixes.length > 0) {
+        historicalContext = '\n**Similar Past Errors and Fixes:**\n';
+        similarFixes.forEach((fix, idx) => {
+          historicalContext += `\nExample ${idx + 1}:\n`;
+          historicalContext += `Error: ${fix.errorMessage}\n`;
+          historicalContext += `Fix: ${fix.fixedScript}\n`;
+        });
+      }
+
+      const prompt = `You are a script repair expert with access to historical fixes. A JavaScript script failed during execution and you need to fix it.
 
 **Original Script:**
 \`\`\`javascript
@@ -258,6 +293,7 @@ You can ONLY use these pre-defined functions:
 - getCurrentDate() - Get current ISO date
 - formatDate(date) - Format date to locale string
 - log(...args) - Log messages
+${historicalContext}
 
 **Your Task:**
 Fix the script to accomplish the original intent while:
@@ -265,6 +301,7 @@ Fix the script to accomplish the original intent while:
 2. Working with the processData object
 3. Returning a valid result
 4. Avoiding the error that occurred
+5. Learning from similar past fixes if provided
 
 **Return ONLY the fixed JavaScript code, nothing else. Do not include markdown code blocks or explanations.**`;
 
@@ -279,30 +316,38 @@ Fix the script to accomplish the original intent while:
       });
 
       const fixedScript = response.content[0].text.trim();
-      console.log('[ExecutionAgent] AI generated fixed script:', fixedScript.substring(0, 200) + '...');
+      console.log('[ExecutionAgent] AI generated new fixed script');
 
-      return fixedScript;
+      return {
+        script: fixedScript,
+        method: 'ai',
+        reference: null
+      };
     } catch (aiError) {
       console.error('[ExecutionAgent] AI script recovery failed:', aiError.message);
-      return null;
+      return { script: null, method: null };
     }
   }
 
   /**
-   * Execute script task
+   * Execute script task with logging and learning
    */
   async executeScriptTask(node, instance) {
     const taskData = node.data || {};
     const scriptType = taskData.scriptType || 'javascript';
+    const startTime = Date.now();
+    const workflowId = instance.workflowId || 'unknown';
 
     if (scriptType.toLowerCase() === 'javascript') {
       const originalScript = taskData.script || 'return { executed: true };';
       const helpers = this.getHelperFunctions();
       let attemptCount = 0;
       let currentScript = originalScript;
+      let fixMethod = null;
+      let lastError = null;
 
-      // Try up to 2 times: original script, then AI-fixed script
-      while (attemptCount < 2) {
+      // Try up to 3 times: original, cached fix, then AI-generated fix
+      while (attemptCount < 3) {
         attemptCount++;
 
         try {
@@ -328,32 +373,99 @@ Fix the script to accomplish the original intent while:
           );
 
           const result = fn(instance.processData, helpers);
+          const executionTime = Date.now() - startTime;
 
-          if (attemptCount > 1) {
-            console.log('[ExecutionAgent] ✓ AI-fixed script executed successfully!');
+          // Log successful execution
+          this.executionLogDB.logExecution({
+            workflowId,
+            instanceId: instance.id,
+            nodeId: node.id,
+            nodeType: node.type,
+            taskLabel: taskData.label,
+            status: attemptCount > 1 ? 'fixed' : 'success',
+            originalScript,
+            fixedScript: attemptCount > 1 ? currentScript : null,
+            fixMethod,
+            executionTime,
+            retryCount: attemptCount - 1
+          });
+
+          // If this was a successful fix, store it for future reference
+          if (attemptCount > 1 && fixMethod) {
+            this.executionLogDB.storeFix({
+              errorType: lastError.name || 'Error',
+              errorMessage: lastError.message,
+              originalScript,
+              fixedScript: currentScript,
+              taskContext: {
+                label: taskData.label,
+                description: taskData.description
+              }
+            });
+
+            console.log(`[ExecutionAgent] ✓ ${fixMethod === 'cached' ? 'Cached' : 'AI'} fix executed successfully!`);
           }
 
           return result;
         } catch (error) {
           console.error(`[ExecutionAgent] Script execution attempt ${attemptCount} failed:`, error.message);
+          lastError = error;
 
-          // If first attempt failed and AI is available, try to fix it
-          if (attemptCount === 1 && this.useLLM) {
-            const fixedScript = await this.fixScriptWithAI(
+          // If first attempt failed and AI/cache is available, try to fix it
+          if (attemptCount === 1) {
+            const fixResult = await this.fixScriptWithAI(
               originalScript,
               error.message,
               taskData,
-              instance.processData
+              instance.processData,
+              workflowId
             );
 
-            if (fixedScript) {
-              currentScript = fixedScript;
-              console.log('[ExecutionAgent] Retrying with AI-fixed script...');
+            if (fixResult.script) {
+              currentScript = fixResult.script;
+              fixMethod = fixResult.method;
+              console.log(`[ExecutionAgent] Retrying with ${fixMethod} fix...`);
               continue; // Try again with fixed script
             }
           }
 
-          // If we've exhausted attempts or AI fix failed, throw error
+          // If second attempt failed with cached fix, try AI generation
+          if (attemptCount === 2 && fixMethod === 'cached') {
+            console.log('[ExecutionAgent] Cached fix failed, trying AI generation...');
+            const fixResult = await this.fixScriptWithAI(
+              originalScript,
+              error.message,
+              taskData,
+              instance.processData,
+              workflowId
+            );
+
+            if (fixResult.script && fixResult.method === 'ai') {
+              currentScript = fixResult.script;
+              fixMethod = 'ai';
+              console.log('[ExecutionAgent] Retrying with AI-generated fix...');
+              continue; // Try again
+            }
+          }
+
+          // Log failed execution
+          const executionTime = Date.now() - startTime;
+          this.executionLogDB.logExecution({
+            workflowId,
+            instanceId: instance.id,
+            nodeId: node.id,
+            nodeType: node.type,
+            taskLabel: taskData.label,
+            status: 'failed',
+            error: error.message,
+            originalScript,
+            fixedScript: attemptCount > 1 ? currentScript : null,
+            fixMethod,
+            executionTime,
+            retryCount: attemptCount - 1
+          });
+
+          // If we've exhausted attempts, throw error
           throw new Error(`Script execution failed: ${error.message}`);
         }
       }
@@ -407,21 +519,123 @@ Fix the script to accomplish the original intent while:
   }
 
   /**
-   * Execute business rule task
+   * Execute business rule task with computational graph engine
    */
   async executeBusinessRuleTask(node, instance) {
     const taskData = node.data || {};
-    const rules = taskData.rules || [];
+    const nodeId = node.id;
 
-    const validationResults = rules.map(rule => ({
-      rule: rule.name || rule,
-      passed: true // Simplified - should evaluate actual rules
-    }));
+    try {
+      console.log(`[ExecutionAgent] Evaluating rules for node: ${nodeId}`);
 
-    return {
-      validationPassed: validationResults.every(r => r.passed),
-      results: validationResults
-    };
+      // Build context from instance data
+      const context = {
+        ...instance.data,
+        instanceId: instance.id,
+        workflowId: instance.workflowId,
+        initiator: instance.initiator,
+        status: instance.status,
+        createdAt: instance.createdAt
+      };
+
+      // Evaluate all rules attached to this node using computational graph
+      const evaluationResult = await this.rulesEvaluator.evaluateNodeRules(nodeId, context);
+
+      if (!evaluationResult.success) {
+        console.error(`[ExecutionAgent] Rule evaluation failed:`, evaluationResult.error);
+        return {
+          validationPassed: false,
+          error: evaluationResult.error,
+          executionTrace: []
+        };
+      }
+
+      // Process execution trace to determine overall success
+      const trace = evaluationResult.executionTrace || [];
+      const firedRules = trace.filter(t => t.fired);
+      const failedActions = firedRules.some(r =>
+        r.actionsExecuted && r.actionsExecuted.some(a => !a.success)
+      );
+
+      // Check if any rule threw an error or stopped the workflow
+      const hasStopWorkflow = firedRules.some(r =>
+        r.actionsExecuted && r.actionsExecuted.some(a => a.type === 'stopWorkflow')
+      );
+
+      const hasErrors = firedRules.some(r =>
+        r.actionsExecuted && r.actionsExecuted.some(a => a.type === 'throwError' && a.success)
+      );
+
+      console.log(`[ExecutionAgent] Rules evaluation completed:`, {
+        totalRules: trace.length,
+        firedRules: firedRules.length,
+        hasStopWorkflow,
+        hasErrors
+      });
+
+      return {
+        validationPassed: !hasErrors && !failedActions,
+        shouldStop: hasStopWorkflow,
+        rulesExecuted: trace.length,
+        rulesFired: firedRules.length,
+        executionTrace: trace,
+        finalContext: evaluationResult.finalContext,
+        statistics: evaluationResult.statistics,
+        insights: this.rulesEvaluator.getExecutionInsights(trace)
+      };
+
+    } catch (error) {
+      console.error(`[ExecutionAgent] Error in business rule task:`, error);
+      return {
+        validationPassed: false,
+        error: error.message,
+        executionTrace: []
+      };
+    }
+  }
+
+  /**
+   * Evaluate application-level rules with computational graph
+   */
+  async evaluateApplicationRules(applicationId, context = {}) {
+    try {
+      console.log(`[ExecutionAgent] Evaluating application rules for: ${applicationId}`);
+
+      const evaluationResult = await this.rulesEvaluator.evaluateApplicationRules(applicationId, context);
+
+      if (!evaluationResult.success) {
+        console.error(`[ExecutionAgent] Application rule evaluation failed:`, evaluationResult.error);
+        return {
+          success: false,
+          error: evaluationResult.error
+        };
+      }
+
+      const trace = evaluationResult.executionTrace || [];
+      const firedRules = trace.filter(t => t.fired);
+
+      console.log(`[ExecutionAgent] Application rules evaluation completed:`, {
+        totalRules: evaluationResult.statistics?.totalRules || 0,
+        rulesFired: firedRules.length,
+        executionLevels: evaluationResult.statistics?.totalLevels || 0
+      });
+
+      return {
+        success: true,
+        executionTrace: trace,
+        finalContext: evaluationResult.finalContext,
+        statistics: evaluationResult.statistics,
+        graph: evaluationResult.graph,
+        insights: this.rulesEvaluator.getExecutionInsights(trace)
+      };
+
+    } catch (error) {
+      console.error(`[ExecutionAgent] Error evaluating application rules:`, error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
   }
 
   /**

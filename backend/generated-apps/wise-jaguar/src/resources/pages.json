@@ -1,0 +1,360 @@
+[
+  {
+    "id": "onboardingdashboard-1764477850000-abc123",
+    "name": "OnboardingDashboard",
+    "title": "Onboarding Dashboard",
+    "description": "Central dashboard displaying onboarding pipeline, task lists, pending approvals, and progress tracking with role-based views",
+    "route": "/onboarding-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "newhireintakeform-1764477763146-asm3xw"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Onboarding Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage and track onboarding activities across your organization",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Onboarding Pipeline",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "NewHire.aggregateByStatus",
+            "content": [
+              {
+                "type": "metric",
+                "label": "Pending Start",
+                "value": "{{count.pending}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#64748B"
+                },
+                "valueStyle": {
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#F59E0B"
+                }
+              },
+              {
+                "type": "metric",
+                "label": "In Progress",
+                "value": "{{count.in_progress}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#64748B"
+                },
+                "valueStyle": {
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#3B82F6"
+                }
+              },
+              {
+                "type": "metric",
+                "label": "Needs Attention",
+                "value": "{{count.blocked}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#64748B"
+                },
+                "valueStyle": {
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#EF4444"
+                }
+              },
+              {
+                "type": "metric",
+                "label": "Completed",
+                "value": "{{count.completed}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#64748B"
+                },
+                "valueStyle": {
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#10B981"
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Active New Hires",
+              "dataSource": "NewHire",
+              "columns": [
+                {
+                  "key": "fullName",
+                  "label": "Name",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "position",
+                  "label": "Position",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#64748B"
+                  }
+                },
+                {
+                  "key": "department",
+                  "label": "Department",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#64748B"
+                  }
+                },
+                {
+                  "key": "startDate",
+                  "label": "Start Date",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#64748B"
+                  }
+                },
+                {
+                  "key": "progress",
+                  "label": "Progress",
+                  "type": "progress",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "500",
+                    "padding": "4px 12px",
+                    "borderRadius": "6px"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "type": "navigate",
+                  "target": "/newhire/{{id}}"
+                }
+              ],
+              "filters": [
+                {
+                  "field": "status",
+                  "operator": "in",
+                  "value": [
+                    "pending",
+                    "in_progress"
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "NewHire.list"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Pending Tasks & Approvals",
+              "layout": "list",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "OnboardingTask.pendingTasks",
+            "content": [
+              {
+                "type": "list",
+                "items": "{{tasks}}",
+                "itemTemplate": {
+                  "title": "{{taskName}}",
+                  "subtitle": "{{newHireName}} - Due: {{dueDate}}",
+                  "badge": "{{priority}}",
+                  "action": {
+                    "label": "Review",
+                    "type": "navigate",
+                    "target": "/task/{{taskId}}"
+                  },
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "padding": "16px",
+                    "borderBottom": "1px solid #E2E8F0"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Add New Hire",
+              "variant": "primary",
+              "icon": "add",
+              "action": {
+                "type": "navigate",
+                "target": "/newhire/create"
+              },
+              "style": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#3B82F6",
+                "color": "#FFFFFF",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)",
+                "cursor": "pointer"
+              }
+            },
+            "formRef": "newhireintakeform-1764477763146-asm3xw"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/newhire/{{id}}"
+        },
+        "create": {
+          "type": "navigate",
+          "target": "/newhire/create"
+        },
+        "task": {
+          "type": "navigate",
+          "target": "/task/{{taskId}}"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/onboarding-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "New Hires",
+          "route": "/newhires",
+          "icon": "people"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks",
+          "icon": "checklist"
+        },
+        {
+          "label": "Documents",
+          "route": "/documents",
+          "icon": "description"
+        },
+        {
+          "label": "Equipment",
+          "route": "/equipment",
+          "icon": "devices"
+        },
+        {
+          "label": "Training",
+          "route": "/training",
+          "icon": "school"
+        }
+      ]
+    },
+    "layout": {
+      "type": "dashboard",
+      "responsive": true,
+      "spacing": "normal"
+    },
+    "workflowId": "workflow_1734879456123"
+  }
+]

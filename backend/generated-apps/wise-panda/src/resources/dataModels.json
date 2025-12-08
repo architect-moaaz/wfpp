@@ -1,0 +1,352 @@
+[
+  {
+    "id": "employee",
+    "name": "Employee",
+    "description": "Store employee profile information and manager assignments",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the employee",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "Employee's first name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "description": "Employee's last name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Employee's work email address",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "managerId",
+        "type": "string",
+        "description": "Reference to the employee's direct manager for approval workflows",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "Employee's job role or designation",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isHRAdmin",
+        "type": "boolean",
+        "description": "Indicates if employee has HR administrator privileges",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "hireDate",
+        "type": "date",
+        "description": "Date when the employee was hired",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "self-referencing",
+        "field": "managerId",
+        "references": "Employee.id",
+        "description": "Links employee to their manager"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "managerId"
+        ]
+      }
+    ],
+    "constraints": {
+      "email": "Must be a valid email format",
+      "managerId": "Must reference an existing employee ID or be null for top-level employees"
+    },
+    "workflowId": "workflow_1734746875432"
+  },
+  {
+    "id": "leave-policy",
+    "name": "LeavePolicy",
+    "description": "Defines leave types, entitlements, and organizational leave rules for employees",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the leave policy",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaveType",
+        "type": "string",
+        "description": "Type of leave (annual, sick, personal, maternity, paternity, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entitlementDays",
+        "type": "number",
+        "description": "Number of days entitled per year or period",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "accrualRate",
+        "type": "number",
+        "description": "Rate at which leave accrues (days per month)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "carryOverAllowed",
+        "type": "boolean",
+        "description": "Whether unused leave can be carried over to next period",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "maxCarryOverDays",
+        "type": "number",
+        "description": "Maximum number of days that can be carried over",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this leave policy is currently active",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "leaveType",
+      "isActive"
+    ],
+    "constraints": {
+      "entitlementDays": "Must be greater than or equal to 0",
+      "accrualRate": "Must be greater than 0 if specified",
+      "maxCarryOverDays": "Must not exceed entitlementDays"
+    },
+    "workflowId": "workflow_1734746875432"
+  },
+  {
+    "id": "leave-balance",
+    "name": "LeaveBalance",
+    "description": "Track current leave balances for each employee by leave type",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the leave balance record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee who owns this leave balance",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leavePolicyId",
+        "type": "string",
+        "description": "Reference to the leave policy type (vacation, sick, personal, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "availableBalance",
+        "type": "number",
+        "description": "Current available leave balance in days or hours",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "usedBalance",
+        "type": "number",
+        "description": "Total leave already used in the current period",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "pendingBalance",
+        "type": "number",
+        "description": "Leave amount currently pending approval",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "lastUpdated",
+        "type": "date",
+        "description": "Timestamp of the last balance update",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId",
+        "description": "Each leave balance belongs to one employee"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "LeavePolicy",
+        "foreignKey": "leavePolicyId",
+        "description": "Each leave balance is associated with one leave policy type"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_employee_policy",
+        "fields": [
+          "employeeId",
+          "leavePolicyId"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_employee",
+        "fields": [
+          "employeeId"
+        ]
+      }
+    ],
+    "constraints": {
+      "uniqueEmployeePolicy": "An employee can have only one balance record per leave policy type",
+      "nonNegativeBalances": "availableBalance, usedBalance, and pendingBalance must be non-negative values"
+    },
+    "workflowId": "workflow_1734746875432"
+  },
+  {
+    "id": "leave-request",
+    "name": "LeaveRequest",
+    "description": "Store leave request details, status, and approval history",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the leave request",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee submitting the request",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaveType",
+        "type": "string",
+        "description": "Type of leave (vacation, sick, personal, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "startDate",
+        "type": "date",
+        "description": "Start date of the leave period",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "endDate",
+        "type": "date",
+        "description": "End date of the leave period",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "reason",
+        "type": "string",
+        "description": "Employee's reason for requesting leave",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status (pending, approved, rejected, cancelled)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "approvalHistory",
+        "type": "json",
+        "description": "Array of approval records with approver, action, timestamp, and comments",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "LeavePolicy",
+        "foreignKey": "leaveType"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "employeeId",
+          "status"
+        ]
+      },
+      {
+        "fields": [
+          "startDate",
+          "endDate"
+        ]
+      }
+    ],
+    "constraints": {
+      "statusValues": [
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled"
+      ],
+      "dateValidation": "endDate must be greater than or equal to startDate"
+    },
+    "workflowId": "workflow_1734746875432"
+  }
+]

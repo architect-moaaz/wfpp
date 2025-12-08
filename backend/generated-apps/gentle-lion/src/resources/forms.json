@@ -1,0 +1,622 @@
+[
+  {
+    "id": "fulfillment-shipping-form",
+    "name": "FulfillmentShippingForm",
+    "steps": [],
+    "title": "Process Order Fulfillment & Shipping",
+    "config": {},
+    "fields": [
+      {
+        "id": "order-id",
+        "name": "orderId",
+        "type": "text",
+        "label": "Order ID",
+        "required": true,
+        "validation": {
+          "message": "Please enter a valid order ID (e.g., ORD-12345)",
+          "pattern": "^ORD-[0-9]{5,}$"
+        },
+        "placeholder": "ORD-12345",
+        "defaultValue": null
+      },
+      {
+        "id": "items-confirmed",
+        "name": "itemsConfirmed",
+        "type": "checkbox",
+        "label": "All items picked and verified",
+        "required": true,
+        "validation": {
+          "message": "You must confirm all items have been picked"
+        },
+        "placeholder": "",
+        "defaultValue": false
+      },
+      {
+        "id": "package-weight",
+        "name": "packageWeight",
+        "type": "number",
+        "label": "Package Weight (kg)",
+        "required": true,
+        "validation": {
+          "max": 1000,
+          "min": 0.1,
+          "message": "Weight must be between 0.1 and 1000 kg"
+        },
+        "placeholder": "2.5",
+        "defaultValue": null
+      },
+      {
+        "id": "shipping-provider",
+        "name": "shippingProvider",
+        "type": "select",
+        "label": "Shipping Provider",
+        "options": [
+          "FedEx",
+          "UPS",
+          "DHL",
+          "USPS",
+          "Local Courier"
+        ],
+        "required": true,
+        "placeholder": "Select shipping provider",
+        "defaultValue": null
+      },
+      {
+        "id": "tracking-number",
+        "name": "trackingNumber",
+        "type": "text",
+        "label": "Tracking Number",
+        "required": true,
+        "validation": {
+          "message": "Please enter a valid tracking number (10-30 alphanumeric characters)",
+          "pattern": "^[A-Z0-9]{10,30}$"
+        },
+        "placeholder": "1Z999AA10123456784",
+        "defaultValue": null
+      },
+      {
+        "id": "estimated-delivery",
+        "name": "estimatedDelivery",
+        "type": "date",
+        "label": "Estimated Delivery Date",
+        "required": true,
+        "validation": {
+          "min": "today",
+          "message": "Delivery date must be today or in the future"
+        },
+        "placeholder": "",
+        "defaultValue": null
+      },
+      {
+        "id": "shipping-notes",
+        "name": "shippingNotes",
+        "type": "textarea",
+        "label": "Shipping Notes (Optional)",
+        "required": false,
+        "validation": {
+          "max": 500,
+          "message": "Notes must not exceed 500 characters"
+        },
+        "placeholder": "Any special handling instructions or notes...",
+        "defaultValue": null
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "order-section",
+          "title": "Order Information",
+          "fieldIds": [
+            "order-id",
+            "items-confirmed"
+          ]
+        },
+        {
+          "id": "package-section",
+          "title": "Package Details",
+          "fieldIds": [
+            "package-weight"
+          ]
+        },
+        {
+          "id": "shipping-section",
+          "title": "Shipping Information",
+          "fieldIds": [
+            "shipping-provider",
+            "tracking-number",
+            "estimated-delivery"
+          ]
+        },
+        {
+          "id": "notes-section",
+          "title": "Additional Information",
+          "fieldIds": [
+            "shipping-notes"
+          ]
+        }
+      ]
+    },
+    "nodeId": null,
+    "styling": {},
+    "formType": null,
+    "metadata": {},
+    "gridLayout": [],
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "description": "Confirm picked items, enter shipping details, and initiate order shipment",
+    "data_model_id": null
+  },
+  {
+    "id": "order-approval-form",
+    "name": "OrderApprovalForm",
+    "steps": [],
+    "title": "Order Approval Review",
+    "config": {},
+    "fields": [
+      {
+        "id": "order-id",
+        "name": "orderId",
+        "type": "text",
+        "label": "Order ID",
+        "required": true,
+        "validation": {
+          "message": "Please enter a valid order ID (e.g., ORD-12345)",
+          "pattern": "^ORD-[0-9]{5,}$"
+        },
+        "placeholder": "ORD-12345",
+        "defaultValue": null
+      },
+      {
+        "id": "payment-status",
+        "name": "paymentStatus",
+        "type": "select",
+        "label": "Payment Status",
+        "options": [
+          "Verified - Paid in Full",
+          "Verified - Partial Payment",
+          "Pending Verification",
+          "Payment Failed"
+        ],
+        "required": true,
+        "placeholder": "Select payment status",
+        "defaultValue": null
+      },
+      {
+        "id": "inventory-status",
+        "name": "inventoryStatus",
+        "type": "select",
+        "label": "Inventory Availability",
+        "options": [
+          "All Items Available",
+          "Partial Stock Available",
+          "Backordered Items",
+          "Out of Stock"
+        ],
+        "required": true,
+        "placeholder": "Select inventory status",
+        "defaultValue": null
+      },
+      {
+        "id": "approval-decision",
+        "name": "approvalDecision",
+        "type": "radio",
+        "label": "Approval Decision",
+        "options": [
+          "Approve",
+          "Reject",
+          "Hold for Review"
+        ],
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "id": "special-handling",
+        "name": "specialHandling",
+        "type": "checkbox",
+        "label": "Special Handling Required",
+        "required": false,
+        "defaultValue": false
+      },
+      {
+        "id": "handling-instructions",
+        "name": "handlingInstructions",
+        "type": "textarea",
+        "label": "Special Handling Instructions",
+        "required": false,
+        "validation": {
+          "max": 500,
+          "message": "Instructions must not exceed 500 characters"
+        },
+        "placeholder": "Enter any special handling or shipping instructions...",
+        "defaultValue": null
+      },
+      {
+        "id": "approval-comments",
+        "name": "approvalComments",
+        "type": "textarea",
+        "label": "Approval Comments",
+        "required": true,
+        "validation": {
+          "max": 1000,
+          "min": 10,
+          "message": "Comments must be between 10 and 1000 characters"
+        },
+        "placeholder": "Enter comments or reasons for your decision...",
+        "defaultValue": null
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": [
+        {
+          "id": "order-info",
+          "title": "Order Information",
+          "fieldIds": [
+            "order-id"
+          ]
+        },
+        {
+          "id": "verification-status",
+          "title": "Verification Status",
+          "fieldIds": [
+            "payment-status",
+            "inventory-status"
+          ]
+        },
+        {
+          "id": "approval-section",
+          "title": "Approval Decision",
+          "fieldIds": [
+            "approval-decision",
+            "special-handling",
+            "handling-instructions",
+            "approval-comments"
+          ]
+        }
+      ]
+    },
+    "nodeId": null,
+    "styling": {},
+    "formType": null,
+    "metadata": {},
+    "gridLayout": [],
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "description": "Review and approve orders after payment and inventory verification",
+    "data_model_id": null
+  },
+  {
+    "id": "order-submission-form",
+    "name": "OrderSubmissionForm",
+    "steps": [],
+    "title": "Submit New Order",
+    "config": {},
+    "fields": [
+      {
+        "id": "product-selection",
+        "name": "productId",
+        "type": "select",
+        "label": "Product",
+        "options": [
+          "Loading products...",
+          "Product A - In Stock",
+          "Product B - In Stock",
+          "Product C - Low Stock"
+        ],
+        "required": true,
+        "validation": {
+          "message": "Please select a product from inventory"
+        },
+        "placeholder": "Select a product",
+        "defaultValue": null
+      },
+      {
+        "id": "quantity",
+        "name": "quantity",
+        "type": "number",
+        "label": "Quantity",
+        "required": true,
+        "validation": {
+          "max": 999,
+          "min": 1,
+          "message": "Quantity must be between 1 and 999"
+        },
+        "placeholder": "Enter quantity",
+        "defaultValue": 1
+      },
+      {
+        "id": "customer-name",
+        "name": "customerName",
+        "type": "text",
+        "label": "Customer Name",
+        "required": true,
+        "validation": {
+          "message": "Please enter a valid name (2-50 characters)",
+          "pattern": "^[a-zA-Z\\s]{2,50}$"
+        },
+        "placeholder": "Enter full name",
+        "defaultValue": null
+      },
+      {
+        "id": "shipping-address",
+        "name": "shippingAddress",
+        "type": "textarea",
+        "label": "Shipping Address",
+        "required": true,
+        "validation": {
+          "max": 200,
+          "min": 10,
+          "message": "Address must be between 10 and 200 characters"
+        },
+        "placeholder": "Enter complete delivery address",
+        "defaultValue": null
+      },
+      {
+        "id": "delivery-priority",
+        "name": "deliveryPriority",
+        "type": "select",
+        "label": "Delivery Priority",
+        "options": [
+          "Standard (5-7 business days)",
+          "Express (2-3 business days)",
+          "Overnight (1 business day)"
+        ],
+        "required": true,
+        "validation": {
+          "message": "Please select a delivery option"
+        },
+        "placeholder": "Select shipping speed",
+        "defaultValue": "Standard (5-7 business days)"
+      },
+      {
+        "id": "contact-email",
+        "name": "contactEmail",
+        "type": "email",
+        "label": "Contact Email",
+        "required": true,
+        "validation": {
+          "message": "Please enter a valid email address",
+          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+        },
+        "placeholder": "email@example.com",
+        "defaultValue": null
+      },
+      {
+        "id": "special-instructions",
+        "name": "specialInstructions",
+        "type": "textarea",
+        "label": "Special Instructions",
+        "required": false,
+        "validation": {
+          "max": 500,
+          "message": "Instructions cannot exceed 500 characters"
+        },
+        "placeholder": "Any special handling or delivery instructions (optional)",
+        "defaultValue": null
+      },
+      {
+        "id": "terms-agreement",
+        "name": "termsAgreement",
+        "type": "checkbox",
+        "label": "I agree to the terms and conditions and confirm order details are accurate",
+        "required": true,
+        "validation": {
+          "message": "You must agree to the terms to submit the order"
+        },
+        "placeholder": "",
+        "defaultValue": false
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": [
+        {
+          "id": "product-section",
+          "title": "Product Selection",
+          "fieldIds": [
+            "product-selection",
+            "quantity"
+          ]
+        },
+        {
+          "id": "customer-section",
+          "title": "Customer & Shipping Information",
+          "fieldIds": [
+            "customer-name",
+            "contact-email",
+            "shipping-address",
+            "delivery-priority"
+          ]
+        },
+        {
+          "id": "additional-section",
+          "title": "Additional Details",
+          "fieldIds": [
+            "special-instructions",
+            "terms-agreement"
+          ]
+        }
+      ]
+    },
+    "nodeId": null,
+    "styling": {
+      "colors": {
+        "text": "#333333",
+        "border": "#cccccc",
+        "primary": "#007bff",
+        "secondary": "#6c757d",
+        "background": "#ffffff"
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "height": "42px",
+          "borderWidth": "1px",
+          "borderRadius": "4px"
+        },
+        "button": {
+          "primary": {
+            "color": "#ffffff",
+            "padding": "12px 24px",
+            "background": "#007bff"
+          }
+        }
+      },
+      "typography": {
+        "fontSize": {
+          "input": "16px",
+          "label": "14px"
+        },
+        "fontFamily": "Arial, sans-serif",
+        "fontWeight": {
+          "input": "400",
+          "label": "600"
+        }
+      }
+    },
+    "formType": null,
+    "metadata": {},
+    "gridLayout": [],
+    "validation": {
+      "mode": "onBlur",
+      "showErrors": true
+    },
+    "description": "Select products and specify delivery details to complete your order",
+    "data_model_id": null
+  },
+  {
+    "id": "payment-verification-form",
+    "name": "PaymentVerificationForm",
+    "steps": [],
+    "title": "Payment Verification",
+    "config": {},
+    "fields": [
+      {
+        "id": "order-id",
+        "name": "orderId",
+        "type": "text",
+        "label": "Order ID",
+        "required": true,
+        "validation": {
+          "message": "Please enter a valid order ID",
+          "pattern": "^[A-Z0-9-]+$"
+        },
+        "placeholder": "e.g., ORD-2024-001234",
+        "defaultValue": null
+      },
+      {
+        "id": "transaction-id",
+        "name": "transactionId",
+        "type": "text",
+        "label": "Transaction ID",
+        "required": true,
+        "validation": {
+          "max": 100,
+          "min": 10,
+          "message": "Transaction ID must be between 10 and 100 characters"
+        },
+        "placeholder": "Payment gateway transaction reference",
+        "defaultValue": null
+      },
+      {
+        "id": "payment-amount",
+        "name": "paymentAmount",
+        "type": "number",
+        "label": "Payment Amount",
+        "required": true,
+        "validation": {
+          "min": 0.01,
+          "message": "Payment amount must be greater than 0"
+        },
+        "placeholder": "0.00",
+        "defaultValue": null
+      },
+      {
+        "id": "payment-method",
+        "name": "paymentMethod",
+        "type": "select",
+        "label": "Payment Method",
+        "options": [
+          "Credit Card",
+          "Debit Card",
+          "PayPal",
+          "Bank Transfer",
+          "Digital Wallet",
+          "Other"
+        ],
+        "required": true,
+        "placeholder": "Select payment method",
+        "defaultValue": null
+      },
+      {
+        "id": "verification-status",
+        "name": "verificationStatus",
+        "type": "radio",
+        "label": "Verification Status",
+        "options": [
+          "Approved",
+          "Rejected",
+          "Pending Review"
+        ],
+        "required": true,
+        "defaultValue": "Pending Review"
+      },
+      {
+        "id": "verification-notes",
+        "name": "verificationNotes",
+        "type": "textarea",
+        "label": "Verification Notes",
+        "required": false,
+        "validation": {
+          "max": 500,
+          "message": "Notes cannot exceed 500 characters"
+        },
+        "placeholder": "Add any notes regarding this payment verification (e.g., reason for rejection, discrepancies found, etc.)",
+        "defaultValue": null
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": [
+        {
+          "id": "payment-details",
+          "title": "Payment Details",
+          "fieldIds": [
+            "order-id",
+            "transaction-id",
+            "payment-amount",
+            "payment-method"
+          ]
+        },
+        {
+          "id": "verification-section",
+          "title": "Verification Decision",
+          "fieldIds": [
+            "verification-status",
+            "verification-notes"
+          ]
+        }
+      ]
+    },
+    "nodeId": null,
+    "styling": {},
+    "formType": null,
+    "metadata": {},
+    "gridLayout": [],
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "description": "Verify and confirm payment transactions from payment gateway",
+    "data_model_id": null
+  }
+]

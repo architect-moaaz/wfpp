@@ -1,0 +1,495 @@
+[
+  {
+    "id": "workflow_1703876543",
+    "name": "Municipal Parking Ticket Management System",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Parking Violation Detected",
+          "formId": "ticket-issuance-form",
+          "trigger": "Officer identifies parking violation",
+          "formName": "TicketIssuanceForm",
+          "description": "Initiates the parking ticket management workflow when an officer identifies a violation"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Issue Parking Ticket",
+          "formId": "payment-submission-form",
+          "formName": "PaymentSubmissionForm",
+          "priority": "High",
+          "taskName": "create_ticket",
+          "assignedTo": "parking_officer",
+          "description": "Officer creates parking ticket record with all violation details",
+          "instructions": "Fill out ticket details including vehicle info, violation type, location, and timestamp"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Validate Ticket Data",
+          "rules": [
+            "license_plate_required",
+            "violation_code_required",
+            "location_required",
+            "officer_id_required"
+          ],
+          "ruleType": "data_completeness",
+          "description": "Ensures all required ticket fields are properly filled before processing"
+        },
+        "type": "validation",
+        "position": {
+          "x": 100,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Create Ticket Record",
+          "script": "Generate unique ticket number, calculate fine amount, set initial status",
+          "scriptType": "JavaScript",
+          "description": "Creates official ticket record in system database with unique identifier"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 100,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Notification Method Available",
+          "branches": "Send notifications via multiple channels simultaneously",
+          "description": "Determines available notification channels for citizen contact",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Send Mail Notice",
+          "channel": "Mail",
+          "template": "parking_ticket_notice_mail",
+          "recipient": "vehicle_owner",
+          "description": "Sends physical mail notification to registered vehicle owner"
+        },
+        "type": "notification",
+        "position": {
+          "x": 0,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Send Email Notice",
+          "channel": "Email",
+          "template": "parking_ticket_notice_email",
+          "recipient": "vehicle_owner",
+          "description": "Sends email notification if email address is available"
+        },
+        "type": "notification",
+        "position": {
+          "x": 100,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Send SMS Alert",
+          "channel": "SMS",
+          "template": "parking_ticket_notice_sms",
+          "recipient": "vehicle_owner",
+          "description": "Sends SMS alert if phone number is available"
+        },
+        "type": "notification",
+        "position": {
+          "x": 200,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Wait for Citizen Response",
+          "duration": "P30D",
+          "timerType": "duration",
+          "description": "30-day grace period for citizen to respond (pay or dispute)"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 100,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Citizen Action Taken",
+          "condition": "Check if payment made or dispute filed",
+          "description": "Routes based on citizen's response to the ticket",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Process Payment",
+          "script": "Validate payment, update ticket status to paid, generate receipt",
+          "scriptType": "JavaScript",
+          "description": "Processes citizen payment and closes ticket"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -100,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Review Dispute",
+          "formId": "dispute-management-form",
+          "formName": "DisputeManagementForm",
+          "priority": "Medium",
+          "taskName": "review_dispute",
+          "assignedTo": "admin_staff",
+          "description": "Administrative review of citizen dispute with evidence evaluation",
+          "instructions": "Review dispute evidence, check violation validity, make decision"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 0,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Dispute Decision",
+          "condition": "Admin approves or rejects dispute",
+          "description": "Routes based on administrative decision on dispute",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 0,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Approve Dispute",
+          "script": "Cancel ticket, refund payment if already made, update status",
+          "scriptType": "JavaScript",
+          "description": "Processes approved dispute by canceling ticket"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -100,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Dispute Rejected Notice",
+          "channel": "Email",
+          "template": "dispute_rejection_notice",
+          "recipient": "citizen",
+          "description": "Notifies citizen of rejected dispute with payment deadline"
+        },
+        "type": "notification",
+        "position": {
+          "x": 100,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Escalation Risk Assessment",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze ticket details and citizen history to determine escalation risk: Ticket Amount: ${processData.fine_amount}, Days Overdue: ${processData.days_overdue}, Previous Violations: ${processData.violation_history}, Payment History: ${processData.payment_history}",
+          "maxTokens": 500,
+          "description": "AI assessment of ticket escalation risk based on multiple factors",
+          "temperature": 0.3,
+          "outputVariable": "escalation_risk"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 200,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Escalation Required",
+          "condition": "Risk assessment determines escalation level",
+          "description": "Routes based on AI risk assessment for overdue tickets",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 200,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Final Notice",
+          "channel": "Mail",
+          "template": "final_notice_template",
+          "recipient": "vehicle_owner",
+          "description": "Sends final payment notice before legal escalation"
+        },
+        "type": "notification",
+        "position": {
+          "x": 150,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Legal Escalation",
+          "formId": "ticket-issuance-form",
+          "formName": "TicketIssuanceForm",
+          "priority": "High",
+          "taskName": "legal_escalation",
+          "assignedTo": "legal_department",
+          "description": "Escalates unpaid tickets to legal department for enforcement",
+          "instructions": "Prepare case for collection agency or court proceedings"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 250,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_20",
+        "data": {
+          "label": "Generate Reports",
+          "script": "Update violation statistics, revenue tracking, officer performance metrics",
+          "scriptType": "JavaScript",
+          "description": "Updates system analytics and generates management reports"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 100,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_21",
+        "data": {
+          "label": "Ticket Resolved",
+          "result": "Ticket processed through complete lifecycle",
+          "description": "Final state indicating ticket has been fully processed"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 100,
+          "y": 1250
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-28T01:16:51.591+05:30",
+    "updated_at": "2025-11-28T01:16:51.591+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_5",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_5",
+        "target": "node_6",
+        "isDefault": true
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_7",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_8",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_12",
+        "label": "Payment Made",
+        "source": "node_10",
+        "target": "node_11",
+        "condition": "processData.action === 'payment'"
+      },
+      {
+        "id": "edge_13",
+        "label": "Dispute Filed",
+        "source": "node_10",
+        "target": "node_12",
+        "condition": "processData.action === 'dispute'"
+      },
+      {
+        "id": "edge_14",
+        "label": "No Response",
+        "source": "node_10",
+        "target": "node_16",
+        "condition": "processData.action === 'none'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_15",
+        "source": "node_11",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_17",
+        "label": "Approved",
+        "source": "node_13",
+        "target": "node_14",
+        "condition": "processData.dispute_decision === 'approved'"
+      },
+      {
+        "id": "edge_18",
+        "label": "Rejected",
+        "source": "node_13",
+        "target": "node_15",
+        "condition": "processData.dispute_decision === 'rejected'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_19",
+        "source": "node_14",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_15",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_16",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_22",
+        "label": "Medium Risk",
+        "source": "node_17",
+        "target": "node_18",
+        "condition": "processData.escalation_risk === 'medium'"
+      },
+      {
+        "id": "edge_23",
+        "label": "High Risk",
+        "source": "node_17",
+        "target": "node_19",
+        "condition": "processData.escalation_risk === 'high'"
+      },
+      {
+        "id": "edge_24",
+        "label": "Low Risk",
+        "source": "node_17",
+        "target": "node_20",
+        "condition": "processData.escalation_risk === 'low'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_25",
+        "source": "node_18",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_26",
+        "source": "node_19",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_27",
+        "source": "node_20",
+        "target": "node_21"
+      }
+    ],
+    "description": ""
+  }
+]

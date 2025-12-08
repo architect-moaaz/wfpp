@@ -1,0 +1,559 @@
+[
+  {
+    "id": "app_1764186079315_workflow_1735065434_form_001",
+    "name": "ticket_booking_wizard",
+    "steps": [],
+    "title": null,
+    "config": {},
+    "fields": [],
+    "layout": {},
+    "nodeId": null,
+    "styling": {},
+    "formType": null,
+    "metadata": {},
+    "gridLayout": [],
+    "validation": {},
+    "description": "Book your travel tickets through our secure booking system",
+    "data_model_id": null
+  },
+  {
+    "id": "app_1764186079315_workflow_1735065434_form_002",
+    "name": "booking_confirmation_form",
+    "steps": [],
+    "title": null,
+    "config": {},
+    "fields": [
+      {
+        "type": "text",
+        "label": "Booking Reference Number",
+        "section": "booking_summary",
+        "readonly": true,
+        "fieldName": "booking_reference",
+        "defaultValue": "AUTO_GENERATED"
+      },
+      {
+        "type": "switch",
+        "label": "Customer Details Confirmation",
+        "section": "booking_summary",
+        "tooltip": "Confirm that all passenger details are correct",
+        "required": true,
+        "fieldName": "customer_confirmation"
+      },
+      {
+        "type": "richtext",
+        "label": "Detailed Itinerary",
+        "section": "itinerary_details",
+        "readonly": true,
+        "fieldName": "itinerary_review",
+        "defaultValue": "POPULATED_FROM_BOOKING_SYSTEM"
+      },
+      {
+        "type": "matrix",
+        "label": "Final Flight Preferences",
+        "options": [
+          "Confirmed",
+          "Change Requested",
+          "No Preference"
+        ],
+        "section": "itinerary_details",
+        "fieldName": "flight_preferences_final",
+        "questions": [
+          "Seat Selection",
+          "Meal Preference",
+          "Baggage Options"
+        ]
+      },
+      {
+        "type": "currency",
+        "label": "Total Amount Due",
+        "section": "payment_processing",
+        "fontSize": "large",
+        "readonly": true,
+        "fieldName": "total_amount_due",
+        "fontWeight": "bold",
+        "currencySymbol": "$"
+      },
+      {
+        "type": "dataGrid",
+        "label": "Payment Breakdown",
+        "columns": [
+          {
+            "field": "description",
+            "title": "Item"
+          },
+          {
+            "field": "quantity",
+            "title": "Qty"
+          },
+          {
+            "field": "unit_price",
+            "title": "Unit Price"
+          },
+          {
+            "field": "total",
+            "title": "Total"
+          }
+        ],
+        "section": "payment_processing",
+        "readonly": true,
+        "fieldName": "payment_breakdown"
+      },
+      {
+        "type": "radio",
+        "label": "Payment Method",
+        "options": [
+          "Credit Card on File",
+          "New Credit Card",
+          "Bank Transfer",
+          "Corporate Account"
+        ],
+        "section": "payment_processing",
+        "required": true,
+        "fieldName": "final_payment_method"
+      },
+      {
+        "type": "creditcard",
+        "label": "New Payment Details",
+        "section": "payment_processing",
+        "required": true,
+        "condition": "== 'New Credit Card'",
+        "dependsOn": "final_payment_method",
+        "fieldName": "new_payment_details"
+      },
+      {
+        "text": "I authorize the charge of the total amount to my selected payment method",
+        "type": "consent",
+        "label": "Payment Authorization",
+        "section": "payment_processing",
+        "required": true,
+        "fieldName": "payment_authorization"
+      },
+      {
+        "type": "radio",
+        "label": "Travel Insurance",
+        "options": [
+          "Add Travel Insurance (+$49)",
+          "Decline Insurance",
+          "I have my own coverage"
+        ],
+        "section": "payment_processing",
+        "fieldName": "insurance_option",
+        "defaultValue": "Decline Insurance"
+      },
+      {
+        "type": "calculated",
+        "label": "Insurance Cost Adjustment",
+        "formula": "insurance_option == 'Add Travel Insurance (+$49)' ? 49 : 0",
+        "section": "payment_processing",
+        "readonly": true,
+        "fieldName": "insurance_cost_adjustment",
+        "dependencies": [
+          "insurance_option"
+        ],
+        "currencySymbol": "$"
+      },
+      {
+        "type": "text",
+        "label": "Emergency Contact Name",
+        "section": "emergency_contacts",
+        "required": true,
+        "fieldName": "emergency_contact_name",
+        "placeholder": "Full name of emergency contact"
+      },
+      {
+        "type": "phoneInput",
+        "label": "Emergency Contact Phone",
+        "section": "emergency_contacts",
+        "required": true,
+        "fieldName": "emergency_contact_phone",
+        "defaultCountry": "US"
+      },
+      {
+        "type": "dropdown",
+        "label": "Relationship to Passenger",
+        "options": [
+          "Spouse",
+          "Parent",
+          "Child",
+          "Sibling",
+          "Friend",
+          "Other"
+        ],
+        "section": "emergency_contacts",
+        "required": true,
+        "fieldName": "emergency_contact_relationship"
+      },
+      {
+        "type": "textarea",
+        "label": "Special Assistance Requests",
+        "section": "emergency_contacts",
+        "fieldName": "special_assistance_requests",
+        "placeholder": "Any additional assistance needed during travel"
+      },
+      {
+        "type": "checkbox",
+        "label": "Communication Preferences",
+        "options": [
+          "Email updates about flight status",
+          "SMS notifications for gate changes",
+          "WhatsApp messages for important updates",
+          "Newsletter subscription for travel deals"
+        ],
+        "section": "emergency_contacts",
+        "fieldName": "communication_preferences"
+      },
+      {
+        "type": "esign",
+        "label": "Final Confirmation Signature",
+        "section": "emergency_contacts",
+        "tooltip": "Digital signature confirms final booking and payment authorization",
+        "required": true,
+        "fieldName": "final_confirmation_signature",
+        "canvasWidth": 400,
+        "canvasHeight": 150
+      },
+      {
+        "type": "date",
+        "label": "Booking Timestamp",
+        "section": "booking_summary",
+        "readonly": true,
+        "fieldName": "booking_timestamp",
+        "includeTime": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "layout": {},
+    "nodeId": null,
+    "styling": {},
+    "formType": null,
+    "metadata": {},
+    "gridLayout": [],
+    "validation": {},
+    "description": "Final booking confirmation with detailed itinerary review and payment processing",
+    "data_model_id": null
+  },
+  {
+    "id": "app_1764186079315_workflow_1735065434_form_003",
+    "name": "ticket_management_form",
+    "steps": [],
+    "title": null,
+    "config": {},
+    "fields": [
+      {
+        "type": "radio",
+        "label": "Booking Lookup Method",
+        "options": [
+          "Booking Reference",
+          "Email + Last Name",
+          "Phone Number"
+        ],
+        "section": "booking_lookup",
+        "required": true,
+        "fieldName": "lookup_method"
+      },
+      {
+        "type": "text",
+        "label": "Booking Reference Number",
+        "section": "booking_lookup",
+        "required": true,
+        "condition": "== 'Booking Reference'",
+        "dependsOn": "lookup_method",
+        "fieldName": "booking_reference_lookup",
+        "placeholder": "Enter your booking reference"
+      },
+      {
+        "type": "email",
+        "label": "Email Address",
+        "section": "booking_lookup",
+        "required": true,
+        "condition": "== 'Email + Last Name'",
+        "dependsOn": "lookup_method",
+        "fieldName": "email_lookup"
+      },
+      {
+        "type": "text",
+        "label": "Last Name",
+        "section": "booking_lookup",
+        "required": true,
+        "condition": "== 'Email + Last Name'",
+        "dependsOn": "lookup_method",
+        "fieldName": "lastname_lookup"
+      },
+      {
+        "type": "phoneInput",
+        "label": "Phone Number",
+        "section": "booking_lookup",
+        "required": true,
+        "condition": "== 'Phone Number'",
+        "dependsOn": "lookup_method",
+        "fieldName": "phone_lookup"
+      },
+      {
+        "type": "otp",
+        "label": "Verification Code",
+        "length": 6,
+        "numeric": true,
+        "section": "booking_lookup",
+        "tooltip": "Enter the 6-digit code sent to your registered contact",
+        "required": true,
+        "fieldName": "verification_otp"
+      },
+      {
+        "type": "richtext",
+        "label": "Current Booking Details",
+        "section": "booking_lookup",
+        "readonly": true,
+        "fieldName": "current_booking_details",
+        "defaultValue": "POPULATED_AFTER_VERIFICATION"
+      },
+      {
+        "type": "checkbox",
+        "label": "Type of Modification",
+        "options": [
+          "Change Flight Dates",
+          "Change Destinations",
+          "Add/Remove Passengers",
+          "Upgrade/Downgrade Class",
+          "Change Seat Selection",
+          "Modify Special Requests",
+          "Update Contact Information"
+        ],
+        "section": "modification_requests",
+        "fieldName": "modification_type"
+      },
+      {
+        "type": "date",
+        "label": "New Travel Dates",
+        "section": "modification_requests",
+        "condition": "includes 'Change Flight Dates'",
+        "dependsOn": "modification_type",
+        "fieldName": "new_travel_dates",
+        "includeTime": true
+      },
+      {
+        "type": "dataGrid",
+        "label": "Passenger Modifications",
+        "columns": [
+          {
+            "type": "dropdown",
+            "field": "action",
+            "title": "Action",
+            "options": [
+              "Add",
+              "Remove",
+              "Modify"
+            ]
+          },
+          {
+            "field": "passenger_name",
+            "title": "Passenger Name"
+          },
+          {
+            "field": "details",
+            "title": "Details/Changes"
+          }
+        ],
+        "section": "modification_requests",
+        "condition": "includes 'Add/Remove Passengers'",
+        "dependsOn": "modification_type",
+        "fieldName": "passenger_modifications"
+      },
+      {
+        "type": "dropdown",
+        "label": "Requested Class Change",
+        "options": [
+          "Economy to Premium",
+          "Economy to Business",
+          "Economy to First",
+          "Premium to Business",
+          "Premium to First",
+          "Business to First",
+          "Downgrade Options"
+        ],
+        "section": "modification_requests",
+        "condition": "includes 'Upgrade/Downgrade Class'",
+        "dependsOn": "modification_type",
+        "fieldName": "class_upgrade_request"
+      },
+      {
+        "type": "textarea",
+        "label": "Reason for Modification",
+        "section": "modification_requests",
+        "required": true,
+        "fieldName": "modification_reason",
+        "placeholder": "Please provide reason for changes"
+      },
+      {
+        "type": "currency",
+        "label": "Estimated Modification Fees",
+        "section": "modification_requests",
+        "tooltip": "Fees calculated based on airline policies and fare rules",
+        "readonly": true,
+        "fieldName": "modification_fees",
+        "currencySymbol": "$"
+      },
+      {
+        "text": "I understand and agree to pay applicable modification fees",
+        "type": "consent",
+        "label": "Modification Authorization",
+        "section": "modification_requests",
+        "required": true,
+        "fieldName": "modification_authorization"
+      },
+      {
+        "type": "radio",
+        "label": "Cancellation Request Type",
+        "options": [
+          "Full Cancellation",
+          "Partial Cancellation",
+          "Cancel and Rebook Later"
+        ],
+        "section": "cancellation_section",
+        "fieldName": "cancellation_request"
+      },
+      {
+        "type": "dropdown",
+        "label": "Reason for Cancellation",
+        "options": [
+          "Medical Emergency",
+          "Family Emergency",
+          "Work Conflict",
+          "Weather Concerns",
+          "Change of Plans",
+          "Financial Reasons",
+          "Other"
+        ],
+        "section": "cancellation_section",
+        "required": true,
+        "condition": "!= ''",
+        "dependsOn": "cancellation_request",
+        "fieldName": "cancellation_reason"
+      },
+      {
+        "type": "radio",
+        "label": "Preferred Refund Method",
+        "options": [
+          "Original Payment Method",
+          "Travel Credit",
+          "Bank Transfer",
+          "Check"
+        ],
+        "section": "cancellation_section",
+        "condition": "== 'Full Cancellation'",
+        "dependsOn": "cancellation_request",
+        "fieldName": "refund_method"
+      },
+      {
+        "type": "calculated",
+        "label": "Estimated Refund Amount",
+        "formula": "CALCULATED_BY_SYSTEM",
+        "section": "cancellation_section",
+        "tooltip": "Amount after applicable cancellation fees",
+        "readonly": true,
+        "fieldName": "refund_amount_estimate",
+        "currencySymbol": "$"
+      },
+      {
+        "type": "file",
+        "label": "Supporting Documents",
+        "maxSize": "10MB",
+        "section": "cancellation_section",
+        "tooltip": "Upload medical certificates, death certificates, or other supporting documents if applicable",
+        "maxFiles": 5,
+        "fieldName": "supporting_documents",
+        "allowedTypes": [
+          "pdf",
+          "jpg",
+          "jpeg",
+          "png",
+          "doc",
+          "docx"
+        ]
+      },
+      {
+        "type": "multiselect",
+        "label": "Customer Service Request",
+        "options": [
+          "Complaint Resolution",
+          "Billing Inquiry",
+          "Technical Support",
+          "Accessibility Assistance",
+          "Loyalty Program Issue",
+          "Baggage Claim",
+          "Travel Advisory",
+          "General Inquiry"
+        ],
+        "section": "customer_service",
+        "fieldName": "service_request_type"
+      },
+      {
+        "type": "radio",
+        "label": "Priority Level",
+        "options": [
+          "Low",
+          "Medium",
+          "High",
+          "Urgent"
+        ],
+        "section": "customer_service",
+        "fieldName": "priority_level",
+        "defaultValue": "Medium"
+      },
+      {
+        "type": "richtext",
+        "label": "Detailed Description",
+        "section": "customer_service",
+        "required": true,
+        "fieldName": "detailed_description",
+        "placeholder": "Please provide detailed description of your issue or request"
+      },
+      {
+        "type": "radio",
+        "label": "Preferred Contact Method",
+        "options": [
+          "Email",
+          "Phone Call",
+          "SMS",
+          "Live Chat",
+          "WhatsApp"
+        ],
+        "section": "customer_service",
+        "required": true,
+        "fieldName": "preferred_contact_method"
+      },
+      {
+        "type": "rating",
+        "label": "Rate Your Experience So Far",
+        "section": "customer_service",
+        "fieldName": "customer_satisfaction_rating",
+        "maxRating": 5,
+        "ratingType": "star"
+      },
+      {
+        "type": "switch",
+        "label": "Follow-up Required",
+        "section": "customer_service",
+        "fieldName": "follow_up_required",
+        "defaultValue": true
+      },
+      {
+        "type": "esign",
+        "label": "Digital Signature for Request",
+        "section": "customer_service",
+        "required": true,
+        "fieldName": "case_closure_signature",
+        "canvasWidth": 350,
+        "canvasHeight": 120
+      }
+    ],
+    "layout": {},
+    "nodeId": null,
+    "styling": {},
+    "formType": null,
+    "metadata": {},
+    "gridLayout": [],
+    "validation": {},
+    "description": "Comprehensive form for managing existing bookings, modifications, cancellations, and customer service",
+    "data_model_id": null
+  }
+]

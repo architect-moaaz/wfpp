@@ -11,6 +11,50 @@ const FormPreview = ({ form }) => {
     });
   };
 
+  // Extract styling from form
+  const getInputStyle = () => {
+    if (!form.styling) return {};
+    const { spacing, components, colors } = form.styling;
+    return {
+      padding: spacing?.inputPadding || undefined,
+      borderRadius: components?.input?.borderRadius || undefined,
+      borderWidth: components?.input?.borderWidth || undefined,
+      height: components?.input?.height || undefined,
+      borderColor: colors?.border || undefined,
+      fontFamily: form.styling.typography?.fontFamily || undefined,
+      fontSize: form.styling.typography?.fontSize?.input || undefined,
+      fontWeight: form.styling.typography?.fontWeight?.input || undefined,
+    };
+  };
+
+  const getLabelStyle = () => {
+    if (!form.styling) return {};
+    return {
+      fontFamily: form.styling.typography?.fontFamily || undefined,
+      fontSize: form.styling.typography?.fontSize?.label || undefined,
+      fontWeight: form.styling.typography?.fontWeight?.label || undefined,
+      color: form.styling.colors?.text || undefined,
+    };
+  };
+
+  const getFormStyle = () => {
+    if (!form.styling) return {};
+    return {
+      gap: form.styling.spacing?.fieldGap || undefined,
+    };
+  };
+
+  const getButtonStyle = () => {
+    if (!form.styling?.components?.button?.primary) return {};
+    const btn = form.styling.components.button.primary;
+    return {
+      background: btn.background || undefined,
+      color: btn.color || undefined,
+      padding: btn.padding || undefined,
+      borderRadius: form.styling.components?.input?.borderRadius || undefined,
+    };
+  };
+
   const renderField = (field) => {
     const value = formValues[field.name] || '';
 
@@ -27,6 +71,7 @@ const FormPreview = ({ form }) => {
             placeholder={field.placeholder || ''}
             required={field.required}
             className="preview-input"
+            style={getInputStyle()}
           />
         );
 
@@ -39,6 +84,7 @@ const FormPreview = ({ form }) => {
             required={field.required}
             rows={4}
             className="preview-textarea"
+            style={getInputStyle()}
           />
         );
 
@@ -49,6 +95,7 @@ const FormPreview = ({ form }) => {
             onChange={(e) => handleInputChange(field.name, e.target.value)}
             required={field.required}
             className="preview-select"
+            style={getInputStyle()}
           >
             <option value="">Select an option</option>
             {field.options?.map((option, index) => (
@@ -115,10 +162,10 @@ const FormPreview = ({ form }) => {
       </div>
 
       {form.fields && form.fields.length > 0 ? (
-        <form className="preview-form" onSubmit={(e) => e.preventDefault()}>
+        <form className="preview-form" style={getFormStyle()} onSubmit={(e) => e.preventDefault()}>
           {form.fields.map((field, index) => (
             <div key={index} className="preview-field-group">
-              <label className="preview-label">
+              <label className="preview-label" style={getLabelStyle()}>
                 {field.label}
                 {field.required && <span className="required-mark">*</span>}
               </label>
@@ -126,7 +173,7 @@ const FormPreview = ({ form }) => {
             </div>
           ))}
           <div className="preview-actions">
-            <button type="submit" className="btn-preview-submit">
+            <button type="submit" className="btn-preview-submit" style={getButtonStyle()}>
               Submit
             </button>
             <button type="button" className="btn-preview-cancel">

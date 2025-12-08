@@ -144,6 +144,7 @@ class WorkflowFixer {
 
   /**
    * Fix circular dependency by breaking the loop
+   * Note: Does NOT fix intentional loops through loop/gateway nodes
    */
   fixCircularDependency(workflow, errorMessage) {
     // Extract node IDs from error message
@@ -155,6 +156,24 @@ class WorkflowFixer {
 
     const cyclePath = match[1].split(' → ').map(id => id.trim());
     if (cyclePath.length < 2) {
+      return { applied: false, workflow };
+    }
+
+    // Build node type map
+    const nodeTypeMap = new Map();
+    (workflow.nodes || []).forEach(n => nodeTypeMap.set(n.id, n.type));
+
+    // Check if this is an intentional loop (through loop/gateway nodes)
+    const loopAllowedTypes = ['loop', 'multiInstanceLoop', 'standardLoop', 'decision', 'exclusiveGateway', 'parallelGateway', 'inclusiveGateway'];
+    const containsLoopNode = cyclePath.some(nodeId => {
+      const nodeType = nodeTypeMap.get(nodeId);
+      return loopAllowedTypes.includes(nodeType) ||
+             nodeId.includes('loop') ||
+             nodeId.includes('gateway');
+    });
+
+    if (containsLoopNode) {
+      console.log(`[WorkflowFixer] Skipping intentional loop: ${cyclePath.join(' → ')}`);
       return { applied: false, workflow };
     }
 

@@ -1,0 +1,512 @@
+[
+  {
+    "id": "app_1764062566704_workflow_1734872445123_employee_form",
+    "name": "Employee Registration",
+    "config": {},
+    "fields": [
+      {
+        "id": "employee_id",
+        "name": "employeeId",
+        "type": "text",
+        "label": "Employee ID",
+        "styling": {
+          "order": 1,
+          "width": "half"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "unique"
+          ],
+          "errorMessage": "Employee ID is required and must be unique"
+        },
+        "placeholder": "EMP001"
+      },
+      {
+        "id": "first_name",
+        "name": "firstName",
+        "type": "text",
+        "label": "First Name",
+        "styling": {
+          "order": 2,
+          "width": "half"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:2"
+          ],
+          "errorMessage": "First name is required (minimum 2 characters)"
+        },
+        "placeholder": "Enter first name"
+      },
+      {
+        "id": "last_name",
+        "name": "lastName",
+        "type": "text",
+        "label": "Last Name",
+        "styling": {
+          "order": 3,
+          "width": "half"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:2"
+          ],
+          "errorMessage": "Last name is required (minimum 2 characters)"
+        },
+        "placeholder": "Enter last name"
+      },
+      {
+        "id": "email",
+        "name": "email",
+        "type": "email",
+        "label": "Email Address",
+        "styling": {
+          "order": 4,
+          "width": "half"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "email"
+          ],
+          "errorMessage": "Valid email address is required"
+        },
+        "placeholder": "employee@company.com"
+      },
+      {
+        "id": "department",
+        "name": "department",
+        "type": "select",
+        "label": "Department",
+        "options": [
+          {
+            "label": "Human Resources",
+            "value": "hr"
+          },
+          {
+            "label": "Information Technology",
+            "value": "it"
+          },
+          {
+            "label": "Finance",
+            "value": "finance"
+          },
+          {
+            "label": "Marketing",
+            "value": "marketing"
+          },
+          {
+            "label": "Operations",
+            "value": "operations"
+          }
+        ],
+        "styling": {
+          "order": 5,
+          "width": "half"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Department selection is required"
+        },
+        "placeholder": "Select department"
+      },
+      {
+        "id": "position",
+        "name": "position",
+        "type": "text",
+        "label": "Position",
+        "styling": {
+          "order": 6,
+          "width": "half"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Position is required"
+        },
+        "placeholder": "Job title"
+      },
+      {
+        "id": "manager",
+        "name": "manager",
+        "type": "select",
+        "label": "Manager",
+        "options": [],
+        "styling": {
+          "order": 7,
+          "width": "half"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Manager selection is required"
+        },
+        "placeholder": "Select manager"
+      },
+      {
+        "id": "hire_date",
+        "name": "hireDate",
+        "type": "date",
+        "label": "Hire Date",
+        "styling": {
+          "order": 8,
+          "width": "half"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "date"
+          ],
+          "errorMessage": "Hire date is required"
+        },
+        "placeholder": "Select hire date"
+      },
+      {
+        "id": "annual_leave_entitlement",
+        "name": "annualLeaveEntitlement",
+        "type": "number",
+        "label": "Annual Leave Entitlement (Days)",
+        "styling": {
+          "order": 9,
+          "width": "half"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "min:1",
+            "max:50"
+          ],
+          "errorMessage": "Annual leave entitlement must be between 1 and 50 days"
+        },
+        "placeholder": "25"
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "columns": 2,
+      "spacing": "comfortable"
+    },
+    "styling": {},
+    "metadata": {},
+    "validation": {
+      "onBlur": true,
+      "onSubmit": true,
+      "realTime": false
+    },
+    "description": "Register new employee in the leave management system",
+    "data_model_id": null
+  },
+  {
+    "id": "app_1764062566704_workflow_1734872445123_leave_approval_form",
+    "name": "Leave Approval",
+    "config": {},
+    "fields": [
+      {
+        "id": "approval_status",
+        "name": "approvalStatus",
+        "type": "radio",
+        "label": "Decision",
+        "options": [
+          {
+            "label": "Approve",
+            "value": "approved"
+          },
+          {
+            "label": "Reject",
+            "value": "rejected"
+          }
+        ],
+        "styling": {
+          "order": 1,
+          "width": "full"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select an approval decision"
+        },
+        "placeholder": ""
+      },
+      {
+        "id": "manager_comments",
+        "name": "managerComments",
+        "type": "textarea",
+        "label": "Manager Comments",
+        "styling": {
+          "order": 2,
+          "width": "full"
+        },
+        "required": false,
+        "validation": {
+          "rules": [
+            "conditionalRequired:rejection"
+          ],
+          "errorMessage": "Comments are required when rejecting a request"
+        },
+        "placeholder": "Provide feedback or comments (required for rejections)"
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "columns": 1,
+      "spacing": "comfortable"
+    },
+    "styling": {},
+    "metadata": {},
+    "validation": {
+      "onBlur": false,
+      "onSubmit": true,
+      "realTime": true
+    },
+    "description": "Approve or reject leave requests",
+    "data_model_id": null
+  },
+  {
+    "id": "app_1764062566704_workflow_1734872445123_leave_request_form",
+    "name": "Leave Request",
+    "config": {},
+    "fields": [
+      {
+        "id": "leave_type",
+        "name": "leaveType",
+        "type": "select",
+        "label": "Leave Type",
+        "options": [
+          {
+            "label": "Annual Leave",
+            "value": "annual"
+          },
+          {
+            "label": "Sick Leave",
+            "value": "sick"
+          },
+          {
+            "label": "Maternity Leave",
+            "value": "maternity"
+          },
+          {
+            "label": "Paternity Leave",
+            "value": "paternity"
+          },
+          {
+            "label": "Personal Leave",
+            "value": "personal"
+          },
+          {
+            "label": "Emergency Leave",
+            "value": "emergency"
+          }
+        ],
+        "styling": {
+          "order": 1,
+          "width": "full"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Please select a leave type"
+        },
+        "placeholder": "Select leave type"
+      },
+      {
+        "id": "start_date",
+        "name": "startDate",
+        "type": "date",
+        "label": "Start Date",
+        "styling": {
+          "order": 2,
+          "width": "half"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "futureDate"
+          ],
+          "errorMessage": "Start date is required and must be in the future"
+        },
+        "placeholder": "Select start date"
+      },
+      {
+        "id": "end_date",
+        "name": "endDate",
+        "type": "date",
+        "label": "End Date",
+        "styling": {
+          "order": 3,
+          "width": "half"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "afterStartDate"
+          ],
+          "errorMessage": "End date is required and must be after start date"
+        },
+        "placeholder": "Select end date"
+      },
+      {
+        "id": "reason",
+        "name": "reason",
+        "type": "textarea",
+        "label": "Reason",
+        "styling": {
+          "order": 4,
+          "width": "full"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "minLength:10"
+          ],
+          "errorMessage": "Please provide a detailed reason (minimum 10 characters)"
+        },
+        "placeholder": "Please provide a reason for your leave request"
+      },
+      {
+        "id": "emergency_contact",
+        "name": "emergencyContact",
+        "type": "text",
+        "label": "Emergency Contact",
+        "styling": {
+          "order": 5,
+          "width": "full"
+        },
+        "required": false,
+        "validation": {
+          "rules": [],
+          "errorMessage": ""
+        },
+        "placeholder": "Name and phone number"
+      },
+      {
+        "id": "supporting_documents",
+        "name": "supportingDocuments",
+        "type": "file",
+        "label": "Supporting Documents",
+        "styling": {
+          "order": 6,
+          "width": "full"
+        },
+        "required": false,
+        "validation": {
+          "rules": [
+            "fileType:pdf,jpg,png,doc,docx"
+          ],
+          "errorMessage": "Only PDF, image, and document files are allowed"
+        },
+        "placeholder": "Upload documents (optional)"
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "columns": 1,
+      "spacing": "comfortable"
+    },
+    "styling": {},
+    "metadata": {},
+    "validation": {
+      "onBlur": true,
+      "onSubmit": true,
+      "realTime": true
+    },
+    "description": "Submit a new leave request",
+    "data_model_id": null
+  },
+  {
+    "id": "app_1764062566704_workflow_1734872445123_login_form",
+    "name": "Login",
+    "config": {},
+    "fields": [
+      {
+        "id": "email",
+        "name": "email",
+        "type": "email",
+        "label": "Email Address",
+        "styling": {
+          "order": 1,
+          "width": "full"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required",
+            "email"
+          ],
+          "errorMessage": "Please enter a valid email address"
+        },
+        "placeholder": "Enter your email"
+      },
+      {
+        "id": "password",
+        "name": "password",
+        "type": "password",
+        "label": "Password",
+        "styling": {
+          "order": 2,
+          "width": "full"
+        },
+        "required": true,
+        "validation": {
+          "rules": [
+            "required"
+          ],
+          "errorMessage": "Password is required"
+        },
+        "placeholder": "Enter your password"
+      },
+      {
+        "id": "remember_me",
+        "name": "rememberMe",
+        "type": "checkbox",
+        "label": "Remember me",
+        "styling": {
+          "order": 3,
+          "width": "full"
+        },
+        "required": false,
+        "validation": {
+          "rules": [],
+          "errorMessage": ""
+        },
+        "placeholder": ""
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "columns": 1,
+      "spacing": "comfortable"
+    },
+    "styling": {},
+    "metadata": {},
+    "validation": {
+      "onBlur": false,
+      "onSubmit": true,
+      "realTime": false
+    },
+    "description": "Employee login form",
+    "data_model_id": null
+  }
+]

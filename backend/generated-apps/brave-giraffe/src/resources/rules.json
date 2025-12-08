@@ -1,0 +1,425 @@
+[
+  {
+    "id": "rule_customer_places_order",
+    "name": "Customer Places Order Validation Rule",
+    "description": "Validates customer order input including cart items, delivery address, and payment method selection",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ShoppingCart.items",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "orderValidation",
+          "value": "INVALID_ORDER",
+          "message": "Shopping cart cannot be empty. Please add items before placing order."
+        }
+      ]
+    },
+    "node_id": "node_1",
+    "workflow_id": "workflow_1735683234567",
+    "workflowId": "workflow_1735683234567",
+    "application_id": "app_1764760290984"
+  },
+  {
+    "id": "rule_validate_order_details",
+    "name": "Validate Order Details Rule",
+    "description": "Validates order details including minimum order amount, delivery address completeness, and restaurant availability",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Order.totalAmount",
+          "operator": "lessThan",
+          "value": 10
+        },
+        {
+          "field": "Restaurant.isOpen",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "orderValidation",
+          "value": "MINIMUM_ORDER_NOT_MET",
+          "message": "Minimum order amount is $10. Please add more items."
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "Order validation failed",
+          "message": "Order does not meet minimum requirements"
+        }
+      ]
+    },
+    "node_id": "node_2",
+    "workflow_id": "workflow_1735683234567",
+    "workflowId": "workflow_1735683234567",
+    "application_id": "app_1764760290984"
+  },
+  {
+    "id": "rule_order_valid_decision",
+    "name": "Order Valid Decision Rule",
+    "description": "Determines if order passes all validation checks and can proceed to payment",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Order.validationStatus",
+          "operator": "equals",
+          "value": "VALID"
+        },
+        {
+          "field": "Address.isComplete",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Order.status",
+          "value": "PENDING_PAYMENT",
+          "message": "Order validated successfully, proceeding to payment"
+        },
+        {
+          "type": "updateData",
+          "field": "OrderStatus.currentStatus",
+          "value": "AWAITING_PAYMENT",
+          "message": "Order status updated"
+        }
+      ]
+    },
+    "node_id": "node_3",
+    "workflow_id": "workflow_1735683234567",
+    "workflowId": "workflow_1735683234567",
+    "application_id": "app_1764760290984"
+  },
+  {
+    "id": "rule_payment_successful_decision",
+    "name": "Payment Successful Decision Rule",
+    "description": "Evaluates payment transaction status and determines next workflow step",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Payment.status",
+          "operator": "equals",
+          "value": "COMPLETED"
+        },
+        {
+          "field": "Payment.transactionId",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Order.status",
+          "value": "PAID",
+          "message": "Payment successful, notifying restaurant"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Restaurant.notificationChannel",
+          "value": "NEW_ORDER",
+          "message": "New order received and paid. Please confirm."
+        },
+        {
+          "type": "sendNotification",
+          "field": "Customer.notificationChannel",
+          "value": "PAYMENT_CONFIRMED",
+          "message": "Payment successful. Your order has been sent to the restaurant."
+        }
+      ]
+    },
+    "node_id": "node_5",
+    "workflow_id": "workflow_1735683234567",
+    "workflowId": "workflow_1735683234567",
+    "application_id": "app_1764760290984"
+  },
+  {
+    "id": "rule_restaurant_confirms_order",
+    "name": "Restaurant Confirms Order Validation Rule",
+    "description": "Validates restaurant staff confirmation input and estimated preparation time",
+    "type": "validation",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Order.estimatedPrepTime",
+          "operator": "greaterThan",
+          "value": 0
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Order.estimatedPrepTime",
+          "value": "VALID",
+          "message": "Preparation time must be specified"
+        },
+        {
+          "type": "updateData",
+          "field": "Order.confirmedAt",
+          "value": "CURRENT_TIMESTAMP",
+          "message": "Order confirmation timestamp recorded"
+        }
+      ]
+    },
+    "node_id": "node_7",
+    "workflow_id": "workflow_1735683234567",
+    "workflowId": "workflow_1735683234567",
+    "application_id": "app_1764760290984"
+  },
+  {
+    "id": "rule_order_confirmed_by_restaurant_decision",
+    "name": "Order Confirmed by Restaurant Decision Rule",
+    "description": "Determines workflow path based on restaurant acceptance or rejection of order",
+    "type": "decision",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Order.restaurantConfirmation",
+          "operator": "equals",
+          "value": "CONFIRMED"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Order.status",
+          "value": "CONFIRMED",
+          "message": "Restaurant confirmed order, proceeding to preparation"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Customer.notificationChannel",
+          "value": "ORDER_CONFIRMED",
+          "message": "Restaurant confirmed your order. Estimated preparation time: {estimatedPrepTime} minutes"
+        },
+        {
+          "type": "updateData",
+          "field": "OrderStatus.currentStatus",
+          "value": "PREPARING",
+          "message": "Order status updated to preparing"
+        }
+      ]
+    },
+    "node_id": "node_8",
+    "workflow_id": "workflow_1735683234567",
+    "workflowId": "workflow_1735683234567",
+    "application_id": "app_1764760290984"
+  },
+  {
+    "id": "rule_split_parallel_processing",
+    "name": "Split for Parallel Processing Decision Rule",
+    "description": "Initiates parallel workflows for food preparation and driver assignment",
+    "type": "decision",
+    "priority": 7,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Order.status",
+          "operator": "equals",
+          "value": "CONFIRMED"
+        },
+        {
+          "field": "Delivery.assignmentRequired",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.parallelTasks",
+          "value": "ENABLED",
+          "message": "Starting parallel processing for preparation and driver assignment"
+        },
+        {
+          "type": "executeScript",
+          "field": "driverAssignment",
+          "value": "ASSIGN_NEAREST_DRIVER",
+          "message": "Initiating driver assignment algorithm"
+        }
+      ]
+    },
+    "node_id": "node_9",
+    "workflow_id": "workflow_1735683234567",
+    "workflowId": "workflow_1735683234567",
+    "application_id": "app_1764760290984"
+  },
+  {
+    "id": "rule_prepare_food_validation",
+    "name": "Prepare Food Validation Rule",
+    "description": "Validates food preparation completion and quality checks by restaurant staff",
+    "type": "validation",
+    "priority": 8,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Order.preparationComplete",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "Order.qualityChecked",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "updateData",
+          "field": "Order.status",
+          "value": "READY_FOR_PICKUP",
+          "message": "Food preparation completed and quality checked"
+        },
+        {
+          "type": "sendNotification",
+          "field": "DeliveryDriver.notificationChannel",
+          "value": "READY_FOR_PICKUP",
+          "message": "Order is ready for pickup at restaurant"
+        }
+      ]
+    },
+    "node_id": "node_10",
+    "workflow_id": "workflow_1735683234567",
+    "workflowId": "workflow_1735683234567",
+    "application_id": "app_1764760290984"
+  },
+  {
+    "id": "rule_driver_picks_up_order",
+    "name": "Driver Picks Up Order Validation Rule",
+    "description": "Validates driver pickup confirmation and order handoff from restaurant",
+    "type": "validation",
+    "priority": 9,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Delivery.pickupConfirmed",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "DeliveryDriver.id",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "updateData",
+          "field": "Order.status",
+          "value": "OUT_FOR_DELIVERY",
+          "message": "Driver picked up order, en route to customer"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Customer.notificationChannel",
+          "value": "OUT_FOR_DELIVERY",
+          "message": "Your order is on the way! Track your delivery in real-time."
+        },
+        {
+          "type": "setVariable",
+          "field": "DeliveryTracking.isActive",
+          "value": true,
+          "message": "Delivery tracking activated"
+        }
+      ]
+    },
+    "node_id": "node_12",
+    "workflow_id": "workflow_1735683234567",
+    "workflowId": "workflow_1735683234567",
+    "application_id": "app_1764760290984"
+  },
+  {
+    "id": "rule_deliver_order_validation",
+    "name": "Deliver Order Validation Rule",
+    "description": "Validates successful order delivery and customer receipt confirmation",
+    "type": "validation",
+    "priority": 10,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Delivery.deliveryConfirmed",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "Order.deliveredAt",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "updateData",
+          "field": "Order.status",
+          "value": "DELIVERED",
+          "message": "Order successfully delivered to customer"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Customer.notificationChannel",
+          "value": "DELIVERY_COMPLETE",
+          "message": "Your order has been delivered. Enjoy your meal! Please rate your experience."
+        },
+        {
+          "type": "setVariable",
+          "field": "DeliveryTracking.isActive",
+          "value": false,
+          "message": "Delivery tracking completed"
+        }
+      ]
+    },
+    "node_id": "node_15",
+    "workflow_id": "workflow_1735683234567",
+    "workflowId": "workflow_1735683234567",
+    "application_id": "app_1764760290984"
+  }
+]

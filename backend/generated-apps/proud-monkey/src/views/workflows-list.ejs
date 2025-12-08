@@ -1,0 +1,53 @@
+<h1>Workflows</h1>
+<p class="lead">Available workflows in this application</p>
+
+<div class="row">
+    <% workflows.forEach(workflow => { %>
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><%= workflow.name %></h5>
+                    <p class="card-text"><%= workflow.description || 'No description' %></p>
+                    <p class="text-muted">
+                        <small>
+                            Nodes: <%= workflow.nodes?.length || 0 %> |
+                            Version: <%= workflow.version || '1.0.0' %>
+                        </small>
+                    </p>
+                    <button class="btn btn-primary" onclick="startWorkflow('<%= workflow.id %>')">
+                        <i class="bi bi-play-circle"></i> Start Workflow
+                    </button>
+                </div>
+            </div>
+        </div>
+    <% }); %>
+
+    <% if (workflows.length === 0) { %>
+        <div class="col-12">
+            <div class="alert alert-info">
+                No workflows available. Generate workflows using ARES or create them manually.
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<script>
+async function startWorkflow(workflowId) {
+    try {
+        const response = await fetch(`/api/workflows/${workflowId}/start`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Workflow started! Instance ID: ' + result.instance.id);
+        } else {
+            alert('Error starting workflow: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+</script>

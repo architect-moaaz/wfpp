@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Trash2, CheckSquare, Square, Monitor, Smartphone, Globe, Edit2, X, Palette, Network, ExternalLink } from 'lucide-react';
+import { Layout, Trash2, CheckSquare, Square, Monitor, Smartphone, Globe, Edit2, X, Palette, Network, ExternalLink, Calendar } from 'lucide-react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import '../Forms/FormsList.css'; // Reuse Forms styles
+import '../Forms/FormsList.css';
+import './PagesList.css';
 
 const PagesList = ({ onDesignPage, onViewFlow }) => {
-  const { connectedPages, currentApplication } = useWorkflow();
+  const { connectedPages, currentApplication, currentWorkflow } = useWorkflow();
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedPageIds, setSelectedPageIds] = useState([]);
@@ -12,10 +13,19 @@ const PagesList = ({ onDesignPage, onViewFlow }) => {
   const [editingPage, setEditingPage] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // Update pages whenever connectedPages changes
+  // Update pages whenever connectedPages or currentWorkflow changes
   useEffect(() => {
     if (connectedPages && connectedPages.length > 0) {
-      setPages(connectedPages);
+      // Filter pages by current workflow if a workflow is selected
+      let filteredPages = connectedPages;
+      if (currentWorkflow && currentWorkflow.id) {
+        // Show pages that belong to this workflow OR don't have a workflowId (legacy data)
+        filteredPages = connectedPages.filter(page =>
+          !page.workflowId || page.workflowId === currentWorkflow.id
+        );
+        console.log('[PagesList] Filtering pages by workflow:', currentWorkflow.id, 'Found:', filteredPages.length);
+      }
+      setPages(filteredPages);
       setLoading(false);
     } else if (currentApplication) {
       // If there's an application but no pages, show empty state
@@ -26,7 +36,17 @@ const PagesList = ({ onDesignPage, onViewFlow }) => {
       setPages([]);
       setLoading(false);
     }
-  }, [connectedPages, currentApplication]);
+  }, [connectedPages, currentApplication, currentWorkflow]);
+
+  const handlePageClick = (page, e) => {
+    // If in selection mode or clicking checkbox, toggle selection
+    if (selectionMode || e?.target?.closest('.form-checkbox')) {
+      handleToggleSelect(page.id);
+      return;
+    }
+    // Otherwise open design page
+    onDesignPage(page.id);
+  };
 
   const handleToggleSelect = (pageId) => {
     setSelectedPageIds(prev => {
@@ -139,27 +159,15 @@ const PagesList = ({ onDesignPage, onViewFlow }) => {
     setEditingPage(null);
   };
 
-  const getPlatformIcon = (platform) => {
-    if (platform === 'mobile') return <Smartphone size={16} />;
-    if (platform === 'web') return <Monitor size={16} />;
-    return <Globe size={16} />;
+  const getPlatformLabel = (platform) => {
+    if (platform === 'mobile') return 'Mobile';
+    if (platform === 'web') return 'Web';
+    return 'Both';
   };
 
-  const getPageTypeBadge = (type) => {
-    const badges = {
-      list: { label: 'List', color: '#3b82f6' },
-      detail: { label: 'Detail', color: '#10b981' },
-      form: { label: 'Form', color: '#f59e0b' },
-      dashboard: { label: 'Dashboard', color: '#8b5cf6' },
-      auth: { label: 'Auth', color: '#ef4444' },
-      confirmation: { label: 'Confirmation', color: '#06b6d4' }
-    };
-    const badge = badges[type] || { label: type, color: '#6b7280' };
-    return (
-      <span className="page-type-badge" style={{ backgroundColor: badge.color }}>
-        {badge.label}
-      </span>
-    );
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -242,6 +250,7 @@ const PagesList = ({ onDesignPage, onViewFlow }) => {
               <div
                 key={page.id}
                 className={`form-card ${isSelected ? 'selected' : ''} ${selectionMode ? 'selection-mode' : ''}`}
+                onClick={(e) => handlePageClick(page, e)}
               >
                 <div className="form-card-header">
                   {selectionMode && (
@@ -263,61 +272,73 @@ const PagesList = ({ onDesignPage, onViewFlow }) => {
                   {!selectionMode && (
                     <div className="form-card-actions">
                       <button
-                        className="icon-btn"
+                        className="btn-icon"
                         onClick={(e) => {
                           e.stopPropagation();
                           window.open(`/preview.html?id=${page.id}`, '_blank');
                         }}
-                        title="Preview in Browser"
+                        title="Preview"
                       >
                         <ExternalLink size={16} />
                       </button>
                       <button
-                        className="icon-btn"
+                        className="btn-icon"
                         onClick={(e) => {
                           e.stopPropagation();
                           onDesignPage(page.id);
                         }}
-                        title="Design Page"
+                        title="Design"
                       >
                         <Palette size={16} />
                       </button>
                       <button
-                        className="icon-btn"
+                        className="btn-icon"
                         onClick={(e) => handleEdit(page, e)}
-                        title="Edit Page"
+                        title="Edit"
                       >
                         <Edit2 size={16} />
                       </button>
                       <button
-                        className="icon-btn danger"
+                        className="btn-icon btn-delete"
                         onClick={(e) => handleDelete(page.id, e)}
-                        title="Delete Page"
+                        title="Delete"
                       >
                         <Trash2 size={16} />
                       </button>
                     </div>
                   )}
                 </div>
-                <div className="form-card-body">
-                  <h3>{page.name}</h3>
-                  <div className="page-meta">
-                    {getPageTypeBadge(page.type)}
-                    <span className="page-platform">
-                      {getPlatformIcon(page.platform)}
-                      {page.platform}
-                    </span>
+
+                <h3 className="form-card-title">{page.name}</h3>
+                {page.route && (
+                  <p className="form-card-description">{page.route}</p>
+                )}
+
+                <div className="form-card-meta">
+                  <div className="meta-item">
+                    <span className="meta-label">Type:</span>
+                    <span className="meta-value">{page.type || 'page'}</span>
                   </div>
-                  {page.route && (
-                    <div className="page-route">
-                      <code>{page.route}</code>
-                    </div>
-                  )}
-                  {page.sections && (
-                    <div className="page-sections">
-                      {page.sections.length} section{page.sections.length !== 1 ? 's' : ''}
-                    </div>
-                  )}
+                  <div className="meta-item">
+                    <span className="meta-label">Platform:</span>
+                    <span className="meta-value">{getPlatformLabel(page.platform)}</span>
+                  </div>
+                </div>
+
+                {page.sections && page.sections.length > 0 && (
+                  <div className="form-card-workflow">
+                    <span className="workflow-badge">{page.sections.length} section{page.sections.length !== 1 ? 's' : ''}</span>
+                  </div>
+                )}
+
+                <div className="form-card-footer">
+                  <div className="footer-item">
+                    <Calendar size={14} />
+                    <span>{formatDate(page.createdAt)}</span>
+                  </div>
+                  <div className="footer-item">
+                    <span className="version-badge">v{page.version || '1.0'}</span>
+                  </div>
                 </div>
               </div>
             );
@@ -330,7 +351,7 @@ const PagesList = ({ onDesignPage, onViewFlow }) => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Edit Page</h2>
-              <button className="icon-btn" onClick={handleCancelEdit}>
+              <button className="btn-icon" onClick={handleCancelEdit}>
                 <X size={20} />
               </button>
             </div>
@@ -385,7 +406,7 @@ const PagesList = ({ onDesignPage, onViewFlow }) => {
               <button className="btn-secondary" onClick={handleCancelEdit}>
                 Cancel
               </button>
-              <button className="btn-primary" onClick={handleSaveEdit}>
+              <button className="btn-create-form" onClick={handleSaveEdit}>
                 Save Changes
               </button>
             </div>

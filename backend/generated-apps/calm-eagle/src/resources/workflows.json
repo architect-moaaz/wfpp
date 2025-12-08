@@ -1,0 +1,2330 @@
+[
+  {
+    "id": "workflow_1735141523847",
+    "name": "Complex Ticket Management System Workflow",
+    "complexity": "complex",
+    "domain": "Customer Support & Issue Management",
+    "nodes": [
+      {
+        "id": "node_start",
+        "type": "startProcess",
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "data": {
+          "label": "Ticket Submission Started",
+          "trigger": "User submits new support ticket",
+          "description": "Initiates the ticket management workflow when a user submits a support request",
+          "formId": "ticketsubmissionform-1764486693392-7a3gui",
+          "formName": "TicketSubmissionForm"
+        }
+      },
+      {
+        "id": "node_validate",
+        "type": "validation",
+        "position": {
+          "x": 200,
+          "y": 0
+        },
+        "data": {
+          "label": "Validate Ticket Data",
+          "ruleType": "form_validation",
+          "rules": [
+            "required_title",
+            "required_description",
+            "valid_email",
+            "valid_category"
+          ],
+          "description": "Validates that all required ticket fields are complete and properly formatted"
+        }
+      },
+      {
+        "id": "node_llm_classify",
+        "type": "llmTask",
+        "position": {
+          "x": 400,
+          "y": 0
+        },
+        "data": {
+          "label": "AI Ticket Classification",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze this support ticket and classify it: Title: ${processData.title}, Description: ${processData.description}. Determine: 1) Category (technical_support, billing, general_inquiry, bug_report, feature_request), 2) Priority (low, medium, high, critical), 3) Estimated complexity (simple, moderate, complex). Return as JSON.",
+          "outputVariable": "aiClassification",
+          "temperature": 0.3,
+          "maxTokens": 500,
+          "description": "Uses AI to automatically classify ticket category, priority, and complexity"
+        }
+      },
+      {
+        "id": "node_assign_number",
+        "type": "scriptTask",
+        "position": {
+          "x": 600,
+          "y": 0
+        },
+        "data": {
+          "label": "Assign Ticket Number",
+          "scriptType": "JavaScript",
+          "script": "generateTicketNumber()",
+          "description": "Generates unique ticket ID and sets initial status to 'New'"
+        }
+      },
+      {
+        "id": "node_priority_decision",
+        "type": "decision",
+        "position": {
+          "x": 800,
+          "y": 0
+        },
+        "data": {
+          "label": "Priority Routing Decision",
+          "gatewayType": "exclusive",
+          "condition": "processData.aiClassification.priority",
+          "description": "Routes ticket based on AI-determined priority level"
+        }
+      },
+      {
+        "id": "node_critical_escalate",
+        "type": "userTask",
+        "position": {
+          "x": 1000,
+          "y": -150
+        },
+        "data": {
+          "label": "Critical Ticket Escalation",
+          "taskName": "escalate_critical_ticket",
+          "assignedTo": "senior_support_manager",
+          "priority": "Critical",
+          "dueDate": "15 minutes",
+          "instructions": "Immediately assign critical ticket to senior agent and notify management",
+          "formId": "ticketmanagementform-1764486710454-inazn1",
+          "formName": "TicketManagementForm"
+        }
+      },
+      {
+        "id": "node_auto_assign",
+        "type": "scriptTask",
+        "position": {
+          "x": 1000,
+          "y": 0
+        },
+        "data": {
+          "label": "Auto-Assign to Agent",
+          "scriptType": "JavaScript",
+          "script": "assignToAvailableAgent()",
+          "description": "Automatically assigns ticket to available agent based on category and workload"
+        }
+      },
+      {
+        "id": "node_queue_ticket",
+        "type": "scriptTask",
+        "position": {
+          "x": 1000,
+          "y": 150
+        },
+        "data": {
+          "label": "Queue Low Priority Ticket",
+          "scriptType": "JavaScript",
+          "script": "addToQueue('low_priority')",
+          "description": "Adds low priority tickets to queue for later assignment"
+        }
+      },
+      {
+        "id": "node_parallel_notify",
+        "type": "decision",
+        "position": {
+          "x": 1200,
+          "y": 0
+        },
+        "data": {
+          "label": "Parallel Notification Gateway",
+          "gatewayType": "parallel",
+          "branches": "Send notifications to user and agent simultaneously",
+          "description": "Triggers parallel notifications to all relevant parties"
+        }
+      },
+      {
+        "id": "node_notify_user",
+        "type": "notification",
+        "position": {
+          "x": 1400,
+          "y": -100
+        },
+        "data": {
+          "label": "Notify User of Ticket Creation",
+          "channel": "Email",
+          "recipient": "processData.userEmail",
+          "template": "ticket_created_confirmation",
+          "description": "Sends confirmation email to user with ticket number and status"
+        }
+      },
+      {
+        "id": "node_notify_agent",
+        "type": "notification",
+        "position": {
+          "x": 1400,
+          "y": 100
+        },
+        "data": {
+          "label": "Notify Assigned Agent",
+          "channel": "Email",
+          "recipient": "processData.assignedAgent",
+          "template": "new_ticket_assignment",
+          "description": "Notifies assigned agent of new ticket assignment"
+        }
+      },
+      {
+        "id": "node_join_notifications",
+        "type": "decision",
+        "position": {
+          "x": 1600,
+          "y": 0
+        },
+        "data": {
+          "label": "Join Notifications",
+          "gatewayType": "parallel",
+          "branches": "Wait for both notifications to complete",
+          "description": "Waits for all parallel notification tasks to complete"
+        }
+      },
+      {
+        "id": "node_agent_work",
+        "type": "userTask",
+        "position": {
+          "x": 1800,
+          "y": 0
+        },
+        "data": {
+          "label": "Agent Investigation & Resolution",
+          "taskName": "resolve_ticket",
+          "assignedTo": "processData.assignedAgent",
+          "priority": "processData.priority",
+          "dueDate": "processData.dueDate",
+          "instructions": "Investigate issue, communicate with customer, and work towards resolution",
+          "formId": "ticketsubmissionform-1764486693392-7a3gui",
+          "formName": "TicketSubmissionForm"
+        }
+      },
+      {
+        "id": "node_status_check",
+        "type": "decision",
+        "position": {
+          "x": 2000,
+          "y": 0
+        },
+        "data": {
+          "label": "Status Check Decision",
+          "gatewayType": "exclusive",
+          "condition": "processData.ticketStatus",
+          "description": "Checks current ticket status to determine next action"
+        }
+      },
+      {
+        "id": "node_timeout_timer",
+        "type": "timerEvent",
+        "position": {
+          "x": 2000,
+          "y": -200
+        },
+        "data": {
+          "label": "Response Timeout Timer",
+          "timerType": "duration",
+          "duration": "PT24H",
+          "description": "Triggers escalation if no response within 24 hours"
+        }
+      },
+      {
+        "id": "node_escalate_timeout",
+        "type": "userTask",
+        "position": {
+          "x": 2200,
+          "y": -200
+        },
+        "data": {
+          "label": "Escalate Due to Timeout",
+          "taskName": "timeout_escalation",
+          "assignedTo": "support_supervisor",
+          "priority": "High",
+          "dueDate": "2 hours",
+          "instructions": "Ticket has exceeded response time limit - review and reassign if necessary",
+          "formId": "ticketsubmissionform-1764486693392-7a3gui",
+          "formName": "TicketSubmissionForm"
+        }
+      },
+      {
+        "id": "node_llm_resolution",
+        "type": "llmTask",
+        "position": {
+          "x": 2200,
+          "y": 0
+        },
+        "data": {
+          "label": "AI Resolution Quality Check",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Review this ticket resolution for completeness: Original Issue: ${processData.description}, Resolution: ${processData.resolution}, Customer Response: ${processData.customerFeedback}. Is this resolution adequate? Provide quality score (1-10) and recommendations.",
+          "outputVariable": "resolutionQuality",
+          "temperature": 0.2,
+          "maxTokens": 800,
+          "description": "AI analyzes resolution quality and provides feedback"
+        }
+      },
+      {
+        "id": "node_customer_confirm",
+        "type": "userTask",
+        "position": {
+          "x": 2400,
+          "y": 0
+        },
+        "data": {
+          "label": "Customer Confirmation",
+          "taskName": "confirm_resolution",
+          "assignedTo": "processData.customerEmail",
+          "priority": "Medium",
+          "dueDate": "72 hours",
+          "instructions": "Please confirm if your issue has been resolved to your satisfaction",
+          "formId": "ticketsubmissionform-1764486693392-7a3gui",
+          "formName": "TicketSubmissionForm"
+        }
+      },
+      {
+        "id": "node_reopen_decision",
+        "type": "decision",
+        "position": {
+          "x": 2600,
+          "y": 0
+        },
+        "data": {
+          "label": "Reopen or Close Decision",
+          "gatewayType": "exclusive",
+          "condition": "processData.customerConfirmation",
+          "description": "Customer can confirm resolution or request to reopen ticket"
+        }
+      },
+      {
+        "id": "node_reopen_ticket",
+        "type": "scriptTask",
+        "position": {
+          "x": 2600,
+          "y": -150
+        },
+        "data": {
+          "label": "Reopen Ticket",
+          "scriptType": "JavaScript",
+          "script": "reopenTicket()",
+          "description": "Changes ticket status back to 'In Progress' and reassigns to agent"
+        }
+      },
+      {
+        "id": "node_close_ticket",
+        "type": "scriptTask",
+        "position": {
+          "x": 2800,
+          "y": 0
+        },
+        "data": {
+          "label": "Close Ticket",
+          "scriptType": "JavaScript",
+          "script": "closeTicket()",
+          "description": "Finalizes ticket closure and updates audit trail"
+        }
+      },
+      {
+        "id": "node_audit_log",
+        "type": "dataProcess",
+        "position": {
+          "x": 3000,
+          "y": 0
+        },
+        "data": {
+          "label": "Generate Audit Trail",
+          "operation": "audit_logging",
+          "input": "ticket_history",
+          "output": "audit_database",
+          "description": "Creates complete audit trail of all ticket activities and status changes"
+        }
+      },
+      {
+        "id": "node_end",
+        "type": "endEvent",
+        "position": {
+          "x": 3200,
+          "y": 0
+        },
+        "data": {
+          "label": "Ticket Workflow Completed",
+          "result": "Ticket successfully processed and closed",
+          "description": "Ticket management workflow completed with full audit trail"
+        }
+      },
+      {
+        "id": "node_error_handler",
+        "type": "scriptTask",
+        "position": {
+          "x": 1600,
+          "y": 300
+        },
+        "data": {
+          "label": "Error Handler",
+          "scriptType": "JavaScript",
+          "script": "handleWorkflowError()",
+          "description": "Handles any errors that occur during ticket processing and logs them"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_start",
+        "target": "node_validate"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_validate",
+        "target": "node_llm_classify"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_llm_classify",
+        "target": "node_assign_number"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_assign_number",
+        "target": "node_priority_decision"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_priority_decision",
+        "target": "node_critical_escalate",
+        "label": "Critical Priority",
+        "condition": "processData.aiClassification.priority === 'critical'"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_priority_decision",
+        "target": "node_auto_assign",
+        "label": "Medium/High Priority",
+        "condition": "processData.aiClassification.priority === 'medium' || processData.aiClassification.priority === 'high'"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_priority_decision",
+        "target": "node_queue_ticket",
+        "label": "Low Priority",
+        "condition": "processData.aiClassification.priority === 'low'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_8",
+        "source": "node_critical_escalate",
+        "target": "node_parallel_notify"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_auto_assign",
+        "target": "node_parallel_notify"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_queue_ticket",
+        "target": "node_parallel_notify"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_parallel_notify",
+        "target": "node_notify_user",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_parallel_notify",
+        "target": "node_notify_agent"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_notify_user",
+        "target": "node_join_notifications"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_notify_agent",
+        "target": "node_join_notifications"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_join_notifications",
+        "target": "node_agent_work",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_agent_work",
+        "target": "node_status_check"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_agent_work",
+        "target": "node_timeout_timer"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_timeout_timer",
+        "target": "node_escalate_timeout"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_status_check",
+        "target": "node_llm_resolution",
+        "label": "Default",
+        "condition": "processData.ticketStatus === 'resolved'",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        }
+      },
+      {
+        "id": "edge_22",
+        "source": "node_llm_resolution",
+        "target": "node_customer_confirm"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_customer_confirm",
+        "target": "node_reopen_decision"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_reopen_decision",
+        "target": "node_reopen_ticket",
+        "label": "Reopen Requested",
+        "condition": "processData.customerConfirmation === 'reopen'"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_reopen_decision",
+        "target": "node_close_ticket",
+        "label": "Confirmed Resolved",
+        "condition": "processData.customerConfirmation === 'confirmed'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_27",
+        "source": "node_close_ticket",
+        "target": "node_audit_log"
+      },
+      {
+        "id": "edge_28",
+        "source": "node_audit_log",
+        "target": "node_end"
+      },
+      {
+        "id": "edge_error_1",
+        "source": "node_validate",
+        "target": "node_error_handler",
+        "label": "Validation Error"
+      },
+      {
+        "id": "edge_error_2",
+        "source": "node_llm_classify",
+        "target": "node_error_handler",
+        "label": "AI Classification Error"
+      },
+      {
+        "id": "edge_error_3",
+        "source": "node_error_handler",
+        "target": "node_end"
+      }
+    ],
+    "parallelPaths": 2,
+    "decisionPoints": 4,
+    "errorHandlers": 1,
+    "expertType": "ComplexWorkflowExpert",
+    "dataModels": [
+      {
+        "id": "user",
+        "name": "User",
+        "description": "Store user information for customers, agents, and administrators with role-based access",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the user",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "description": "User's email address for login and communication",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "fullName",
+            "type": "string",
+            "description": "User's full name",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "role",
+            "type": "string",
+            "description": "User role: customer, agent, or administrator",
+            "required": true,
+            "defaultValue": "customer"
+          },
+          {
+            "name": "passwordHash",
+            "type": "string",
+            "description": "Hashed password for authentication",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "isActive",
+            "type": "boolean",
+            "description": "Whether the user account is active",
+            "required": true,
+            "defaultValue": true
+          },
+          {
+            "name": "createdAt",
+            "type": "date",
+            "description": "Timestamp when the user account was created",
+            "required": true,
+            "defaultValue": null
+          }
+        ],
+        "relationships": [],
+        "indexes": [
+          {
+            "name": "idx_user_email",
+            "fields": [
+              "email"
+            ],
+            "unique": true
+          },
+          {
+            "name": "idx_user_role",
+            "fields": [
+              "role"
+            ],
+            "unique": false
+          }
+        ],
+        "constraints": {
+          "email": "Must be valid email format",
+          "role": "Must be one of: customer, agent, administrator"
+        },
+        "workflowId": "workflow_1735141523847"
+      },
+      {
+        "id": "ticket-category",
+        "name": "TicketCategory",
+        "description": "Define and organize ticket types for proper routing and classification in the support ticket management system",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the ticket category",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Display name of the category (e.g., Technical Support, Billing, Bug Report)",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "description": "Detailed description of what tickets belong in this category",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "isActive",
+            "type": "boolean",
+            "description": "Indicates whether this category is currently available for new tickets",
+            "required": true,
+            "defaultValue": true
+          },
+          {
+            "name": "priority",
+            "type": "number",
+            "description": "Display order priority for category listing (lower numbers appear first)",
+            "required": false,
+            "defaultValue": 0
+          },
+          {
+            "name": "defaultAssigneeId",
+            "type": "string",
+            "description": "Default user or team ID to route tickets in this category",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "createdAt",
+            "type": "date",
+            "description": "Timestamp when the category was created",
+            "required": true,
+            "defaultValue": "CURRENT_TIMESTAMP"
+          }
+        ],
+        "relationships": [
+          {
+            "type": "manyToOne",
+            "relatedModel": "User",
+            "foreignKey": "defaultAssigneeId",
+            "description": "Links to the default assignee for tickets in this category"
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_category_name",
+            "fields": [
+              "name"
+            ],
+            "unique": true
+          },
+          {
+            "name": "idx_category_active",
+            "fields": [
+              "isActive"
+            ]
+          }
+        ],
+        "constraints": {
+          "unique": [
+            "name"
+          ],
+          "check": [
+            "priority >= 0"
+          ]
+        },
+        "workflowId": "workflow_1735141523847"
+      },
+      {
+        "id": "ticket",
+        "name": "Ticket",
+        "description": "Central data model capturing ticket details from submission through resolution with complete lifecycle tracking",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the ticket",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "title",
+            "type": "string",
+            "description": "Brief summary of the ticket issue or request",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "description": "Detailed description of the ticket issue or request",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "description": "Current status of the ticket (e.g., open, in_progress, resolved, closed)",
+            "required": true,
+            "defaultValue": "open"
+          },
+          {
+            "name": "priority",
+            "type": "string",
+            "description": "Priority level of the ticket (e.g., low, medium, high, urgent)",
+            "required": true,
+            "defaultValue": "medium"
+          },
+          {
+            "name": "categoryId",
+            "type": "string",
+            "description": "Reference to the ticket category",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "submittedBy",
+            "type": "string",
+            "description": "User ID of the person who submitted the ticket",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "assignedTo",
+            "type": "string",
+            "description": "User ID of the support agent assigned to handle the ticket",
+            "required": false,
+            "defaultValue": null
+          }
+        ],
+        "relationships": [
+          {
+            "type": "many-to-one",
+            "relatedModel": "TicketCategory",
+            "foreignKey": "categoryId",
+            "description": "Each ticket belongs to one category"
+          },
+          {
+            "type": "many-to-one",
+            "relatedModel": "User",
+            "foreignKey": "submittedBy",
+            "description": "Each ticket is submitted by one user"
+          },
+          {
+            "type": "many-to-one",
+            "relatedModel": "User",
+            "foreignKey": "assignedTo",
+            "description": "Each ticket can be assigned to one support agent"
+          }
+        ],
+        "indexes": [
+          {
+            "fields": [
+              "status"
+            ],
+            "description": "Index on status for filtering tickets by current state"
+          },
+          {
+            "fields": [
+              "submittedBy"
+            ],
+            "description": "Index on submittedBy for retrieving user's tickets"
+          },
+          {
+            "fields": [
+              "assignedTo"
+            ],
+            "description": "Index on assignedTo for retrieving assigned tickets"
+          }
+        ],
+        "constraints": {
+          "status": {
+            "enum": [
+              "open",
+              "in_progress",
+              "resolved",
+              "closed"
+            ]
+          },
+          "priority": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "urgent"
+            ]
+          }
+        },
+        "workflowId": "workflow_1735141523847"
+      },
+      {
+        "id": "comment",
+        "name": "Comment",
+        "description": "Stores all comments, responses, and internal notes associated with tickets, supporting both public customer-facing communications and private internal agent notes",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the comment",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "ticketId",
+            "type": "string",
+            "description": "Reference to the ticket this comment belongs to",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "authorId",
+            "type": "string",
+            "description": "Reference to the user who created the comment",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "content",
+            "type": "string",
+            "description": "The actual text content of the comment or note",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "isInternal",
+            "type": "boolean",
+            "description": "Flag indicating if this is a private internal note (true) or public customer-facing comment (false)",
+            "required": true,
+            "defaultValue": false
+          },
+          {
+            "name": "createdAt",
+            "type": "date",
+            "description": "Timestamp when the comment was created",
+            "required": true,
+            "defaultValue": null
+          }
+        ],
+        "relationships": [
+          {
+            "type": "manyToOne",
+            "relatedModel": "Ticket",
+            "foreignKey": "ticketId",
+            "description": "Each comment belongs to one ticket"
+          },
+          {
+            "type": "manyToOne",
+            "relatedModel": "User",
+            "foreignKey": "authorId",
+            "description": "Each comment is authored by one user"
+          }
+        ],
+        "indexes": [
+          {
+            "fields": [
+              "ticketId",
+              "createdAt"
+            ],
+            "description": "Optimize retrieval of comments for a ticket in chronological order"
+          },
+          {
+            "fields": [
+              "authorId"
+            ],
+            "description": "Optimize queries for comments by a specific author"
+          }
+        ],
+        "constraints": {
+          "foreignKeys": [
+            {
+              "field": "ticketId",
+              "references": "Ticket.id",
+              "onDelete": "CASCADE"
+            },
+            {
+              "field": "authorId",
+              "references": "User.id",
+              "onDelete": "RESTRICT"
+            }
+          ]
+        },
+        "workflowId": "workflow_1735141523847"
+      },
+      {
+        "id": "attachment",
+        "name": "Attachment",
+        "description": "Manages file uploads associated with tickets and comments in the support system",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the attachment",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "fileName",
+            "type": "string",
+            "description": "Original name of the uploaded file",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "fileUrl",
+            "type": "string",
+            "description": "Storage path or URL reference to the uploaded file",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "fileType",
+            "type": "string",
+            "description": "MIME type of the file (e.g., image/png, application/pdf)",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "fileSize",
+            "type": "number",
+            "description": "Size of the file in bytes",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "ticketId",
+            "type": "string",
+            "description": "Reference to the ticket this attachment belongs to",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "commentId",
+            "type": "string",
+            "description": "Reference to the comment this attachment belongs to (null if attached directly to ticket)",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "uploadedAt",
+            "type": "date",
+            "description": "Timestamp when the file was uploaded",
+            "required": true,
+            "defaultValue": "CURRENT_TIMESTAMP"
+          }
+        ],
+        "relationships": [
+          {
+            "type": "many-to-one",
+            "relatedModel": "Ticket",
+            "foreignKey": "ticketId",
+            "description": "Each attachment belongs to one ticket"
+          },
+          {
+            "type": "many-to-one",
+            "relatedModel": "Comment",
+            "foreignKey": "commentId",
+            "description": "Each attachment may belong to one comment"
+          }
+        ],
+        "indexes": [
+          {
+            "fields": [
+              "ticketId"
+            ],
+            "unique": false
+          },
+          {
+            "fields": [
+              "commentId"
+            ],
+            "unique": false
+          }
+        ],
+        "constraints": {
+          "maxFileSize": "10MB",
+          "allowedFileTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "application/pdf",
+            "text/plain",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          ]
+        },
+        "workflowId": "workflow_1735141523847"
+      }
+    ],
+    "forms": [
+      {
+        "id": "ticketsubmissionform-1764486693392-7a3gui",
+        "name": "TicketSubmissionForm",
+        "title": "Submit Support Ticket",
+        "description": "Create a new support ticket for HR assistance. Provide details about your issue and we'll get back to you as soon as possible.",
+        "fields": [
+          {
+            "id": "ticket-title",
+            "name": "title",
+            "type": "text",
+            "label": "Ticket Title",
+            "placeholder": "Brief summary of your issue",
+            "required": true,
+            "validation": {
+              "min": 5,
+              "max": 100,
+              "message": "Title must be between 5 and 100 characters"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "ticket-category",
+            "name": "category",
+            "type": "select",
+            "label": "Category",
+            "placeholder": "Select a category",
+            "required": true,
+            "options": [
+              "Payroll & Benefits",
+              "Leave & Attendance",
+              "Onboarding",
+              "Performance Management",
+              "Policy Questions",
+              "Technical Issues",
+              "Other"
+            ],
+            "defaultValue": null
+          },
+          {
+            "id": "ticket-priority",
+            "name": "priority",
+            "type": "select",
+            "label": "Priority",
+            "placeholder": "Select priority level",
+            "required": true,
+            "options": [
+              "Low",
+              "Medium",
+              "High",
+              "Urgent"
+            ],
+            "defaultValue": "Medium"
+          },
+          {
+            "id": "ticket-description",
+            "name": "description",
+            "type": "textarea",
+            "label": "Description",
+            "placeholder": "Provide detailed information about your issue or request...",
+            "required": true,
+            "validation": {
+              "min": 20,
+              "max": 2000,
+              "message": "Description must be between 20 and 2000 characters"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "ticket-attachment",
+            "name": "attachment",
+            "type": "file",
+            "label": "Attachments (Optional)",
+            "placeholder": "Upload supporting documents or screenshots",
+            "required": false,
+            "validation": {
+              "message": "Maximum file size: 10MB. Allowed formats: PDF, DOC, DOCX, PNG, JPG"
+            },
+            "defaultValue": null
+          }
+        ],
+        "gridLayout": [
+          {
+            "i": "ticket-title",
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 8,
+            "minW": 12,
+            "minH": 8
+          },
+          {
+            "i": "ticket-category",
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 8
+          },
+          {
+            "i": "ticket-priority",
+            "x": 12,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 8
+          },
+          {
+            "i": "ticket-description",
+            "x": 0,
+            "y": 16,
+            "w": 24,
+            "h": 12,
+            "minW": 12,
+            "minH": 12
+          },
+          {
+            "i": "ticket-attachment",
+            "x": 0,
+            "y": 28,
+            "w": 24,
+            "h": 8,
+            "minW": 12,
+            "minH": 8
+          }
+        ],
+        "layout": {
+          "type": "two-column",
+          "sections": [
+            {
+              "id": "ticket-info",
+              "title": "Ticket Information",
+              "fieldIds": [
+                "ticket-title",
+                "ticket-category",
+                "ticket-priority"
+              ]
+            },
+            {
+              "id": "ticket-details",
+              "title": "Details",
+              "fieldIds": [
+                "ticket-description",
+                "ticket-attachment"
+              ]
+            }
+          ]
+        },
+        "submitButton": {
+          "label": "Submit Ticket",
+          "position": "right"
+        },
+        "validation": {
+          "mode": "onSubmit",
+          "showErrors": true
+        },
+        "styling": {
+          "colors": {
+            "primary": "#3B82F6",
+            "secondary": "#64748B",
+            "background": "#FFFFFF",
+            "text": "#1E293B",
+            "border": "#E2E8F0"
+          },
+          "typography": {
+            "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            "fontSize": {
+              "label": "14px",
+              "input": "14px"
+            },
+            "fontWeight": {
+              "label": "500",
+              "input": "400"
+            }
+          },
+          "spacing": {
+            "fieldGap": "16px",
+            "sectionGap": "32px",
+            "inputPadding": "10px 12px"
+          },
+          "components": {
+            "input": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "height": "40px"
+            },
+            "textarea": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "minHeight": "100px"
+            },
+            "button": {
+              "primary": {
+                "background": "#3B82F6",
+                "color": "#FFFFFF",
+                "padding": "10px 24px",
+                "borderRadius": "6px",
+                "height": "40px"
+              }
+            }
+          }
+        },
+        "workflowId": "workflow_1735141523847"
+      },
+      {
+        "id": "ticketmanagementform-1764486710454-inazn1",
+        "name": "TicketManagementForm",
+        "title": "Ticket Management",
+        "description": "Update ticket status, priority, assignments, and add responses or internal notes",
+        "fields": [
+          {
+            "id": "field-status",
+            "name": "status",
+            "type": "select",
+            "label": "Ticket Status",
+            "placeholder": "Select status",
+            "required": true,
+            "options": [
+              "Open",
+              "In Progress",
+              "Pending",
+              "Resolved",
+              "Closed"
+            ],
+            "defaultValue": "Open",
+            "validation": {
+              "message": "Please select a ticket status"
+            }
+          },
+          {
+            "id": "field-priority",
+            "name": "priority",
+            "type": "select",
+            "label": "Priority Level",
+            "placeholder": "Select priority",
+            "required": true,
+            "options": [
+              "Low",
+              "Medium",
+              "High",
+              "Urgent"
+            ],
+            "defaultValue": "Medium",
+            "validation": {
+              "message": "Please select a priority level"
+            }
+          },
+          {
+            "id": "field-assignedto",
+            "name": "assignedTo",
+            "type": "select",
+            "label": "Assigned To",
+            "placeholder": "Select agent",
+            "required": false,
+            "options": [
+              "Unassigned",
+              "Agent 1",
+              "Agent 2",
+              "Agent 3",
+              "Agent 4"
+            ],
+            "defaultValue": "Unassigned"
+          },
+          {
+            "id": "field-category",
+            "name": "category",
+            "type": "select",
+            "label": "Category",
+            "placeholder": "Select category",
+            "required": false,
+            "options": [
+              "Benefits",
+              "Payroll",
+              "Leave Request",
+              "IT Support",
+              "Policy Question",
+              "Other"
+            ],
+            "defaultValue": null
+          },
+          {
+            "id": "field-response",
+            "name": "response",
+            "type": "textarea",
+            "label": "Response to User",
+            "placeholder": "Enter your response to the ticket submitter...",
+            "required": false,
+            "validation": {
+              "max": 2000,
+              "message": "Response must not exceed 2000 characters"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-internalnotes",
+            "name": "internalNotes",
+            "type": "textarea",
+            "label": "Internal Notes",
+            "placeholder": "Add internal notes for agent collaboration (not visible to user)...",
+            "required": false,
+            "validation": {
+              "max": 1000,
+              "message": "Internal notes must not exceed 1000 characters"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-resolved",
+            "name": "markResolved",
+            "type": "checkbox",
+            "label": "Mark as Resolved",
+            "placeholder": "",
+            "required": false,
+            "defaultValue": false
+          }
+        ],
+        "gridLayout": [
+          {
+            "i": "field-status",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "field-priority",
+            "x": 12,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "field-assignedto",
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "field-category",
+            "x": 12,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "field-response",
+            "x": 0,
+            "y": 16,
+            "w": 24,
+            "h": 12,
+            "minW": 12,
+            "minH": 8
+          },
+          {
+            "i": "field-internalnotes",
+            "x": 0,
+            "y": 28,
+            "w": 24,
+            "h": 12,
+            "minW": 12,
+            "minH": 8
+          },
+          {
+            "i": "field-resolved",
+            "x": 0,
+            "y": 40,
+            "w": 24,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          }
+        ],
+        "layout": {
+          "type": "two-column",
+          "sections": [
+            {
+              "id": "section-ticket-details",
+              "title": "Ticket Details",
+              "fieldIds": [
+                "field-status",
+                "field-priority",
+                "field-assignedto",
+                "field-category"
+              ]
+            },
+            {
+              "id": "section-responses",
+              "title": "Responses & Notes",
+              "fieldIds": [
+                "field-response",
+                "field-internalnotes"
+              ]
+            },
+            {
+              "id": "section-resolution",
+              "title": "Resolution",
+              "fieldIds": [
+                "field-resolved"
+              ]
+            }
+          ]
+        },
+        "submitButton": {
+          "label": "Update Ticket",
+          "position": "right"
+        },
+        "validation": {
+          "mode": "onSubmit",
+          "showErrors": true
+        },
+        "styling": {
+          "colors": {
+            "primary": "#2563eb",
+            "secondary": "#64748b",
+            "background": "#ffffff",
+            "text": "#1e293b",
+            "border": "#e2e8f0"
+          },
+          "typography": {
+            "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+            "fontSize": {
+              "label": "14px",
+              "input": "14px"
+            },
+            "fontWeight": {
+              "label": "500",
+              "input": "400"
+            }
+          },
+          "spacing": {
+            "fieldGap": "16px",
+            "sectionGap": "32px",
+            "inputPadding": "10px 12px"
+          },
+          "components": {
+            "input": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "height": "40px"
+            },
+            "button": {
+              "primary": {
+                "background": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 24px"
+              }
+            }
+          }
+        },
+        "workflowId": "workflow_1735141523847"
+      }
+    ],
+    "mobileUI": null,
+    "pages": [
+      {
+        "id": "ticketdashboard-1764486800000-xyz123",
+        "name": "TicketDashboard",
+        "title": "Ticket Dashboard",
+        "description": "Overview and analytics of ticket metrics, status distribution, priority analysis, and agent workload with role-based filtering",
+        "route": "/ticketdashboard",
+        "type": "dashboard",
+        "platform": "both",
+        "forms": [
+          "ticketsubmissionform-1764486693392-7a3gui"
+        ],
+        "sections": [
+          {
+            "id": "header",
+            "type": "header",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Ticket Dashboard",
+                  "variant": "h1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Monitor ticket metrics, status distribution, and team performance",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666",
+                    "marginBottom": "24px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "main",
+            "type": "main",
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Ticket Status Overview",
+                  "layout": "grid",
+                  "columns": 4,
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "marginBottom": "24px",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "Ticket.aggregateByStatus",
+                "items": [
+                  {
+                    "label": "Open",
+                    "value": "{{count(status='open')}}",
+                    "color": "#3b82f6",
+                    "icon": "inbox"
+                  },
+                  {
+                    "label": "In Progress",
+                    "value": "{{count(status='in_progress')}}",
+                    "color": "#f59e0b",
+                    "icon": "progress"
+                  },
+                  {
+                    "label": "Resolved",
+                    "value": "{{count(status='resolved')}}",
+                    "color": "#10b981",
+                    "icon": "check_circle"
+                  },
+                  {
+                    "label": "Closed",
+                    "value": "{{count(status='closed')}}",
+                    "color": "#6b7280",
+                    "icon": "archive"
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Priority Distribution",
+                  "chartType": "donut",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "marginBottom": "24px",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "Ticket.aggregateByPriority",
+                "chartConfig": {
+                  "labels": [
+                    "Critical",
+                    "High",
+                    "Medium",
+                    "Low"
+                  ],
+                  "colors": [
+                    "#ef4444",
+                    "#f59e0b",
+                    "#3b82f6",
+                    "#10b981"
+                  ]
+                }
+              },
+              {
+                "type": "table",
+                "config": {
+                  "title": "Agent Workload",
+                  "columns": [
+                    {
+                      "field": "agentName",
+                      "header": "Agent",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "field": "assignedTickets",
+                      "header": "Assigned",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#666666"
+                      }
+                    },
+                    {
+                      "field": "resolvedTickets",
+                      "header": "Resolved",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#10b981"
+                      }
+                    },
+                    {
+                      "field": "avgResolutionTime",
+                      "header": "Avg Resolution Time",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#666666"
+                      }
+                    }
+                  ],
+                  "pageSize": 10,
+                  "searchable": true,
+                  "filterable": true,
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "marginBottom": "24px",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "User.agentWorkloadMetrics"
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Resolution Metrics",
+                  "layout": "horizontal",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "Ticket.resolutionMetrics",
+                "items": [
+                  {
+                    "label": "Avg Resolution Time",
+                    "value": "{{avgResolutionTime}} hours",
+                    "icon": "schedule",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "color": "#666666"
+                    }
+                  },
+                  {
+                    "label": "First Response Time",
+                    "value": "{{avgFirstResponseTime}} hours",
+                    "icon": "reply",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "color": "#666666"
+                    }
+                  },
+                  {
+                    "label": "Resolution Rate",
+                    "value": "{{resolutionRate}}%",
+                    "icon": "trending_up",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "color": "#10b981"
+                    }
+                  },
+                  {
+                    "label": "Customer Satisfaction",
+                    "value": "{{avgSatisfactionScore}}/5",
+                    "icon": "star",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "color": "#f59e0b"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "navigation": {
+          "onAction": {
+            "create": {
+              "type": "navigate",
+              "target": "/ticketsubmission"
+            },
+            "viewAll": {
+              "type": "navigate",
+              "target": "/ticketlistandsearch"
+            }
+          },
+          "menu": [
+            {
+              "label": "Dashboard",
+              "route": "/ticketdashboard",
+              "icon": "dashboard"
+            },
+            {
+              "label": "All Tickets",
+              "route": "/ticketlistandsearch",
+              "icon": "list"
+            },
+            {
+              "label": "Create Ticket",
+              "route": "/ticketsubmission",
+              "icon": "add"
+            }
+          ]
+        },
+        "layout": {
+          "type": "dashboard",
+          "responsive": true,
+          "spacing": "normal",
+          "gridColumns": 2
+        },
+        "workflowId": "workflow_1735141523847"
+      },
+      {
+        "id": "ticketlistandsearch-1764486850000-xyz123",
+        "name": "TicketListAndSearch",
+        "title": "Support Tickets",
+        "description": "View, search, and filter support tickets with role-based visibility and advanced filtering options",
+        "route": "/tickets",
+        "type": "list",
+        "platform": "both",
+        "forms": [
+          "ticketsubmissionform-1764486693392-7a3gui"
+        ],
+        "sections": [
+          {
+            "id": "header",
+            "type": "header",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Support Tickets",
+                  "variant": "h1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Create New Ticket",
+                  "variant": "primary",
+                  "action": "create",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                },
+                "formRef": "ticketsubmissionform-1764486693392-7a3gui"
+              }
+            ]
+          },
+          {
+            "id": "main",
+            "type": "main",
+            "components": [
+              {
+                "type": "filter",
+                "config": {
+                  "title": "Filter Tickets",
+                  "filters": [
+                    {
+                      "field": "status",
+                      "label": "Status",
+                      "type": "select",
+                      "options": [
+                        "Open",
+                        "In Progress",
+                        "Pending",
+                        "Resolved",
+                        "Closed"
+                      ]
+                    },
+                    {
+                      "field": "priority",
+                      "label": "Priority",
+                      "type": "select",
+                      "options": [
+                        "Low",
+                        "Medium",
+                        "High",
+                        "Critical"
+                      ]
+                    },
+                    {
+                      "field": "category",
+                      "label": "Category",
+                      "type": "select",
+                      "dataSource": "TicketCategory"
+                    },
+                    {
+                      "field": "assignedAgent",
+                      "label": "Assigned Agent",
+                      "type": "select",
+                      "dataSource": "User",
+                      "roleFilter": "agent"
+                    },
+                    {
+                      "field": "dateRange",
+                      "label": "Date Range",
+                      "type": "daterange"
+                    },
+                    {
+                      "field": "search",
+                      "label": "Search",
+                      "type": "text",
+                      "placeholder": "Search by ticket ID, subject, or description"
+                    }
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "backgroundColor": "#ffffff",
+                    "padding": "20px",
+                    "borderRadius": "12px",
+                    "border": "1px solid #e5e7eb",
+                    "marginBottom": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+                  }
+                },
+                "dataBinding": "Ticket.query"
+              },
+              {
+                "type": "table",
+                "config": {
+                  "title": "Tickets",
+                  "columns": [
+                    {
+                      "field": "ticketId",
+                      "header": "Ticket ID",
+                      "sortable": true,
+                      "width": "120px"
+                    },
+                    {
+                      "field": "subject",
+                      "header": "Subject",
+                      "sortable": true,
+                      "width": "250px"
+                    },
+                    {
+                      "field": "category.name",
+                      "header": "Category",
+                      "sortable": true,
+                      "width": "150px"
+                    },
+                    {
+                      "field": "priority",
+                      "header": "Priority",
+                      "sortable": true,
+                      "width": "120px",
+                      "badge": true,
+                      "badgeColors": {
+                        "Low": "#10b981",
+                        "Medium": "#f59e0b",
+                        "High": "#ef4444",
+                        "Critical": "#dc2626"
+                      }
+                    },
+                    {
+                      "field": "status",
+                      "header": "Status",
+                      "sortable": true,
+                      "width": "130px",
+                      "badge": true,
+                      "badgeColors": {
+                        "Open": "#3b82f6",
+                        "In Progress": "#8b5cf6",
+                        "Pending": "#f59e0b",
+                        "Resolved": "#10b981",
+                        "Closed": "#6b7280"
+                      }
+                    },
+                    {
+                      "field": "assignedAgent.name",
+                      "header": "Assigned To",
+                      "sortable": true,
+                      "width": "150px"
+                    },
+                    {
+                      "field": "createdAt",
+                      "header": "Created",
+                      "sortable": true,
+                      "width": "130px",
+                      "format": "date"
+                    },
+                    {
+                      "field": "actions",
+                      "header": "Actions",
+                      "width": "100px",
+                      "actions": [
+                        {
+                          "label": "View",
+                          "action": "view",
+                          "icon": "eye"
+                        }
+                      ]
+                    }
+                  ],
+                  "pagination": true,
+                  "pageSize": 20,
+                  "selectable": false,
+                  "responsive": true,
+                  "emptyMessage": "No tickets found. Create your first ticket to get started.",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "border": "1px solid #e5e7eb",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "overflow": "hidden"
+                  },
+                  "headerStyle": {
+                    "backgroundColor": "#f9fafb",
+                    "fontWeight": "600",
+                    "fontSize": "13px",
+                    "color": "#374151",
+                    "padding": "12px 16px",
+                    "borderBottom": "1px solid #e5e7eb"
+                  },
+                  "rowStyle": {
+                    "fontSize": "14px",
+                    "color": "#1f2937",
+                    "padding": "12px 16px",
+                    "borderBottom": "1px solid #f3f4f6"
+                  },
+                  "hoverStyle": {
+                    "backgroundColor": "#f9fafb"
+                  }
+                },
+                "dataBinding": "Ticket.query",
+                "roleBasedFilter": {
+                  "user": "createdBy = currentUser",
+                  "agent": "assignedAgent = currentUser OR assignedAgent IS NULL",
+                  "admin": "all"
+                }
+              }
+            ]
+          }
+        ],
+        "navigation": {
+          "onAction": {
+            "create": {
+              "type": "navigate",
+              "target": "/tickets/new"
+            },
+            "view": {
+              "type": "navigate",
+              "target": "/tickets/:id"
+            }
+          },
+          "menu": [
+            {
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "dashboard"
+            },
+            {
+              "label": "Tickets",
+              "route": "/tickets",
+              "icon": "ticket",
+              "active": true
+            },
+            {
+              "label": "My Tickets",
+              "route": "/tickets?filter=myTickets",
+              "icon": "user"
+            }
+          ]
+        },
+        "layout": {
+          "type": "single-column",
+          "responsive": true,
+          "spacing": "normal",
+          "maxWidth": "1400px"
+        },
+        "workflowId": "workflow_1735141523847"
+      }
+    ],
+    "generatedBy": "MoE",
+    "routing": {
+      "routing": {
+        "workflowExperts": [
+          "ComplexWorkflowExpert"
+        ],
+        "dataModelExperts": [
+          "SQLExpert"
+        ],
+        "formExperts": [
+          "AdvancedFormExpert"
+        ],
+        "mobileExperts": [
+          "CrossPlatformExpert"
+        ],
+        "designExperts": [],
+        "pageExperts": [
+          "PageExpert"
+        ]
+      },
+      "complexity": {
+        "workflow": "complex",
+        "forms": "advanced",
+        "dataModel": "sql"
+      },
+      "domain": "sequential",
+      "useDesignExpert": false,
+      "designSource": null,
+      "combineStrategy": "ensemble",
+      "confidence": 0.95,
+      "reasoning": "Complex workflow with 8+ steps, multiple decision points, parallel paths (notifications, assignments), and branching logic (status transitions, user confirmations). Advanced forms needed for ticket submission with validation, file uploads, and conditional fields. SQL data model optimal for relational ticket-user-comment structure with normalized schema. Cross-platform mobile support for field agents. Ensemble strategy recommended to combine workflow complexity with advanced form validation and relational data modeling."
+    },
+    "expertsUsed": {
+      "workflow": [
+        "ComplexWorkflowExpert"
+      ],
+      "dataModel": [
+        "SQLExpert"
+      ],
+      "forms": [
+        "AdvancedFormExpert"
+      ],
+      "mobile": [
+        "CrossPlatformExpert"
+      ],
+      "pages": [
+        "PageExpert"
+      ]
+    },
+    "combineStrategy": "ensemble",
+    "confidence": 0.95,
+    "autoFixesApplied": [
+      "Removed circular dependency: broke loop by removing connection from node_reopen_ticket to node_agent_work",
+      "Added default path to decision node node_parallel_notify: set connection to node_notify_user as default",
+      "Added default path to decision node node_join_notifications: set connection to node_agent_work as default",
+      "Removed circular dependency: broke loop by removing connection from node_status_check to node_agent_work",
+      "Removed circular dependency: broke loop by removing connection from node_escalate_timeout to node_agent_work",
+      "Added default path to decision node node_status_check: set connection to node_llm_resolution as default"
+    ],
+    "validationWarnings": [
+      "Connection edge_12 from decision node_parallel_notify has no condition and is not marked as default",
+      "Decision node node_join_notifications has only one outgoing path (not really a decision)",
+      "Decision node node_status_check has only one outgoing path (not really a decision)"
+    ],
+    "applicationValidation": {
+      "valid": false,
+      "summary": {
+        "totalIssues": 17,
+        "criticalIssues": 5,
+        "warnings": 11,
+        "info": 1
+      },
+      "timestamp": "2025-11-30T07:15:03.004Z",
+      "hasIssues": true,
+      "criticalIssues": 5,
+      "warnings": 11,
+      "recommendations": [
+        {
+          "priority": "medium",
+          "category": "navigation",
+          "message": "8 navigation issues detected",
+          "action": "Update page navigation to reference existing routes"
+        },
+        {
+          "priority": "low",
+          "category": "unused_components",
+          "message": "1 forms are not referenced",
+          "action": "Consider removing unused forms or linking them to pages/workflows"
+        }
+      ]
+    },
+    "applicationValidationDetails": {
+      "valid": false,
+      "timestamp": "2025-11-30T07:15:03.004Z",
+      "summary": {
+        "totalIssues": 17,
+        "criticalIssues": 5,
+        "warnings": 11,
+        "info": 1
+      },
+      "components": {
+        "workflows": {
+          "valid": true,
+          "issues": [
+            {
+              "workflowId": "workflow_1735141523847",
+              "workflowName": "Complex Ticket Management System Workflow",
+              "severity": "warning",
+              "type": "workflow_warning",
+              "details": "Connection edge_12 from decision node_parallel_notify has no condition and is not marked as default"
+            },
+            {
+              "workflowId": "workflow_1735141523847",
+              "workflowName": "Complex Ticket Management System Workflow",
+              "severity": "warning",
+              "type": "workflow_warning",
+              "details": "Decision node node_join_notifications has only one outgoing path (not really a decision)"
+            },
+            {
+              "workflowId": "workflow_1735141523847",
+              "workflowName": "Complex Ticket Management System Workflow",
+              "severity": "warning",
+              "type": "workflow_warning",
+              "details": "Decision node node_status_check has only one outgoing path (not really a decision)"
+            }
+          ]
+        },
+        "forms": {
+          "valid": true,
+          "issues": []
+        },
+        "pages": {
+          "valid": true,
+          "issues": []
+        },
+        "dataModels": {
+          "valid": false,
+          "issues": [
+            {
+              "modelName": "User",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "TicketCategory",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "Ticket",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "Comment",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "Attachment",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            }
+          ]
+        }
+      },
+      "crossComponent": {
+        "valid": true,
+        "issues": [
+          {
+            "pageId": "ticketdashboard-1764486800000-xyz123",
+            "pageName": "TicketDashboard",
+            "action": "create",
+            "severity": "warning",
+            "type": "invalid_navigation_target",
+            "message": "Navigation action 'create' targets non-existent route: /ticketsubmission"
+          },
+          {
+            "pageId": "ticketdashboard-1764486800000-xyz123",
+            "pageName": "TicketDashboard",
+            "action": "viewAll",
+            "severity": "warning",
+            "type": "invalid_navigation_target",
+            "message": "Navigation action 'viewAll' targets non-existent route: /ticketlistandsearch"
+          },
+          {
+            "pageId": "ticketdashboard-1764486800000-xyz123",
+            "pageName": "TicketDashboard",
+            "menuLabel": "All Tickets",
+            "severity": "warning",
+            "type": "invalid_menu_target",
+            "message": "Menu item 'All Tickets' targets non-existent route: /ticketlistandsearch"
+          },
+          {
+            "pageId": "ticketdashboard-1764486800000-xyz123",
+            "pageName": "TicketDashboard",
+            "menuLabel": "Create Ticket",
+            "severity": "warning",
+            "type": "invalid_menu_target",
+            "message": "Menu item 'Create Ticket' targets non-existent route: /ticketsubmission"
+          },
+          {
+            "pageId": "ticketlistandsearch-1764486850000-xyz123",
+            "pageName": "TicketListAndSearch",
+            "action": "create",
+            "severity": "warning",
+            "type": "invalid_navigation_target",
+            "message": "Navigation action 'create' targets non-existent route: /tickets/new"
+          },
+          {
+            "pageId": "ticketlistandsearch-1764486850000-xyz123",
+            "pageName": "TicketListAndSearch",
+            "action": "view",
+            "severity": "warning",
+            "type": "invalid_navigation_target",
+            "message": "Navigation action 'view' targets non-existent route: /tickets/:id"
+          },
+          {
+            "pageId": "ticketlistandsearch-1764486850000-xyz123",
+            "pageName": "TicketListAndSearch",
+            "menuLabel": "Dashboard",
+            "severity": "warning",
+            "type": "invalid_menu_target",
+            "message": "Menu item 'Dashboard' targets non-existent route: /dashboard"
+          },
+          {
+            "pageId": "ticketlistandsearch-1764486850000-xyz123",
+            "pageName": "TicketListAndSearch",
+            "menuLabel": "My Tickets",
+            "severity": "warning",
+            "type": "invalid_menu_target",
+            "message": "Menu item 'My Tickets' targets non-existent route: /tickets?filter=myTickets"
+          },
+          {
+            "formId": "ticketmanagementform-1764486710454-inazn1",
+            "formName": "TicketManagementForm",
+            "severity": "info",
+            "type": "orphaned_form",
+            "message": "Form is not referenced by any page or workflow: TicketManagementForm"
+          }
+        ]
+      },
+      "recommendations": [
+        {
+          "priority": "medium",
+          "category": "navigation",
+          "message": "8 navigation issues detected",
+          "action": "Update page navigation to reference existing routes"
+        },
+        {
+          "priority": "low",
+          "category": "unused_components",
+          "message": "1 forms are not referenced",
+          "action": "Consider removing unused forms or linking them to pages/workflows"
+        }
+      ],
+      "missingComponents": []
+    }
+  }
+]

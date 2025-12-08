@@ -1,0 +1,322 @@
+[
+  {
+    "id": "app_1764335170479_parking-ticket-data",
+    "name": "ParkingTicketData",
+    "config": {},
+    "fields": [
+      {
+        "name": "ticketNumber",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the parking ticket",
+        "defaultValue": null
+      },
+      {
+        "name": "vehicleLicensePlate",
+        "type": "string",
+        "required": true,
+        "description": "License plate number of the vehicle that received the ticket",
+        "defaultValue": null
+      },
+      {
+        "name": "violationType",
+        "type": "string",
+        "required": true,
+        "description": "Type of parking violation (e.g., expired meter, no parking zone, fire hydrant)",
+        "defaultValue": null
+      },
+      {
+        "name": "fineAmount",
+        "type": "number",
+        "required": true,
+        "description": "Monetary fine amount in dollars for the violation",
+        "defaultValue": null
+      },
+      {
+        "name": "issuedDateTime",
+        "type": "date",
+        "required": true,
+        "description": "Date and time when the ticket was issued",
+        "defaultValue": null
+      },
+      {
+        "name": "location",
+        "type": "string",
+        "required": true,
+        "description": "Street address or GPS coordinates where the violation occurred",
+        "defaultValue": null
+      },
+      {
+        "name": "photoEvidenceUrl",
+        "type": "string",
+        "required": false,
+        "description": "URL or file path to photo evidence of the violation",
+        "defaultValue": null
+      },
+      {
+        "name": "ticketStatus",
+        "type": "string",
+        "required": true,
+        "description": "Current status of the ticket (e.g., issued, paid, contested, dismissed)",
+        "defaultValue": "issued"
+      }
+    ],
+    "indexes": [
+      "ticketNumber",
+      "vehicleLicensePlate",
+      "issuedDateTime"
+    ],
+    "metadata": {},
+    "constraints": {
+      "uniqueFields": [
+        "ticketNumber"
+      ],
+      "validStatuses": [
+        "issued",
+        "paid",
+        "contested",
+        "dismissed",
+        "overdue"
+      ]
+    },
+    "description": "Central data model for storing parking ticket records with violation details, vehicle information, and ticket lifecycle status",
+    "relationships": []
+  },
+  {
+    "id": "app_1764335170479_payment-appeal-data",
+    "name": "PaymentAppealData",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the payment or appeal record",
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the associated parking ticket",
+        "defaultValue": null
+      },
+      {
+        "name": "recordType",
+        "type": "string",
+        "required": true,
+        "description": "Type of record: PAYMENT, APPEAL, or NOTIFICATION",
+        "defaultValue": null
+      },
+      {
+        "name": "transactionId",
+        "type": "string",
+        "required": false,
+        "description": "Payment transaction ID or appeal submission ID",
+        "defaultValue": null
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "required": false,
+        "description": "Payment amount in currency units",
+        "defaultValue": null
+      },
+      {
+        "name": "paymentMethod",
+        "type": "string",
+        "required": false,
+        "description": "Method used for payment (CREDIT_CARD, DEBIT_CARD, CASH, ONLINE)",
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": true,
+        "description": "Current status: PENDING, APPROVED, REJECTED, COMPLETED, SENT",
+        "defaultValue": "PENDING"
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "required": false,
+        "description": "Citizen statement for appeals or notification message content",
+        "defaultValue": null
+      },
+      {
+        "name": "timestamp",
+        "type": "date",
+        "required": true,
+        "description": "Date and time when the record was created",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "ticketId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "transactionId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "recordType",
+          "status"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "status": [
+        "PENDING",
+        "APPROVED",
+        "REJECTED",
+        "COMPLETED",
+        "SENT"
+      ],
+      "recordType": [
+        "PAYMENT",
+        "APPEAL",
+        "NOTIFICATION"
+      ],
+      "paymentMethod": [
+        "CREDIT_CARD",
+        "DEBIT_CARD",
+        "CASH",
+        "ONLINE"
+      ]
+    },
+    "description": "Manages payment transactions, appeal submissions, and notification logs for parking tickets",
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "foreignKey": "ticketId",
+        "description": "Links to the parking ticket this record belongs to",
+        "relatedModel": "ParkingTicketData"
+      },
+      {
+        "type": "manyToOne",
+        "foreignKey": "userId",
+        "description": "Links to the user who made the payment or appeal",
+        "relatedModel": "UserProfileData"
+      }
+    ]
+  },
+  {
+    "id": "app_1764335170479_user-profile-data",
+    "name": "UserProfileData",
+    "config": {},
+    "fields": [
+      {
+        "name": "userId",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the user profile",
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "required": true,
+        "description": "Full name of the user",
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "required": true,
+        "description": "Email address for authentication and notifications",
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "required": true,
+        "description": "User role type: officer, citizen, or administrator",
+        "defaultValue": null
+      },
+      {
+        "name": "badgeNumber",
+        "type": "string",
+        "required": false,
+        "description": "Badge number for parking officers (null for other roles)",
+        "defaultValue": null
+      },
+      {
+        "name": "vehicleRegistrations",
+        "type": "array",
+        "required": false,
+        "description": "List of vehicle license plates registered to citizen (empty for other roles)",
+        "defaultValue": []
+      },
+      {
+        "name": "phoneNumber",
+        "type": "string",
+        "required": false,
+        "description": "Contact phone number for notifications",
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "required": true,
+        "description": "Indicates if the user account is active and can access the system",
+        "defaultValue": true
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "role"
+        ]
+      },
+      {
+        "fields": [
+          "badgeNumber"
+        ],
+        "sparse": true,
+        "unique": true
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "role": {
+        "enum": [
+          "officer",
+          "citizen",
+          "administrator"
+        ]
+      },
+      "email": {
+        "format": "email"
+      }
+    },
+    "description": "Store user profiles for parking officers, citizens, and administrators with role-based access control",
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "description": "Officers issue tickets, citizens receive tickets",
+        "relatedModel": "ParkingTicketData"
+      }
+    ]
+  }
+]

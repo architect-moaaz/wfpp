@@ -1,0 +1,532 @@
+[
+  {
+    "id": "app_1764408351405_booking",
+    "name": "Booking",
+    "config": {},
+    "fields": [
+      {
+        "name": "bookingId",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the booking",
+        "defaultValue": null
+      },
+      {
+        "name": "vehicleId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the vehicle being parked",
+        "defaultValue": null
+      },
+      {
+        "name": "parkingSpaceId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the assigned parking space",
+        "defaultValue": null
+      },
+      {
+        "name": "startTime",
+        "type": "date",
+        "required": true,
+        "description": "Booking start date and time",
+        "defaultValue": null
+      },
+      {
+        "name": "endTime",
+        "type": "date",
+        "required": true,
+        "description": "Booking end date and time",
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": true,
+        "description": "Current booking status: confirmed, active, completed, cancelled",
+        "defaultValue": "confirmed"
+      },
+      {
+        "name": "bookingType",
+        "type": "string",
+        "required": true,
+        "description": "Type of booking: advance or walk-in",
+        "defaultValue": "advance"
+      },
+      {
+        "name": "paymentId",
+        "type": "string",
+        "required": false,
+        "description": "Reference to associated payment transaction",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "bookingId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "vehicleId",
+          "startTime"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "parkingSpaceId",
+          "startTime",
+          "endTime"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "statusValues": [
+        "confirmed",
+        "active",
+        "completed",
+        "cancelled"
+      ],
+      "bookingTypeValues": [
+        "advance",
+        "walk-in"
+      ],
+      "endTimeAfterStartTime": "endTime must be greater than startTime"
+    },
+    "description": "Manages parking reservations and real-time space allocations with time slots, duration, and booking status",
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "foreignKey": "vehicleId",
+        "description": "Each booking is associated with one vehicle",
+        "relatedModel": "Vehicle"
+      },
+      {
+        "type": "many-to-one",
+        "foreignKey": "parkingSpaceId",
+        "description": "Each booking is assigned to one parking space",
+        "relatedModel": "ParkingSpace"
+      },
+      {
+        "type": "one-to-one",
+        "foreignKey": "paymentId",
+        "description": "Each booking may have one associated payment",
+        "relatedModel": "Payment"
+      }
+    ]
+  },
+  {
+    "id": "app_1764408351405_parking-space-001",
+    "name": "ParkingSpace",
+    "config": {},
+    "fields": [
+      {
+        "name": "spaceId",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the parking space (e.g., A-101, B-205)",
+        "defaultValue": null
+      },
+      {
+        "name": "spaceType",
+        "type": "string",
+        "required": true,
+        "description": "Type of parking space: regular, handicap, VIP, electric, compact",
+        "defaultValue": "regular"
+      },
+      {
+        "name": "isOccupied",
+        "type": "boolean",
+        "required": true,
+        "description": "Current occupancy status of the parking space",
+        "defaultValue": false
+      },
+      {
+        "name": "locationZone",
+        "type": "string",
+        "required": true,
+        "description": "Zone or floor identifier within the facility (e.g., Level-1, Zone-A)",
+        "defaultValue": null
+      },
+      {
+        "name": "hourlyRate",
+        "type": "number",
+        "required": true,
+        "description": "Hourly parking rate in currency units for this space",
+        "defaultValue": null
+      },
+      {
+        "name": "isAvailable",
+        "type": "boolean",
+        "required": true,
+        "description": "Indicates if space is available for booking (false if under maintenance or reserved)",
+        "defaultValue": true
+      }
+    ],
+    "indexes": [
+      "spaceId",
+      "spaceType",
+      "isOccupied",
+      "locationZone"
+    ],
+    "metadata": {},
+    "constraints": {
+      "enum": {
+        "spaceType": [
+          "regular",
+          "handicap",
+          "VIP",
+          "electric",
+          "compact"
+        ]
+      },
+      "unique": [
+        "spaceId"
+      ],
+      "validation": {
+        "hourlyRate": "Must be greater than 0"
+      }
+    },
+    "description": "Defines the structure for individual parking spots including location, type, occupancy status, and pricing information",
+    "relationships": []
+  },
+  {
+    "id": "app_1764408351405_payment",
+    "name": "Payment",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the payment transaction",
+        "defaultValue": null
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "required": true,
+        "description": "Transaction amount in the base currency",
+        "defaultValue": null
+      },
+      {
+        "name": "paymentMethod",
+        "type": "string",
+        "required": true,
+        "description": "Method of payment (credit_card, debit_card, cash, mobile_wallet, bank_transfer)",
+        "defaultValue": null
+      },
+      {
+        "name": "paymentType",
+        "type": "string",
+        "required": true,
+        "description": "Type of payment (booking, permit, penalty, subscription)",
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": true,
+        "description": "Payment status (pending, completed, failed, refunded)",
+        "defaultValue": "pending"
+      },
+      {
+        "name": "transactionDate",
+        "type": "date",
+        "required": true,
+        "description": "Timestamp when the payment transaction occurred",
+        "defaultValue": null
+      },
+      {
+        "name": "referenceId",
+        "type": "string",
+        "required": true,
+        "description": "External reference ID linking to booking, permit, or penalty record",
+        "defaultValue": null
+      },
+      {
+        "name": "receiptNumber",
+        "type": "string",
+        "required": false,
+        "description": "Unique receipt number generated for the transaction",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "transactionDate"
+        ],
+        "description": "Optimize queries filtering by transaction date"
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "description": "Optimize queries filtering by payment status"
+      },
+      {
+        "fields": [
+          "referenceId"
+        ],
+        "description": "Optimize lookups by reference ID"
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "amount": "Must be greater than 0",
+      "status": "Must be one of: pending, completed, failed, refunded",
+      "paymentType": "Must be one of: booking, permit, penalty, subscription",
+      "paymentMethod": "Must be one of: credit_card, debit_card, cash, mobile_wallet, bank_transfer"
+    },
+    "description": "Records all financial transactions related to parking services including bookings, permits, and penalties",
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "description": "Links payment to the vehicle associated with the transaction",
+        "relatedModel": "Vehicle"
+      },
+      {
+        "type": "manyToOne",
+        "description": "Links payment to the parking space when applicable",
+        "relatedModel": "ParkingSpace"
+      }
+    ]
+  },
+  {
+    "id": "app_1764408351405_permit",
+    "name": "Permit",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the permit",
+        "defaultValue": null
+      },
+      {
+        "name": "permitType",
+        "type": "string",
+        "required": true,
+        "description": "Type of permit (monthly, annual, employee, visitor)",
+        "defaultValue": null
+      },
+      {
+        "name": "vehicleId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the assigned vehicle",
+        "defaultValue": null
+      },
+      {
+        "name": "parkingSpaceId",
+        "type": "string",
+        "required": false,
+        "description": "Reference to the assigned parking space (if applicable)",
+        "defaultValue": null
+      },
+      {
+        "name": "startDate",
+        "type": "date",
+        "required": true,
+        "description": "Permit validity start date",
+        "defaultValue": null
+      },
+      {
+        "name": "endDate",
+        "type": "date",
+        "required": true,
+        "description": "Permit validity end date",
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": true,
+        "description": "Current permit status (active, expired, suspended, cancelled)",
+        "defaultValue": "active"
+      },
+      {
+        "name": "paymentId",
+        "type": "string",
+        "required": false,
+        "description": "Reference to the payment transaction for this permit",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "vehicleId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status",
+          "endDate"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "permitType"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "status": [
+        "active",
+        "expired",
+        "suspended",
+        "cancelled"
+      ],
+      "permitType": [
+        "monthly",
+        "annual",
+        "employee",
+        "visitor"
+      ],
+      "endDateAfterStartDate": "endDate must be after startDate"
+    },
+    "description": "Manages long-term parking permits and subscription-based access with validity periods, permit types, and renewal tracking",
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "foreignKey": "vehicleId",
+        "description": "Each permit is assigned to one vehicle",
+        "relatedModel": "Vehicle"
+      },
+      {
+        "type": "many-to-one",
+        "foreignKey": "parkingSpaceId",
+        "description": "Permit may be assigned to a specific parking space",
+        "relatedModel": "ParkingSpace"
+      },
+      {
+        "type": "many-to-one",
+        "foreignKey": "paymentId",
+        "description": "Permit is linked to a payment transaction",
+        "relatedModel": "Payment"
+      }
+    ]
+  },
+  {
+    "id": "app_1764408351405_vehicle-001",
+    "name": "Vehicle",
+    "config": {},
+    "fields": [
+      {
+        "name": "vehicleId",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the vehicle record",
+        "defaultValue": null
+      },
+      {
+        "name": "licensePlate",
+        "type": "string",
+        "required": true,
+        "description": "Vehicle license plate number for identification",
+        "defaultValue": null
+      },
+      {
+        "name": "vehicleType",
+        "type": "string",
+        "required": true,
+        "description": "Type of vehicle (e.g., car, motorcycle, truck, SUV)",
+        "defaultValue": null
+      },
+      {
+        "name": "makeModel",
+        "type": "string",
+        "required": false,
+        "description": "Vehicle manufacturer and model information",
+        "defaultValue": null
+      },
+      {
+        "name": "ownerName",
+        "type": "string",
+        "required": true,
+        "description": "Full name of the vehicle owner",
+        "defaultValue": null
+      },
+      {
+        "name": "ownerContact",
+        "type": "string",
+        "required": true,
+        "description": "Owner's phone number or email for communication",
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "required": false,
+        "description": "Reference to associated customer account",
+        "defaultValue": null
+      },
+      {
+        "name": "registrationDate",
+        "type": "date",
+        "required": true,
+        "description": "Date when vehicle was registered in the system",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "licensePlate"
+        ],
+        "unique": true,
+        "description": "Ensures unique license plates and fast lookup"
+      },
+      {
+        "fields": [
+          "customerId"
+        ],
+        "unique": false,
+        "description": "Optimizes queries for customer's vehicles"
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "contactFormat": "Owner contact must be valid phone or email format",
+      "validVehicleType": "Vehicle type must be from predefined list (car, motorcycle, truck, SUV, van)",
+      "uniqueLicensePlate": "License plate must be unique across all vehicles"
+    },
+    "description": "Stores vehicle registration information and ownership details for parking management and tracking purposes",
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "foreignKey": "customerId",
+        "description": "Links vehicle to customer account",
+        "relatedModel": "Customer"
+      },
+      {
+        "type": "oneToMany",
+        "description": "Vehicle can have multiple parking bookings",
+        "relatedModel": "Booking"
+      },
+      {
+        "type": "oneToMany",
+        "description": "Vehicle can have multiple entry/exit records",
+        "relatedModel": "EntryExitLog"
+      }
+    ]
+  }
+]

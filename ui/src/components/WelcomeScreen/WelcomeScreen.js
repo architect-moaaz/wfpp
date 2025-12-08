@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import './WelcomeScreen.css';
-import { Plus, FolderOpen, Workflow, Search, ArrowLeft, X } from 'lucide-react';
+import { Plus, FolderOpen, Workflow, Search, ArrowLeft, X, Sparkles } from 'lucide-react';
 import { useWorkflow } from '../../context/WorkflowContext';
+import { useAres } from '../../context/AresContext';
 
 const WelcomeScreen = ({ onCreateNew, onOpenExisting }) => {
   const [applications, setApplications] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { setActiveSidebar, setCurrentApplication, setCurrentWorkflow, setConnectedForms, setDataModels, setConnectedPages } = useWorkflow();
+  const { open: openAres } = useAres();
 
   useEffect(() => {
     // Fetch applications
     fetchApplications();
+
+    // Open ARES in modal mode when welcome screen loads
+    setTimeout(() => {
+      openAres(true);
+    }, 500);
   }, []);
 
   const fetchApplications = () => {
@@ -47,20 +54,13 @@ const WelcomeScreen = ({ onCreateNew, onOpenExisting }) => {
         // Set the current application
         setCurrentApplication(application);
 
-        // Load all workflows
+        // Load all workflows from application resources
         const workflows = application.resources?.workflows || [];
-        if (workflows.length > 0) {
-          // Fetch full workflow data for the first workflow
-          const firstWorkflowId = workflows[0].id || workflows[0];
-          try {
-            const wfResponse = await fetch(`http://localhost:5000/api/workflows/${firstWorkflowId}`);
-            const wfData = await wfResponse.json();
-            if (wfData.success && wfData.workflow) {
-              setCurrentWorkflow(wfData.workflow);
-            }
-          } catch (error) {
-            console.error(`Failed to fetch workflow ${firstWorkflowId}:`, error);
-          }
+        console.log('[WelcomeScreen] Loaded workflows:', workflows.length, workflows);
+        if (workflows.length > 0 && workflows[0]) {
+          // Workflows are already complete objects in the application resources
+          console.log('[WelcomeScreen] Setting current workflow:', workflows[0]);
+          setCurrentWorkflow(workflows[0]);
         }
 
         // Load forms
@@ -76,7 +76,7 @@ const WelcomeScreen = ({ onCreateNew, onOpenExisting }) => {
         setConnectedPages(pages);
 
         // Navigate to workflow editor
-        setActiveSidebar('workflow-editor');
+        setActiveSidebar('workflows');
 
         // Close modal
         setShowModal(false);
@@ -112,6 +112,16 @@ const WelcomeScreen = ({ onCreateNew, onOpenExisting }) => {
           </div>
 
           <div className="welcome-actions">
+            <div className="action-card primary" onClick={() => openAres(true)}>
+              <div className="action-card-icon gradient">
+                <Sparkles size={32} />
+              </div>
+              <h3 className="action-card-title">Ask ARES Assistant</h3>
+              <p className="action-card-description">
+                Let AI guide you through creating workflows and applications
+              </p>
+            </div>
+
             <div className="action-card" onClick={handleCreateNew}>
               <div className="action-card-icon">
                 <Plus size={32} />

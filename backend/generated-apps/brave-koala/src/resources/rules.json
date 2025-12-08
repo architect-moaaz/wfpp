@@ -1,0 +1,187 @@
+[
+  {
+    "id": "rule_start_process_validation",
+    "name": "Start Process Validation",
+    "description": "Validate notification dispatch input data quality and required fields",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Notification.recipient",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Notification.recipient",
+          "value": null,
+          "message": "Notification recipient is required and cannot be empty"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "ERROR",
+          "message": "Notification dispatch failed validation - missing recipient"
+        },
+        {
+          "type": "stopWorkflow",
+          "field": "workflowStatus",
+          "value": "VALIDATION_FAILED",
+          "message": "Workflow stopped due to validation failure"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "notification-dispatch-workflow",
+    "workflowId": "notification-dispatch-workflow",
+    "application_id": "app_1765082326785"
+  },
+  {
+    "id": "rule_check_notification_rules",
+    "name": "Check Notification Rules",
+    "description": "Determine notification channel based on ticket priority and user preferences",
+    "type": "decision",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.priority",
+          "operator": "in",
+          "value": [
+            "CRITICAL",
+            "HIGH"
+          ]
+        },
+        {
+          "field": "User.smsEnabled",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Notification.channel",
+          "value": "SMS",
+          "message": "High priority ticket - using SMS channel"
+        },
+        {
+          "type": "setVariable",
+          "field": "Notification.urgency",
+          "value": "IMMEDIATE",
+          "message": "Set immediate delivery for critical notifications"
+        },
+        {
+          "type": "logMessage",
+          "field": "routingLog",
+          "value": "INFO",
+          "message": "Notification routed to SMS channel for high priority ticket"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "notification-dispatch-workflow",
+    "workflowId": "notification-dispatch-workflow",
+    "application_id": "app_1765082326785"
+  },
+  {
+    "id": "rule_delivery_successful",
+    "name": "Delivery Successful Check",
+    "description": "Evaluate if notification was successfully delivered to recipient",
+    "type": "decision",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Notification.deliveryStatus",
+          "operator": "equals",
+          "value": "DELIVERED"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "updateData",
+          "field": "Notification.completedAt",
+          "value": "{{currentTimestamp}}",
+          "message": "Mark notification as successfully completed"
+        },
+        {
+          "type": "setVariable",
+          "field": "workflowStatus",
+          "value": "SUCCESS",
+          "message": "Notification delivery confirmed"
+        },
+        {
+          "type": "logMessage",
+          "field": "deliveryLog",
+          "value": "SUCCESS",
+          "message": "Notification successfully delivered to recipient"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "notification-dispatch-workflow",
+    "workflowId": "notification-dispatch-workflow",
+    "application_id": "app_1765082326785"
+  },
+  {
+    "id": "rule_retry_attempts_left",
+    "name": "Retry Attempts Check",
+    "description": "Determine if notification delivery should be retried based on remaining attempts",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Notification.retryCount",
+          "operator": "lessThan",
+          "value": 3
+        },
+        {
+          "field": "Notification.deliveryStatus",
+          "operator": "equals",
+          "value": "FAILED"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Notification.retryCount",
+          "value": "{{Notification.retryCount + 1}}",
+          "message": "Increment retry counter for failed notification"
+        },
+        {
+          "type": "setVariable",
+          "field": "workflowStatus",
+          "value": "RETRY",
+          "message": "Schedule notification for retry"
+        },
+        {
+          "type": "logMessage",
+          "field": "retryLog",
+          "value": "WARNING",
+          "message": "Notification delivery failed - retry attempt scheduled"
+        }
+      ]
+    },
+    "node_id": "decision-3",
+    "workflow_id": "notification-dispatch-workflow",
+    "workflowId": "notification-dispatch-workflow",
+    "application_id": "app_1765082326785"
+  }
+]

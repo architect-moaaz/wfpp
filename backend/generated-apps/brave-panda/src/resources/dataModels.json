@@ -1,0 +1,259 @@
+[
+  {
+    "id": "customer",
+    "name": "Customer",
+    "description": "Stores customer information and contact details for order processing and management",
+    "fields": [
+      {
+        "name": "customerId",
+        "type": "string",
+        "description": "Unique identifier for the customer",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "Customer's full name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Customer's email address for communication and account identification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "description": "Customer's primary contact phone number",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "shippingAddress",
+        "type": "string",
+        "description": "Customer's default shipping address",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the customer account is active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the customer record was created",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "customerId",
+      "email"
+    ],
+    "constraints": {
+      "unique": [
+        "customerId",
+        "email"
+      ],
+      "email_format": "Must be valid email format"
+    },
+    "workflowId": "workflow_1735002847123"
+  },
+  {
+    "id": "product",
+    "name": "Product",
+    "description": "Stores product catalog information including SKU, pricing, and inventory levels for order processing and availability checks",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the product",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sku",
+        "type": "string",
+        "description": "Stock Keeping Unit - unique product code for inventory tracking",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Product name or title",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed product description",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "price",
+        "type": "number",
+        "description": "Current selling price of the product",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "inventoryQuantity",
+        "type": "number",
+        "description": "Current available stock quantity",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if product is currently available for purchase",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "sku",
+      "isActive"
+    ],
+    "constraints": {
+      "unique": [
+        "sku"
+      ],
+      "check": [
+        "price >= 0",
+        "inventoryQuantity >= 0"
+      ]
+    },
+    "workflowId": "workflow_1735002847123"
+  },
+  {
+    "id": "order",
+    "name": "Order",
+    "description": "Central data model tracking orders through the complete fulfillment lifecycle from placement to delivery",
+    "fields": [
+      {
+        "name": "orderId",
+        "type": "string",
+        "description": "Unique identifier for the order",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "description": "Reference to the customer who placed the order",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "orderDate",
+        "type": "date",
+        "description": "Timestamp when the order was placed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current workflow status (pending, confirmed, shipped, delivered, cancelled)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "totalAmount",
+        "type": "number",
+        "description": "Total order value including all line items and fees",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentStatus",
+        "type": "string",
+        "description": "Payment processing status (pending, paid, failed, refunded)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "shippingAddress",
+        "type": "string",
+        "description": "Delivery address for order fulfillment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "trackingNumber",
+        "type": "string",
+        "description": "Shipping carrier tracking identifier",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Customer",
+        "foreignKey": "customerId",
+        "description": "Each order belongs to one customer"
+      },
+      {
+        "type": "oneToMany",
+        "relatedModel": "OrderLineItem",
+        "foreignKey": "orderId",
+        "description": "Each order contains multiple line items linking to products"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "orderId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "customerId"
+        ]
+      },
+      {
+        "fields": [
+          "status"
+        ]
+      },
+      {
+        "fields": [
+          "orderDate"
+        ]
+      }
+    ],
+    "constraints": {
+      "statusValues": [
+        "pending",
+        "confirmed",
+        "shipped",
+        "delivered",
+        "cancelled"
+      ],
+      "paymentStatusValues": [
+        "pending",
+        "paid",
+        "failed",
+        "refunded"
+      ],
+      "totalAmountMin": 0
+    },
+    "workflowId": "workflow_1735002847123"
+  }
+]

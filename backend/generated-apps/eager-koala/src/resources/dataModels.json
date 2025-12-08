@@ -1,0 +1,271 @@
+[
+  {
+    "id": "app_1764299556312_comment-category-data-model",
+    "name": "CommentCategoryDataModel",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for comment or category record",
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": true,
+        "description": "Record type: 'comment' or 'category'",
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "required": false,
+        "description": "Reference to associated ticket (for comments only)",
+        "defaultValue": null
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "required": true,
+        "description": "Comment text or category name with description",
+        "defaultValue": null
+      },
+      {
+        "name": "authorId",
+        "type": "string",
+        "required": true,
+        "description": "User or agent ID who created the comment or category",
+        "defaultValue": null
+      },
+      {
+        "name": "parentId",
+        "type": "string",
+        "required": false,
+        "description": "Parent comment ID for threaded conversations or parent category for hierarchy",
+        "defaultValue": null
+      },
+      {
+        "name": "metadata",
+        "type": "object",
+        "required": false,
+        "description": "Additional data: SLA rules for categories, knowledge base references, visibility flags, attachments",
+        "defaultValue": {}
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "required": true,
+        "description": "Timestamp when comment was posted or category was created",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "ticketId",
+          "createdAt"
+        ],
+        "description": "Optimize retrieval of comments for a ticket in chronological order"
+      },
+      {
+        "fields": [
+          "type",
+          "parentId"
+        ],
+        "description": "Support efficient querying of categories and threaded comments"
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "typeEnum": [
+        "comment",
+        "category"
+      ],
+      "validParentReference": "parentId must reference existing record of same type",
+      "commentRequiresTicket": "Comments must have a ticketId"
+    },
+    "description": "Stores ticket comments with threaded conversations and ticket categories with SLA rules for help desk ticketing system",
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "foreignKey": "ticketId",
+        "description": "Comments belong to tickets",
+        "relatedModel": "TicketDataModel"
+      },
+      {
+        "type": "manyToOne",
+        "foreignKey": "authorId",
+        "description": "Comments and categories are created by users or agents",
+        "relatedModel": "UserAgentDataModel"
+      }
+    ]
+  },
+  {
+    "id": "app_1764299556312_ticket-data-model",
+    "name": "TicketDataModel",
+    "config": {},
+    "fields": [
+      {
+        "name": "ticketId",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the ticket",
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "description": "Brief summary of the ticket issue",
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": true,
+        "description": "Current ticket status (open, in-progress, resolved, closed)",
+        "defaultValue": "open"
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "required": true,
+        "description": "Priority level of the ticket (low, medium, high, critical)",
+        "defaultValue": "medium"
+      },
+      {
+        "name": "assignedAgentId",
+        "type": "string",
+        "required": false,
+        "description": "ID of the agent assigned to handle the ticket",
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "required": true,
+        "description": "Timestamp when the ticket was created",
+        "defaultValue": null
+      },
+      {
+        "name": "slaDueDate",
+        "type": "date",
+        "required": true,
+        "description": "Service Level Agreement deadline for ticket resolution",
+        "defaultValue": null
+      },
+      {
+        "name": "requesterId",
+        "type": "string",
+        "required": true,
+        "description": "ID of the user who submitted the ticket",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [],
+    "metadata": {},
+    "constraints": {},
+    "description": "Central data model for managing help desk tickets including status, priority, assignment, and SLA tracking",
+    "relationships": []
+  },
+  {
+    "id": "app_1764299556312_user-agent-data-model",
+    "name": "UserAgentDataModel",
+    "config": {},
+    "fields": [
+      {
+        "name": "userId",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the user",
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "required": true,
+        "description": "Full name of the user or agent",
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "required": true,
+        "description": "Email address for contact and authentication",
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "required": true,
+        "description": "User role in the system (customer, agent, team_lead, administrator)",
+        "defaultValue": "customer"
+      },
+      {
+        "name": "department",
+        "type": "string",
+        "required": false,
+        "description": "Department or team assignment for agents",
+        "defaultValue": null
+      },
+      {
+        "name": "isAvailable",
+        "type": "boolean",
+        "required": false,
+        "description": "Current availability status for agents to handle tickets",
+        "defaultValue": true
+      },
+      {
+        "name": "activeTicketCount",
+        "type": "number",
+        "required": false,
+        "description": "Number of tickets currently assigned to the agent",
+        "defaultValue": 0
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "required": true,
+        "description": "Timestamp when the user account was created",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "role",
+          "department"
+        ]
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "role": "Must be one of: customer, agent, team_lead, administrator",
+      "email": "Must be valid email format",
+      "activeTicketCount": "Must be non-negative integer"
+    },
+    "description": "Manages user profiles, agent information, roles, and team assignments for the help desk ticketing system",
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "foreignKey": "assignedAgentId",
+        "description": "An agent can be assigned to multiple tickets",
+        "relatedModel": "TicketDataModel"
+      }
+    ]
+  }
+]

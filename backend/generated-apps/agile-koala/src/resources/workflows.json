@@ -1,0 +1,543 @@
+[
+  {
+    "id": "workflow_1735148892345",
+    "name": "Traffic Ticket Management System",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_start",
+        "data": {
+          "label": "Traffic Ticket Received",
+          "formId": "workflow_1735148892345_create_ticket_form",
+          "trigger": "Officer submits traffic ticket",
+          "formName": "Create Traffic Ticket",
+          "description": "Initiates the traffic ticket processing workflow when an officer submits a citation"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 50,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_ai_initial_review",
+        "data": {
+          "label": "AI Initial Ticket Review",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Review this traffic ticket for completeness and accuracy. Analyze: Violation type: ${processData.violationType}, Location: ${processData.location}, Date/Time: ${processData.datetime}, Officer ID: ${processData.officerID}, Vehicle details: ${processData.vehicleDetails}. Flag any missing information or inconsistencies.",
+          "maxTokens": 800,
+          "description": "AI analyzes ticket data for completeness and flags potential issues",
+          "temperature": 0.3,
+          "outputVariable": "aiReview"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 50,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_validation",
+        "data": {
+          "label": "Validate Ticket Data",
+          "rules": [
+            "Required fields present",
+            "Valid violation code",
+            "Officer credentials verified",
+            "Location coordinates valid"
+          ],
+          "ruleType": "ticket_validation",
+          "description": "Validates essential ticket information and officer authorization"
+        },
+        "type": "validation",
+        "position": {
+          "x": 50,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_validation_decision",
+        "data": {
+          "label": "Validation Result",
+          "condition": "Ticket data validation and AI review results",
+          "description": "Routes based on validation success or failure",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_error_handling",
+        "data": {
+          "label": "Manual Review Required",
+          "formId": "workflow_1735148892345_payment_form",
+          "dueDate": "24 hours",
+          "formName": "Pay Traffic Ticket",
+          "priority": "High",
+          "taskName": "review_invalid_ticket",
+          "assignedTo": "Traffic Supervisor",
+          "instructions": "Review ticket with validation errors and correct or reject"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_severity_assessment",
+        "data": {
+          "label": "AI Severity Assessment",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Assess the severity of this traffic violation: ${processData.violationType}. Consider factors: Speed over limit: ${processData.speedOver}, School zone: ${processData.schoolZone}, Weather conditions: ${processData.weather}, Prior violations: ${processData.priorViolations}. Categorize as Minor, Moderate, or Severe.",
+          "maxTokens": 500,
+          "description": "AI determines violation severity to guide processing pathway",
+          "temperature": 0.4,
+          "outputVariable": "severityAssessment"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 50,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_severity_decision",
+        "data": {
+          "label": "Route by Severity",
+          "condition": "Route based on AI severity assessment",
+          "description": "Directs workflow based on violation severity level",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_minor_processing",
+        "data": {
+          "label": "Automated Minor Violation",
+          "script": "processMinorViolation(ticketData)",
+          "scriptType": "JavaScript",
+          "description": "Automatically processes minor violations with standard fine"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -200,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_parallel_moderate",
+        "data": {
+          "label": "Moderate Violation Processing",
+          "branches": "Background check and fine calculation",
+          "description": "Parallel processing for moderate violations",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_background_check",
+        "data": {
+          "label": "Driver Background Check",
+          "script": "checkDriverHistory(licenseNumber)",
+          "scriptType": "JavaScript",
+          "description": "Retrieves driver history and prior violations from DMV database"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -50,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_fine_calculation",
+        "data": {
+          "label": "Calculate Fine Amount",
+          "script": "calculateFine(violationType, severity, priorOffenses)",
+          "scriptType": "JavaScript",
+          "description": "Calculates appropriate fine based on violation type and driver history"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 150,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_merge_moderate",
+        "data": {
+          "label": "Merge Moderate Results",
+          "branches": "Combines background and fine calculation results",
+          "description": "Merges parallel processing results for moderate violations",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_severe_review",
+        "data": {
+          "label": "Severe Violation Review",
+          "formId": "workflow_1735148892345_create_ticket_form",
+          "dueDate": "8 hours",
+          "formName": "Create Traffic Ticket",
+          "priority": "High",
+          "taskName": "review_severe_violation",
+          "assignedTo": "Senior Traffic Officer",
+          "instructions": "Review severe violation for potential court referral or license action"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_court_decision",
+        "data": {
+          "label": "Court Referral Decision",
+          "condition": "Determine if case should go to court",
+          "description": "Decides whether severe violation requires court appearance",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_court_scheduling",
+        "data": {
+          "label": "Schedule Court Appearance",
+          "script": "scheduleCourtDate(ticketData)",
+          "scriptType": "JavaScript",
+          "description": "Schedules mandatory court appearance for severe violations"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 450,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_timeout_check",
+        "data": {
+          "label": "Payment Timeout Check",
+          "duration": "PT30D",
+          "timerType": "duration",
+          "description": "30-day timeout for payment processing"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 50,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_payment_status",
+        "data": {
+          "label": "Check Payment Status",
+          "condition": "Verify if fine has been paid within timeout period",
+          "description": "Routes based on payment status after timeout period",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_collections",
+        "data": {
+          "label": "Send to Collections",
+          "script": "initiateCollectionsProcess(ticketData)",
+          "scriptType": "JavaScript",
+          "description": "Initiates collections process for unpaid fines"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 250,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_notification",
+        "data": {
+          "label": "Send Final Notice",
+          "channel": "Email/Mail",
+          "template": "Traffic violation processed - payment due",
+          "recipient": "Violator",
+          "description": "Sends notification to driver about ticket and payment requirements"
+        },
+        "type": "notification",
+        "position": {
+          "x": 50,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_escalation",
+        "data": {
+          "label": "License Suspension Review",
+          "formId": "workflow_1735148892345_create_ticket_form",
+          "dueDate": "7 days",
+          "formName": "Create Traffic Ticket",
+          "priority": "Medium",
+          "taskName": "review_license_suspension",
+          "assignedTo": "DMV Coordinator",
+          "instructions": "Review case for potential license suspension due to non-payment"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 450,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_end_paid",
+        "data": {
+          "label": "Fine Paid - Case Closed",
+          "result": "successful_payment",
+          "description": "Ticket successfully processed and fine paid"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": -150,
+          "y": 1250
+        }
+      },
+      {
+        "id": "node_end_collections",
+        "data": {
+          "label": "Sent to Collections",
+          "result": "collections_initiated",
+          "description": "Unpaid fine sent to collections agency"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 250,
+          "y": 1250
+        }
+      },
+      {
+        "id": "node_end_court",
+        "data": {
+          "label": "Court Scheduled",
+          "result": "court_appearance_required",
+          "description": "Severe violation requires mandatory court appearance"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 450,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_end_suspended",
+        "data": {
+          "label": "License Action Initiated",
+          "result": "license_suspension_review",
+          "description": "Case escalated for potential license suspension"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 450,
+          "y": 1250
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-26T23:49:22.14+05:30",
+    "updated_at": "2025-11-26T23:49:22.14+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_start",
+        "target": "node_ai_initial_review"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_ai_initial_review",
+        "target": "node_validation"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_validation",
+        "target": "node_validation_decision"
+      },
+      {
+        "id": "edge_4",
+        "label": "Validation Failed",
+        "source": "node_validation_decision",
+        "target": "node_error_handling",
+        "condition": "processData.validationStatus === 'failed'"
+      },
+      {
+        "id": "edge_5",
+        "label": "Validation Passed",
+        "source": "node_validation_decision",
+        "target": "node_severity_assessment",
+        "condition": "processData.validationStatus === 'passed'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_6",
+        "source": "node_error_handling",
+        "target": "node_severity_assessment"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_severity_assessment",
+        "target": "node_severity_decision"
+      },
+      {
+        "id": "edge_8",
+        "label": "Minor",
+        "source": "node_severity_decision",
+        "target": "node_minor_processing",
+        "condition": "processData.severityAssessment === 'Minor'"
+      },
+      {
+        "id": "edge_9",
+        "label": "Moderate",
+        "source": "node_severity_decision",
+        "target": "node_parallel_moderate",
+        "condition": "processData.severityAssessment === 'Moderate'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_10",
+        "label": "Severe",
+        "source": "node_severity_decision",
+        "target": "node_severe_review",
+        "condition": "processData.severityAssessment === 'Severe'"
+      },
+      {
+        "id": "edge_11",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_parallel_moderate",
+        "target": "node_background_check",
+        "isDefault": true
+      },
+      {
+        "id": "edge_12",
+        "source": "node_parallel_moderate",
+        "target": "node_fine_calculation"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_background_check",
+        "target": "node_merge_moderate"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_fine_calculation",
+        "target": "node_merge_moderate"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_minor_processing",
+        "target": "node_timeout_check"
+      },
+      {
+        "id": "edge_16",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_merge_moderate",
+        "target": "node_timeout_check",
+        "isDefault": true
+      },
+      {
+        "id": "edge_17",
+        "source": "node_severe_review",
+        "target": "node_court_decision"
+      },
+      {
+        "id": "edge_18",
+        "label": "Court Required",
+        "source": "node_court_decision",
+        "target": "node_court_scheduling",
+        "condition": "processData.courtRequired === true"
+      },
+      {
+        "id": "edge_19",
+        "label": "No Court",
+        "source": "node_court_decision",
+        "target": "node_timeout_check",
+        "condition": "processData.courtRequired === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_20",
+        "source": "node_court_scheduling",
+        "target": "node_end_court"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_timeout_check",
+        "target": "node_payment_status"
+      },
+      {
+        "id": "edge_22",
+        "label": "Paid",
+        "source": "node_payment_status",
+        "target": "node_notification",
+        "condition": "processData.paymentStatus === 'paid'"
+      },
+      {
+        "id": "edge_23",
+        "label": "Unpaid - Collections",
+        "source": "node_payment_status",
+        "target": "node_collections",
+        "condition": "processData.paymentStatus === 'unpaid' && processData.severityLevel !== 'severe'"
+      },
+      {
+        "id": "edge_24",
+        "label": "Unpaid - Severe",
+        "source": "node_payment_status",
+        "target": "node_escalation",
+        "condition": "processData.paymentStatus === 'unpaid' && processData.severityLevel === 'severe'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_25",
+        "source": "node_notification",
+        "target": "node_end_paid"
+      },
+      {
+        "id": "edge_26",
+        "source": "node_collections",
+        "target": "node_end_collections"
+      },
+      {
+        "id": "edge_27",
+        "source": "node_escalation",
+        "target": "node_end_suspended"
+      }
+    ],
+    "description": ""
+  }
+]

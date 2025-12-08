@@ -1,0 +1,2075 @@
+[
+  {
+    "id": "inventorymanagementpage-1765091100000-inv123",
+    "name": "InventoryManagementPage",
+    "title": "Inventory Management",
+    "description": "Enable warehouse staff to view and manage inventory levels with real-time visibility and adjustment capabilities",
+    "route": "/inventory-management",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "inventoryadjustmentform-1765090995183-mlc4fs"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Inventory Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Monitor stock levels, manage inventory movements, and handle adjustments across all warehouses",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Low Stock Alerts",
+              "subtitle": "Items requiring immediate attention",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Inventory.query",
+            "filters": {
+              "quantity": {
+                "$lte": "{{reorderLevel}}"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Current Inventory Levels",
+              "columns": [
+                {
+                  "key": "product.name",
+                  "label": "Product",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "product.sku",
+                  "label": "SKU",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "quantity",
+                  "label": "Current Stock",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "warehouseLocation",
+                  "label": "Location",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "lastUpdated",
+                  "label": "Last Updated",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                }
+              ],
+              "searchable": true,
+              "searchPlaceholder": "Search by product name, SKU, or location...",
+              "pagination": true,
+              "pageSize": 20,
+              "actions": [
+                {
+                  "label": "Adjust",
+                  "type": "primary",
+                  "style": {
+                    "backgroundColor": "#0066cc",
+                    "color": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px",
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Inventory.query"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Make Inventory Adjustment",
+              "variant": "primary",
+              "style": {
+                "backgroundColor": "#0066cc",
+                "color": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "12px 24px",
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "border": "none",
+                "cursor": "pointer",
+                "marginTop": "24px"
+              }
+            },
+            "formRef": "inventoryadjustmentform-1765090995183-mlc4fs"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "adjust": {
+          "type": "openForm",
+          "formId": "inventoryadjustmentform-1765090995183-mlc4fs"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/inventory-details"
+        }
+      },
+      "menu": [
+        {
+          "label": "Order Management",
+          "route": "/order-management",
+          "style": {
+            "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+            "fontSize": "14px",
+            "fontWeight": "500",
+            "color": "#1a1a1a"
+          }
+        },
+        {
+          "label": "Fulfillment Workbench",
+          "route": "/fulfillment-workbench",
+          "style": {
+            "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+            "fontSize": "14px",
+            "fontWeight": "500",
+            "color": "#1a1a1a"
+          }
+        },
+        {
+          "label": "Customer Orders",
+          "route": "/customer-orders",
+          "style": {
+            "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+            "fontSize": "14px",
+            "fontWeight": "500",
+            "color": "#1a1a1a"
+          }
+        },
+        {
+          "label": "Reports",
+          "route": "/admin-reports",
+          "style": {
+            "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+            "fontSize": "14px",
+            "fontWeight": "500",
+            "color": "#1a1a1a"
+          }
+        }
+      ]
+    },
+    "workflowId": "inventory-sync-workflow"
+  },
+  {
+    "id": "customerprofilepage-1765091200000-cp8xmn",
+    "name": "CustomerProfilePage",
+    "title": "My Account",
+    "description": "Customer account management page for updating personal information, managing saved shipping addresses, viewing order history, tracking active orders, and managing communication preferences.",
+    "route": "/customer/profile",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "shippingaddressform-1765090972813-5u2kyv"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "My Account",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage your profile, addresses, and view order history",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Profile Information",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Customer.currentUser",
+            "content": {
+              "fields": [
+                {
+                  "label": "Name",
+                  "value": "{{Customer.name}}",
+                  "editable": true
+                },
+                {
+                  "label": "Email",
+                  "value": "{{Customer.email}}",
+                  "editable": true
+                },
+                {
+                  "label": "Phone",
+                  "value": "{{Customer.phone}}",
+                  "editable": true
+                },
+                {
+                  "label": "Customer Since",
+                  "value": "{{Customer.createdAt}}",
+                  "editable": false
+                }
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Shipping Addresses",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Customer.addresses",
+            "formRef": "shippingaddressform-1765090972813-5u2kyv",
+            "content": {
+              "showAddButton": true,
+              "addButtonLabel": "Add New Address",
+              "addButtonStyle": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "10px 20px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "border": "none",
+                "cursor": "pointer"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Order History",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "columns": [
+                {
+                  "header": "Order #",
+                  "field": "orderNumber",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Date",
+                  "field": "orderDate",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "header": "Status",
+                  "field": "status",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "header": "Total",
+                  "field": "totalAmount",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Actions",
+                  "field": "actions",
+                  "sortable": false
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "type": "view",
+                  "style": {
+                    "color": "#2563eb",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "textDecoration": "none"
+                  }
+                },
+                {
+                  "label": "Track Order",
+                  "type": "track",
+                  "style": {
+                    "color": "#059669",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "textDecoration": "none"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10
+            },
+            "dataBinding": "Order.query.filter(customerId == Customer.currentUser.id).orderBy(orderDate desc)"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Communication Preferences",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginTop": "24px"
+              }
+            },
+            "content": {
+              "preferences": [
+                {
+                  "label": "Order Updates",
+                  "description": "Receive notifications about order status changes",
+                  "type": "toggle",
+                  "defaultValue": true
+                },
+                {
+                  "label": "Promotional Emails",
+                  "description": "Get updates about sales and special offers",
+                  "type": "toggle",
+                  "defaultValue": false
+                },
+                {
+                  "label": "Shipping Notifications",
+                  "description": "Track your shipments via email",
+                  "type": "toggle",
+                  "defaultValue": true
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#1a1a1a"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/customer/order-details"
+        },
+        "track": {
+          "type": "navigate",
+          "target": "/order-tracking"
+        },
+        "addAddress": {
+          "type": "modal",
+          "formRef": "shippingaddressform-1765090972813-5u2kyv"
+        }
+      },
+      "menu": [
+        {
+          "label": "My Orders",
+          "route": "/customer/orders",
+          "icon": "shopping_bag"
+        },
+        {
+          "label": "Track Order",
+          "route": "/order-tracking",
+          "icon": "local_shipping"
+        },
+        {
+          "label": "Place New Order",
+          "route": "/customer/order",
+          "icon": "add_shopping_cart"
+        },
+        {
+          "label": "Order Management",
+          "route": "/order-management",
+          "icon": "dashboard"
+        }
+      ]
+    },
+    "workflowId": "inventory-sync-workflow"
+  },
+  {
+    "id": "ordertrackingpage-1765091250000-xyz123",
+    "name": "OrderTrackingPage",
+    "title": "Order Tracking",
+    "description": "Customer portal for viewing order history, current order status, shipment tracking information, and delivery updates",
+    "route": "/order-tracking",
+    "type": "list",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Track Your Orders",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "View order status, shipment tracking, and delivery updates",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Active Orders",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Order.query",
+            "components": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "key": "orderNumber",
+                      "label": "Order #",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "key": "orderDate",
+                      "label": "Order Date",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "400",
+                        "color": "#666666"
+                      }
+                    },
+                    {
+                      "key": "status",
+                      "label": "Status",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#0066cc"
+                      }
+                    },
+                    {
+                      "key": "totalAmount",
+                      "label": "Total",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "key": "estimatedDelivery",
+                      "label": "Est. Delivery",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "400",
+                        "color": "#666666"
+                      }
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "Track",
+                      "type": "button",
+                      "action": "view",
+                      "style": {
+                        "backgroundColor": "#0066cc",
+                        "color": "#ffffff",
+                        "border": "none",
+                        "borderRadius": "8px",
+                        "padding": "8px 16px",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "cursor": "pointer"
+                      }
+                    }
+                  ],
+                  "pagination": true,
+                  "pageSize": 10,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "width": "100%"
+                  }
+                },
+                "dataBinding": "Order.query"
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Shipment Tracking",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Shipment.query",
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "itemTemplate": {
+                    "title": "{{trackingNumber}}",
+                    "subtitle": "Carrier: {{carrier}} | Status: {{status}}",
+                    "description": "Last Update: {{lastUpdateDate}} - {{currentLocation}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "padding": "16px",
+                      "borderBottom": "1px solid #e5e5e5",
+                      "backgroundColor": "#f9f9f9",
+                      "borderRadius": "8px",
+                      "marginBottom": "12px"
+                    }
+                  },
+                  "emptyState": {
+                    "text": "No active shipments",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "color": "#999999",
+                      "textAlign": "center",
+                      "padding": "32px"
+                    }
+                  },
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif"
+                  }
+                },
+                "dataBinding": "Shipment.query"
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Order History",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "button",
+                "config": {
+                  "label": "View All Orders",
+                  "variant": "secondary",
+                  "action": "navigate",
+                  "target": "/customer-orders",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "color": "#0066cc",
+                    "border": "1px solid #0066cc",
+                    "borderRadius": "8px",
+                    "padding": "12px 24px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "cursor": "pointer",
+                    "width": "100%"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/customer-orders/{{orderId}}"
+        },
+        "navigate": {
+          "type": "navigate",
+          "target": "/customer-orders"
+        }
+      },
+      "menu": [
+        {
+          "label": "My Orders",
+          "route": "/customer-orders"
+        },
+        {
+          "label": "My Profile",
+          "route": "/customer-profile"
+        },
+        {
+          "label": "Order Management",
+          "route": "/order-management"
+        },
+        {
+          "label": "Inventory",
+          "route": "/inventory-management"
+        }
+      ]
+    },
+    "workflowId": "inventory-sync-workflow"
+  },
+  {
+    "id": "customerorderpage-1765091100000-cop123",
+    "name": "CustomerOrderPage",
+    "title": "Shop Products",
+    "description": "Customer-facing page for browsing products and placing new orders with shopping cart management",
+    "route": "/shop",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "orderplacementform-1765091014635-man14v"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Shop Products",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "2rem",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "0.5rem"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Browse our catalog and add items to your cart",
+              "variant": "subtitle",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "1rem",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "1.5rem"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Product Catalog",
+              "showSearch": true,
+              "showFilters": true,
+              "filters": [
+                {
+                  "field": "category",
+                  "label": "Category",
+                  "type": "select"
+                },
+                {
+                  "field": "price",
+                  "label": "Price Range",
+                  "type": "range"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "1.5rem",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "1.5rem"
+              }
+            },
+            "dataBinding": "Product.query",
+            "display": {
+              "type": "grid",
+              "columns": 3,
+              "fields": [
+                {
+                  "name": "name",
+                  "label": "Product Name",
+                  "type": "text",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "1.125rem",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "name": "description",
+                  "label": "Description",
+                  "type": "text",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "name": "price",
+                  "label": "Price",
+                  "type": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "1.25rem",
+                    "fontWeight": "700",
+                    "color": "#2563eb"
+                  }
+                },
+                {
+                  "name": "inventory.quantity",
+                  "label": "In Stock",
+                  "type": "number",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#059669"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Add to Cart",
+                  "type": "button",
+                  "action": "addToCart",
+                  "style": {
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "0.625rem 1.25rem",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "600",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Shopping Cart",
+              "collapsible": true,
+              "style": {
+                "backgroundColor": "#f8fafc",
+                "borderRadius": "12px",
+                "padding": "1.5rem",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "1.5rem"
+              }
+            },
+            "dataBinding": "OrderItem.query",
+            "display": {
+              "type": "list",
+              "fields": [
+                {
+                  "name": "product.name",
+                  "label": "Product",
+                  "type": "text",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "1rem",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "name": "quantity",
+                  "label": "Quantity",
+                  "type": "number",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "name": "unitPrice",
+                  "label": "Unit Price",
+                  "type": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "name": "totalPrice",
+                  "label": "Total",
+                  "type": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "1rem",
+                    "fontWeight": "700",
+                    "color": "#2563eb"
+                  }
+                }
+              ],
+              "summary": {
+                "label": "Cart Total",
+                "field": "totalPrice",
+                "aggregate": "sum",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "1.5rem",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a",
+                  "marginTop": "1rem",
+                  "paddingTop": "1rem",
+                  "borderTop": "2px solid #e5e7eb"
+                }
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Proceed to Checkout",
+              "variant": "primary",
+              "size": "large",
+              "fullWidth": true,
+              "action": "openCheckout",
+              "style": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "0.875rem 1.5rem",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "1rem",
+                "fontWeight": "600",
+                "border": "none",
+                "cursor": "pointer",
+                "marginTop": "1rem"
+              }
+            },
+            "formRef": "orderplacementform-1765091014635-man14v"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "openCheckout": {
+          "type": "modal",
+          "target": "orderplacementform-1765091014635-man14v"
+        },
+        "submit": {
+          "type": "navigate",
+          "target": "/order-tracking"
+        },
+        "viewProfile": {
+          "type": "navigate",
+          "target": "/customer-profile"
+        }
+      },
+      "menu": [
+        {
+          "label": "My Orders",
+          "route": "/order-tracking",
+          "icon": "package"
+        },
+        {
+          "label": "My Profile",
+          "route": "/customer-profile",
+          "icon": "user"
+        },
+        {
+          "label": "Order Management",
+          "route": "/order-management",
+          "icon": "clipboard"
+        }
+      ]
+    },
+    "workflowId": "inventory-sync-workflow"
+  },
+  {
+    "id": "ordermanagementdashboard-1765091100000-omdb01",
+    "name": "OrderManagementDashboard",
+    "title": "Order Management Dashboard",
+    "description": "Administrative dashboard displaying order pipeline, status summaries, pending actions, and order search capabilities for order managers.",
+    "route": "/order-management",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "orderstatusupdateform-1765091035251-rwj4fr",
+      "orderplacementform-1765091014635-man14v"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Order Management Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Monitor order flow, track status, and manage order pipeline",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Order Status Summary",
+              "subtitle": "Real-time overview of orders by status",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "OrderStatus.query",
+            "displayFields": [
+              "status",
+              "count",
+              "lastUpdated"
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Pending Actions",
+              "subtitle": "Orders requiring immediate attention",
+              "style": {
+                "backgroundColor": "#FEF3C7",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #FCD34D",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Order.query",
+            "filters": {
+              "status": [
+                "pending_payment",
+                "pending_shipment",
+                "payment_failed"
+              ]
+            },
+            "displayFields": [
+              "orderId",
+              "customerName",
+              "status",
+              "totalAmount",
+              "createdAt"
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "All Orders",
+              "searchable": true,
+              "filterable": true,
+              "sortable": true,
+              "pagination": true,
+              "pageSize": 20,
+              "columns": [
+                {
+                  "field": "orderId",
+                  "header": "Order ID",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#2563EB"
+                  }
+                },
+                {
+                  "field": "customer",
+                  "header": "Customer",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "field": "status",
+                  "header": "Status",
+                  "sortable": true,
+                  "filterable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "field": "totalAmount",
+                  "header": "Total Amount",
+                  "sortable": true,
+                  "format": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#059669"
+                  }
+                },
+                {
+                  "field": "createdAt",
+                  "header": "Order Date",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#64748B"
+                  }
+                },
+                {
+                  "field": "actions",
+                  "header": "Actions",
+                  "type": "actions"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "type": "navigate",
+                  "target": "/order-tracking",
+                  "style": {
+                    "backgroundColor": "#2563EB",
+                    "color": "#FFFFFF",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "Update Status",
+                  "type": "openForm",
+                  "formRef": "orderstatusupdateform-1765091035251-rwj4fr",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "color": "#2563EB",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "1px solid #2563EB"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0"
+              }
+            },
+            "dataBinding": "Order.query"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Create New Order",
+              "variant": "primary",
+              "action": "openForm",
+              "formRef": "orderplacementform-1765091014635-man14v",
+              "style": {
+                "backgroundColor": "#2563EB",
+                "color": "#FFFFFF",
+                "borderRadius": "8px",
+                "padding": "12px 24px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "border": "none",
+                "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)",
+                "marginTop": "24px"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/order-tracking"
+        },
+        "updateStatus": {
+          "type": "openForm",
+          "formRef": "orderstatusupdateform-1765091035251-rwj4fr"
+        },
+        "createOrder": {
+          "type": "openForm",
+          "formRef": "orderplacementform-1765091014635-man14v"
+        }
+      },
+      "menu": [
+        {
+          "label": "Order Management",
+          "route": "/order-management"
+        },
+        {
+          "label": "Fulfillment Workbench",
+          "route": "/fulfillment-workbench"
+        },
+        {
+          "label": "Inventory Management",
+          "route": "/inventory-management"
+        },
+        {
+          "label": "Customer Orders",
+          "route": "/customer-orders"
+        },
+        {
+          "label": "Order Tracking",
+          "route": "/order-tracking"
+        },
+        {
+          "label": "Admin Reports",
+          "route": "/admin-reports"
+        }
+      ]
+    },
+    "workflowId": "inventory-sync-workflow"
+  },
+  {
+    "id": "fulfillmentworkbench-1765091100000-wh8fks",
+    "name": "FulfillmentWorkbench",
+    "title": "Fulfillment Workbench",
+    "description": "Warehouse staff interface for processing and fulfilling orders with pick lists, packing queues, and barcode scanning support",
+    "route": "/fulfillment-workbench",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "orderstatusupdateform-1765091035251-rwj4fr",
+      "inventoryadjustmentform-1765090995183-mlc4fs"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Fulfillment Workbench",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Process orders, manage pick lists, and update fulfillment status",
+              "variant": "body",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Pending Fulfillment Queue",
+              "description": "Orders ready for picking and packing",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Active Orders",
+              "columns": [
+                {
+                  "key": "orderNumber",
+                  "label": "Order #",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "customer.name",
+                  "label": "Customer",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "orderStatus.status",
+                  "label": "Status",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "13px",
+                    "fontWeight": "500",
+                    "color": "#0066cc",
+                    "backgroundColor": "#e6f2ff",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px"
+                  }
+                },
+                {
+                  "key": "totalAmount",
+                  "label": "Total",
+                  "sortable": true,
+                  "format": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "orderDate",
+                  "label": "Order Date",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Pick Items",
+                  "type": "button",
+                  "variant": "primary",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#0066cc",
+                    "color": "#ffffff",
+                    "padding": "8px 16px",
+                    "borderRadius": "8px",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "View Details",
+                  "type": "button",
+                  "variant": "secondary",
+                  "action": "view",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#f5f5f5",
+                    "color": "#1a1a1a",
+                    "padding": "8px 16px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #e5e5e5"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "filters": [
+                {
+                  "field": "orderStatus.status",
+                  "label": "Status",
+                  "type": "select",
+                  "options": [
+                    "Pending",
+                    "Processing",
+                    "Ready to Ship"
+                  ]
+                },
+                {
+                  "field": "orderDate",
+                  "label": "Date Range",
+                  "type": "daterange"
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "overflow": "hidden",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Order.query",
+            "filters": {
+              "orderStatus.status": {
+                "$in": [
+                  "Pending",
+                  "Processing",
+                  "Ready to Ship"
+                ]
+              }
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginTop": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Scan Barcode",
+              "variant": "primary",
+              "icon": "barcode",
+              "action": "scan",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "backgroundColor": "#0066cc",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginRight": "12px",
+                "cursor": "pointer"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Update Status",
+              "variant": "secondary",
+              "formRef": "orderstatusupdateform-1765091035251-rwj4fr",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "backgroundColor": "#f5f5f5",
+                "color": "#1a1a1a",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "1px solid #e5e5e5",
+                "marginRight": "12px",
+                "cursor": "pointer"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/order-tracking"
+        },
+        "scan": {
+          "type": "workflow",
+          "workflow": "OrderFulfillmentWorkflow"
+        }
+      },
+      "menu": [
+        {
+          "label": "Order Management",
+          "route": "/order-management-dashboard"
+        },
+        {
+          "label": "Inventory Management",
+          "route": "/inventory-management"
+        },
+        {
+          "label": "Order Tracking",
+          "route": "/order-tracking"
+        },
+        {
+          "label": "Reports",
+          "route": "/admin-reports"
+        }
+      ]
+    },
+    "workflowId": "inventory-sync-workflow"
+  },
+  {
+    "id": "adminreportspage-1765092000000-a7r9pt",
+    "name": "AdminReportsPage",
+    "title": "Analytics & Reports",
+    "description": "Comprehensive reporting dashboard with order metrics, sales analytics, inventory reports, fulfillment performance, payment summaries, and operational KPIs",
+    "route": "/admin/reports",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Analytics & Reports",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Comprehensive business intelligence and operational metrics",
+              "variant": "body",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Key Performance Indicators",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Order.aggregate",
+            "content": [
+              {
+                "label": "Total Orders",
+                "value": "{{Order.count}}",
+                "icon": "shopping-cart",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a"
+                }
+              },
+              {
+                "label": "Total Revenue",
+                "value": "${{Order.sum.totalAmount}}",
+                "icon": "dollar-sign",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#16a34a"
+                }
+              },
+              {
+                "label": "Pending Orders",
+                "value": "{{Order.count(status='pending')}}",
+                "icon": "clock",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#ea580c"
+                }
+              },
+              {
+                "label": "Completed Orders",
+                "value": "{{Order.count(status='completed')}}",
+                "icon": "check-circle",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#2563eb"
+                }
+              }
+            ]
+          },
+          {
+            "type": "chart",
+            "config": {
+              "title": "Sales & Order Trends",
+              "chartType": "line",
+              "dateRange": true,
+              "exportable": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Order.timeSeries",
+            "metrics": [
+              {
+                "field": "totalAmount",
+                "label": "Revenue",
+                "color": "#16a34a"
+              },
+              {
+                "field": "count",
+                "label": "Order Volume",
+                "color": "#2563eb"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Payment Summary Report",
+              "searchable": true,
+              "filterable": true,
+              "exportable": true,
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Payment.list",
+            "columns": [
+              {
+                "field": "paymentMethod",
+                "header": "Payment Method",
+                "sortable": true,
+                "style": {
+                  "fontWeight": "500",
+                  "color": "#1a1a1a"
+                }
+              },
+              {
+                "field": "count",
+                "header": "Transactions",
+                "sortable": true,
+                "aggregate": "count",
+                "style": {
+                  "color": "#666666"
+                }
+              },
+              {
+                "field": "totalAmount",
+                "header": "Total Amount",
+                "sortable": true,
+                "aggregate": "sum",
+                "format": "currency",
+                "style": {
+                  "fontWeight": "600",
+                  "color": "#16a34a"
+                }
+              },
+              {
+                "field": "status",
+                "header": "Status",
+                "sortable": true,
+                "style": {
+                  "fontWeight": "500"
+                },
+                "badge": {
+                  "completed": {
+                    "color": "#16a34a",
+                    "backgroundColor": "#f0fdf4"
+                  },
+                  "pending": {
+                    "color": "#ea580c",
+                    "backgroundColor": "#fff7ed"
+                  },
+                  "failed": {
+                    "color": "#dc2626",
+                    "backgroundColor": "#fef2f2"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Inventory & Fulfillment Metrics",
+              "layout": "grid",
+              "columns": 2,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "content": [
+              {
+                "type": "metric-group",
+                "title": "Inventory Status",
+                "dataBinding": "Inventory.aggregate",
+                "metrics": [
+                  {
+                    "label": "Total Products",
+                    "value": "{{Product.count}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "20px",
+                      "fontWeight": "600",
+                      "color": "#1a1a1a"
+                    }
+                  },
+                  {
+                    "label": "Low Stock Items",
+                    "value": "{{Inventory.count(quantity<reorderLevel)}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "20px",
+                      "fontWeight": "600",
+                      "color": "#ea580c"
+                    }
+                  },
+                  {
+                    "label": "Out of Stock",
+                    "value": "{{Inventory.count(quantity=0)}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "20px",
+                      "fontWeight": "600",
+                      "color": "#dc2626"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "metric-group",
+                "title": "Fulfillment Performance",
+                "dataBinding": "Shipment.aggregate",
+                "metrics": [
+                  {
+                    "label": "Shipped Orders",
+                    "value": "{{Shipment.count(status='shipped')}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "20px",
+                      "fontWeight": "600",
+                      "color": "#2563eb"
+                    }
+                  },
+                  {
+                    "label": "Delivered Orders",
+                    "value": "{{Shipment.count(status='delivered')}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "20px",
+                      "fontWeight": "600",
+                      "color": "#16a34a"
+                    }
+                  },
+                  {
+                    "label": "Avg. Delivery Time",
+                    "value": "{{Shipment.avg(deliveryTime)}} days",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "20px",
+                      "fontWeight": "600",
+                      "color": "#1a1a1a"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "button-group",
+            "config": {
+              "layout": "horizontal",
+              "alignment": "right",
+              "style": {
+                "marginTop": "24px",
+                "gap": "12px"
+              }
+            },
+            "buttons": [
+              {
+                "label": "Export to CSV",
+                "action": "export",
+                "format": "csv",
+                "style": {
+                  "backgroundColor": "#ffffff",
+                  "color": "#1a1a1a",
+                  "border": "1px solid #e5e5e5",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "cursor": "pointer"
+                }
+              },
+              {
+                "label": "Export to PDF",
+                "action": "export",
+                "format": "pdf",
+                "style": {
+                  "backgroundColor": "#2563eb",
+                  "color": "#ffffff",
+                  "border": "none",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "cursor": "pointer"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "viewOrder": {
+          "type": "navigate",
+          "target": "/orders/management"
+        },
+        "viewInventory": {
+          "type": "navigate",
+          "target": "/inventory/management"
+        }
+      },
+      "menu": [
+        {
+          "label": "Order Management",
+          "route": "/orders/management",
+          "icon": "clipboard-list"
+        },
+        {
+          "label": "Fulfillment Workbench",
+          "route": "/fulfillment/workbench",
+          "icon": "package"
+        },
+        {
+          "label": "Inventory Management",
+          "route": "/inventory/management",
+          "icon": "box"
+        },
+        {
+          "label": "Customer Orders",
+          "route": "/customer/orders",
+          "icon": "shopping-bag"
+        },
+        {
+          "label": "Order Tracking",
+          "route": "/orders/tracking",
+          "icon": "map-pin"
+        },
+        {
+          "label": "Customer Profiles",
+          "route": "/customers/profile",
+          "icon": "users"
+        }
+      ]
+    },
+    "workflowId": "inventory-sync-workflow"
+  }
+]

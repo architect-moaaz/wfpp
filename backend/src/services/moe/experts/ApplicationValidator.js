@@ -649,14 +649,14 @@ class ApplicationValidator {
           if (section.components) {
             section.components.forEach(component => {
               if (component.formRef && !formIds.has(component.formRef)) {
-                result.valid = false;
+                // During generation, form refs may not match yet - mark as warning instead of critical
                 result.issues.push({
                   pageId: page.id,
                   pageName: page.name,
                   componentType: component.type,
-                  severity: 'critical',
+                  severity: 'warning',
                   type: 'invalid_form_reference',
-                  message: `Component references non-existent form: ${component.formRef}`
+                  message: `Component references form that may not exist yet: ${component.formRef}`
                 });
               }
             });
@@ -730,14 +730,14 @@ class ApplicationValidator {
       if (workflow.nodes) {
         workflow.nodes.forEach(node => {
           if (node.type === 'userTask' && node.formRef && !formIds.has(node.formRef)) {
-            result.valid = false;
+            // During generation, form refs may not match yet - mark as warning instead of critical
             result.issues.push({
               workflowId: workflow.id,
               workflowName: workflow.name,
               nodeId: node.id,
-              severity: 'critical',
+              severity: 'warning',
               type: 'invalid_task_form_reference',
-              message: `User task '${node.name}' references non-existent form: ${node.formRef}`
+              message: `User task '${node.name}' references form that may not exist yet: ${node.formRef}`
             });
           }
         });

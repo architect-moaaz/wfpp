@@ -1,0 +1,2166 @@
+[
+  {
+    "id": "user",
+    "name": "User",
+    "description": "Store user account information for all system users including customers, restaurant staff, delivery drivers, and administrators",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address for authentication and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "passwordHash",
+        "type": "string",
+        "description": "Hashed password for secure authentication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "User's full name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "phoneNumber",
+        "type": "string",
+        "description": "User's contact phone number",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "User role for access control (customer, restaurant_staff, delivery_driver, admin)",
+        "required": true,
+        "defaultValue": "customer"
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Account status indicating if user can access the system",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the user account was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_user_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_user_role",
+        "fields": [
+          "role"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "email": "Must be valid email format and unique",
+      "role": "Must be one of: customer, restaurant_staff, delivery_driver, admin",
+      "phoneNumber": "Must be valid phone number format if provided"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "restaurant",
+    "name": "Restaurant",
+    "description": "Stores restaurant business information, operating hours, and service areas for the online food ordering system",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the restaurant",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Restaurant business name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "cuisineTypes",
+        "type": "array",
+        "description": "Types of cuisine offered (e.g., Italian, Chinese, Mexican)",
+        "required": true,
+        "defaultValue": []
+      },
+      {
+        "name": "address",
+        "type": "object",
+        "description": "Physical address including street, city, state, zip code, and coordinates",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "contactInfo",
+        "type": "object",
+        "description": "Contact details including phone number and email",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "operatingHours",
+        "type": "object",
+        "description": "Weekly schedule with opening and closing times for each day",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the restaurant is currently accepting orders",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "rating",
+        "type": "number",
+        "description": "Average customer rating (0-5 scale)",
+        "required": false,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "cuisineTypes",
+      "isActive",
+      "rating"
+    ],
+    "constraints": {
+      "rating": "Must be between 0 and 5",
+      "name": "Must be unique"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "address",
+    "name": "Address",
+    "description": "Store delivery and restaurant addresses with geocoding information for distance calculations and delivery zone matching",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the address",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "street",
+        "type": "string",
+        "description": "Street address including number and street name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "city",
+        "type": "string",
+        "description": "City name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "state",
+        "type": "string",
+        "description": "State or province code",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "postalCode",
+        "type": "string",
+        "description": "ZIP or postal code",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "latitude",
+        "type": "number",
+        "description": "Geographic latitude coordinate for distance calculations",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "longitude",
+        "type": "number",
+        "description": "Geographic longitude coordinate for distance calculations",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to user who owns this address (null for restaurant addresses)",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Address belongs to a user for address book functionality"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_addresses",
+        "fields": [
+          "userId"
+        ]
+      },
+      {
+        "name": "idx_geocode",
+        "fields": [
+          "latitude",
+          "longitude"
+        ]
+      }
+    ],
+    "constraints": {
+      "postalCodeFormat": "Must match valid postal code pattern",
+      "coordinateRange": "Latitude between -90 and 90, longitude between -180 and 180"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "customer",
+    "name": "Customer",
+    "description": "Store customer-specific profile information and preferences extending the base User model",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the customer",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the base User model for authentication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "defaultAddressId",
+        "type": "string",
+        "description": "Reference to the customer's default delivery address",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "dietaryPreferences",
+        "type": "array",
+        "description": "List of dietary preferences (vegetarian, vegan, gluten-free, etc.)",
+        "required": false,
+        "defaultValue": []
+      },
+      {
+        "name": "favoriteRestaurantIds",
+        "type": "array",
+        "description": "List of restaurant IDs marked as favorites by the customer",
+        "required": false,
+        "defaultValue": []
+      },
+      {
+        "name": "loyaltyPoints",
+        "type": "number",
+        "description": "Accumulated loyalty points for rewards program",
+        "required": false,
+        "defaultValue": 0
+      },
+      {
+        "name": "totalOrders",
+        "type": "number",
+        "description": "Total number of orders placed by the customer",
+        "required": false,
+        "defaultValue": 0
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the customer profile was created",
+        "required": true,
+        "defaultValue": "now()"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "one-to-one",
+        "model": "User",
+        "foreignKey": "userId",
+        "description": "Links to base User model for authentication"
+      },
+      {
+        "type": "many-to-one",
+        "model": "Address",
+        "foreignKey": "defaultAddressId",
+        "description": "Default delivery address"
+      },
+      {
+        "type": "many-to-many",
+        "model": "Restaurant",
+        "through": "favoriteRestaurantIds",
+        "description": "Favorite restaurants"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "loyaltyPoints"
+        ]
+      }
+    ],
+    "constraints": {
+      "loyaltyPoints": ">=0",
+      "totalOrders": ">=0"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "restaurant-staff",
+    "name": "RestaurantStaff",
+    "description": "Store restaurant employee information and their associated restaurant assignments",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the staff record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the User account",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "restaurantId",
+        "type": "string",
+        "description": "Reference to the Restaurant this staff member works for",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "Staff role (manager, chef, order_processor)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "permissions",
+        "type": "array",
+        "description": "List of permissions (menu_management, order_processing, restaurant_settings)",
+        "required": true,
+        "defaultValue": []
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the staff member is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "hiredDate",
+        "type": "date",
+        "description": "Date when the staff member was hired",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Staff member's user account"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Restaurant",
+        "foreignKey": "restaurantId",
+        "description": "Restaurant where staff member works"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "restaurantId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "userId",
+          "restaurantId"
+        ],
+        "unique": true
+      }
+    ],
+    "constraints": {
+      "role": {
+        "enum": [
+          "manager",
+          "chef",
+          "order_processor"
+        ]
+      },
+      "permissions": {
+        "enum": [
+          "menu_management",
+          "order_processing",
+          "restaurant_settings"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "delivery-driver",
+    "name": "DeliveryDriver",
+    "description": "Store delivery driver profiles, vehicle information, and availability status for order fulfillment",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the delivery driver",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to User account for authentication and basic profile",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "licenseNumber",
+        "type": "string",
+        "description": "Driver's license number for verification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "vehicleInfo",
+        "type": "object",
+        "description": "Vehicle details including type, model, plate number, and color",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "currentLocation",
+        "type": "object",
+        "description": "Real-time GPS coordinates (latitude, longitude) for tracking",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "availabilityStatus",
+        "type": "string",
+        "description": "Current status: available, busy, offline, on_break",
+        "required": true,
+        "defaultValue": "offline"
+      },
+      {
+        "name": "deliveryZones",
+        "type": "array",
+        "description": "List of assigned delivery zone IDs where driver operates",
+        "required": true,
+        "defaultValue": []
+      },
+      {
+        "name": "rating",
+        "type": "number",
+        "description": "Average customer rating (0-5 scale) based on delivery performance",
+        "required": false,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [
+      {
+        "type": "one-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Links to User account for authentication"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "availabilityStatus"
+        ]
+      },
+      {
+        "fields": [
+          "deliveryZones"
+        ]
+      }
+    ],
+    "constraints": {
+      "availabilityStatus": {
+        "enum": [
+          "available",
+          "busy",
+          "offline",
+          "on_break"
+        ]
+      },
+      "rating": {
+        "min": 0,
+        "max": 5
+      }
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "menu-category",
+    "name": "MenuCategory",
+    "description": "Organizes menu items into logical categories for each restaurant with hierarchical structure and visibility controls",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the menu category",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "restaurantId",
+        "type": "string",
+        "description": "Reference to the restaurant this category belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Display name of the category (e.g., Appetizers, Main Courses, Desserts)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Optional description providing details about the category",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "displayOrder",
+        "type": "number",
+        "description": "Numeric value determining the order in which categories appear in the menu",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates whether the category is currently visible to customers",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the category was created",
+        "required": true,
+        "defaultValue": "now()"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Restaurant",
+        "foreignKey": "restaurantId",
+        "description": "Each category belongs to one restaurant"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "restaurantId",
+          "displayOrder"
+        ],
+        "description": "Optimize queries for fetching ordered categories by restaurant"
+      },
+      {
+        "fields": [
+          "restaurantId",
+          "isActive"
+        ],
+        "description": "Optimize queries for fetching active categories by restaurant"
+      }
+    ],
+    "constraints": {
+      "unique": [
+        {
+          "fields": [
+            "restaurantId",
+            "name"
+          ],
+          "description": "Category names must be unique within a restaurant"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "menu-item-customization",
+    "name": "MenuItemCustomization",
+    "description": "Defines available customization options for menu items including size, toppings, and modifications with price adjustments",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the customization option",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "menuItemId",
+        "type": "string",
+        "description": "Reference to the menu item this customization belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "groupName",
+        "type": "string",
+        "description": "Customization group name (e.g., 'Size', 'Toppings', 'Spice Level')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "optionName",
+        "type": "string",
+        "description": "Specific option within the group (e.g., 'Large', 'Extra Cheese', 'Mild')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "priceAdjustment",
+        "type": "number",
+        "description": "Price modifier for this customization option (can be positive or negative)",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "isRequired",
+        "type": "boolean",
+        "description": "Whether customer must select an option from this group",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "allowMultiple",
+        "type": "boolean",
+        "description": "Whether multiple options can be selected from this group",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "isAvailable",
+        "type": "boolean",
+        "description": "Whether this customization option is currently available",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "MenuItem",
+        "foreignKey": "menuItemId",
+        "description": "Each customization belongs to one menu item"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "menuItemId"
+        ],
+        "unique": false,
+        "description": "Fast lookup of customizations by menu item"
+      },
+      {
+        "fields": [
+          "menuItemId",
+          "groupName"
+        ],
+        "unique": false,
+        "description": "Efficient retrieval of customization groups for a menu item"
+      }
+    ],
+    "constraints": {
+      "priceAdjustment": "Must be a valid decimal number",
+      "groupName": "Cannot be empty string",
+      "optionName": "Cannot be empty string"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "order-status",
+    "name": "OrderStatus",
+    "description": "Tracks the progression of orders through various fulfillment stages with timestamps and responsible users",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the status record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "orderId",
+        "type": "string",
+        "description": "Reference to the order being tracked",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status: pending, confirmed, preparing, ready_for_pickup, out_for_delivery, delivered, cancelled",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "timestamp",
+        "type": "date",
+        "description": "When this status was set",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "name": "updatedByUserId",
+        "type": "string",
+        "description": "Reference to User (staff/driver) who updated the status",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "notes",
+        "type": "string",
+        "description": "Additional notes or comments about the status change",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "metadata",
+        "type": "json",
+        "description": "Status-specific metadata (e.g., estimated delivery time, cancellation reason)",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Order",
+        "foreignKey": "orderId",
+        "description": "Each status record belongs to one order"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "updatedByUserId",
+        "description": "Each status change is made by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_order_timestamp",
+        "fields": [
+          "orderId",
+          "timestamp"
+        ],
+        "description": "Optimize queries for order status history"
+      },
+      {
+        "name": "idx_status",
+        "fields": [
+          "status"
+        ],
+        "description": "Optimize queries filtering by status type"
+      }
+    ],
+    "constraints": {
+      "statusValues": {
+        "type": "enum",
+        "field": "status",
+        "allowedValues": [
+          "pending",
+          "confirmed",
+          "preparing",
+          "ready_for_pickup",
+          "out_for_delivery",
+          "delivered",
+          "cancelled"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "delivery-tracking",
+    "name": "DeliveryTracking",
+    "description": "Store real-time location updates and status changes during delivery",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the tracking record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "orderId",
+        "type": "string",
+        "description": "Reference to the order being tracked",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "driverId",
+        "type": "string",
+        "description": "Reference to the delivery driver",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "latitude",
+        "type": "number",
+        "description": "GPS latitude coordinate of current location",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "longitude",
+        "type": "number",
+        "description": "GPS longitude coordinate of current location",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current delivery status (e.g., picked_up, in_transit, arrived, delivered)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "timestamp",
+        "type": "date",
+        "description": "Date and time when this tracking event occurred",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Order",
+        "foreignKey": "orderId",
+        "description": "Each tracking record belongs to one order"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "DeliveryDriver",
+        "foreignKey": "driverId",
+        "description": "Each tracking record is associated with one delivery driver"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "orderId",
+          "timestamp"
+        ],
+        "description": "Optimize queries for tracking history by order"
+      },
+      {
+        "fields": [
+          "driverId",
+          "timestamp"
+        ],
+        "description": "Optimize queries for driver location history"
+      }
+    ],
+    "constraints": {
+      "latitude": "Must be between -90 and 90",
+      "longitude": "Must be between -180 and 180",
+      "status": "Must be one of: picked_up, in_transit, arrived, delivered, cancelled"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "payment",
+    "name": "Payment",
+    "description": "Store payment transaction records and processing status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the payment record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "orderId",
+        "type": "string",
+        "description": "Reference to the associated order",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "description": "Transaction amount in the smallest currency unit (e.g., cents)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentMethod",
+        "type": "string",
+        "description": "Payment method type (credit_card, debit_card, digital_wallet, cash)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Payment status (pending, completed, failed, refunded, partially_refunded)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "gatewayTransactionId",
+        "type": "string",
+        "description": "Transaction ID from payment gateway for reconciliation",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "gatewayResponse",
+        "type": "string",
+        "description": "JSON string of payment gateway response data",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when payment was initiated",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Order",
+        "foreignKey": "orderId",
+        "description": "Each payment belongs to one order"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "orderId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "gatewayTransactionId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "createdAt"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "amount": "Must be greater than 0",
+      "paymentMethod": "Must be one of: credit_card, debit_card, digital_wallet, cash",
+      "status": "Must be one of: pending, completed, failed, refunded, partially_refunded"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "payment-method",
+    "name": "PaymentMethod",
+    "description": "Store customer saved payment methods for quick checkout with tokenized references ensuring PCI compliance",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the payment method",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "description": "Reference to the customer who owns this payment method",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentToken",
+        "type": "string",
+        "description": "Tokenized payment reference from payment gateway (PCI compliant)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "cardType",
+        "type": "string",
+        "description": "Type of card (Visa, Mastercard, Amex, Discover, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastFourDigits",
+        "type": "string",
+        "description": "Last four digits of the card for identification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "expirationDate",
+        "type": "string",
+        "description": "Card expiration date in MM/YY format",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isDefault",
+        "type": "boolean",
+        "description": "Indicates if this is the customer's default payment method",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the payment method is active and available for use",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Customer",
+        "foreignKey": "customerId",
+        "description": "Each payment method belongs to one customer"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "Payment",
+        "foreignKey": "paymentMethodId",
+        "description": "A payment method can be used for multiple payments"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "customerId"
+        ],
+        "unique": false,
+        "description": "Index for quickly retrieving all payment methods for a customer"
+      },
+      {
+        "fields": [
+          "customerId",
+          "isDefault"
+        ],
+        "unique": false,
+        "description": "Index for quickly finding a customer's default payment method"
+      },
+      {
+        "fields": [
+          "paymentToken"
+        ],
+        "unique": true,
+        "description": "Ensure payment tokens are unique across the system"
+      }
+    ],
+    "constraints": {
+      "uniqueDefaultPerCustomer": "Only one payment method per customer can have isDefault set to true",
+      "validExpirationFormat": "expirationDate must be in MM/YY format",
+      "validCardType": "cardType must be one of: Visa, Mastercard, Amex, Discover",
+      "lastFourDigitsLength": "lastFourDigits must be exactly 4 numeric characters"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Store notification records sent to users via email and other channels",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user receiving the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of notification (order_confirmation, status_update, delivery_notification, promotional)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "channel",
+        "type": "string",
+        "description": "Delivery channel (email, sms, push, in_app)",
+        "required": true,
+        "defaultValue": "email"
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "description": "Notification subject or title",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "description": "Notification message content or body",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Delivery status (pending, sent, delivered, failed, read)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "sentAt",
+        "type": "date",
+        "description": "Timestamp when notification was sent",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Notification belongs to a user"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "type"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "sentAt"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "type": [
+        "order_confirmation",
+        "status_update",
+        "delivery_notification",
+        "promotional"
+      ],
+      "channel": [
+        "email",
+        "sms",
+        "push",
+        "in_app"
+      ],
+      "status": [
+        "pending",
+        "sent",
+        "delivered",
+        "failed",
+        "read"
+      ]
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "promotion",
+    "name": "Promotion",
+    "description": "Manages discount codes, special offers, and promotional campaigns with validity periods and usage tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the promotion",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "code",
+        "type": "string",
+        "description": "Promotional code that customers enter (e.g., SAVE20, FIRST10)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "discountType",
+        "type": "string",
+        "description": "Type of discount: 'percentage' or 'fixed_amount'",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "discountValue",
+        "type": "number",
+        "description": "Discount amount (percentage value or fixed currency amount)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "validFrom",
+        "type": "date",
+        "description": "Start date and time when promotion becomes active",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "validUntil",
+        "type": "date",
+        "description": "End date and time when promotion expires",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "usageLimit",
+        "type": "number",
+        "description": "Maximum number of times this promotion can be redeemed (null for unlimited)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "usageCount",
+        "type": "number",
+        "description": "Current number of times this promotion has been redeemed",
+        "required": true,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Restaurant",
+        "foreignKey": "restaurantId",
+        "description": "Restaurant offering this promotion (null for platform-wide promotions)"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "code"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "validFrom",
+          "validUntil"
+        ]
+      },
+      {
+        "fields": [
+          "restaurantId"
+        ]
+      }
+    ],
+    "constraints": {
+      "discountType": [
+        "percentage",
+        "fixed_amount"
+      ],
+      "discountValue": "Must be greater than 0",
+      "validUntil": "Must be after validFrom",
+      "usageCount": "Cannot exceed usageLimit if set"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "menu-item",
+    "name": "MenuItem",
+    "description": "Stores individual food items with pricing, descriptions, and availability for restaurant menus",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the menu item",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "restaurantId",
+        "type": "string",
+        "description": "Reference to the restaurant offering this item",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "categoryId",
+        "type": "string",
+        "description": "Reference to the menu category this item belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the menu item",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the item including ingredients and preparation",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "price",
+        "type": "number",
+        "description": "Base price of the menu item in currency units",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isAvailable",
+        "type": "boolean",
+        "description": "Indicates whether the item is currently available for ordering",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "imageUrl",
+        "type": "string",
+        "description": "URL to the item's image",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Restaurant",
+        "foreignKey": "restaurantId",
+        "description": "Each menu item belongs to one restaurant"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "MenuCategory",
+        "foreignKey": "categoryId",
+        "description": "Each menu item belongs to one category"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "MenuItemCustomization",
+        "foreignKey": "menuItemId",
+        "description": "A menu item can have multiple customization options"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "restaurantId"
+        ],
+        "unique": false,
+        "description": "Optimize queries for items by restaurant"
+      },
+      {
+        "fields": [
+          "categoryId"
+        ],
+        "unique": false,
+        "description": "Optimize queries for items by category"
+      },
+      {
+        "fields": [
+          "isAvailable"
+        ],
+        "unique": false,
+        "description": "Optimize queries for available items"
+      }
+    ],
+    "constraints": {
+      "price": "Must be greater than or equal to 0",
+      "name": "Must be between 1 and 200 characters",
+      "description": "Maximum 1000 characters"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "shopping-cart",
+    "name": "ShoppingCart",
+    "description": "Store temporary customer order selections before checkout",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the shopping cart",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "description": "Reference to the customer who owns this cart",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "restaurantId",
+        "type": "string",
+        "description": "Reference to the restaurant from which items are being ordered",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "items",
+        "type": "array",
+        "description": "Array of cart items with menuItemId, quantity, customizations, and price",
+        "required": true,
+        "defaultValue": []
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the cart was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp when the cart was last modified",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "name": "expiresAt",
+        "type": "date",
+        "description": "Timestamp when the cart will automatically expire",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the cart is currently active or has been converted to an order",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Customer",
+        "foreignKey": "customerId",
+        "description": "Each cart belongs to one customer"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Restaurant",
+        "foreignKey": "restaurantId",
+        "description": "Each cart is associated with one restaurant"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_customer_active",
+        "fields": [
+          "customerId",
+          "isActive"
+        ],
+        "description": "Optimize queries for active carts by customer"
+      },
+      {
+        "name": "idx_expires_at",
+        "fields": [
+          "expiresAt"
+        ],
+        "description": "Optimize queries for cart expiration cleanup"
+      }
+    ],
+    "constraints": {
+      "uniqueActiveCart": "A customer can have only one active cart per restaurant at a time",
+      "expirationPeriod": "Cart expires after 24 hours of inactivity"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "order",
+    "name": "Order",
+    "description": "Store confirmed customer orders with complete order details and status tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the order",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "description": "Reference to the customer who placed the order",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "restaurantId",
+        "type": "string",
+        "description": "Reference to the restaurant fulfilling the order",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "deliveryAddressId",
+        "type": "string",
+        "description": "Reference to the delivery address for this order",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "orderStatusId",
+        "type": "string",
+        "description": "Current status of the order (pending, confirmed, preparing, delivered, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "totalAmount",
+        "type": "number",
+        "description": "Total order amount including items, taxes, fees, and discounts",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentId",
+        "type": "string",
+        "description": "Reference to the payment transaction for this order",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the order was placed",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Customer",
+        "foreignKey": "customerId",
+        "description": "Order belongs to a customer"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Restaurant",
+        "foreignKey": "restaurantId",
+        "description": "Order is fulfilled by a restaurant"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Address",
+        "foreignKey": "deliveryAddressId",
+        "description": "Order is delivered to an address"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "OrderStatus",
+        "foreignKey": "orderStatusId",
+        "description": "Order has a current status"
+      },
+      {
+        "type": "one-to-one",
+        "relatedModel": "Payment",
+        "foreignKey": "paymentId",
+        "description": "Order has associated payment information"
+      },
+      {
+        "type": "one-to-one",
+        "relatedModel": "DeliveryTracking",
+        "description": "Order has delivery tracking information"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "customerId"
+        ],
+        "unique": false,
+        "description": "Index for querying orders by customer"
+      },
+      {
+        "fields": [
+          "restaurantId"
+        ],
+        "unique": false,
+        "description": "Index for querying orders by restaurant"
+      },
+      {
+        "fields": [
+          "orderStatusId"
+        ],
+        "unique": false,
+        "description": "Index for filtering orders by status"
+      },
+      {
+        "fields": [
+          "createdAt"
+        ],
+        "unique": false,
+        "description": "Index for sorting orders by creation date"
+      }
+    ],
+    "constraints": {
+      "totalAmount": "Must be greater than 0",
+      "createdAt": "Cannot be in the future"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "delivery",
+    "name": "Delivery",
+    "description": "Manages delivery assignment and tracking information for orders including driver assignment, addresses, timing, and delivery proof",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the delivery",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "orderId",
+        "type": "string",
+        "description": "Reference to the order being delivered",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "driverId",
+        "type": "string",
+        "description": "Reference to the assigned delivery driver",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "pickupAddressId",
+        "type": "string",
+        "description": "Reference to the restaurant pickup address",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "deliveryAddressId",
+        "type": "string",
+        "description": "Reference to the customer delivery address",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "estimatedPickupTime",
+        "type": "date",
+        "description": "Estimated time for driver to pick up order from restaurant",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "estimatedDeliveryTime",
+        "type": "date",
+        "description": "Estimated time for order delivery to customer",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "actualDeliveryTime",
+        "type": "date",
+        "description": "Actual time when delivery was completed",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Order",
+        "foreignKey": "orderId",
+        "description": "Each delivery is associated with one order"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "DeliveryDriver",
+        "foreignKey": "driverId",
+        "description": "Each delivery is assigned to one driver"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Address",
+        "foreignKey": "pickupAddressId",
+        "description": "Pickup location address"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Address",
+        "foreignKey": "deliveryAddressId",
+        "description": "Delivery destination address"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_delivery_order",
+        "fields": [
+          "orderId"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_delivery_driver",
+        "fields": [
+          "driverId"
+        ]
+      },
+      {
+        "name": "idx_delivery_estimated_time",
+        "fields": [
+          "estimatedDeliveryTime"
+        ]
+      }
+    ],
+    "constraints": {
+      "uniqueOrderDelivery": "Each order can have only one active delivery",
+      "validTimes": "estimatedDeliveryTime must be after estimatedPickupTime"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "cart-item",
+    "name": "CartItem",
+    "description": "Stores individual menu items added to a customer's shopping cart with selected customizations, quantity, and pricing snapshots",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the cart item",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "cartId",
+        "type": "string",
+        "description": "Reference to the shopping cart this item belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "menuItemId",
+        "type": "string",
+        "description": "Reference to the menu item being added to cart",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "quantity",
+        "type": "number",
+        "description": "Number of this item added to the cart",
+        "required": true,
+        "defaultValue": 1
+      },
+      {
+        "name": "unitPrice",
+        "type": "number",
+        "description": "Snapshot of the menu item price at time of adding to cart",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "customizations",
+        "type": "json",
+        "description": "Selected customizations with their IDs, names, and prices",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "specialInstructions",
+        "type": "string",
+        "description": "Customer's special preparation or delivery instructions for this item",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "subtotal",
+        "type": "number",
+        "description": "Calculated total for this cart item (unitPrice + customizations) * quantity",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "ShoppingCart",
+        "foreignKey": "cartId",
+        "description": "Each cart item belongs to one shopping cart"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "MenuItem",
+        "foreignKey": "menuItemId",
+        "description": "Each cart item references one menu item"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_cart_id",
+        "fields": [
+          "cartId"
+        ],
+        "description": "Index for quickly retrieving all items in a specific cart"
+      },
+      {
+        "name": "idx_menu_item_id",
+        "fields": [
+          "menuItemId"
+        ],
+        "description": "Index for tracking which menu items are in carts"
+      }
+    ],
+    "constraints": {
+      "quantity": "Must be greater than 0",
+      "unitPrice": "Must be greater than or equal to 0",
+      "subtotal": "Must be greater than or equal to 0"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "order-item",
+    "name": "OrderItem",
+    "description": "Store individual menu items within a confirmed order with their customizations and pricing",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the order item",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "orderId",
+        "type": "string",
+        "description": "Reference to the parent order",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "menuItemId",
+        "type": "string",
+        "description": "Reference to the original menu item for historical tracking",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "itemName",
+        "type": "string",
+        "description": "Snapshot of menu item name at time of order",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "quantity",
+        "type": "number",
+        "description": "Number of this item ordered",
+        "required": true,
+        "defaultValue": 1
+      },
+      {
+        "name": "unitPrice",
+        "type": "number",
+        "description": "Locked-in price per unit at time of order",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "customizations",
+        "type": "json",
+        "description": "Selected customizations with names and prices at time of order",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "specialInstructions",
+        "type": "string",
+        "description": "Customer notes or special requests for this item",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Order",
+        "foreignKey": "orderId",
+        "description": "Each order item belongs to one order"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "MenuItem",
+        "foreignKey": "menuItemId",
+        "description": "Each order item references one menu item"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "orderId"
+        ],
+        "unique": false,
+        "description": "Fast lookup of all items in an order"
+      },
+      {
+        "fields": [
+          "menuItemId"
+        ],
+        "unique": false,
+        "description": "Track which menu items are most ordered"
+      }
+    ],
+    "constraints": {
+      "quantity": "Must be greater than 0",
+      "unitPrice": "Must be greater than or equal to 0"
+    },
+    "workflowId": "workflow_1735683234567"
+  },
+  {
+    "id": "review",
+    "name": "Review",
+    "description": "Store customer reviews and ratings for restaurants and delivery experiences",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the review",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "orderId",
+        "type": "string",
+        "description": "Reference to the order being reviewed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "description": "Reference to the customer who wrote the review",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "restaurantId",
+        "type": "string",
+        "description": "Reference to the restaurant being reviewed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "overallRating",
+        "type": "number",
+        "description": "Overall star rating (1-5)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "foodQualityRating",
+        "type": "number",
+        "description": "Rating for food quality (1-5)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "deliverySpeedRating",
+        "type": "number",
+        "description": "Rating for delivery speed (1-5)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "reviewText",
+        "type": "string",
+        "description": "Written review content from customer",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Order",
+        "foreignKey": "orderId",
+        "description": "Review belongs to an order"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Customer",
+        "foreignKey": "customerId",
+        "description": "Review belongs to a customer"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Restaurant",
+        "foreignKey": "restaurantId",
+        "description": "Review belongs to a restaurant"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_review_order",
+        "fields": [
+          "orderId"
+        ]
+      },
+      {
+        "name": "idx_review_restaurant",
+        "fields": [
+          "restaurantId"
+        ]
+      },
+      {
+        "name": "idx_review_customer",
+        "fields": [
+          "customerId"
+        ]
+      }
+    ],
+    "constraints": {
+      "overallRating": "Must be between 1 and 5",
+      "foodQualityRating": "Must be between 1 and 5 if provided",
+      "deliverySpeedRating": "Must be between 1 and 5 if provided",
+      "uniqueOrderReview": "One review per order per customer"
+    },
+    "workflowId": "workflow_1735683234567"
+  }
+]

@@ -7,17 +7,32 @@ require('dotenv').config();
 const { Pool } = require('pg');
 
 // Database configuration
-const config = {
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'workflowpp',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  // Connection pool settings
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-};
+// Supports both connection string (DATABASE_URL) and individual parameters
+const config = process.env.DATABASE_URL
+  ? {
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DATABASE_URL.includes('supabase.co')
+        ? { rejectUnauthorized: false }
+        : false,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    }
+  : {
+      host: process.env.DB_HOST || 'localhost',
+      port: process.env.DB_PORT || 5432,
+      database: process.env.DB_NAME || 'workflowpp',
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || 'postgres',
+      // SSL configuration for Supabase and other cloud providers
+      ssl: process.env.DB_HOST && process.env.DB_HOST.includes('supabase.co')
+        ? { rejectUnauthorized: false }
+        : false,
+      // Connection pool settings
+      max: 20, // Maximum number of clients in the pool
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    };
 
 // Create a connection pool
 const pool = new Pool(config);

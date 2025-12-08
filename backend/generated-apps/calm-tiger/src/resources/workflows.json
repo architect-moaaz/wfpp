@@ -1,0 +1,504 @@
+[
+  {
+    "id": "workflow_1734630123456",
+    "name": "End-to-End Order Processing System",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Order Submitted",
+          "formId": "payment-processing-form",
+          "trigger": "Customer submits order through web form or API",
+          "formName": "PaymentProcessingForm",
+          "description": "Initiates the complete order processing workflow from customer order submission"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Order Validation",
+          "rules": [
+            "Required fields present",
+            "Valid email format",
+            "Valid payment method",
+            "Items exist in catalog"
+          ],
+          "ruleType": "business_rules",
+          "description": "Validates order data integrity and business rules compliance"
+        },
+        "type": "validation",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Validation Result",
+          "condition": "Order validation status",
+          "description": "Routes based on validation outcome - success or failure",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Send Validation Error",
+          "channel": "Email",
+          "template": "Order validation failed: {errors}",
+          "recipient": "Customer",
+          "description": "Notifies customer of validation errors for correction"
+        },
+        "type": "notification",
+        "position": {
+          "x": 350,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Order Rejected",
+          "result": "Validation failed",
+          "description": "Order processing terminated due to validation errors"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 500,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Parallel Processing Gateway",
+          "branches": "Inventory check and payment processing run simultaneously",
+          "description": "Splits workflow to check inventory and process payment in parallel for efficiency",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Inventory Check",
+          "script": "checkInventoryAvailability(orderItems)",
+          "scriptType": "API",
+          "description": "Verifies item availability and reserves inventory for the order"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Payment Processing",
+          "script": "processPayment(paymentDetails)",
+          "scriptType": "API",
+          "description": "Charges customer payment method through payment gateway integration"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 200,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Parallel Results Check",
+          "condition": "Both inventory and payment successful",
+          "description": "Evaluates if both parallel processes completed successfully",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Rollback Operations",
+          "script": "releaseInventory(); refundPayment();",
+          "scriptType": "Compensation",
+          "description": "Compensates for failed processes by releasing reserved inventory and processing refunds"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 350,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Processing Error Notification",
+          "channel": "Email",
+          "template": "Order processing failed: {reason}. Your payment will be refunded.",
+          "recipient": "Customer",
+          "description": "Informs customer of processing failure and refund initiation"
+        },
+        "type": "notification",
+        "position": {
+          "x": 500,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Order Failed",
+          "result": "Processing failed with compensation",
+          "description": "Order processing terminated with appropriate rollback actions completed"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 650,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Order Confirmation",
+          "channel": "Email",
+          "template": "Order confirmed: {orderNumber}. Payment processed. Preparing for fulfillment.",
+          "recipient": "Customer",
+          "description": "Confirms successful order processing to customer with order details"
+        },
+        "type": "notification",
+        "position": {
+          "x": 100,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Order Fulfillment",
+          "formId": "order-submission-form",
+          "formName": "OrderSubmissionForm",
+          "priority": "Medium",
+          "taskName": "fulfill_order",
+          "assignedTo": "Warehouse Team",
+          "description": "Warehouse staff processes the order for shipment preparation",
+          "instructions": "Pick, pack, and prepare order for shipping"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 100,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Fulfillment Decision",
+          "condition": "Order fulfillment status",
+          "description": "Routes based on fulfillment outcome - success, issues, or escalation needed",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Fulfillment Issue Resolution",
+          "formId": "payment-processing-form",
+          "formName": "PaymentProcessingForm",
+          "priority": "High",
+          "taskName": "resolve_fulfillment_issue",
+          "assignedTo": "Warehouse Manager",
+          "description": "Manager intervention for complex fulfillment problems",
+          "instructions": "Resolve fulfillment issues and determine next steps"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 350,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Generate Shipping Label",
+          "script": "createShippingLabel(orderDetails, shippingAddress)",
+          "scriptType": "API",
+          "description": "Creates shipping label and schedules pickup with shipping provider"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 100,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Shipping Notification",
+          "channel": "Email",
+          "template": "Your order {orderNumber} has shipped. Tracking: {trackingNumber}",
+          "recipient": "Customer",
+          "description": "Notifies customer that order has shipped with tracking information"
+        },
+        "type": "notification",
+        "position": {
+          "x": 100,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Delivery Monitoring",
+          "duration": "P7D",
+          "timerType": "duration",
+          "description": "Monitors delivery progress and triggers follow-up after expected delivery window"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 100,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_20",
+        "data": {
+          "label": "AI Delivery Confirmation",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze delivery status for order ${processData.orderNumber}. Tracking shows: ${processData.trackingStatus}. Determine if delivery is confirmed, delayed, or requires customer contact.",
+          "maxTokens": 500,
+          "description": "AI analyzes delivery tracking data to determine order completion status",
+          "temperature": 0.3,
+          "outputVariable": "deliveryAnalysis"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 100,
+          "y": 1250
+        }
+      },
+      {
+        "id": "node_21",
+        "data": {
+          "label": "Delivery Status Decision",
+          "condition": "AI delivery analysis result",
+          "description": "Routes based on AI analysis of delivery status",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 1350
+        }
+      },
+      {
+        "id": "node_22",
+        "data": {
+          "label": "Delivery Issue Follow-up",
+          "channel": "Email",
+          "template": "We notice your order may not have been delivered. Please contact us for assistance.",
+          "recipient": "Customer",
+          "description": "Proactive customer outreach for delivery issues"
+        },
+        "type": "notification",
+        "position": {
+          "x": 350,
+          "y": 1350
+        }
+      },
+      {
+        "id": "node_23",
+        "data": {
+          "label": "Order Completed",
+          "result": "Successfully delivered",
+          "description": "Order processing workflow completed successfully with confirmed delivery"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 100,
+          "y": 1450
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-29T12:29:53.926+05:30",
+    "updated_at": "2025-11-29T12:29:53.926+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "label": "Validation Failed",
+        "source": "node_3",
+        "target": "node_4",
+        "condition": "processData.validationStatus === 'failed'"
+      },
+      {
+        "id": "edge_4",
+        "label": "Validation Passed",
+        "source": "node_3",
+        "target": "node_6",
+        "condition": "processData.validationStatus === 'passed'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_6",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_6",
+        "target": "node_7",
+        "isDefault": true
+      },
+      {
+        "id": "edge_7",
+        "label": "To Payment Processing",
+        "source": "node_6",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_7",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_8",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_10",
+        "label": "Either Failed",
+        "source": "node_9",
+        "target": "node_10",
+        "condition": "processData.inventoryStatus !== 'success' || processData.paymentStatus !== 'success'"
+      },
+      {
+        "id": "edge_11",
+        "label": "Both Successful",
+        "source": "node_9",
+        "target": "node_13",
+        "condition": "processData.inventoryStatus === 'success' && processData.paymentStatus === 'success'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_12",
+        "source": "node_10",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_16",
+        "label": "Issues Found",
+        "source": "node_15",
+        "target": "node_16",
+        "condition": "processData.fulfillmentStatus === 'issues'"
+      },
+      {
+        "id": "edge_17",
+        "label": "Fulfillment Complete",
+        "source": "node_15",
+        "target": "node_17",
+        "condition": "processData.fulfillmentStatus === 'complete'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_19",
+        "source": "node_17",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_18",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_19",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_20",
+        "target": "node_21"
+      },
+      {
+        "id": "edge_23",
+        "label": "Delivery Issues",
+        "source": "node_21",
+        "target": "node_22",
+        "condition": "processData.deliveryAnalysis.includes('delayed') || processData.deliveryAnalysis.includes('undelivered')"
+      },
+      {
+        "id": "edge_24",
+        "label": "Delivered Successfully",
+        "source": "node_21",
+        "target": "node_23",
+        "condition": "processData.deliveryAnalysis.includes('confirmed')",
+        "isDefault": true
+      },
+      {
+        "id": "edge_25",
+        "source": "node_22",
+        "target": "node_23"
+      }
+    ],
+    "description": ""
+  }
+]

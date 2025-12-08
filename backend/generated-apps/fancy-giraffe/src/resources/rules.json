@@ -1,0 +1,436 @@
+[
+  {
+    "id": "rule_customer_process_start",
+    "name": "Customer Process Start Rule",
+    "description": "Validate required customer input fields before starting the workflow process",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Customer.email",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Customer.email",
+          "value": null,
+          "message": "Customer email is required to start the process"
+        },
+        {
+          "type": "logMessage",
+          "field": "processLog",
+          "value": "Process start validation failed - missing email",
+          "message": "Validation error logged"
+        }
+      ]
+    },
+    "node_id": "node_1",
+    "workflow_id": "workflow_1735150892341",
+    "workflowId": "workflow_1735150892341",
+    "application_id": "app_1764617628599"
+  },
+  {
+    "id": "rule_determine_process_type",
+    "name": "Determine Process Type Rule",
+    "description": "Route workflow based on whether customer is new or existing",
+    "type": "decision",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Customer.id",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "processType",
+          "value": "NEW_REGISTRATION",
+          "message": "Route to new customer registration workflow"
+        },
+        {
+          "type": "logMessage",
+          "field": "workflowLog",
+          "value": "New customer registration process initiated",
+          "message": "Process type determined"
+        }
+      ]
+    },
+    "node_id": "node_2",
+    "workflow_id": "workflow_1735150892341",
+    "workflowId": "workflow_1735150892341",
+    "application_id": "app_1764617628599"
+  },
+  {
+    "id": "rule_validate_registration_data",
+    "name": "Validate Registration Data Rule",
+    "description": "Ensure customer registration data meets business requirements",
+    "type": "validation",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Customer.phone",
+          "operator": "isNull",
+          "value": true
+        },
+        {
+          "field": "Customer.company",
+          "operator": "equals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Customer.phone",
+          "value": "required",
+          "message": "Phone number is required for registration"
+        },
+        {
+          "type": "throwError",
+          "field": "registrationValidation",
+          "value": "INCOMPLETE_DATA",
+          "message": "Registration data incomplete - phone and company required"
+        }
+      ]
+    },
+    "node_id": "node_3",
+    "workflow_id": "workflow_1735150892341",
+    "workflowId": "workflow_1735150892341",
+    "application_id": "app_1764617628599"
+  },
+  {
+    "id": "rule_lead_score_decision",
+    "name": "Lead Score Decision Rule",
+    "description": "Determine if lead requires manual review based on score threshold",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Customer.leadScore",
+          "operator": "greaterThan",
+          "value": 75
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "requiresManualReview",
+          "value": true,
+          "message": "High-value lead requires manual review"
+        },
+        {
+          "type": "sendNotification",
+          "field": "salesTeam",
+          "value": "HIGH_PRIORITY_LEAD",
+          "message": "High-score lead detected - manual review required"
+        }
+      ]
+    },
+    "node_id": "node_5",
+    "workflow_id": "workflow_1735150892341",
+    "workflowId": "workflow_1735150892341",
+    "application_id": "app_1764617628599"
+  },
+  {
+    "id": "rule_manual_lead_review",
+    "name": "Manual Lead Review Rule",
+    "description": "Validate that manual review task has been completed with required fields",
+    "type": "validation",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Task.status",
+          "operator": "notEquals",
+          "value": "COMPLETED"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Task.reviewStatus",
+          "value": "INCOMPLETE",
+          "message": "Manual review task must be completed before proceeding"
+        },
+        {
+          "type": "logMessage",
+          "field": "taskLog",
+          "value": "Manual review incomplete - workflow paused",
+          "message": "Awaiting task completion"
+        }
+      ]
+    },
+    "node_id": "node_6",
+    "workflow_id": "workflow_1735150892341",
+    "workflowId": "workflow_1735150892341",
+    "application_id": "app_1764617628599"
+  },
+  {
+    "id": "rule_change_type_classification",
+    "name": "Change Type Classification Rule",
+    "description": "Classify customer update request type for appropriate routing",
+    "type": "decision",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "CustomerUpdateRequest.changeType",
+          "operator": "in",
+          "value": [
+            "ACCOUNT_UPGRADE",
+            "CONTRACT_CHANGE"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "requiresApproval",
+          "value": true,
+          "message": "Significant change requires approval"
+        },
+        {
+          "type": "updateData",
+          "field": "CustomerUpdateRequest.priority",
+          "value": "HIGH",
+          "message": "Priority set to high for approval workflow"
+        }
+      ]
+    },
+    "node_id": "node_7",
+    "workflow_id": "workflow_1735150892341",
+    "workflowId": "workflow_1735150892341",
+    "application_id": "app_1764617628599"
+  },
+  {
+    "id": "rule_approval_required_check",
+    "name": "Approval Required Check Rule",
+    "description": "Determine if manager approval is needed based on opportunity value",
+    "type": "decision",
+    "priority": 7,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Opportunity.value",
+          "operator": "greaterThan",
+          "value": 50000
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "approvalRequired",
+          "value": true,
+          "message": "High-value opportunity requires manager approval"
+        },
+        {
+          "type": "sendNotification",
+          "field": "managerEmail",
+          "value": "APPROVAL_REQUEST",
+          "message": "Manager approval requested for high-value opportunity"
+        }
+      ]
+    },
+    "node_id": "node_8",
+    "workflow_id": "workflow_1735150892341",
+    "workflowId": "workflow_1735150892341",
+    "application_id": "app_1764617628599"
+  },
+  {
+    "id": "rule_parallel_processing_gateway",
+    "name": "Parallel Processing Gateway Rule",
+    "description": "Determine if multiple tasks can be processed simultaneously",
+    "type": "decision",
+    "priority": 8,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Customer.status",
+          "operator": "equals",
+          "value": "ACTIVE"
+        },
+        {
+          "field": "InteractionLog.count",
+          "operator": "greaterThan",
+          "value": 0
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "enableParallelProcessing",
+          "value": true,
+          "message": "Enable parallel task execution for active customer"
+        },
+        {
+          "type": "executeScript",
+          "field": "parallelTasks",
+          "value": "initializeParallelWorkflow",
+          "message": "Initialize parallel processing gateway"
+        }
+      ]
+    },
+    "node_id": "node_9",
+    "workflow_id": "workflow_1735150892341",
+    "workflowId": "workflow_1735150892341",
+    "application_id": "app_1764617628599"
+  },
+  {
+    "id": "rule_manager_approval",
+    "name": "Manager Approval Rule",
+    "description": "Validate manager approval decision and required comments",
+    "type": "validation",
+    "priority": 9,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Task.approvalDecision",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Task.approvalDecision",
+          "value": "MISSING_DECISION",
+          "message": "Manager must provide approval decision before proceeding"
+        },
+        {
+          "type": "validateField",
+          "field": "Task.approvalComments",
+          "value": "required",
+          "message": "Approval comments are mandatory"
+        }
+      ]
+    },
+    "node_id": "node_10",
+    "workflow_id": "workflow_1735150892341",
+    "workflowId": "workflow_1735150892341",
+    "application_id": "app_1764617628599"
+  },
+  {
+    "id": "rule_followup_required_check",
+    "name": "Follow-up Required Check Rule",
+    "description": "Determine if customer interaction requires follow-up task creation",
+    "type": "decision",
+    "priority": 10,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "InteractionLog.type",
+          "operator": "in",
+          "value": [
+            "COMPLAINT",
+            "SUPPORT_REQUEST"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "createFollowupTask",
+          "value": true,
+          "message": "Follow-up task required for customer issue"
+        },
+        {
+          "type": "callWebhook",
+          "field": "taskManagementSystem",
+          "value": "createTask",
+          "message": "Trigger automatic follow-up task creation"
+        }
+      ]
+    },
+    "node_id": "node_15",
+    "workflow_id": "workflow_1735150892341",
+    "workflowId": "workflow_1735150892341",
+    "application_id": "app_1764617628599"
+  },
+  {
+    "id": "rule_process_completion_check",
+    "name": "Process Completion Check Rule",
+    "description": "Verify all required tasks are completed before closing workflow",
+    "type": "decision",
+    "priority": 11,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Task.pendingCount",
+          "operator": "equals",
+          "value": 0
+        },
+        {
+          "field": "Customer.status",
+          "operator": "notEquals",
+          "value": "PENDING"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowComplete",
+          "value": true,
+          "message": "All tasks completed - workflow can be closed"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Customer.email",
+          "value": "PROCESS_COMPLETE",
+          "message": "Customer process completed successfully"
+        },
+        {
+          "type": "logMessage",
+          "field": "processLog",
+          "value": "Workflow completed successfully",
+          "message": "Process completion logged"
+        }
+      ]
+    },
+    "node_id": "node_19",
+    "workflow_id": "workflow_1735150892341",
+    "workflowId": "workflow_1735150892341",
+    "application_id": "app_1764617628599"
+  }
+]

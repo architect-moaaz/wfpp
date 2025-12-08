@@ -157,6 +157,10 @@ For textarea fields, use "minHeight": "100px" instead of height: "40px"
           "marginTop": "32px"
         }
       },
+      "gridLayout": [
+        {"i": "field_1", "x": 0, "y": 0, "w": 12, "h": 8, "minW": 6, "minH": 6},
+        {"i": "field_2", "x": 12, "y": 0, "w": 12, "h": 8, "minW": 6, "minH": 6}
+      ],
       "sections": [...],  // Multiple sections
       "fields": [
         {
@@ -263,6 +267,40 @@ Use these colors:
 - Border: #d1d5db, Background: #ffffff
 - Error: #ef4444, Success: #10b981
 
+5. CRITICAL - Grid Layout Coordinates (Based on Design System):
+   You MUST generate a "gridLayout" array with positioning for EACH field.
+
+   Extract from design system (if available via sharedContext):
+   - layoutColumns = designSystem?.layout?.columns?.desktop || 2
+   - inputHeight = designSystem?.components?.input?.height || '40px'
+   - textareaMinHeight = designSystem?.components?.textarea?.minHeight || '100px'
+   - fieldGap = designSystem?.spacing?.fieldGap || '16px'
+
+   Grid Calculation Rules:
+   - Grid system: 24 units wide (full width = 24)
+   - Standard field height: 8 grid units (input + label + margins)
+   - Textarea field height: 12 grid units (textarea + label + margins)
+
+   Calculate x, y, w, h coordinates for each field:
+   * x: horizontal position (0-23)
+     - 1-column: always 0
+     - 2-column: left column = 0, right column = 12
+   * y: vertical position (cumulative based on previous field heights)
+   * w: width in grid units
+     - Full width: 24
+     - Half width (2-column): 12
+     - Third width (3-column): 8
+   * h: height in grid units
+     - Standard fields (text, email, number, select, date, etc.): 8
+     - Textarea fields: 12
+
+   Example gridLayout format:
+   "gridLayout": [
+     {"i": "field-id-1", "x": 0, "y": 0, "w": 12, "h": 8, "minW": 6, "minH": 6},
+     {"i": "field-id-2", "x": 12, "y": 0, "w": 12, "h": 8, "minW": 6, "minH": 6},
+     {"i": "field-id-3", "x": 0, "y": 8, "w": 24, "h": 12, "minW": 6, "minH": 6}
+   ]
+
 Return ONLY valid JSON matching the exact output format from the knowledge base.`;
 
     const messages = [{
@@ -273,15 +311,67 @@ Return ONLY valid JSON matching the exact output format from the knowledge base.
     const responseText = await this.getResponse(messages);
     const result = this.parseJsonResponse(responseText);
 
+    // POST-PROCESS: Add gridLayout if missing for each form
+    const processedForms = (result.forms || []).map(form => {
+      if (!form.gridLayout && form.fields) {
+        console.log(`[AdvancedFormExpert] Auto-generating gridLayout for form: ${form.name}`);
+        form.gridLayout = this.generateGridLayout(form.fields, sharedContext.designSystem);
+      }
+      return form;
+    });
+
     if (onThinking) {
       onThinking({
         agent: this.name,
         step: 'Advanced Forms Complete',
-        content: `Generated ${result.forms?.length || 0} advanced form(s)`
+        content: `Generated ${processedForms.length} advanced form(s)`
       });
     }
 
-    return result.forms || [];
+    return processedForms;
+  }
+
+  /**
+   * Generate gridLayout from form fields based on design system
+   * This ensures reliable grid coordinates even when LLM doesn't follow prompts
+   */
+  generateGridLayout(fields, designSystem) {
+    if (!fields || fields.length === 0) return [];
+
+    const layoutColumns = designSystem?.layout?.columns?.desktop || 2; // Advanced forms default to 2 columns
+    const gridWidth = 24; // react-grid-layout standard
+    const standardFieldHeight = 6; // Grid units for standard fields
+    const textareaFieldHeight = 10; // Grid units for textarea fields
+
+    let currentY = 0;
+
+    return fields.map((field, index) => {
+      // Calculate width based on layout columns
+      const w = layoutColumns === 1 ? 24 : 10; // 2-column fields use 10 units
+
+      // Calculate height based on field type
+      const h = field.type === 'textarea' ? textareaFieldHeight : standardFieldHeight;
+
+      // Calculate x position (column)
+      const x = layoutColumns === 1 ? 0 : (index % layoutColumns) * 12; // Offset by 12 to space out columns
+
+      // Calculate y position (row)
+      const y = layoutColumns === 1 ? currentY : Math.floor(index / layoutColumns) * standardFieldHeight;
+
+      if (layoutColumns === 1) {
+        currentY += h;
+      }
+
+      return {
+        i: field.id || field.name,
+        x,
+        y,
+        w,
+        h,
+        minW: 6,
+        minH: 6
+      };
+    });
   }
 }
 

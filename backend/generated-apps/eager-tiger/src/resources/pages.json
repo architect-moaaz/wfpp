@@ -1,0 +1,3881 @@
+[
+  {
+    "id": "usermanagementpage-1764583250000-admin",
+    "name": "UserManagementPage",
+    "title": "User Management",
+    "description": "Administrative interface for creating and managing user accounts, assigning roles, configuring permissions, and organizing teams. Includes user activity monitoring and access control configuration.",
+    "route": "/admin/users",
+    "type": "list",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "User Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage user accounts, roles, permissions, and team assignments",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "User Statistics",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 4,
+                  "gap": "16px",
+                  "items": [
+                    {
+                      "label": "Total Users",
+                      "value": "{{User.count}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#64748B"
+                      }
+                    },
+                    {
+                      "label": "Active Users",
+                      "value": "{{User.where(status='active').count}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#10B981"
+                      }
+                    },
+                    {
+                      "label": "Teams",
+                      "value": "{{Team.count}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#64748B"
+                      }
+                    },
+                    {
+                      "label": "Pending Invites",
+                      "value": "{{User.where(status='pending').count}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#F59E0B"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Create New User",
+              "variant": "primary",
+              "action": "create",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#3B82F6",
+                "color": "#FFFFFF",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "cursor": "pointer",
+                "marginBottom": "24px",
+                "transition": "all 0.2s ease"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "User Accounts",
+              "columns": [
+                {
+                  "key": "name",
+                  "label": "Name",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "email",
+                  "label": "Email",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#64748B"
+                  }
+                },
+                {
+                  "key": "role",
+                  "label": "Role",
+                  "sortable": true,
+                  "filterable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "team",
+                  "label": "Team",
+                  "sortable": true,
+                  "filterable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#64748B"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "filterable": true,
+                  "badge": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "9999px"
+                  }
+                },
+                {
+                  "key": "lastActive",
+                  "label": "Last Active",
+                  "sortable": true,
+                  "type": "datetime",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#64748B"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    "view",
+                    "edit",
+                    "delete"
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "filters": [
+                "role",
+                "team",
+                "status"
+              ],
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "border": "1px solid #E2E8F0",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "overflow": "hidden"
+              }
+            },
+            "dataBinding": "User.all"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Recent Activity",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginTop": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "items": "{{ActivityLog.where(entityType='User').orderBy('createdAt', 'desc').limit(10)}}",
+                  "displayField": "description",
+                  "secondaryField": "createdAt",
+                  "avatarField": "user.avatar",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#0F172A",
+                    "lineHeight": "1.5"
+                  }
+                }
+              }
+            ],
+            "dataBinding": "ActivityLog.where(entityType='User')"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "modal",
+          "target": "createUserModal"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/admin/users/:id"
+        },
+        "edit": {
+          "type": "modal",
+          "target": "editUserModal"
+        }
+      },
+      "menu": [
+        {
+          "label": "Customer Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Lead Management",
+          "route": "/leads"
+        },
+        {
+          "label": "Task Management",
+          "route": "/tasks"
+        },
+        {
+          "label": "Pipeline Configuration",
+          "route": "/admin/pipeline"
+        },
+        {
+          "label": "Activity Audit",
+          "route": "/admin/audit"
+        },
+        {
+          "label": "Communication History",
+          "route": "/communications"
+        },
+        {
+          "label": "Notification Center",
+          "route": "/notifications"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports"
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal",
+      "maxWidth": "1400px"
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "pipelineconfigurationpage-1764583250000-xp9k2m",
+    "name": "PipelineConfigurationPage",
+    "title": "Pipeline Configuration",
+    "description": "Administrative interface for defining pipeline stages, setting stage order, configuring probability weights, and establishing transition rules",
+    "route": "/pipeline-configuration",
+    "type": "list",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Sales Pipeline Configuration",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Configure pipeline stages, progression rules, and probability weights for your sales process",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "text": "+ Add New Stage",
+              "variant": "primary",
+              "action": "create",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "backgroundColor": "#0066cc",
+                "color": "#ffffff",
+                "padding": "10px 20px",
+                "borderRadius": "6px",
+                "border": "none",
+                "marginBottom": "20px"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Pipeline Stages",
+              "columns": [
+                {
+                  "key": "order",
+                  "label": "Order",
+                  "sortable": true,
+                  "width": "80px"
+                },
+                {
+                  "key": "name",
+                  "label": "Stage Name",
+                  "sortable": true
+                },
+                {
+                  "key": "probability",
+                  "label": "Win Probability (%)",
+                  "sortable": true,
+                  "width": "150px"
+                },
+                {
+                  "key": "duration",
+                  "label": "Avg. Duration (days)",
+                  "sortable": true,
+                  "width": "150px"
+                },
+                {
+                  "key": "isActive",
+                  "label": "Status",
+                  "sortable": true,
+                  "width": "100px"
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "width": "120px"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Edit",
+                  "type": "edit",
+                  "icon": "edit"
+                },
+                {
+                  "label": "Delete",
+                  "type": "delete",
+                  "icon": "delete"
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "SalesPipelineStage.query",
+            "permissions": {
+              "view": [
+                "manager",
+                "administrator"
+              ],
+              "edit": [
+                "manager",
+                "administrator"
+              ],
+              "delete": [
+                "administrator"
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Transition Rules",
+              "content": "Configure rules for stage progression, required fields, and approval workflows",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "backgroundColor": "#f8f9fa",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "padding": "20px",
+                "marginTop": "20px"
+              }
+            },
+            "components": [
+              {
+                "type": "button",
+                "config": {
+                  "text": "Configure Rules",
+                  "variant": "secondary",
+                  "action": "navigate",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#ffffff",
+                    "color": "#0066cc",
+                    "padding": "8px 16px",
+                    "borderRadius": "6px",
+                    "border": "1px solid #0066cc"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Pipeline Analytics",
+              "content": "View conversion rates and stage performance metrics",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "padding": "20px",
+                "marginTop": "20px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "SalesPipelineStage.analytics"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "modal",
+          "target": "/pipeline-configuration/create"
+        },
+        "edit": {
+          "type": "modal",
+          "target": "/pipeline-configuration/edit/:id"
+        },
+        "delete": {
+          "type": "confirm",
+          "message": "Are you sure you want to delete this pipeline stage?"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Lead Management",
+          "route": "/lead-management"
+        },
+        {
+          "label": "Customer Dashboard",
+          "route": "/customer-dashboard"
+        },
+        {
+          "label": "Task Management",
+          "route": "/task-management"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports-analytics"
+        },
+        {
+          "label": "User Management",
+          "route": "/user-management"
+        },
+        {
+          "label": "Activity Audit",
+          "route": "/activity-audit"
+        },
+        {
+          "label": "Notification Center",
+          "route": "/notification-center"
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal"
+    },
+    "permissions": {
+      "view": [
+        "manager",
+        "administrator"
+      ],
+      "edit": [
+        "manager",
+        "administrator"
+      ],
+      "delete": [
+        "administrator"
+      ]
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "activityauditpage-1764583250000-a8x9k2",
+    "name": "ActivityAuditPage",
+    "title": "Activity Audit & System Logs",
+    "description": "Comprehensive audit interface displaying all system activities, user actions, and data changes with advanced filtering and export capabilities",
+    "route": "/activity-audit",
+    "type": "list",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Activity Audit & System Logs",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Monitor system activities, user actions, and data changes for compliance and troubleshooting",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Audit Filters",
+              "collapsible": true,
+              "defaultExpanded": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "filter",
+                "config": {
+                  "filters": [
+                    {
+                      "field": "activityType",
+                      "label": "Activity Type",
+                      "type": "select",
+                      "options": [
+                        "Login",
+                        "Logout",
+                        "Create",
+                        "Update",
+                        "Delete",
+                        "Export",
+                        "Import",
+                        "View"
+                      ],
+                      "style": {
+                        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                        "fontSize": "14px",
+                        "borderRadius": "8px",
+                        "borderColor": "#d4d4d4"
+                      }
+                    },
+                    {
+                      "field": "userId",
+                      "label": "User",
+                      "type": "select",
+                      "dataSource": "User",
+                      "style": {
+                        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                        "fontSize": "14px",
+                        "borderRadius": "8px",
+                        "borderColor": "#d4d4d4"
+                      }
+                    },
+                    {
+                      "field": "dateRange",
+                      "label": "Date Range",
+                      "type": "daterange",
+                      "style": {
+                        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                        "fontSize": "14px",
+                        "borderRadius": "8px",
+                        "borderColor": "#d4d4d4"
+                      }
+                    },
+                    {
+                      "field": "entityType",
+                      "label": "Entity Type",
+                      "type": "select",
+                      "options": [
+                        "Customer",
+                        "Lead",
+                        "Task",
+                        "Company",
+                        "User",
+                        "Team"
+                      ],
+                      "style": {
+                        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                        "fontSize": "14px",
+                        "borderRadius": "8px",
+                        "borderColor": "#d4d4d4"
+                      }
+                    }
+                  ],
+                  "searchPlaceholder": "Search audit logs...",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "text": "Export Audit Logs",
+                  "variant": "secondary",
+                  "icon": "download",
+                  "action": "export",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#ffffff",
+                    "color": "#0066cc",
+                    "border": "1px solid #0066cc",
+                    "borderRadius": "8px",
+                    "padding": "10px 20px",
+                    "marginTop": "16px",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Activity Logs",
+              "columns": [
+                {
+                  "key": "timestamp",
+                  "label": "Timestamp",
+                  "sortable": true,
+                  "type": "datetime",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "13px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "user.name",
+                  "label": "User",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "13px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "activityType",
+                  "label": "Activity Type",
+                  "sortable": true,
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "6px"
+                  }
+                },
+                {
+                  "key": "entityType",
+                  "label": "Entity",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "13px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "entityId",
+                  "label": "Entity ID",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "13px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "description",
+                  "label": "Description",
+                  "truncate": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "13px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "ipAddress",
+                  "label": "IP Address",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "13px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "View Details",
+                      "icon": "eye",
+                      "action": "view"
+                    }
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 50,
+              "selectable": true,
+              "exportable": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif"
+              },
+              "headerStyle": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "13px",
+                "fontWeight": "600",
+                "color": "#666666",
+                "textTransform": "uppercase",
+                "letterSpacing": "0.5px",
+                "backgroundColor": "#f9f9f9",
+                "borderBottom": "2px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "ActivityLog.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "modal",
+          "target": "activityLogDetail"
+        },
+        "export": {
+          "type": "download",
+          "format": "csv"
+        }
+      },
+      "menu": [
+        {
+          "label": "Customer Dashboard",
+          "route": "/customer-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Lead Management",
+          "route": "/lead-management",
+          "icon": "users"
+        },
+        {
+          "label": "Task Management",
+          "route": "/task-management",
+          "icon": "checklist"
+        },
+        {
+          "label": "Communication History",
+          "route": "/communication-history",
+          "icon": "message"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports-analytics",
+          "icon": "chart"
+        },
+        {
+          "label": "User Management",
+          "route": "/user-management",
+          "icon": "users"
+        },
+        {
+          "label": "Pipeline Configuration",
+          "route": "/pipeline-configuration",
+          "icon": "settings"
+        },
+        {
+          "label": "Notification Center",
+          "route": "/notification-center",
+          "icon": "bell"
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal",
+      "maxWidth": "1400px"
+    },
+    "permissions": {
+      "roles": [
+        "administrator"
+      ],
+      "restrictAccess": true
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "communicationhistorypage-1764583250000-ch9x2k",
+    "name": "CommunicationHistoryPage",
+    "title": "Communication History",
+    "description": "View comprehensive communication logs across all customers with timeline view, filtering, and export capabilities",
+    "route": "/communication-history",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "activityloggingform-1764583174949-30xk71"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Communication History",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Comprehensive log of all customer communications and interactions",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Filter Communications",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #E2E8F0"
+              }
+            },
+            "components": [
+              {
+                "type": "filter",
+                "config": {
+                  "filters": [
+                    {
+                      "field": "communicationType",
+                      "label": "Communication Type",
+                      "type": "select",
+                      "options": [
+                        "Email",
+                        "Phone",
+                        "Meeting",
+                        "Chat",
+                        "SMS",
+                        "Video Call"
+                      ],
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#334155",
+                        "borderRadius": "8px",
+                        "border": "1px solid #CBD5E1"
+                      }
+                    },
+                    {
+                      "field": "customerId",
+                      "label": "Customer",
+                      "type": "select",
+                      "dataSource": "Customer",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#334155",
+                        "borderRadius": "8px",
+                        "border": "1px solid #CBD5E1"
+                      }
+                    },
+                    {
+                      "field": "dateRange",
+                      "label": "Date Range",
+                      "type": "dateRange",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#334155",
+                        "borderRadius": "8px",
+                        "border": "1px solid #CBD5E1"
+                      }
+                    },
+                    {
+                      "field": "userId",
+                      "label": "Team Member",
+                      "type": "select",
+                      "dataSource": "User",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#334155",
+                        "borderRadius": "8px",
+                        "border": "1px solid #CBD5E1"
+                      }
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "Export",
+                      "action": "export",
+                      "style": {
+                        "backgroundColor": "#FFFFFF",
+                        "color": "#2563EB",
+                        "border": "1px solid #2563EB",
+                        "borderRadius": "8px",
+                        "padding": "10px 20px",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "cursor": "pointer"
+                      }
+                    },
+                    {
+                      "label": "Log Communication",
+                      "action": "openForm",
+                      "formRef": "activityloggingform-1764583174949-30xk71",
+                      "style": {
+                        "backgroundColor": "#2563EB",
+                        "color": "#FFFFFF",
+                        "border": "none",
+                        "borderRadius": "8px",
+                        "padding": "10px 20px",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "cursor": "pointer"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Communication Logs",
+              "columns": [
+                {
+                  "header": "Date & Time",
+                  "field": "timestamp",
+                  "type": "datetime",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "header": "Customer",
+                  "field": "customer.name",
+                  "type": "text",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "header": "Type",
+                  "field": "communicationType",
+                  "type": "badge",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "6px",
+                    "backgroundColor": "#EFF6FF",
+                    "color": "#2563EB"
+                  }
+                },
+                {
+                  "header": "Subject",
+                  "field": "subject",
+                  "type": "text",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#334155"
+                  }
+                },
+                {
+                  "header": "Team Member",
+                  "field": "user.name",
+                  "type": "text",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#334155"
+                  }
+                },
+                {
+                  "header": "Duration",
+                  "field": "duration",
+                  "type": "text",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#64748B"
+                  }
+                },
+                {
+                  "header": "Actions",
+                  "field": "actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "View",
+                      "action": "view",
+                      "style": {
+                        "color": "#2563EB",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "cursor": "pointer"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 25,
+              "searchable": true,
+              "searchPlaceholder": "Search communications...",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              },
+              "headerStyle": {
+                "backgroundColor": "#F8FAFC",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "12px",
+                "fontWeight": "700",
+                "color": "#475569",
+                "textTransform": "uppercase",
+                "letterSpacing": "0.05em",
+                "padding": "12px 16px",
+                "borderBottom": "1px solid #E2E8F0"
+              },
+              "rowStyle": {
+                "borderBottom": "1px solid #F1F5F9",
+                "padding": "16px"
+              }
+            },
+            "dataBinding": "CommunicationLog.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/customer-detail"
+        },
+        "openForm": {
+          "type": "modal",
+          "formRef": "activityloggingform-1764583174949-30xk71"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Customers",
+          "route": "/customers",
+          "icon": "people"
+        },
+        {
+          "label": "Leads",
+          "route": "/leads",
+          "icon": "leads"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks",
+          "icon": "tasks"
+        },
+        {
+          "label": "Communication History",
+          "route": "/communication-history",
+          "icon": "communication",
+          "active": true
+        },
+        {
+          "label": "Activity Audit",
+          "route": "/activity-audit",
+          "icon": "audit"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports",
+          "icon": "analytics"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notifications",
+          "icon": "notifications"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings",
+          "icon": "settings"
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal",
+      "maxWidth": "1400px",
+      "style": {
+        "backgroundColor": "#F8FAFC",
+        "padding": "32px",
+        "fontFamily": "Inter, system-ui, sans-serif"
+      }
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "notificationcenterpage-1764583250000-n8k2p9",
+    "name": "NotificationCenterPage",
+    "title": "Notification Center",
+    "description": "Centralized notification hub showing all user alerts, reminders, and system notifications with filtering and preference management",
+    "route": "/notifications",
+    "type": "list",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Notification Center",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Stay updated with all your alerts, reminders, and system notifications",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Notification Filters",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "buttonGroup",
+                "config": {
+                  "buttons": [
+                    {
+                      "label": "All",
+                      "value": "all",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "backgroundColor": "#3B82F6",
+                        "color": "#FFFFFF",
+                        "borderRadius": "8px",
+                        "padding": "10px 20px",
+                        "border": "none"
+                      }
+                    },
+                    {
+                      "label": "Unread",
+                      "value": "unread",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "backgroundColor": "#F1F5F9",
+                        "color": "#475569",
+                        "borderRadius": "8px",
+                        "padding": "10px 20px",
+                        "border": "1px solid #E2E8F0"
+                      }
+                    },
+                    {
+                      "label": "Tasks",
+                      "value": "tasks",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "backgroundColor": "#F1F5F9",
+                        "color": "#475569",
+                        "borderRadius": "8px",
+                        "padding": "10px 20px",
+                        "border": "1px solid #E2E8F0"
+                      }
+                    },
+                    {
+                      "label": "Alerts",
+                      "value": "alerts",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "backgroundColor": "#F1F5F9",
+                        "color": "#475569",
+                        "borderRadius": "8px",
+                        "padding": "10px 20px",
+                        "border": "1px solid #E2E8F0"
+                      }
+                    },
+                    {
+                      "label": "System",
+                      "value": "system",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "backgroundColor": "#F1F5F9",
+                        "color": "#475569",
+                        "borderRadius": "8px",
+                        "padding": "10px 20px",
+                        "border": "1px solid #E2E8F0"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "list",
+            "config": {
+              "title": "Recent Notifications",
+              "itemLayout": "detailed",
+              "showAvatar": true,
+              "showTimestamp": true,
+              "showStatus": true,
+              "emptyStateMessage": "No notifications to display",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0"
+              },
+              "itemStyle": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "padding": "16px",
+                "borderBottom": "1px solid #F1F5F9",
+                "borderRadius": "8px",
+                "marginBottom": "8px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "4px"
+              },
+              "descriptionStyle": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "13px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              },
+              "timestampStyle": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "12px",
+                "fontWeight": "400",
+                "color": "#94A3B8"
+              },
+              "actions": [
+                {
+                  "label": "Mark as Read",
+                  "action": "markRead",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "13px",
+                    "fontWeight": "500",
+                    "color": "#3B82F6"
+                  }
+                },
+                {
+                  "label": "View Details",
+                  "action": "view",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "13px",
+                    "fontWeight": "500",
+                    "color": "#3B82F6"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "Notification.query",
+            "fields": [
+              {
+                "name": "title",
+                "label": "Notification Title",
+                "type": "text"
+              },
+              {
+                "name": "message",
+                "label": "Message",
+                "type": "text"
+              },
+              {
+                "name": "type",
+                "label": "Type",
+                "type": "badge"
+              },
+              {
+                "name": "isRead",
+                "label": "Status",
+                "type": "status"
+              },
+              {
+                "name": "createdAt",
+                "label": "Received",
+                "type": "datetime"
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Notification Preferences",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginTop": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "16px"
+              }
+            },
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Configure how you receive notifications across different channels",
+                  "variant": "body2",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#64748B",
+                    "marginBottom": "16px",
+                    "lineHeight": "1.5"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Manage Preferences",
+                  "variant": "outlined",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#3B82F6",
+                    "backgroundColor": "#FFFFFF",
+                    "border": "1px solid #3B82F6",
+                    "borderRadius": "8px",
+                    "padding": "10px 24px",
+                    "cursor": "pointer"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Mark All as Read",
+              "variant": "secondary",
+              "fullWidth": false,
+              "style": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "backgroundColor": "#F1F5F9",
+                "color": "#475569",
+                "border": "1px solid #E2E8F0",
+                "borderRadius": "8px",
+                "padding": "12px 24px",
+                "marginTop": "24px",
+                "cursor": "pointer"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "markRead": {
+          "type": "action",
+          "action": "updateNotificationStatus"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Customer Dashboard",
+          "route": "/customers",
+          "icon": "people"
+        },
+        {
+          "label": "Lead Management",
+          "route": "/leads",
+          "icon": "leads"
+        },
+        {
+          "label": "Task Management",
+          "route": "/tasks",
+          "icon": "tasks"
+        },
+        {
+          "label": "Communication History",
+          "route": "/communications",
+          "icon": "communication"
+        },
+        {
+          "label": "Activity Audit",
+          "route": "/activity-audit",
+          "icon": "audit"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports",
+          "icon": "analytics"
+        },
+        {
+          "label": "Pipeline Configuration",
+          "route": "/pipeline-config",
+          "icon": "settings"
+        },
+        {
+          "label": "User Management",
+          "route": "/users",
+          "icon": "users"
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal",
+      "maxWidth": "1200px"
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "leadmanagementpage-1764583250000-lmp001",
+    "name": "LeadManagementPage",
+    "title": "Lead Management",
+    "description": "Manage and track leads through the sales pipeline with drag-and-drop functionality, filtering, and bulk operations",
+    "route": "/leads",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "leadcaptureform-1764583194093-j6d65a",
+      "leadqualificationform-1764583152199-kdh3an"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Lead Pipeline",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Add New Lead",
+              "variant": "primary",
+              "action": "openForm",
+              "formRef": "leadcaptureform-1764583194093-j6d65a",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "backgroundColor": "#3B82F6",
+                "color": "#FFFFFF",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none",
+                "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "filter",
+            "config": {
+              "filters": [
+                {
+                  "field": "status",
+                  "label": "Stage",
+                  "type": "select",
+                  "options": [
+                    "New",
+                    "Contacted",
+                    "Qualified",
+                    "Proposal",
+                    "Negotiation",
+                    "Won",
+                    "Lost"
+                  ]
+                },
+                {
+                  "field": "assignedTo",
+                  "label": "Assigned To",
+                  "type": "select",
+                  "dataBinding": "User.all"
+                },
+                {
+                  "field": "source",
+                  "label": "Lead Source",
+                  "type": "select",
+                  "options": [
+                    "Website",
+                    "Referral",
+                    "Social Media",
+                    "Email Campaign",
+                    "Cold Call",
+                    "Event"
+                  ]
+                },
+                {
+                  "field": "score",
+                  "label": "Lead Score",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "backgroundColor": "#FFFFFF",
+                "padding": "16px",
+                "borderRadius": "8px",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            }
+          },
+          {
+            "type": "kanban",
+            "config": {
+              "title": "Sales Pipeline",
+              "columns": [
+                {
+                  "id": "new",
+                  "title": "New",
+                  "dataBinding": "Lead.query.filter(status='New')",
+                  "color": "#94A3B8"
+                },
+                {
+                  "id": "contacted",
+                  "title": "Contacted",
+                  "dataBinding": "Lead.query.filter(status='Contacted')",
+                  "color": "#60A5FA"
+                },
+                {
+                  "id": "qualified",
+                  "title": "Qualified",
+                  "dataBinding": "Lead.query.filter(status='Qualified')",
+                  "color": "#A78BFA"
+                },
+                {
+                  "id": "proposal",
+                  "title": "Proposal",
+                  "dataBinding": "Lead.query.filter(status='Proposal')",
+                  "color": "#FBBF24"
+                },
+                {
+                  "id": "negotiation",
+                  "title": "Negotiation",
+                  "dataBinding": "Lead.query.filter(status='Negotiation')",
+                  "color": "#FB923C"
+                },
+                {
+                  "id": "won",
+                  "title": "Won",
+                  "dataBinding": "Lead.query.filter(status='Won')",
+                  "color": "#34D399"
+                }
+              ],
+              "cardTemplate": {
+                "fields": [
+                  {
+                    "key": "name",
+                    "label": "Lead Name",
+                    "variant": "title",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "600",
+                      "color": "#0F172A"
+                    }
+                  },
+                  {
+                    "key": "company",
+                    "label": "Company",
+                    "variant": "subtitle",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "12px",
+                      "color": "#64748B"
+                    }
+                  },
+                  {
+                    "key": "value",
+                    "label": "Value",
+                    "format": "currency",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "600",
+                      "color": "#059669"
+                    }
+                  },
+                  {
+                    "key": "score",
+                    "label": "Score",
+                    "variant": "badge",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "11px",
+                      "fontWeight": "600",
+                      "padding": "2px 8px",
+                      "borderRadius": "12px",
+                      "backgroundColor": "#DBEAFE",
+                      "color": "#1E40AF"
+                    }
+                  },
+                  {
+                    "key": "assignedTo",
+                    "label": "Owner",
+                    "variant": "avatar",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "12px",
+                      "color": "#475569"
+                    }
+                  }
+                ],
+                "actions": [
+                  {
+                    "label": "View Details",
+                    "action": "navigate",
+                    "target": "/leads/{{id}}"
+                  },
+                  {
+                    "label": "Qualify",
+                    "action": "openForm",
+                    "formRef": "leadqualificationform-1764583152199-kdh3an"
+                  },
+                  {
+                    "label": "Log Activity",
+                    "action": "openForm",
+                    "formRef": "activityloggingform-1764583174949-30xk71"
+                  }
+                ],
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "backgroundColor": "#FFFFFF",
+                  "padding": "12px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #E2E8F0",
+                  "marginBottom": "8px",
+                  "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+                }
+              },
+              "dragAndDrop": true,
+              "onDrop": {
+                "type": "updateStatus",
+                "workflow": "StatusUpdateNotificationWorkflow"
+              },
+              "bulkActions": [
+                {
+                  "label": "Assign to User",
+                  "action": "bulkAssign",
+                  "field": "assignedTo"
+                },
+                {
+                  "label": "Change Stage",
+                  "action": "bulkUpdate",
+                  "field": "status"
+                },
+                {
+                  "label": "Export Selected",
+                  "action": "export",
+                  "format": "csv"
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#F8FAFC",
+                "padding": "16px",
+                "borderRadius": "8px",
+                "gap": "16px"
+              }
+            },
+            "dataBinding": "Lead.all"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Pipeline Summary",
+              "metrics": [
+                {
+                  "label": "Total Leads",
+                  "value": "{{Lead.count}}",
+                  "icon": "users",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "label": "Total Value",
+                  "value": "{{Lead.sum(value)}}",
+                  "format": "currency",
+                  "icon": "dollar",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#059669"
+                  }
+                },
+                {
+                  "label": "Conversion Rate",
+                  "value": "{{Lead.conversionRate}}",
+                  "format": "percentage",
+                  "icon": "trending-up",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#3B82F6"
+                  }
+                },
+                {
+                  "label": "Avg. Deal Size",
+                  "value": "{{Lead.average(value)}}",
+                  "format": "currency",
+                  "icon": "chart",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#8B5CF6"
+                  }
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#FFFFFF",
+                "padding": "20px",
+                "borderRadius": "8px",
+                "border": "1px solid #E2E8F0",
+                "marginTop": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "Lead.analytics"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/leads/{{id}}"
+        },
+        "create": {
+          "type": "openForm",
+          "formRef": "leadcaptureform-1764583194093-j6d65a"
+        },
+        "qualify": {
+          "type": "openForm",
+          "formRef": "leadqualificationform-1764583152199-kdh3an"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "home"
+        },
+        {
+          "label": "Leads",
+          "route": "/leads",
+          "icon": "users",
+          "active": true
+        },
+        {
+          "label": "Customers",
+          "route": "/customers",
+          "icon": "briefcase"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks",
+          "icon": "check-square"
+        },
+        {
+          "label": "Communications",
+          "route": "/communications",
+          "icon": "message-square"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "bar-chart"
+        },
+        {
+          "label": "Pipeline Config",
+          "route": "/pipeline-config",
+          "icon": "settings"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notifications",
+          "icon": "bell"
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal",
+      "maxWidth": "1400px"
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "taskmanagementpage-1764583250000-tmgmt1",
+    "name": "TaskManagementPage",
+    "title": "Task Management",
+    "description": "Centralized task list with filtering by status, priority, due date, and assignment. Includes calendar view, task completion tracking, and quick task creation.",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "taskcreationform-1764583215343-1fkfmr"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Task Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Create New Task",
+              "variant": "primary",
+              "action": "openForm",
+              "icon": "add",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "backgroundColor": "#3B82F6",
+                "color": "#FFFFFF",
+                "borderRadius": "8px",
+                "padding": "10px 20px",
+                "border": "none",
+                "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+              }
+            },
+            "formRef": "taskcreationform-1764583215343-1fkfmr"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "filter",
+            "config": {
+              "title": "Filter Tasks",
+              "filters": [
+                {
+                  "field": "status",
+                  "label": "Status",
+                  "type": "select",
+                  "options": [
+                    "Pending",
+                    "In Progress",
+                    "Completed",
+                    "Overdue"
+                  ]
+                },
+                {
+                  "field": "priority",
+                  "label": "Priority",
+                  "type": "select",
+                  "options": [
+                    "Low",
+                    "Medium",
+                    "High",
+                    "Urgent"
+                  ]
+                },
+                {
+                  "field": "dueDate",
+                  "label": "Due Date",
+                  "type": "dateRange"
+                },
+                {
+                  "field": "assignedTo",
+                  "label": "Assigned To",
+                  "type": "select",
+                  "dataSource": "User"
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "20px",
+                "marginBottom": "24px",
+                "border": "1px solid #E2E8F0",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            }
+          },
+          {
+            "type": "tabs",
+            "config": {
+              "tabs": [
+                {
+                  "id": "list-view",
+                  "label": "List View",
+                  "icon": "list"
+                },
+                {
+                  "id": "calendar-view",
+                  "label": "Calendar View",
+                  "icon": "calendar"
+                },
+                {
+                  "id": "team-view",
+                  "label": "Team View",
+                  "icon": "group"
+                }
+              ],
+              "defaultTab": "list-view",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "marginBottom": "24px",
+                "borderBottom": "1px solid #E2E8F0"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "All Tasks",
+              "columns": [
+                {
+                  "key": "title",
+                  "label": "Task Title",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "500",
+                    "borderRadius": "6px",
+                    "padding": "4px 12px"
+                  }
+                },
+                {
+                  "key": "priority",
+                  "label": "Priority",
+                  "sortable": true,
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "500",
+                    "borderRadius": "6px",
+                    "padding": "4px 12px"
+                  }
+                },
+                {
+                  "key": "assignedTo",
+                  "label": "Assigned To",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "dueDate",
+                  "label": "Due Date",
+                  "sortable": true,
+                  "type": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "relatedTo",
+                  "label": "Related To",
+                  "sortable": false,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    "view",
+                    "edit",
+                    "complete",
+                    "delete"
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "selectable": true,
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "border": "1px solid #E2E8F0",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "overflow": "hidden"
+              }
+            },
+            "dataBinding": "Task.query",
+            "actions": {
+              "view": {
+                "type": "navigate",
+                "target": "/tasks/:id"
+              },
+              "edit": {
+                "type": "openForm",
+                "formRef": "taskcreationform-1764583215343-1fkfmr"
+              },
+              "complete": {
+                "type": "updateRecord",
+                "field": "status",
+                "value": "Completed"
+              },
+              "delete": {
+                "type": "deleteRecord",
+                "confirmation": true
+              }
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Task Summary",
+              "metrics": [
+                {
+                  "label": "Total Tasks",
+                  "value": "{{Task.count}}",
+                  "icon": "task",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "600",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "label": "Pending",
+                  "value": "{{Task.count(status='Pending')}}",
+                  "icon": "pending",
+                  "color": "#F59E0B",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "600",
+                    "color": "#F59E0B"
+                  }
+                },
+                {
+                  "label": "In Progress",
+                  "value": "{{Task.count(status='In Progress')}}",
+                  "icon": "progress",
+                  "color": "#3B82F6",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "600",
+                    "color": "#3B82F6"
+                  }
+                },
+                {
+                  "label": "Completed",
+                  "value": "{{Task.count(status='Completed')}}",
+                  "icon": "check_circle",
+                  "color": "#10B981",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "600",
+                    "color": "#10B981"
+                  }
+                },
+                {
+                  "label": "Overdue",
+                  "value": "{{Task.count(status='Overdue')}}",
+                  "icon": "warning",
+                  "color": "#EF4444",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "600",
+                    "color": "#EF4444"
+                  }
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "border": "1px solid #E2E8F0",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/tasks/:id"
+        },
+        "create": {
+          "type": "openForm",
+          "formRef": "taskcreationform-1764583215343-1fkfmr"
+        }
+      },
+      "menu": [
+        {
+          "label": "Customer Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Lead Management",
+          "route": "/leads",
+          "icon": "leads"
+        },
+        {
+          "label": "Customers",
+          "route": "/customers",
+          "icon": "people"
+        },
+        {
+          "label": "Pipeline Configuration",
+          "route": "/pipeline-config",
+          "icon": "settings"
+        },
+        {
+          "label": "Communication History",
+          "route": "/communications",
+          "icon": "chat"
+        },
+        {
+          "label": "Activity Audit",
+          "route": "/activity-audit",
+          "icon": "history"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports",
+          "icon": "analytics"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notifications",
+          "icon": "notifications"
+        },
+        {
+          "label": "User Management",
+          "route": "/users",
+          "icon": "admin_panel_settings"
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal"
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "customerdashboard-1764583250000-xyz123",
+    "name": "CustomerDashboard",
+    "title": "Customer Dashboard",
+    "description": "Main dashboard displaying customer statistics, recent activities, pipeline status, and performance metrics with role-based data visibility",
+    "route": "/customer-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "customerregistrationform-1764583114628-q9fi8b",
+      "leadcaptureform-1764583194093-j6d65a",
+      "activityloggingform-1764583174949-30xk71"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Customer Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Add New Customer",
+              "variant": "primary",
+              "action": "openForm",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563EB",
+                "color": "#FFFFFF",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none",
+                "boxShadow": "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+              }
+            },
+            "formRef": "customerregistrationform-1764583114628-q9fi8b"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Key Metrics",
+              "layout": "grid",
+              "columns": 4,
+              "metrics": [
+                {
+                  "label": "Total Customers",
+                  "value": "{{Customer.count}}",
+                  "icon": "users",
+                  "trend": "+12%"
+                },
+                {
+                  "label": "Active Leads",
+                  "value": "{{Lead.count(status='active')}}",
+                  "icon": "target",
+                  "trend": "+8%"
+                },
+                {
+                  "label": "Pipeline Value",
+                  "value": "${{SalesPipelineStage.sum(value)}}",
+                  "icon": "dollar-sign",
+                  "trend": "+15%"
+                },
+                {
+                  "label": "Tasks Due Today",
+                  "value": "{{Task.count(dueDate='today')}}",
+                  "icon": "calendar",
+                  "trend": "0%"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Recent Customers",
+              "columns": [
+                {
+                  "key": "name",
+                  "label": "Customer Name",
+                  "sortable": true
+                },
+                {
+                  "key": "company.name",
+                  "label": "Company",
+                  "sortable": true
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "type": "badge"
+                },
+                {
+                  "key": "assignedTo.name",
+                  "label": "Sales Rep",
+                  "sortable": true
+                },
+                {
+                  "key": "lastActivity",
+                  "label": "Last Activity",
+                  "type": "date"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "type": "navigate",
+                  "target": "/customer-detail"
+                },
+                {
+                  "label": "Log Activity",
+                  "type": "openForm",
+                  "formRef": "activityloggingform-1764583174949-30xk71"
+                }
+              ],
+              "filters": [
+                {
+                  "field": "status",
+                  "type": "select",
+                  "options": [
+                    "Active",
+                    "Inactive",
+                    "Prospect"
+                  ]
+                },
+                {
+                  "field": "assignedTo",
+                  "type": "select",
+                  "dataSource": "User.query"
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#334155"
+              }
+            },
+            "dataBinding": "Customer.query(orderBy='createdAt', limit=10)"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Pipeline Overview",
+              "chartType": "funnel",
+              "data": "{{SalesPipelineStage.groupBy('stage')}}",
+              "xAxis": "stage",
+              "yAxis": "count",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "SalesPipelineStage.query"
+          },
+          {
+            "type": "list",
+            "config": {
+              "title": "Recent Activities",
+              "itemTemplate": {
+                "title": "{{ActivityLog.type}} - {{ActivityLog.customer.name}}",
+                "subtitle": "{{ActivityLog.description}}",
+                "timestamp": "{{ActivityLog.createdAt}}",
+                "avatar": "{{ActivityLog.user.avatar}}"
+              },
+              "emptyState": "No recent activities",
+              "maxItems": 5,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#334155"
+              }
+            },
+            "dataBinding": "ActivityLog.query(orderBy='createdAt', limit=5)"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/customer-detail"
+        },
+        "addCustomer": {
+          "type": "openForm",
+          "formRef": "customerregistrationform-1764583114628-q9fi8b"
+        },
+        "logActivity": {
+          "type": "openForm",
+          "formRef": "activityloggingform-1764583174949-30xk71"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/customer-dashboard",
+          "icon": "home"
+        },
+        {
+          "label": "Lead Management",
+          "route": "/lead-management",
+          "icon": "target"
+        },
+        {
+          "label": "Task Management",
+          "route": "/task-management",
+          "icon": "check-square"
+        },
+        {
+          "label": "Pipeline Configuration",
+          "route": "/pipeline-configuration",
+          "icon": "settings"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports-analytics",
+          "icon": "bar-chart"
+        },
+        {
+          "label": "Communication History",
+          "route": "/communication-history",
+          "icon": "message-square"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notification-center",
+          "icon": "bell"
+        },
+        {
+          "label": "Activity Audit",
+          "route": "/activity-audit",
+          "icon": "file-text"
+        },
+        {
+          "label": "User Management",
+          "route": "/user-management",
+          "icon": "users"
+        }
+      ]
+    },
+    "layout": {
+      "type": "dashboard",
+      "responsive": true,
+      "spacing": "normal",
+      "gridColumns": 12,
+      "breakpoints": {
+        "mobile": 1,
+        "tablet": 2,
+        "desktop": 3
+      }
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "customerdetailpage-1764583250000-x9k2m5",
+    "name": "CustomerDetailPage",
+    "title": "Customer Details",
+    "description": "Detailed view of individual customer including contact information, company details, interaction history, associated leads, open tasks, and communication timeline",
+    "route": "/customer/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "contactupdateform-1764583132698-bbpxv3",
+      "activityloggingform-1764583174949-30xk71",
+      "taskcreationform-1764583215343-1fkfmr"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Customer.name}}",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Edit Customer",
+              "variant": "primary",
+              "action": "openForm",
+              "formRef": "contactupdateform-1764583132698-bbpxv3",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "backgroundColor": "#3B82F6",
+                "color": "#FFFFFF",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none",
+                "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Customer Information",
+              "fields": [
+                {
+                  "label": "Email",
+                  "value": "{{Customer.email}}",
+                  "type": "text"
+                },
+                {
+                  "label": "Phone",
+                  "value": "{{Customer.phone}}",
+                  "type": "text"
+                },
+                {
+                  "label": "Company",
+                  "value": "{{Customer.company.name}}",
+                  "type": "text"
+                },
+                {
+                  "label": "Status",
+                  "value": "{{Customer.status}}",
+                  "type": "badge"
+                },
+                {
+                  "label": "Created Date",
+                  "value": "{{Customer.createdAt}}",
+                  "type": "date"
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Customer.findById"
+          },
+          {
+            "type": "tabs",
+            "config": {
+              "tabs": [
+                {
+                  "id": "leads",
+                  "label": "Associated Leads",
+                  "content": {
+                    "type": "table",
+                    "dataBinding": "Lead.query",
+                    "filters": {
+                      "customerId": "{{Customer.id}}"
+                    },
+                    "columns": [
+                      {
+                        "header": "Lead Name",
+                        "field": "name",
+                        "sortable": true
+                      },
+                      {
+                        "header": "Status",
+                        "field": "status",
+                        "type": "badge"
+                      },
+                      {
+                        "header": "Score",
+                        "field": "score",
+                        "sortable": true
+                      },
+                      {
+                        "header": "Created",
+                        "field": "createdAt",
+                        "type": "date"
+                      }
+                    ],
+                    "actions": [
+                      {
+                        "label": "View",
+                        "type": "navigate",
+                        "target": "/lead/{{id}}"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "tasks",
+                  "label": "Open Tasks",
+                  "content": {
+                    "type": "list",
+                    "dataBinding": "Task.query",
+                    "filters": {
+                      "customerId": "{{Customer.id}}",
+                      "status": "open"
+                    },
+                    "itemTemplate": {
+                      "title": "{{title}}",
+                      "subtitle": "Due: {{dueDate}}",
+                      "badge": "{{priority}}"
+                    },
+                    "actions": [
+                      {
+                        "label": "Complete",
+                        "action": "updateStatus"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "communications",
+                  "label": "Communication Timeline",
+                  "content": {
+                    "type": "timeline",
+                    "dataBinding": "CommunicationLog.query",
+                    "filters": {
+                      "customerId": "{{Customer.id}}"
+                    },
+                    "sortBy": "createdAt",
+                    "sortOrder": "desc",
+                    "itemTemplate": {
+                      "title": "{{type}}",
+                      "description": "{{notes}}",
+                      "timestamp": "{{createdAt}}",
+                      "user": "{{user.name}}"
+                    }
+                  }
+                },
+                {
+                  "id": "activities",
+                  "label": "Activity History",
+                  "content": {
+                    "type": "list",
+                    "dataBinding": "ActivityLog.query",
+                    "filters": {
+                      "entityType": "Customer",
+                      "entityId": "{{Customer.id}}"
+                    },
+                    "sortBy": "timestamp",
+                    "sortOrder": "desc",
+                    "itemTemplate": {
+                      "title": "{{action}}",
+                      "subtitle": "{{user.name}} - {{timestamp}}",
+                      "description": "{{details}}"
+                    }
+                  }
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0"
+              }
+            }
+          },
+          {
+            "type": "button-group",
+            "config": {
+              "buttons": [
+                {
+                  "label": "Log Activity",
+                  "variant": "secondary",
+                  "action": "openForm",
+                  "formRef": "activityloggingform-1764583174949-30xk71",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#FFFFFF",
+                    "color": "#3B82F6",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #3B82F6"
+                  }
+                },
+                {
+                  "label": "Create Task",
+                  "variant": "secondary",
+                  "action": "openForm",
+                  "formRef": "taskcreationform-1764583215343-1fkfmr",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#FFFFFF",
+                    "color": "#3B82F6",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #3B82F6"
+                  }
+                },
+                {
+                  "label": "View Communications",
+                  "variant": "secondary",
+                  "action": "navigate",
+                  "target": "/communication-history?customerId={{Customer.id}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#FFFFFF",
+                    "color": "#3B82F6",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #3B82F6"
+                  }
+                }
+              ],
+              "style": {
+                "display": "flex",
+                "gap": "12px",
+                "marginTop": "24px",
+                "flexWrap": "wrap"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "edit": {
+          "type": "openForm",
+          "formId": "contactupdateform-1764583132698-bbpxv3"
+        },
+        "viewLead": {
+          "type": "navigate",
+          "target": "/lead/:id"
+        },
+        "viewCommunications": {
+          "type": "navigate",
+          "target": "/communication-history"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Customers",
+          "route": "/customers"
+        },
+        {
+          "label": "Lead Management",
+          "route": "/lead-management"
+        },
+        {
+          "label": "Task Management",
+          "route": "/task-management"
+        },
+        {
+          "label": "Communication History",
+          "route": "/communication-history"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports-analytics"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notifications"
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal",
+      "maxWidth": "1200px"
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "leaddetailpage-1764583250000-xyz123",
+    "name": "LeadDetailPage",
+    "title": "Lead Details",
+    "description": "Comprehensive lead view showing qualification details, pipeline progression history, associated tasks, communication logs, and conversion probability",
+    "route": "/leads/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "leadqualificationform-1764583152199-kdh3an",
+      "taskcreationform-1764583215343-1fkfmr",
+      "activityloggingform-1764583174949-30xk71"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Lead.firstName}} {{Lead.lastName}} - {{Lead.company}}",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "lineHeight": "1.2"
+              }
+            }
+          },
+          {
+            "type": "badge",
+            "config": {
+              "text": "{{Lead.status}}",
+              "variant": "status",
+              "style": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "padding": "6px 16px",
+                "borderRadius": "20px",
+                "backgroundColor": "#e8f5e9",
+                "color": "#2e7d32"
+              }
+            },
+            "dataBinding": "Lead.findById"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Lead Information",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e0e0e0",
+                "marginBottom": "24px"
+              },
+              "fields": [
+                {
+                  "label": "Email",
+                  "value": "{{Lead.email}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666",
+                    "marginBottom": "12px"
+                  }
+                },
+                {
+                  "label": "Phone",
+                  "value": "{{Lead.phone}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666",
+                    "marginBottom": "12px"
+                  }
+                },
+                {
+                  "label": "Source",
+                  "value": "{{Lead.source}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666",
+                    "marginBottom": "12px"
+                  }
+                },
+                {
+                  "label": "Conversion Probability",
+                  "value": "{{Lead.conversionProbability}}%",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666",
+                    "fontWeight": "600"
+                  }
+                },
+                {
+                  "label": "Assigned To",
+                  "value": "{{Lead.assignedTo.name}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666",
+                    "marginBottom": "12px"
+                  }
+                },
+                {
+                  "label": "Pipeline Stage",
+                  "value": "{{Lead.pipelineStage.name}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666",
+                    "marginBottom": "12px"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "Lead.findById"
+          },
+          {
+            "type": "tabs",
+            "config": {
+              "style": {
+                "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e0e0e0"
+              },
+              "tabs": [
+                {
+                  "label": "Activity History",
+                  "id": "activity",
+                  "component": {
+                    "type": "list",
+                    "config": {
+                      "title": "Recent Activities",
+                      "emptyMessage": "No activities recorded",
+                      "itemTemplate": {
+                        "title": "{{ActivityLog.activityType}} - {{ActivityLog.description}}",
+                        "subtitle": "{{ActivityLog.createdAt}} by {{ActivityLog.user.name}}",
+                        "style": {
+                          "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                          "fontSize": "14px",
+                          "padding": "12px",
+                          "borderBottom": "1px solid #f0f0f0"
+                        }
+                      }
+                    },
+                    "dataBinding": "ActivityLog.query",
+                    "filters": {
+                      "relatedTo": "{{Lead.id}}",
+                      "sortBy": "createdAt",
+                      "sortOrder": "desc"
+                    }
+                  }
+                },
+                {
+                  "label": "Communication Logs",
+                  "id": "communication",
+                  "component": {
+                    "type": "list",
+                    "config": {
+                      "title": "Communication History",
+                      "emptyMessage": "No communications logged",
+                      "itemTemplate": {
+                        "title": "{{CommunicationLog.type}} - {{CommunicationLog.subject}}",
+                        "subtitle": "{{CommunicationLog.date}} - {{CommunicationLog.notes}}",
+                        "style": {
+                          "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                          "fontSize": "14px",
+                          "padding": "12px",
+                          "borderBottom": "1px solid #f0f0f0"
+                        }
+                      }
+                    },
+                    "dataBinding": "CommunicationLog.query",
+                    "filters": {
+                      "leadId": "{{Lead.id}}",
+                      "sortBy": "date",
+                      "sortOrder": "desc"
+                    }
+                  }
+                },
+                {
+                  "label": "Tasks",
+                  "id": "tasks",
+                  "component": {
+                    "type": "list",
+                    "config": {
+                      "title": "Associated Tasks",
+                      "emptyMessage": "No tasks assigned",
+                      "itemTemplate": {
+                        "title": "{{Task.title}}",
+                        "subtitle": "Due: {{Task.dueDate}} - Status: {{Task.status}}",
+                        "badge": "{{Task.priority}}",
+                        "style": {
+                          "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                          "fontSize": "14px",
+                          "padding": "12px",
+                          "borderBottom": "1px solid #f0f0f0"
+                        }
+                      }
+                    },
+                    "dataBinding": "Task.query",
+                    "filters": {
+                      "relatedLead": "{{Lead.id}}",
+                      "sortBy": "dueDate",
+                      "sortOrder": "asc"
+                    }
+                  }
+                },
+                {
+                  "label": "Qualification",
+                  "id": "qualification",
+                  "component": {
+                    "type": "form",
+                    "config": {
+                      "title": "Update Lead Qualification",
+                      "submitLabel": "Save Changes",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif"
+                      }
+                    },
+                    "formRef": "leadqualificationform-1764583152199-kdh3an"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "button-group",
+            "config": {
+              "alignment": "right",
+              "style": {
+                "marginTop": "24px",
+                "gap": "12px"
+              },
+              "buttons": [
+                {
+                  "label": "Create Task",
+                  "variant": "secondary",
+                  "action": "openModal",
+                  "modalFormRef": "taskcreationform-1764583215343-1fkfmr",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "backgroundColor": "#ffffff",
+                    "color": "#1976d2",
+                    "border": "1px solid #1976d2"
+                  }
+                },
+                {
+                  "label": "Log Activity",
+                  "variant": "secondary",
+                  "action": "openModal",
+                  "modalFormRef": "activityloggingform-1764583174949-30xk71",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "backgroundColor": "#ffffff",
+                    "color": "#1976d2",
+                    "border": "1px solid #1976d2"
+                  }
+                },
+                {
+                  "label": "Convert to Customer",
+                  "variant": "primary",
+                  "action": "triggerWorkflow",
+                  "workflow": "CustomerOnboardingWorkflow",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "backgroundColor": "#1976d2",
+                    "color": "#ffffff",
+                    "border": "none"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "convert": {
+          "type": "navigate",
+          "target": "/customers/:customerId"
+        },
+        "back": {
+          "type": "navigate",
+          "target": "/leads"
+        }
+      },
+      "menu": [
+        {
+          "label": "Customer Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Lead Management",
+          "route": "/leads"
+        },
+        {
+          "label": "Task Management",
+          "route": "/tasks"
+        },
+        {
+          "label": "Communication History",
+          "route": "/communications"
+        },
+        {
+          "label": "Pipeline Configuration",
+          "route": "/pipeline-config"
+        },
+        {
+          "label": "Reports & Analytics",
+          "route": "/reports"
+        },
+        {
+          "label": "Notification Center",
+          "route": "/notifications"
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal"
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "reportsandanalyticspage-1764583250000-r9a8x2",
+    "name": "ReportsAndAnalyticsPage",
+    "title": "Reports & Analytics",
+    "description": "Reporting dashboard with pre-built and custom reports covering sales pipeline metrics, conversion rates, activity statistics, and team performance",
+    "route": "/reports-analytics",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Reports & Analytics",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Analyze sales performance metrics and generate custom reports",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Key Performance Metrics",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "border": "1px solid #E2E8F0",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "SalesPipelineStage.aggregate",
+            "items": [
+              {
+                "label": "Total Pipeline Value",
+                "value": "${{SalesPipelineStage.sum(dealValue)}}",
+                "icon": "trending_up",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#0F172A"
+                }
+              },
+              {
+                "label": "Conversion Rate",
+                "value": "{{Lead.conversionRate}}%",
+                "icon": "percent",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#10B981"
+                }
+              },
+              {
+                "label": "Active Leads",
+                "value": "{{Lead.count(status='active')}}",
+                "icon": "people",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#3B82F6"
+                }
+              },
+              {
+                "label": "Team Activities",
+                "value": "{{ActivityLog.count(thisMonth)}}",
+                "icon": "activity",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#8B5CF6"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Sales Pipeline Overview",
+              "subtitle": "Track deals across pipeline stages",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "border": "1px solid #E2E8F0",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "SalesPipelineStage.groupBy",
+            "visualization": {
+              "type": "funnel",
+              "xAxis": "stageName",
+              "yAxis": "count",
+              "colors": [
+                "#3B82F6",
+                "#10B981",
+                "#F59E0B",
+                "#EF4444"
+              ]
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Team Performance Report",
+              "searchable": true,
+              "sortable": true,
+              "exportable": true,
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "border": "1px solid #E2E8F0",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "User.query",
+            "columns": [
+              {
+                "field": "name",
+                "header": "Team Member",
+                "sortable": true,
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#0F172A"
+                }
+              },
+              {
+                "field": "team.name",
+                "header": "Team",
+                "sortable": true,
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#64748B"
+                }
+              },
+              {
+                "field": "leadsConverted",
+                "header": "Leads Converted",
+                "sortable": true,
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "color": "#10B981"
+                }
+              },
+              {
+                "field": "activitiesLogged",
+                "header": "Activities",
+                "sortable": true,
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#64748B"
+                }
+              },
+              {
+                "field": "tasksCompleted",
+                "header": "Tasks Completed",
+                "sortable": true,
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#64748B"
+                }
+              }
+            ],
+            "actions": [
+              {
+                "label": "View Details",
+                "type": "navigate",
+                "target": "/user-details/{{id}}",
+                "style": {
+                  "backgroundColor": "#3B82F6",
+                  "color": "#FFFFFF",
+                  "borderRadius": "8px",
+                  "padding": "8px 16px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Custom Report Generator",
+              "subtitle": "Create and schedule custom reports",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "border": "1px solid #E2E8F0",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "components": [
+              {
+                "type": "button",
+                "config": {
+                  "label": "Create Custom Report",
+                  "variant": "primary",
+                  "icon": "add_chart",
+                  "style": {
+                    "backgroundColor": "#3B82F6",
+                    "color": "#FFFFFF",
+                    "borderRadius": "8px",
+                    "padding": "12px 24px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none",
+                    "marginRight": "12px"
+                  }
+                },
+                "action": {
+                  "type": "navigate",
+                  "target": "/reports-analytics/create"
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Export All Data",
+                  "variant": "secondary",
+                  "icon": "download",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "color": "#3B82F6",
+                    "borderRadius": "8px",
+                    "padding": "12px 24px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "1px solid #3B82F6",
+                    "marginRight": "12px"
+                  }
+                },
+                "action": {
+                  "type": "export",
+                  "format": "csv"
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Schedule Report",
+                  "variant": "secondary",
+                  "icon": "schedule",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "color": "#64748B",
+                    "borderRadius": "8px",
+                    "padding": "12px 24px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "1px solid #E2E8F0"
+                  }
+                },
+                "action": {
+                  "type": "navigate",
+                  "target": "/reports-analytics/schedule"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/user-details"
+        },
+        "export": {
+          "type": "export",
+          "format": "csv"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/customer-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Lead Management",
+          "route": "/lead-management",
+          "icon": "people"
+        },
+        {
+          "label": "Pipeline Configuration",
+          "route": "/pipeline-configuration",
+          "icon": "settings"
+        },
+        {
+          "label": "Task Management",
+          "route": "/task-management",
+          "icon": "task"
+        },
+        {
+          "label": "Activity Audit",
+          "route": "/activity-audit",
+          "icon": "history"
+        },
+        {
+          "label": "Communication History",
+          "route": "/communication-history",
+          "icon": "chat"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notification-center",
+          "icon": "notifications"
+        },
+        {
+          "label": "User Management",
+          "route": "/user-management",
+          "icon": "admin_panel_settings"
+        }
+      ]
+    },
+    "layout": {
+      "type": "dashboard",
+      "responsive": true,
+      "spacing": "normal",
+      "style": {
+        "backgroundColor": "#F8FAFC",
+        "padding": "24px",
+        "fontFamily": "Inter, system-ui, sans-serif"
+      }
+    },
+    "workflowId": "workflow_1735143891234"
+  }
+]

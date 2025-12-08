@@ -1,0 +1,443 @@
+[
+  {
+    "id": "rule_hr_initiate_onboarding",
+    "name": "HR Initiates Onboarding Validation",
+    "description": "Validates required employee information when HR initiates onboarding process",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Employee.email",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Employee.email",
+          "message": "Employee email is required to initiate onboarding"
+        }
+      ]
+    },
+    "node_id": "node_1",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_employee_document_submission",
+    "name": "Employee Document Submission Validation",
+    "description": "Validates document uploads meet file type and size requirements",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Document.fileSize",
+          "operator": "greaterThan",
+          "value": 10485760
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Document.fileSize",
+          "message": "Document file size must not exceed 10MB"
+        }
+      ]
+    },
+    "node_id": "node_2",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_document_completeness_check",
+    "name": "Document Completeness Validation",
+    "description": "Validates all mandatory documents have been submitted",
+    "type": "validation",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "OnboardingWorkflow.submittedDocumentCount",
+          "operator": "lessThan",
+          "value": "OnboardingWorkflow.requiredDocumentCount"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "OnboardingWorkflow.documentsComplete",
+          "value": false
+        },
+        {
+          "type": "logMessage",
+          "message": "Document submission incomplete - missing required documents"
+        }
+      ]
+    },
+    "node_id": "node_3",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_documents_complete_decision",
+    "name": "Documents Complete Decision",
+    "description": "Routes workflow based on document completeness status",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "OnboardingWorkflow.documentsComplete",
+          "operator": "equals",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "OnboardingWorkflow.nextStep",
+          "value": "REQUEST_MISSING_DOCUMENTS"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Employee.email",
+          "message": "Please submit missing documents to continue onboarding"
+        }
+      ]
+    },
+    "node_id": "node_4",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_request_missing_documents",
+    "name": "Request Missing Documents Validation",
+    "description": "Validates missing document request contains specific document types",
+    "type": "validation",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Notification.missingDocumentsList",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Notification.missingDocumentsList",
+          "message": "Missing documents list must be specified in notification"
+        }
+      ]
+    },
+    "node_id": "node_5",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_hr_document_verification",
+    "name": "HR Document Verification Validation",
+    "description": "Validates HR has reviewed all submitted documents before approval",
+    "type": "validation",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ApprovalRecord.reviewedBy",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "ApprovalRecord.reviewedBy",
+          "message": "HR reviewer must be assigned before document verification"
+        }
+      ]
+    },
+    "node_id": "node_6",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_documents_approved_decision",
+    "name": "Documents Approved Decision",
+    "description": "Routes workflow based on HR document approval status",
+    "type": "decision",
+    "priority": 7,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ApprovalRecord.status",
+          "operator": "equals",
+          "value": "REJECTED"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "OnboardingWorkflow.nextStep",
+          "value": "REQUEST_MISSING_DOCUMENTS"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Employee.email",
+          "message": "Documents require revision. Please resubmit corrected documents"
+        },
+        {
+          "type": "logMessage",
+          "message": "Documents rejected by HR - employee notified for resubmission"
+        }
+      ]
+    },
+    "node_id": "node_7",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_parallel_department_processing",
+    "name": "Parallel Department Processing Decision",
+    "description": "Determines which departments need to process onboarding tasks in parallel",
+    "type": "decision",
+    "priority": 8,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Employee.department",
+          "operator": "in",
+          "value": [
+            "Engineering",
+            "Sales",
+            "Marketing"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "OnboardingWorkflow.requiresITEquipment",
+          "value": true
+        },
+        {
+          "type": "setVariable",
+          "field": "OnboardingWorkflow.requiresTraining",
+          "value": true
+        }
+      ]
+    },
+    "node_id": "node_8",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_it_equipment_assignment",
+    "name": "IT Equipment Assignment Validation",
+    "description": "Validates IT equipment assignment includes required items",
+    "type": "validation",
+    "priority": 9,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "EquipmentAssignment.assignedEquipmentCount",
+          "operator": "equals",
+          "value": 0
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "EquipmentAssignment.assignedEquipmentCount",
+          "message": "At least one equipment item must be assigned to employee"
+        }
+      ]
+    },
+    "node_id": "node_9",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_training_plan_creation",
+    "name": "Training Plan Creation Validation",
+    "description": "Validates training plan includes milestones and completion dates",
+    "type": "validation",
+    "priority": 10,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "TrainingPlan.milestoneCount",
+          "operator": "lessThan",
+          "value": 1
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "TrainingPlan.milestoneCount",
+          "message": "Training plan must include at least one milestone"
+        }
+      ]
+    },
+    "node_id": "node_11",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_merge_parallel_paths",
+    "name": "Merge Parallel Paths Decision",
+    "description": "Determines if all parallel department tasks are completed before proceeding",
+    "type": "decision",
+    "priority": 11,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "OnboardingWorkflow.itTasksComplete",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "OnboardingWorkflow.trainingTasksComplete",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "OnboardingWorkflow.nextStep",
+          "value": "PROGRESS_REVIEW_MEETING"
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.hrManagerEmail",
+          "message": "All department tasks completed - ready for progress review"
+        }
+      ]
+    },
+    "node_id": "node_13",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_progress_review_meeting",
+    "name": "Progress Review Meeting Validation",
+    "description": "Validates progress review meeting is scheduled with required attendees",
+    "type": "validation",
+    "priority": 12,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ReviewSchedule.attendeeCount",
+          "operator": "lessThan",
+          "value": 2
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "ReviewSchedule.attendeeCount",
+          "message": "Progress review meeting requires at least employee and manager"
+        }
+      ]
+    },
+    "node_id": "node_16",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  },
+  {
+    "id": "rule_onboarding_complete_decision",
+    "name": "Onboarding Complete Decision",
+    "description": "Determines if onboarding process is complete or requires additional steps",
+    "type": "decision",
+    "priority": 13,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "OnboardingWorkflow.allTasksComplete",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "ReviewSchedule.reviewApproved",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "OnboardingWorkflow.status",
+          "value": "COMPLETED"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Employee.email",
+          "message": "Congratulations! Your onboarding process is complete"
+        },
+        {
+          "type": "logMessage",
+          "message": "Employee onboarding completed successfully"
+        }
+      ]
+    },
+    "node_id": "node_17",
+    "workflow_id": "workflow_1736708923",
+    "workflowId": "workflow_1736708923",
+    "application_id": "app_1764957381399"
+  }
+]

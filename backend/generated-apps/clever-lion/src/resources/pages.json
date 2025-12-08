@@ -1,0 +1,4310 @@
+[
+  {
+    "id": "usermanagementpage-1765050200000-umgmt1",
+    "name": "UserManagementPage",
+    "title": "User Management",
+    "description": "Administrative page for creating, editing, and deactivating user accounts. Supports role assignment, password resets, and viewing user activity logs.",
+    "route": "/admin/users",
+    "type": "list",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "User Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage system users, roles, and permissions",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Create New User",
+              "variant": "primary",
+              "icon": "add",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "24px",
+                "cursor": "pointer"
+              }
+            },
+            "action": {
+              "type": "modal",
+              "target": "createUserModal"
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "System Users",
+              "columns": [
+                {
+                  "field": "username",
+                  "header": "Username",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "email",
+                  "header": "Email",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "role",
+                  "header": "Role",
+                  "sortable": true,
+                  "filterable": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#2563eb"
+                  }
+                },
+                {
+                  "field": "status",
+                  "header": "Status",
+                  "sortable": true,
+                  "filterable": true,
+                  "badge": true,
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "500",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px"
+                  }
+                },
+                {
+                  "field": "lastLogin",
+                  "header": "Last Login",
+                  "sortable": true,
+                  "type": "datetime",
+                  "style": {
+                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "field": "actions",
+                  "header": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "Edit",
+                      "icon": "edit",
+                      "action": "edit"
+                    },
+                    {
+                      "label": "Reset Password",
+                      "icon": "lock_reset",
+                      "action": "resetPassword"
+                    },
+                    {
+                      "label": "View Activity",
+                      "icon": "history",
+                      "action": "viewActivity"
+                    },
+                    {
+                      "label": "Deactivate",
+                      "icon": "block",
+                      "action": "deactivate",
+                      "confirm": true
+                    }
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "searchPlaceholder": "Search users by name, email, or role...",
+              "filters": [
+                {
+                  "field": "role",
+                  "label": "Role",
+                  "type": "select",
+                  "options": [
+                    "Admin",
+                    "Officer",
+                    "Supervisor",
+                    "Clerk"
+                  ]
+                },
+                {
+                  "field": "status",
+                  "label": "Status",
+                  "type": "select",
+                  "options": [
+                    "Active",
+                    "Inactive",
+                    "Suspended"
+                  ]
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "padding": "24px"
+              },
+              "headerStyle": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "backgroundColor": "#f9fafb",
+                "padding": "12px 16px",
+                "borderBottom": "2px solid #e5e7eb"
+              },
+              "rowStyle": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#1a1a1a",
+                "padding": "16px",
+                "borderBottom": "1px solid #f3f4f6"
+              },
+              "hoverStyle": {
+                "backgroundColor": "#f9fafb"
+              }
+            },
+            "dataBinding": "User.query",
+            "queryConfig": {
+              "orderBy": "lastLogin",
+              "order": "desc"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "User Statistics",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "padding": "24px",
+                "marginTop": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
+              },
+              "content": [
+                {
+                  "type": "grid",
+                  "columns": 4,
+                  "items": [
+                    {
+                      "label": "Total Users",
+                      "value": "{{User.count}}",
+                      "icon": "people",
+                      "style": {
+                        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#2563eb"
+                      }
+                    },
+                    {
+                      "label": "Active Users",
+                      "value": "{{User.count(status='Active')}}",
+                      "icon": "check_circle",
+                      "style": {
+                        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#10b981"
+                      }
+                    },
+                    {
+                      "label": "Inactive Users",
+                      "value": "{{User.count(status='Inactive')}}",
+                      "icon": "cancel",
+                      "style": {
+                        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#ef4444"
+                      }
+                    },
+                    {
+                      "label": "Administrators",
+                      "value": "{{User.count(role='Admin')}}",
+                      "icon": "admin_panel_settings",
+                      "style": {
+                        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#8b5cf6"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "dataBinding": "User.aggregate"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "edit": {
+          "type": "modal",
+          "target": "editUserModal"
+        },
+        "resetPassword": {
+          "type": "modal",
+          "target": "resetPasswordModal"
+        },
+        "viewActivity": {
+          "type": "navigate",
+          "target": "/admin/users/{{userId}}/activity"
+        },
+        "deactivate": {
+          "type": "action",
+          "action": "deactivateUser",
+          "confirm": {
+            "title": "Deactivate User",
+            "message": "Are you sure you want to deactivate this user? They will no longer be able to access the system.",
+            "confirmLabel": "Deactivate",
+            "cancelLabel": "Cancel"
+          }
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Ticket List",
+          "route": "/tickets",
+          "icon": "receipt"
+        },
+        {
+          "label": "Violation Types",
+          "route": "/admin/violation-types",
+          "icon": "category"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "assessment"
+        },
+        {
+          "label": "Notification History",
+          "route": "/notifications",
+          "icon": "notifications"
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  },
+  {
+    "id": "violationtypemanagementpage-1765050200000-vt8mng",
+    "name": "ViolationTypeManagementPage",
+    "title": "Violation Type Management",
+    "description": "Administrative page displaying all violation types with ability to add, edit, or deactivate violations. Supports fine amount adjustments and violation code management.",
+    "route": "/violation-types",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "violationtypeform-1765050034975-24b31q"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Violation Type Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage violation types, codes, and fine schedules",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Add New Violation Type",
+              "variant": "primary",
+              "action": "create",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "24px",
+                "cursor": "pointer"
+              }
+            },
+            "formRef": "violationtypeform-1765050034975-24b31q"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Violation Types Catalog",
+              "columns": [
+                {
+                  "key": "code",
+                  "label": "Code",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "name",
+                  "label": "Violation Name",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "description",
+                  "label": "Description",
+                  "sortable": false,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "fineAmount",
+                  "label": "Fine Amount",
+                  "sortable": true,
+                  "format": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#059669"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "sortable": false
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Edit",
+                  "type": "edit",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#2563eb",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Deactivate",
+                  "type": "deactivate",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#dc2626",
+                    "cursor": "pointer"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "searchPlaceholder": "Search by code or name...",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "ViolationType.query",
+            "formRef": "violationtypeform-1765050034975-24b31q"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Statistics",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#f9fafb",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "padding": "24px",
+                "marginTop": "24px"
+              },
+              "content": [
+                {
+                  "label": "Total Violation Types",
+                  "value": "{{ViolationType.count}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "label": "Active Violations",
+                  "value": "{{ViolationType.activeCount}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#059669"
+                  }
+                },
+                {
+                  "label": "Inactive Violations",
+                  "value": "{{ViolationType.inactiveCount}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#dc2626"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "ViolationType.statistics"
+          }
+        ]
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Last updated: {{ViolationType.lastModified}}",
+              "variant": "caption",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#999999",
+                "textAlign": "center"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "modal",
+          "target": "violationtypeform-1765050034975-24b31q"
+        },
+        "edit": {
+          "type": "modal",
+          "target": "violationtypeform-1765050034975-24b31q"
+        },
+        "deactivate": {
+          "type": "confirm",
+          "message": "Are you sure you want to deactivate this violation type?"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard",
+          "style": {
+            "fontFamily": "Inter, system-ui, sans-serif",
+            "fontSize": "16px",
+            "fontWeight": "500",
+            "color": "#1a1a1a"
+          }
+        },
+        {
+          "label": "User Management",
+          "route": "/user-management",
+          "style": {
+            "fontFamily": "Inter, system-ui, sans-serif",
+            "fontSize": "16px",
+            "fontWeight": "500",
+            "color": "#1a1a1a"
+          }
+        },
+        {
+          "label": "Ticket List",
+          "route": "/tickets",
+          "style": {
+            "fontFamily": "Inter, system-ui, sans-serif",
+            "fontSize": "16px",
+            "fontWeight": "500",
+            "color": "#1a1a1a"
+          }
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "style": {
+            "fontFamily": "Inter, system-ui, sans-serif",
+            "fontSize": "16px",
+            "fontWeight": "500",
+            "color": "#1a1a1a"
+          }
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  },
+  {
+    "id": "notificationhistorypage-1765050200000-nhp001",
+    "name": "NotificationHistoryPage",
+    "title": "Notification History",
+    "description": "Administrative page showing notification logs with delivery status, recipient information, and content. Supports troubleshooting notification delivery issues and resending failed notifications.",
+    "route": "/notification-history",
+    "type": "list",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Notification History",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "View and manage all system notifications with delivery status and troubleshooting options",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Filter Notifications",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "filter",
+                "config": {
+                  "filters": [
+                    {
+                      "field": "status",
+                      "label": "Delivery Status",
+                      "type": "select",
+                      "options": [
+                        {
+                          "label": "All Statuses",
+                          "value": ""
+                        },
+                        {
+                          "label": "Sent",
+                          "value": "sent"
+                        },
+                        {
+                          "label": "Delivered",
+                          "value": "delivered"
+                        },
+                        {
+                          "label": "Failed",
+                          "value": "failed"
+                        },
+                        {
+                          "label": "Pending",
+                          "value": "pending"
+                        }
+                      ]
+                    },
+                    {
+                      "field": "type",
+                      "label": "Notification Type",
+                      "type": "select",
+                      "options": [
+                        {
+                          "label": "All Types",
+                          "value": ""
+                        },
+                        {
+                          "label": "Email",
+                          "value": "email"
+                        },
+                        {
+                          "label": "SMS",
+                          "value": "sms"
+                        },
+                        {
+                          "label": "Push",
+                          "value": "push"
+                        }
+                      ]
+                    },
+                    {
+                      "field": "dateRange",
+                      "label": "Date Range",
+                      "type": "daterange"
+                    },
+                    {
+                      "field": "recipient",
+                      "label": "Recipient",
+                      "type": "text",
+                      "placeholder": "Search by email or phone"
+                    }
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Notification Logs",
+              "columns": [
+                {
+                  "key": "sentAt",
+                  "label": "Sent Date/Time",
+                  "sortable": true,
+                  "format": "datetime"
+                },
+                {
+                  "key": "type",
+                  "label": "Type",
+                  "sortable": true,
+                  "badge": true
+                },
+                {
+                  "key": "recipient",
+                  "label": "Recipient",
+                  "sortable": true
+                },
+                {
+                  "key": "subject",
+                  "label": "Subject/Content",
+                  "truncate": true,
+                  "maxLength": 50
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "badge": true,
+                  "statusColors": {
+                    "delivered": "#10b981",
+                    "sent": "#3b82f6",
+                    "failed": "#ef4444",
+                    "pending": "#f59e0b"
+                  }
+                },
+                {
+                  "key": "relatedTicket",
+                  "label": "Related Ticket",
+                  "link": true,
+                  "linkTarget": "/ticket-detail"
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "icon": "eye",
+                  "type": "view"
+                },
+                {
+                  "label": "Resend",
+                  "icon": "refresh",
+                  "type": "resend",
+                  "condition": "status === 'failed'"
+                },
+                {
+                  "label": "View Logs",
+                  "icon": "document",
+                  "type": "logs"
+                }
+              ],
+              "pagination": true,
+              "pageSize": 25,
+              "searchable": true,
+              "exportable": true,
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "headerStyle": {
+                "backgroundColor": "#f9fafb",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "borderBottom": "2px solid #e5e5e5"
+              },
+              "rowStyle": {
+                "borderBottom": "1px solid #f3f4f6",
+                "hover": {
+                  "backgroundColor": "#f9fafb"
+                }
+              }
+            },
+            "dataBinding": "Notification.query",
+            "queryConfig": {
+              "sort": {
+                "sentAt": "desc"
+              },
+              "include": [
+                "parkingTicket",
+                "violator"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "modal",
+          "target": "notification-detail-modal"
+        },
+        "resend": {
+          "type": "workflow",
+          "target": "NotificationWorkflow",
+          "confirm": "Are you sure you want to resend this notification?"
+        },
+        "logs": {
+          "type": "modal",
+          "target": "notification-logs-modal"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "User Management",
+          "route": "/user-management"
+        },
+        {
+          "label": "Ticket List",
+          "route": "/ticket-list"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Audit Logs",
+          "route": "/audit-logs"
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  },
+  {
+    "id": "officerdashboard-1765050200000-abc123",
+    "name": "OfficerDashboard",
+    "title": "Officer Dashboard",
+    "description": "Dashboard displaying officer's issued tickets, recent activity, and quick action buttons with statistics on tickets issued today, this week, and this month.",
+    "route": "/officer-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "ticketissuanceform-1765050112572-hezlwk"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Officer Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage your parking enforcement activities and issue tickets",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Ticket Statistics",
+              "layout": "grid",
+              "columns": 3,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "ParkingTicket.aggregateByOfficer",
+            "items": [
+              {
+                "label": "Today",
+                "value": "{{todayCount}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#666666"
+                },
+                "valueStyle": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#2563eb"
+                }
+              },
+              {
+                "label": "This Week",
+                "value": "{{weekCount}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#666666"
+                },
+                "valueStyle": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#2563eb"
+                }
+              },
+              {
+                "label": "This Month",
+                "value": "{{monthCount}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#666666"
+                },
+                "valueStyle": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#2563eb"
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Issue New Ticket",
+              "variant": "primary",
+              "size": "large",
+              "fullWidth": true,
+              "icon": "add",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "16px 32px",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "24px",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease"
+              },
+              "hoverStyle": {
+                "backgroundColor": "#1d4ed8",
+                "transform": "translateY(-1px)",
+                "boxShadow": "0 4px 6px rgba(37, 99, 235, 0.2)"
+              }
+            },
+            "formRef": "ticketissuanceform-1765050112572-hezlwk"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Recent Tickets Issued",
+              "columns": [
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket #",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "vehicle.licensePlate",
+                  "label": "License Plate",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "violationType.name",
+                  "label": "Violation",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "issueDate",
+                  "label": "Date Issued",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "badge": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "searchable": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "headerStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "color": "#666666",
+                "textTransform": "uppercase",
+                "letterSpacing": "0.5px",
+                "backgroundColor": "#f9fafb",
+                "padding": "12px 16px"
+              },
+              "rowStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "padding": "16px",
+                "borderBottom": "1px solid #f3f4f6"
+              },
+              "rowHoverStyle": {
+                "backgroundColor": "#f9fafb",
+                "cursor": "pointer"
+              }
+            },
+            "dataBinding": "ParkingTicket.listByOfficer",
+            "filters": {
+              "issuedBy": "{{currentUser.id}}",
+              "orderBy": "issueDate",
+              "order": "desc"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-detail"
+        },
+        "issueTicket": {
+          "type": "openForm",
+          "formId": "ticketissuanceform-1765050112572-hezlwk"
+        }
+      },
+      "menu": [
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "All Tickets",
+          "route": "/tickets",
+          "icon": "list"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "analytics"
+        },
+        {
+          "label": "Violation Types",
+          "route": "/violation-types",
+          "icon": "category"
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  },
+  {
+    "id": "paymenthistorypage-1765050200000-xyz123",
+    "name": "PaymentHistoryPage",
+    "title": "Payment History",
+    "description": "Comprehensive view of all payment transactions with filtering and search capabilities. Allows users to view payment details, download receipts, and track payment status.",
+    "route": "/payment-history",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "paymentform-1765050051613-euxoqo"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Payment History",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "View all payment transactions, download receipts, and track payment status",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Search & Filter",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "search",
+                "config": {
+                  "placeholder": "Search by ticket number, transaction ID, or amount...",
+                  "fields": [
+                    "ticketId",
+                    "transactionId",
+                    "amount"
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "padding": "12px 16px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #d4d4d4",
+                    "backgroundColor": "#ffffff",
+                    "marginBottom": "16px"
+                  }
+                }
+              },
+              {
+                "type": "filter",
+                "config": {
+                  "filters": [
+                    {
+                      "field": "status",
+                      "label": "Payment Status",
+                      "type": "select",
+                      "options": [
+                        "Completed",
+                        "Pending",
+                        "Failed",
+                        "Refunded"
+                      ]
+                    },
+                    {
+                      "field": "paymentMethod",
+                      "label": "Payment Method",
+                      "type": "select",
+                      "options": [
+                        "Credit Card",
+                        "Debit Card",
+                        "Bank Transfer",
+                        "Cash"
+                      ]
+                    },
+                    {
+                      "field": "dateRange",
+                      "label": "Date Range",
+                      "type": "daterange"
+                    }
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Payment Transactions",
+              "columns": [
+                {
+                  "key": "transactionId",
+                  "label": "Transaction ID",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "ticketId",
+                  "label": "Ticket Number",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "amount",
+                  "label": "Amount",
+                  "sortable": true,
+                  "format": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "paymentMethod",
+                  "label": "Payment Method",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "paymentDate",
+                  "label": "Date",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "format": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "500",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px"
+                  },
+                  "statusColors": {
+                    "Completed": {
+                      "backgroundColor": "#dcfce7",
+                      "color": "#166534"
+                    },
+                    "Pending": {
+                      "backgroundColor": "#fef3c7",
+                      "color": "#92400e"
+                    },
+                    "Failed": {
+                      "backgroundColor": "#fee2e2",
+                      "color": "#991b1b"
+                    },
+                    "Refunded": {
+                      "backgroundColor": "#e0e7ff",
+                      "color": "#3730a3"
+                    }
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "View Details",
+                      "icon": "eye",
+                      "action": "view"
+                    },
+                    {
+                      "label": "Download Receipt",
+                      "icon": "download",
+                      "action": "download"
+                    }
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              },
+              "headerStyle": {
+                "backgroundColor": "#f9fafb",
+                "fontWeight": "600",
+                "fontSize": "14px",
+                "color": "#1a1a1a",
+                "padding": "12px 16px",
+                "borderBottom": "2px solid #e5e5e5"
+              },
+              "rowStyle": {
+                "padding": "16px",
+                "borderBottom": "1px solid #f3f4f6",
+                "hover": {
+                  "backgroundColor": "#f9fafb"
+                }
+              }
+            },
+            "dataBinding": "Payment.query"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Payment Summary",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginTop": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "stats",
+                "config": {
+                  "metrics": [
+                    {
+                      "label": "Total Payments",
+                      "value": "{{Payment.count}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "label": "Total Amount",
+                      "value": "{{Payment.sum.amount}}",
+                      "format": "currency",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#16a34a"
+                      }
+                    },
+                    {
+                      "label": "Successful Payments",
+                      "value": "{{Payment.count.status.Completed}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#2563eb"
+                      }
+                    },
+                    {
+                      "label": "Failed Payments",
+                      "value": "{{Payment.count.status.Failed}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#dc2626"
+                      }
+                    }
+                  ],
+                  "layout": "grid",
+                  "columns": 4
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-detail"
+        },
+        "download": {
+          "type": "download",
+          "format": "pdf"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/violator-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "My Tickets",
+          "route": "/ticket-list",
+          "icon": "ticket"
+        },
+        {
+          "label": "Payment History",
+          "route": "/payment-history",
+          "icon": "payment",
+          "active": true
+        },
+        {
+          "label": "Appeals",
+          "route": "/appeal-list",
+          "icon": "appeal"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notification-history",
+          "icon": "notifications"
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  },
+  {
+    "id": "appeallistpage-1765050200000-admin",
+    "name": "AppealListPage",
+    "title": "Appeal Management",
+    "description": "Administrative page showing all appeals with filtering by status, submission date, and ticket number. Provides quick access to appeal review and decision-making workflow.",
+    "route": "/admin/appeals",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "appealreviewform-1765050090658-gznbp7"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Appeal Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Review and manage parking ticket appeals submitted by violators",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Filter Appeals",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "filter",
+                "config": {
+                  "filters": [
+                    {
+                      "field": "status",
+                      "label": "Status",
+                      "type": "select",
+                      "options": [
+                        {
+                          "label": "All Statuses",
+                          "value": ""
+                        },
+                        {
+                          "label": "Pending Review",
+                          "value": "pending"
+                        },
+                        {
+                          "label": "Under Review",
+                          "value": "under_review"
+                        },
+                        {
+                          "label": "Approved",
+                          "value": "approved"
+                        },
+                        {
+                          "label": "Rejected",
+                          "value": "rejected"
+                        }
+                      ]
+                    },
+                    {
+                      "field": "submissionDate",
+                      "label": "Submission Date",
+                      "type": "daterange"
+                    },
+                    {
+                      "field": "ticketNumber",
+                      "label": "Ticket Number",
+                      "type": "text",
+                      "placeholder": "Search by ticket number"
+                    }
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Appeals List",
+              "columns": [
+                {
+                  "key": "appealNumber",
+                  "label": "Appeal #",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket #",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "violatorName",
+                  "label": "Violator",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "submissionDate",
+                  "label": "Submitted",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "format": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "16px"
+                  },
+                  "statusColors": {
+                    "pending": {
+                      "bg": "#FEF3C7",
+                      "text": "#92400E"
+                    },
+                    "under_review": {
+                      "bg": "#DBEAFE",
+                      "text": "#1E40AF"
+                    },
+                    "approved": {
+                      "bg": "#D1FAE5",
+                      "text": "#065F46"
+                    },
+                    "rejected": {
+                      "bg": "#FEE2E2",
+                      "text": "#991B1B"
+                    }
+                  }
+                },
+                {
+                  "key": "priority",
+                  "label": "Priority",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "Review",
+                      "action": "view",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#2563eb",
+                        "textDecoration": "none"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Appeal.query",
+            "queryConfig": {
+              "sort": {
+                "field": "submissionDate",
+                "order": "desc"
+              },
+              "include": [
+                "parkingTicket",
+                "violator"
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Stats",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginTop": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "stats",
+                "config": {
+                  "metrics": [
+                    {
+                      "label": "Pending Review",
+                      "value": "{{Appeal.count({status: 'pending'})}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#92400E"
+                      }
+                    },
+                    {
+                      "label": "Under Review",
+                      "value": "{{Appeal.count({status: 'under_review'})}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#1E40AF"
+                      }
+                    },
+                    {
+                      "label": "Approved",
+                      "value": "{{Appeal.count({status: 'approved'})}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#065F46"
+                      }
+                    },
+                    {
+                      "label": "Rejected",
+                      "value": "{{Appeal.count({status: 'rejected'})}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#991B1B"
+                      }
+                    }
+                  ],
+                  "layout": "grid",
+                  "columns": 4
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/admin/appeals/{{appealId}}"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin/dashboard"
+        },
+        {
+          "label": "Tickets",
+          "route": "/admin/tickets"
+        },
+        {
+          "label": "Appeals",
+          "route": "/admin/appeals"
+        },
+        {
+          "label": "Violation Types",
+          "route": "/admin/violation-types"
+        },
+        {
+          "label": "Users",
+          "route": "/admin/users"
+        },
+        {
+          "label": "Reports",
+          "route": "/admin/reports"
+        },
+        {
+          "label": "Notifications",
+          "route": "/admin/notifications"
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  },
+  {
+    "id": "admindashboard-1765050200000-admin01",
+    "name": "AdminDashboard",
+    "title": "Administrator Dashboard",
+    "description": "Executive dashboard showing key metrics including total tickets, payment rates, pending appeals, revenue collected, and outstanding fines with charts, trends, and quick access to administrative functions.",
+    "route": "/admin-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Administrator Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Comprehensive system overview and management tools",
+              "variant": "subtitle",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Key Performance Metrics",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "ParkingTicket.aggregateMetrics",
+            "items": [
+              {
+                "label": "Total Tickets",
+                "value": "{{ParkingTicket.count}}",
+                "icon": "ticket",
+                "color": "#2563eb",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#666666"
+                },
+                "valueStyle": {
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a"
+                }
+              },
+              {
+                "label": "Payment Rate",
+                "value": "{{Payment.paymentRate}}%",
+                "icon": "percentage",
+                "color": "#10b981",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#666666"
+                },
+                "valueStyle": {
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a"
+                }
+              },
+              {
+                "label": "Pending Appeals",
+                "value": "{{Appeal.pendingCount}}",
+                "icon": "gavel",
+                "color": "#f59e0b",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#666666"
+                },
+                "valueStyle": {
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a"
+                }
+              },
+              {
+                "label": "Revenue Collected",
+                "value": "${{Payment.totalRevenue}}",
+                "icon": "dollar",
+                "color": "#8b5cf6",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#666666"
+                },
+                "valueStyle": {
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Ticket Trends & Analytics",
+              "layout": "chart",
+              "chartType": "line",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "ParkingTicket.trendsByMonth",
+            "chartConfig": {
+              "xAxis": "month",
+              "yAxis": "ticketCount",
+              "series": [
+                {
+                  "name": "Tickets Issued",
+                  "color": "#2563eb"
+                },
+                {
+                  "name": "Tickets Paid",
+                  "color": "#10b981"
+                },
+                {
+                  "name": "Appeals Filed",
+                  "color": "#f59e0b"
+                }
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Outstanding Fines by Status",
+              "layout": "chart",
+              "chartType": "pie",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "ParkingTicket.outstandingByStatus",
+            "chartConfig": {
+              "labelField": "status",
+              "valueField": "amount",
+              "colors": [
+                "#ef4444",
+                "#f59e0b",
+                "#eab308",
+                "#10b981"
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "layout": "grid",
+              "columns": 3,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
+              }
+            },
+            "items": [
+              {
+                "type": "button",
+                "label": "Manage Users",
+                "icon": "users",
+                "action": "navigate",
+                "target": "/user-management",
+                "style": {
+                  "backgroundColor": "#2563eb",
+                  "color": "#ffffff",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "none",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "cursor": "pointer",
+                  "transition": "all 0.2s ease",
+                  "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+                }
+              },
+              {
+                "type": "button",
+                "label": "Review Appeals",
+                "icon": "gavel",
+                "action": "navigate",
+                "target": "/appeal-list",
+                "style": {
+                  "backgroundColor": "#2563eb",
+                  "color": "#ffffff",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "none",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "cursor": "pointer",
+                  "transition": "all 0.2s ease",
+                  "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+                }
+              },
+              {
+                "type": "button",
+                "label": "Generate Reports",
+                "icon": "chart",
+                "action": "navigate",
+                "target": "/reports",
+                "style": {
+                  "backgroundColor": "#2563eb",
+                  "color": "#ffffff",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "none",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "cursor": "pointer",
+                  "transition": "all 0.2s ease",
+                  "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+                }
+              },
+              {
+                "type": "button",
+                "label": "Violation Types",
+                "icon": "settings",
+                "action": "navigate",
+                "target": "/violation-type-management",
+                "style": {
+                  "backgroundColor": "#ffffff",
+                  "color": "#2563eb",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #2563eb",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "cursor": "pointer",
+                  "transition": "all 0.2s ease"
+                }
+              },
+              {
+                "type": "button",
+                "label": "View All Tickets",
+                "icon": "list",
+                "action": "navigate",
+                "target": "/ticket-list",
+                "style": {
+                  "backgroundColor": "#ffffff",
+                  "color": "#2563eb",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #2563eb",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "cursor": "pointer",
+                  "transition": "all 0.2s ease"
+                }
+              },
+              {
+                "type": "button",
+                "label": "Notifications",
+                "icon": "bell",
+                "action": "navigate",
+                "target": "/notification-history",
+                "style": {
+                  "backgroundColor": "#ffffff",
+                  "color": "#2563eb",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #2563eb",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "cursor": "pointer",
+                  "transition": "all 0.2s ease"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "viewUsers": {
+          "type": "navigate",
+          "target": "/user-management"
+        },
+        "viewAppeals": {
+          "type": "navigate",
+          "target": "/appeal-list"
+        },
+        "viewReports": {
+          "type": "navigate",
+          "target": "/reports"
+        },
+        "viewTickets": {
+          "type": "navigate",
+          "target": "/ticket-list"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "User Management",
+          "route": "/user-management",
+          "icon": "users"
+        },
+        {
+          "label": "Ticket List",
+          "route": "/ticket-list",
+          "icon": "ticket"
+        },
+        {
+          "label": "Appeal List",
+          "route": "/appeal-list",
+          "icon": "gavel"
+        },
+        {
+          "label": "Payment History",
+          "route": "/payment-history",
+          "icon": "dollar"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "chart"
+        },
+        {
+          "label": "Violation Types",
+          "route": "/violation-type-management",
+          "icon": "settings"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notification-history",
+          "icon": "bell"
+        },
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer-dashboard",
+          "icon": "badge"
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  },
+  {
+    "id": "ticketlistpage-1765050200000-abc123",
+    "name": "TicketListPage",
+    "title": "Parking Tickets",
+    "description": "Comprehensive ticket listing with advanced search and filtering by status, date range, officer, violation type, and location. Supports sorting, pagination, and export functionality for reporting.",
+    "route": "/tickets",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "ticketissuanceform-1765050112572-hezlwk"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Parking Tickets",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Issue New Ticket",
+              "variant": "primary",
+              "action": "create",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "formRef": "ticketissuanceform-1765050112572-hezlwk"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "filter",
+            "config": {
+              "title": "Filter Tickets",
+              "filters": [
+                {
+                  "field": "status",
+                  "label": "Status",
+                  "type": "select",
+                  "options": [
+                    "Pending",
+                    "Paid",
+                    "Appealed",
+                    "Overdue",
+                    "Dismissed"
+                  ]
+                },
+                {
+                  "field": "violationType",
+                  "label": "Violation Type",
+                  "type": "select",
+                  "dataSource": "ViolationType"
+                },
+                {
+                  "field": "issuedBy",
+                  "label": "Officer",
+                  "type": "select",
+                  "dataSource": "User"
+                },
+                {
+                  "field": "location",
+                  "label": "Location",
+                  "type": "text"
+                },
+                {
+                  "field": "dateRange",
+                  "label": "Date Range",
+                  "type": "daterange"
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.05)"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "All Tickets",
+              "columns": [
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket #",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#2563eb"
+                  }
+                },
+                {
+                  "key": "vehicle.licensePlate",
+                  "label": "License Plate",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "violationType.name",
+                  "label": "Violation",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "location",
+                  "label": "Location",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#6b7280"
+                  }
+                },
+                {
+                  "key": "issuedDate",
+                  "label": "Date Issued",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#6b7280"
+                  }
+                },
+                {
+                  "key": "amount",
+                  "label": "Amount",
+                  "sortable": true,
+                  "format": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "format": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "16px"
+                  }
+                },
+                {
+                  "key": "issuedBy.name",
+                  "label": "Officer",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#6b7280"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "action": "view",
+                  "icon": "eye",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#2563eb"
+                  }
+                },
+                {
+                  "label": "Export",
+                  "action": "export",
+                  "icon": "download",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#6b7280"
+                  }
+                }
+              ],
+              "pagination": {
+                "enabled": true,
+                "pageSize": 25,
+                "pageSizeOptions": [
+                  10,
+                  25,
+                  50,
+                  100
+                ]
+              },
+              "searchable": true,
+              "exportable": true,
+              "exportFormats": [
+                "CSV",
+                "PDF",
+                "Excel"
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.05)",
+                "overflow": "hidden"
+              }
+            },
+            "dataBinding": "ParkingTicket.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-detail"
+        },
+        "create": {
+          "type": "navigate",
+          "target": "/ticket-issuance"
+        },
+        "export": {
+          "type": "workflow",
+          "workflow": "ReportGenerationWorkflow"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/admin-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Tickets",
+          "route": "/tickets",
+          "icon": "ticket",
+          "active": true
+        },
+        {
+          "label": "Appeals",
+          "route": "/appeals",
+          "icon": "gavel"
+        },
+        {
+          "label": "Payments",
+          "route": "/payment-history",
+          "icon": "payment"
+        },
+        {
+          "label": "Violators",
+          "route": "/violator-dashboard",
+          "icon": "person"
+        },
+        {
+          "label": "Violation Types",
+          "route": "/violation-types",
+          "icon": "list"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "chart"
+        },
+        {
+          "label": "Users",
+          "route": "/user-management",
+          "icon": "users"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notification-history",
+          "icon": "bell"
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  },
+  {
+    "id": "appealdetailpage-1765050200000-xyz123",
+    "name": "AppealDetailPage",
+    "title": "Appeal Details",
+    "description": "Display complete appeal information and supporting documentation with review history and decision",
+    "route": "/appeals/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "appealreviewform-1765050090658-gznbp7"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Appeal Details",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Appeal.appealNumber}} - {{Appeal.status}}",
+              "variant": "subtitle",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666"
+              }
+            },
+            "dataBinding": "Appeal.findById"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Original Ticket Information",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "fields": [
+                {
+                  "label": "Ticket Number",
+                  "value": "{{ParkingTicket.ticketNumber}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Violation Type",
+                  "value": "{{ParkingTicket.violationType.name}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#333333"
+                  }
+                },
+                {
+                  "label": "Fine Amount",
+                  "value": "${{ParkingTicket.fineAmount}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#333333"
+                  }
+                },
+                {
+                  "label": "Issue Date",
+                  "value": "{{ParkingTicket.issueDate}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#333333"
+                  }
+                },
+                {
+                  "label": "Location",
+                  "value": "{{ParkingTicket.location}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#333333"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "ParkingTicket.findById"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Appeal Information",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "fields": [
+                {
+                  "label": "Appeal Reason",
+                  "value": "{{Appeal.reason}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Submitted Date",
+                  "value": "{{Appeal.submittedDate}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#333333"
+                  }
+                },
+                {
+                  "label": "Status",
+                  "value": "{{Appeal.status}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#333333"
+                  }
+                },
+                {
+                  "label": "Description",
+                  "value": "{{Appeal.description}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#333333",
+                    "lineHeight": "1.6"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "Appeal.findById"
+          },
+          {
+            "type": "list",
+            "config": {
+              "title": "Supporting Documents",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "itemStyle": {
+                "padding": "12px",
+                "borderBottom": "1px solid #f0f0f0",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#333333"
+              },
+              "emptyMessage": "No documents submitted",
+              "displayField": "fileName",
+              "actions": [
+                {
+                  "label": "Download",
+                  "type": "download",
+                  "style": {
+                    "backgroundColor": "#0066cc",
+                    "color": "#ffffff",
+                    "borderRadius": "6px",
+                    "padding": "6px 12px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "13px",
+                    "fontWeight": "500",
+                    "border": "none"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "AppealDocument.query"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Review History & Decision",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "fields": [
+                {
+                  "label": "Reviewed By",
+                  "value": "{{Appeal.reviewedBy.name}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#333333"
+                  }
+                },
+                {
+                  "label": "Review Date",
+                  "value": "{{Appeal.reviewDate}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#333333"
+                  }
+                },
+                {
+                  "label": "Decision",
+                  "value": "{{Appeal.decision}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Review Notes",
+                  "value": "{{Appeal.reviewNotes}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#333333",
+                    "lineHeight": "1.6"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "Appeal.findById"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Review Appeal",
+              "action": "openForm",
+              "variant": "primary",
+              "style": {
+                "backgroundColor": "#0066cc",
+                "color": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "12px 24px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "border": "none",
+                "cursor": "pointer",
+                "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+              },
+              "permissions": [
+                "admin",
+                "reviewer"
+              ],
+              "condition": "{{Appeal.status === 'Pending'}}"
+            },
+            "formRef": "appealreviewform-1765050090658-gznbp7"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/appeals"
+        },
+        "back": {
+          "type": "navigate",
+          "target": "/appeals"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Appeals List",
+          "route": "/appeals"
+        },
+        {
+          "label": "Tickets",
+          "route": "/tickets"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notifications"
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  },
+  {
+    "id": "violatordashboard-1765050200000-vd8x2k",
+    "name": "ViolatorDashboard",
+    "title": "My Parking Tickets",
+    "description": "Personalized dashboard for violators showing all their tickets with status, amounts due, payment history, and appeal status. Provides quick access to payment and appeal submission.",
+    "route": "/violator-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "paymentform-1765050051613-euxoqo",
+      "appealsubmissionform-1765050071793-s6dup5"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "My Parking Tickets",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "View and manage your parking tickets, make payments, or submit appeals",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Account Summary",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Violator.currentUser",
+            "content": {
+              "fields": [
+                {
+                  "label": "Total Outstanding",
+                  "value": "{{totalOutstanding}}",
+                  "variant": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#dc2626"
+                  }
+                },
+                {
+                  "label": "Active Tickets",
+                  "value": "{{activeTicketCount}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "18px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Pending Appeals",
+                  "value": "{{pendingAppealCount}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "18px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "My Tickets",
+              "columns": [
+                {
+                  "header": "Ticket #",
+                  "field": "ticketNumber",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Date Issued",
+                  "field": "issueDate",
+                  "type": "date",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Violation",
+                  "field": "violationType.name",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Vehicle",
+                  "field": "vehicle.licensePlate",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Amount",
+                  "field": "fineAmount",
+                  "type": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Status",
+                  "field": "status",
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "16px"
+                  },
+                  "statusColors": {
+                    "UNPAID": "#dc2626",
+                    "PAID": "#16a34a",
+                    "APPEALED": "#f59e0b",
+                    "DISMISSED": "#6b7280"
+                  }
+                },
+                {
+                  "header": "Actions",
+                  "field": "actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "View",
+                      "action": "view",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#2563eb",
+                        "textDecoration": "none"
+                      }
+                    },
+                    {
+                      "label": "Pay",
+                      "action": "pay",
+                      "condition": "status === 'UNPAID'",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#16a34a",
+                        "textDecoration": "none"
+                      }
+                    },
+                    {
+                      "label": "Appeal",
+                      "action": "appeal",
+                      "condition": "status === 'UNPAID' && canAppeal",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#f59e0b",
+                        "textDecoration": "none"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "searchable": true,
+              "filters": [
+                {
+                  "field": "status",
+                  "label": "Status",
+                  "type": "select",
+                  "options": [
+                    "UNPAID",
+                    "PAID",
+                    "APPEALED",
+                    "DISMISSED"
+                  ]
+                },
+                {
+                  "field": "issueDate",
+                  "label": "Date Range",
+                  "type": "dateRange"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "ParkingTicket.byViolator"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Recent Payment History",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginTop": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Payment.recentByViolator",
+            "content": {
+              "type": "list",
+              "itemTemplate": {
+                "fields": [
+                  {
+                    "label": "Date",
+                    "value": "{{paymentDate}}",
+                    "type": "date",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "600",
+                      "color": "#1a1a1a"
+                    }
+                  },
+                  {
+                    "label": "Ticket",
+                    "value": "{{ticket.ticketNumber}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "400",
+                      "color": "#666666"
+                    }
+                  },
+                  {
+                    "label": "Amount",
+                    "value": "{{amount}}",
+                    "type": "currency",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "600",
+                      "color": "#16a34a"
+                    }
+                  },
+                  {
+                    "label": "Method",
+                    "value": "{{paymentMethod}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "400",
+                      "color": "#666666"
+                    }
+                  }
+                ]
+              },
+              "limit": 5
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-detail"
+        },
+        "pay": {
+          "type": "openForm",
+          "formRef": "paymentform-1765050051613-euxoqo"
+        },
+        "appeal": {
+          "type": "openForm",
+          "formRef": "appealsubmissionform-1765050071793-s6dup5"
+        }
+      },
+      "menu": [
+        {
+          "label": "My Dashboard",
+          "route": "/violator-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Payment History",
+          "route": "/payment-history",
+          "icon": "payment"
+        },
+        {
+          "label": "My Appeals",
+          "route": "/appeal-list",
+          "icon": "gavel"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notification-history",
+          "icon": "notifications"
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  },
+  {
+    "id": "reportspage-1765050200000-rpt001",
+    "name": "ReportsPage",
+    "title": "Reports & Analytics",
+    "description": "Comprehensive reporting and analytics dashboard for parking enforcement activities with customizable filters and export capabilities",
+    "route": "/reports",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Reports & Analytics",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Comprehensive parking enforcement analytics and performance metrics",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Report Filters",
+              "collapsible": true,
+              "defaultExpanded": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "children": [
+              {
+                "type": "filter",
+                "config": {
+                  "filters": [
+                    {
+                      "field": "dateRange",
+                      "label": "Date Range",
+                      "type": "dateRange",
+                      "defaultValue": "last30days"
+                    },
+                    {
+                      "field": "violationType",
+                      "label": "Violation Type",
+                      "type": "select",
+                      "dataBinding": "ViolationType.query"
+                    },
+                    {
+                      "field": "officer",
+                      "label": "Officer",
+                      "type": "select",
+                      "dataBinding": "User.query",
+                      "filter": "role=officer"
+                    },
+                    {
+                      "field": "status",
+                      "label": "Ticket Status",
+                      "type": "multiselect",
+                      "options": [
+                        "pending",
+                        "paid",
+                        "appealed",
+                        "dismissed",
+                        "overdue"
+                      ]
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "Apply Filters",
+                      "type": "primary",
+                      "action": "applyFilters",
+                      "style": {
+                        "backgroundColor": "#2563eb",
+                        "color": "#ffffff",
+                        "borderRadius": "6px",
+                        "padding": "10px 20px",
+                        "fontWeight": "500",
+                        "border": "none"
+                      }
+                    },
+                    {
+                      "label": "Reset",
+                      "type": "secondary",
+                      "action": "resetFilters",
+                      "style": {
+                        "backgroundColor": "#ffffff",
+                        "color": "#1a1a1a",
+                        "borderRadius": "6px",
+                        "padding": "10px 20px",
+                        "fontWeight": "500",
+                        "border": "1px solid #d4d4d4"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "grid",
+            "config": {
+              "columns": 4,
+              "gap": "16px",
+              "responsive": true,
+              "style": {
+                "marginBottom": "24px"
+              }
+            },
+            "children": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Total Revenue",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "20px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "Payment.aggregate",
+                "children": [
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "{{Payment.sum(amount)}}",
+                      "variant": "h2",
+                      "format": "currency",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "color": "#16a34a",
+                        "marginBottom": "8px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "{{Payment.percentChange}} vs previous period",
+                      "variant": "caption",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "400",
+                        "color": "#666666"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Tickets Issued",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "20px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "ParkingTicket.count",
+                "children": [
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "{{ParkingTicket.count()}}",
+                      "variant": "h2",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "color": "#2563eb",
+                        "marginBottom": "8px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "{{ParkingTicket.percentChange}} vs previous period",
+                      "variant": "caption",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "400",
+                        "color": "#666666"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Payment Rate",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "20px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "ParkingTicket.aggregate",
+                "children": [
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "{{ParkingTicket.paymentRate}}%",
+                      "variant": "h2",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "color": "#7c3aed",
+                        "marginBottom": "8px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "Paid tickets / Total issued",
+                      "variant": "caption",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "400",
+                        "color": "#666666"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Active Appeals",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "20px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "Appeal.count",
+                "children": [
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "{{Appeal.count(status='pending')}}",
+                      "variant": "h2",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "color": "#dc2626",
+                        "marginBottom": "8px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "Awaiting review",
+                      "variant": "caption",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "400",
+                        "color": "#666666"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Violation Trends",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "children": [
+              {
+                "type": "chart",
+                "config": {
+                  "chartType": "line",
+                  "dataBinding": "ParkingTicket.groupBy",
+                  "xAxis": "issueDate",
+                  "yAxis": "count",
+                  "groupBy": "violationType",
+                  "height": "300px",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "grid",
+            "config": {
+              "columns": 2,
+              "gap": "24px",
+              "responsive": true
+            },
+            "children": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Officer Performance",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "children": [
+                  {
+                    "type": "table",
+                    "config": {
+                      "columns": [
+                        {
+                          "field": "officerName",
+                          "header": "Officer",
+                          "sortable": true,
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "fontWeight": "500",
+                            "color": "#1a1a1a"
+                          }
+                        },
+                        {
+                          "field": "ticketsIssued",
+                          "header": "Tickets Issued",
+                          "sortable": true,
+                          "align": "right",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "color": "#1a1a1a"
+                          }
+                        },
+                        {
+                          "field": "revenueGenerated",
+                          "header": "Revenue",
+                          "sortable": true,
+                          "format": "currency",
+                          "align": "right",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "color": "#16a34a",
+                            "fontWeight": "500"
+                          }
+                        }
+                      ],
+                      "pagination": true,
+                      "pageSize": 5,
+                      "style": {
+                        "headerBackground": "#f9fafb",
+                        "borderColor": "#e5e5e5"
+                      }
+                    },
+                    "dataBinding": "ParkingTicket.groupBy",
+                    "workflowRef": "ReportGenerationWorkflow"
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Appeal Statistics",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "children": [
+                  {
+                    "type": "chart",
+                    "config": {
+                      "chartType": "pie",
+                      "dataBinding": "Appeal.groupBy",
+                      "groupBy": "status",
+                      "valueField": "count",
+                      "labelField": "status",
+                      "height": "250px",
+                      "colors": [
+                        "#16a34a",
+                        "#dc2626",
+                        "#f59e0b",
+                        "#6b7280"
+                      ],
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Export Reports",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "children": [
+              {
+                "type": "buttonGroup",
+                "config": {
+                  "buttons": [
+                    {
+                      "label": "Export to PDF",
+                      "icon": "download",
+                      "action": "exportPDF",
+                      "workflowRef": "ReportGenerationWorkflow",
+                      "style": {
+                        "backgroundColor": "#2563eb",
+                        "color": "#ffffff",
+                        "borderRadius": "6px",
+                        "padding": "10px 20px",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "border": "none",
+                        "marginRight": "12px"
+                      }
+                    },
+                    {
+                      "label": "Export to Excel",
+                      "icon": "download",
+                      "action": "exportExcel",
+                      "workflowRef": "ReportGenerationWorkflow",
+                      "style": {
+                        "backgroundColor": "#16a34a",
+                        "color": "#ffffff",
+                        "borderRadius": "6px",
+                        "padding": "10px 20px",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "border": "none",
+                        "marginRight": "12px"
+                      }
+                    },
+                    {
+                      "label": "Schedule Report",
+                      "icon": "calendar",
+                      "action": "scheduleReport",
+                      "style": {
+                        "backgroundColor": "#ffffff",
+                        "color": "#1a1a1a",
+                        "borderRadius": "6px",
+                        "padding": "10px 20px",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "border": "1px solid #d4d4d4"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "exportPDF": {
+          "type": "workflow",
+          "target": "ReportGenerationWorkflow",
+          "params": {
+            "format": "pdf"
+          }
+        },
+        "exportExcel": {
+          "type": "workflow",
+          "target": "ReportGenerationWorkflow",
+          "params": {
+            "format": "excel"
+          }
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Ticket List",
+          "route": "/tickets",
+          "icon": "list"
+        },
+        {
+          "label": "Appeals",
+          "route": "/appeals",
+          "icon": "gavel"
+        },
+        {
+          "label": "Payment History",
+          "route": "/payment-history",
+          "icon": "payment"
+        },
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer-dashboard",
+          "icon": "badge"
+        },
+        {
+          "label": "User Management",
+          "route": "/user-management",
+          "icon": "people"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notifications",
+          "icon": "notifications"
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  },
+  {
+    "id": "ticketdetailpage-1765050200000-abc123",
+    "name": "TicketDetailPage",
+    "title": "Ticket Details",
+    "description": "Detailed view showing all ticket information including vehicle details, violation specifics, photos, payment history, appeal status, and audit trail with context-appropriate actions",
+    "route": "/ticket/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "paymentform-1765050051613-euxoqo",
+      "appealsubmissionform-1765050071793-s6dup5"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Ticket #{{ParkingTicket.ticketNumber}}",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "badge",
+            "config": {
+              "text": "{{ParkingTicket.status}}",
+              "variant": "status",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "padding": "6px 16px",
+                "borderRadius": "20px",
+                "backgroundColor": "{{ParkingTicket.status === 'PAID' ? '#10b981' : ParkingTicket.status === 'UNPAID' ? '#ef4444' : ParkingTicket.status === 'APPEALED' ? '#f59e0b' : '#6b7280'}}",
+                "color": "#ffffff"
+              }
+            },
+            "dataBinding": "ParkingTicket.findById"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Ticket Information",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e7eb"
+              },
+              "fields": [
+                {
+                  "label": "Issue Date",
+                  "value": "{{ParkingTicket.issueDate}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#6b7280",
+                    "marginBottom": "12px"
+                  }
+                },
+                {
+                  "label": "Violation Type",
+                  "value": "{{ViolationType.name}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a",
+                    "fontWeight": "600"
+                  }
+                },
+                {
+                  "label": "Location",
+                  "value": "{{ParkingTicket.location}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Vehicle",
+                  "value": "{{Vehicle.licensePlate}} - {{Vehicle.make}}, {{Vehicle.model}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Fine Amount",
+                  "value": "${{ParkingTicket.fineAmount}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "18px",
+                    "fontWeight": "700",
+                    "color": "#dc2626"
+                  }
+                },
+                {
+                  "label": "Issued By",
+                  "value": "{{User.name}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#6b7280"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "ParkingTicket.findById"
+          },
+          {
+            "type": "tabs",
+            "config": {
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb"
+              },
+              "tabs": [
+                {
+                  "label": "Photos",
+                  "content": {
+                    "type": "gallery",
+                    "dataBinding": "TicketPhoto.query",
+                    "filter": "ticketId={{ParkingTicket.id}}",
+                    "style": {
+                      "display": "grid",
+                      "gridTemplateColumns": "repeat(auto-fill, minmax(200px, 1fr))",
+                      "gap": "16px"
+                    }
+                  }
+                },
+                {
+                  "label": "Payment History",
+                  "content": {
+                    "type": "list",
+                    "dataBinding": "Payment.query",
+                    "filter": "ticketId={{ParkingTicket.id}}",
+                    "fields": [
+                      "paymentDate",
+                      "amount",
+                      "paymentMethod",
+                      "status"
+                    ],
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px"
+                    }
+                  }
+                },
+                {
+                  "label": "Appeal Status",
+                  "content": {
+                    "type": "card",
+                    "dataBinding": "Appeal.query",
+                    "filter": "ticketId={{ParkingTicket.id}}",
+                    "fields": [
+                      "submissionDate",
+                      "status",
+                      "reviewDate",
+                      "decision",
+                      "reviewerNotes"
+                    ],
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px"
+                    }
+                  }
+                },
+                {
+                  "label": "Audit Trail",
+                  "content": {
+                    "type": "timeline",
+                    "dataBinding": "AuditLog.query",
+                    "filter": "entityId={{ParkingTicket.id}}",
+                    "fields": [
+                      "timestamp",
+                      "action",
+                      "performedBy",
+                      "details"
+                    ],
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "color": "#6b7280"
+                    }
+                  }
+                }
+              ],
+              "tabStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "color": "#6b7280",
+                "activeColor": "#2563eb",
+                "borderBottom": "2px solid #2563eb"
+              }
+            }
+          },
+          {
+            "type": "button-group",
+            "config": {
+              "buttons": [
+                {
+                  "label": "Make Payment",
+                  "action": "openForm",
+                  "formRef": "paymentform-1765050051613-euxoqo",
+                  "variant": "primary",
+                  "visible": "{{ParkingTicket.status === 'UNPAID' && User.role === 'VIOLATOR'}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Submit Appeal",
+                  "action": "openForm",
+                  "formRef": "appealsubmissionform-1765050071793-s6dup5",
+                  "variant": "secondary",
+                  "visible": "{{ParkingTicket.status === 'UNPAID' && User.role === 'VIOLATOR'}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "backgroundColor": "#ffffff",
+                    "color": "#2563eb",
+                    "border": "2px solid #2563eb",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Print Ticket",
+                  "action": "print",
+                  "variant": "secondary",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "backgroundColor": "#ffffff",
+                    "color": "#6b7280",
+                    "border": "2px solid #d1d5db",
+                    "cursor": "pointer"
+                  }
+                }
+              ],
+              "style": {
+                "display": "flex",
+                "gap": "12px",
+                "marginTop": "24px",
+                "justifyContent": "flex-start"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "payment": {
+          "type": "navigate",
+          "target": "/payment-history"
+        },
+        "appeal": {
+          "type": "navigate",
+          "target": "/appeal/:id"
+        },
+        "back": {
+          "type": "navigate",
+          "target": "/tickets"
+        }
+      },
+      "menu": [
+        {
+          "label": "Ticket List",
+          "route": "/tickets"
+        },
+        {
+          "label": "Payment History",
+          "route": "/payment-history"
+        },
+        {
+          "label": "Appeals",
+          "route": "/appeals"
+        },
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        }
+      ]
+    },
+    "workflowId": "workflow_1737026000"
+  }
+]

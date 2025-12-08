@@ -1,0 +1,425 @@
+[
+  {
+    "id": "rule_assessment_request_validation",
+    "name": "Assessment Request Rule",
+    "description": "Validate user input for assessment request including required fields and data quality",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Assessment.title",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Assessment.title",
+          "message": "Assessment title is required and cannot be empty"
+        },
+        {
+          "type": "logMessage",
+          "field": "AuditLog.action",
+          "value": "Assessment request validation failed - missing title"
+        }
+      ]
+    },
+    "node_id": "node_start",
+    "workflow_id": "workflow_ai_assessment_1703456789",
+    "workflowId": "workflow_ai_assessment_1703456789",
+    "application_id": "app_1764938732772"
+  },
+  {
+    "id": "rule_validate_assessment_data",
+    "name": "Validate Assessment Request Rule",
+    "description": "Validate assessment data against business rules including duration and skill categories",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Assessment.duration_minutes",
+          "operator": "lessThan",
+          "value": 15
+        },
+        {
+          "field": "Assessment.skill_categories",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Assessment.duration_minutes",
+          "message": "Assessment duration must be at least 15 minutes"
+        },
+        {
+          "type": "validateField",
+          "field": "Assessment.skill_categories",
+          "value": "required"
+        }
+      ]
+    },
+    "node_id": "node_validate_request",
+    "workflow_id": "workflow_ai_assessment_1703456789",
+    "workflowId": "workflow_ai_assessment_1703456789",
+    "application_id": "app_1764938732772"
+  },
+  {
+    "id": "rule_assessment_type_router",
+    "name": "Assessment Type Router Rule",
+    "description": "Route assessment based on complexity level to appropriate workflow path",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Assessment.complexity_level",
+          "operator": "equals",
+          "value": "advanced"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.path",
+          "value": "advanced_assessment_creation"
+        },
+        {
+          "type": "logMessage",
+          "field": "AuditLog.action",
+          "value": "Routing to advanced assessment creation workflow"
+        }
+      ]
+    },
+    "node_id": "node_assessment_type_decision",
+    "workflow_id": "workflow_ai_assessment_1703456789",
+    "workflowId": "workflow_ai_assessment_1703456789",
+    "application_id": "app_1764938732772"
+  },
+  {
+    "id": "rule_create_advanced_assessment",
+    "name": "Create Advanced Assessment Rule",
+    "description": "Validate user input for advanced assessment creation including AI parameters",
+    "type": "validation",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Assessment.ai_proctoring_enabled",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "Assessment.passing_score",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Assessment.passing_score",
+          "message": "Passing score is required for AI-proctored assessments"
+        },
+        {
+          "type": "setVariable",
+          "field": "Assessment.requires_review",
+          "value": true
+        }
+      ]
+    },
+    "node_id": "node_create_advanced_assessment",
+    "workflow_id": "workflow_ai_assessment_1703456789",
+    "workflowId": "workflow_ai_assessment_1703456789",
+    "application_id": "app_1764938732772"
+  },
+  {
+    "id": "rule_parallel_setup_gateway",
+    "name": "Parallel Setup Gateway Rule",
+    "description": "Determine if assessment setup requires parallel processing for multiple candidates",
+    "type": "decision",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "AssessmentAssignment.candidate_count",
+          "operator": "greaterThan",
+          "value": 5
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.parallel_processing",
+          "value": true
+        },
+        {
+          "type": "executeScript",
+          "field": "AssessmentAssignment.batch_size",
+          "value": "10"
+        }
+      ]
+    },
+    "node_id": "node_parallel_setup",
+    "workflow_id": "workflow_ai_assessment_1703456789",
+    "workflowId": "workflow_ai_assessment_1703456789",
+    "application_id": "app_1764938732772"
+  },
+  {
+    "id": "rule_assign_to_candidates",
+    "name": "Assign to Candidates Rule",
+    "description": "Validate candidate assignment data including email and availability status",
+    "type": "validation",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Candidate.email",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Candidate.email",
+          "message": "Valid candidate email is required for assessment assignment"
+        },
+        {
+          "type": "validateField",
+          "field": "Candidate.status",
+          "value": "active"
+        }
+      ]
+    },
+    "node_id": "node_assign_candidates",
+    "workflow_id": "workflow_ai_assessment_1703456789",
+    "workflowId": "workflow_ai_assessment_1703456789",
+    "application_id": "app_1764938732772"
+  },
+  {
+    "id": "rule_setup_complete_gateway",
+    "name": "Setup Complete Gateway Rule",
+    "description": "Verify all setup tasks are completed before activating assessment",
+    "type": "decision",
+    "priority": 7,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Assessment.questions_count",
+          "operator": "greaterThan",
+          "value": 0
+        },
+        {
+          "field": "AssessmentAssignment.assigned_count",
+          "operator": "greaterThan",
+          "value": 0
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Assessment.status",
+          "value": "active"
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.type",
+          "value": "assessment_activated",
+          "message": "Assessment setup completed and activated successfully"
+        }
+      ]
+    },
+    "node_id": "node_parallel_join",
+    "workflow_id": "workflow_ai_assessment_1703456789",
+    "workflowId": "workflow_ai_assessment_1703456789",
+    "application_id": "app_1764938732772"
+  },
+  {
+    "id": "rule_completion_status_check",
+    "name": "Completion Status Check Rule",
+    "description": "Check if candidate has completed assessment and determine next workflow step",
+    "type": "decision",
+    "priority": 8,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "AssessmentResponse.completion_status",
+          "operator": "equals",
+          "value": "completed"
+        },
+        {
+          "field": "AssessmentResponse.submitted_at",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.next_step",
+          "value": "ai_evaluation"
+        },
+        {
+          "type": "callWebhook",
+          "field": "ai_service.evaluate_url",
+          "value": "https://ai-service/evaluate"
+        }
+      ]
+    },
+    "node_id": "node_completion_check",
+    "workflow_id": "workflow_ai_assessment_1703456789",
+    "workflowId": "workflow_ai_assessment_1703456789",
+    "application_id": "app_1764938732772"
+  },
+  {
+    "id": "rule_results_approval_gateway",
+    "name": "Results Approval Gateway Rule",
+    "description": "Determine if assessment results require management review based on score threshold",
+    "type": "decision",
+    "priority": 9,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "AssessmentResult.score_percentage",
+          "operator": "lessThan",
+          "value": 50
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "AssessmentResult.requires_review",
+          "value": true
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.role",
+          "value": "manager",
+          "message": "Low score detected - management review required"
+        }
+      ]
+    },
+    "node_id": "node_approval_decision",
+    "workflow_id": "workflow_ai_assessment_1703456789",
+    "workflowId": "workflow_ai_assessment_1703456789",
+    "application_id": "app_1764938732772"
+  },
+  {
+    "id": "rule_management_review",
+    "name": "Management Review Rule",
+    "description": "Validate management review input and ensure proper approval documentation",
+    "type": "validation",
+    "priority": 10,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "AssessmentResult.review_comments",
+          "operator": "isNull",
+          "value": true
+        },
+        {
+          "field": "AssessmentResult.reviewer_id",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "AssessmentResult.review_comments",
+          "message": "Review comments are required for management approval"
+        },
+        {
+          "type": "updateData",
+          "field": "AuditLog.action",
+          "value": "management_review_incomplete"
+        }
+      ]
+    },
+    "node_id": "node_management_review",
+    "workflow_id": "workflow_ai_assessment_1703456789",
+    "workflowId": "workflow_ai_assessment_1703456789",
+    "application_id": "app_1764938732772"
+  },
+  {
+    "id": "rule_handle_assessment_error",
+    "name": "Handle Assessment Error Rule",
+    "description": "Validate error handling input and ensure proper error documentation for resolution",
+    "type": "validation",
+    "priority": 11,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Assessment.error_type",
+          "operator": "notEquals",
+          "value": null
+        },
+        {
+          "field": "Assessment.error_resolution",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Assessment.error_resolution",
+          "message": "Error resolution details are required to proceed"
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.role",
+          "value": "admin",
+          "message": "Assessment error requires immediate attention"
+        },
+        {
+          "type": "logMessage",
+          "field": "AuditLog.severity",
+          "value": "high"
+        }
+      ]
+    },
+    "node_id": "node_error_handler",
+    "workflow_id": "workflow_ai_assessment_1703456789",
+    "workflowId": "workflow_ai_assessment_1703456789",
+    "application_id": "app_1764938732772"
+  }
+]

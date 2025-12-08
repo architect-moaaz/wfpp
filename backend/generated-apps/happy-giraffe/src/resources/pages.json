@@ -1,0 +1,640 @@
+[
+  {
+    "id": "officerdashboard-1764453800000-abc123",
+    "name": "OfficerDashboard",
+    "title": "Officer Dashboard",
+    "description": "Dashboard for enforcement officers to issue tickets, view activity, and track daily statistics",
+    "route": "/officer-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "ticketissuanceform-1764453708028-rgsx0z"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Officer Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Issue tickets, view activity, and track enforcement statistics",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Daily Statistics",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "ParkingTicket.query",
+            "content": {
+              "metrics": [
+                {
+                  "label": "Tickets Issued Today",
+                  "value": "{{ParkingTicket.count(date: today)}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "700",
+                    "color": "#2563eb"
+                  }
+                },
+                {
+                  "label": "Pending Appeals",
+                  "value": "{{Appeal.count(status: pending)}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "700",
+                    "color": "#dc2626"
+                  }
+                },
+                {
+                  "label": "Total Revenue Today",
+                  "value": "{{Payment.sum(amount, date: today)}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "700",
+                    "color": "#16a34a"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Issue New Ticket",
+              "variant": "primary",
+              "action": "openForm",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "cursor": "pointer",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+              }
+            },
+            "formRef": "ticketissuanceform-1764453708028-rgsx0z"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Recent Tickets Issued",
+              "columns": [
+                {
+                  "field": "ticketNumber",
+                  "header": "Ticket #",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "vehicle.licensePlate",
+                  "header": "License Plate",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "violationCode",
+                  "header": "Violation",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "location",
+                  "header": "Location",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "issueDate",
+                  "header": "Date/Time",
+                  "format": "datetime",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "field": "amount",
+                  "header": "Amount",
+                  "format": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#16a34a"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "type": "view",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#2563eb"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "ParkingTicket.query",
+            "filters": {
+              "officerId": "{{currentUser.id}}",
+              "orderBy": "issueDate",
+              "order": "desc"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginTop": "24px"
+              }
+            },
+            "content": {
+              "actions": [
+                {
+                  "label": "Search Vehicle History",
+                  "icon": "search",
+                  "action": "searchVehicle",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#2563eb",
+                    "padding": "8px 16px",
+                    "borderRadius": "6px",
+                    "backgroundColor": "#eff6ff",
+                    "border": "1px solid #bfdbfe",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "View Violation Codes",
+                  "icon": "list",
+                  "action": "viewCodes",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#2563eb",
+                    "padding": "8px 16px",
+                    "borderRadius": "6px",
+                    "backgroundColor": "#eff6ff",
+                    "border": "1px solid #bfdbfe",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Location Map",
+                  "icon": "map",
+                  "action": "openMap",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#2563eb",
+                    "padding": "8px 16px",
+                    "borderRadius": "6px",
+                    "backgroundColor": "#eff6ff",
+                    "border": "1px solid #bfdbfe",
+                    "cursor": "pointer"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-details"
+        },
+        "openForm": {
+          "type": "modal",
+          "formRef": "ticketissuanceform-1764453708028-rgsx0z"
+        }
+      },
+      "menu": [
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Citizen Portal",
+          "route": "/citizen-portal",
+          "icon": "public"
+        }
+      ]
+    },
+    "layout": {
+      "type": "dashboard",
+      "responsive": true,
+      "spacing": "normal"
+    },
+    "workflowId": "workflow_1735567213"
+  },
+  {
+    "id": "citizenportal-1764453800001-cp9x2w",
+    "name": "CitizenPortal",
+    "title": "Parking Ticket Portal",
+    "description": "Public-facing portal for ticket lookup, payment, and appeals",
+    "route": "/citizen-portal",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "paymentform-1764453728927-i8gag6",
+      "appealsubmissionform-1764453749466-bel0kp"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Parking Ticket Portal",
+              "variant": "h1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "View tickets, make payments, and submit appeals",
+              "variant": "body1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ],
+        "style": {
+          "backgroundColor": "#ffffff",
+          "padding": "32px 24px",
+          "borderBottom": "1px solid #e5e5e5"
+        }
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Ticket Lookup",
+              "description": "Search by license plate or ticket number",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "form",
+                "config": {
+                  "fields": [
+                    {
+                      "name": "searchType",
+                      "label": "Search By",
+                      "type": "select",
+                      "options": [
+                        "License Plate",
+                        "Ticket Number"
+                      ],
+                      "required": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "marginBottom": "16px"
+                      }
+                    },
+                    {
+                      "name": "searchValue",
+                      "label": "Enter Value",
+                      "type": "text",
+                      "required": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "marginBottom": "16px"
+                      }
+                    }
+                  ],
+                  "submitButton": {
+                    "label": "Search Tickets",
+                    "style": {
+                      "backgroundColor": "#2563eb",
+                      "color": "#ffffff",
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "600",
+                      "padding": "12px 24px",
+                      "borderRadius": "8px",
+                      "border": "none",
+                      "cursor": "pointer"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Your Tickets",
+              "columns": [
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket #",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "issueDate",
+                  "label": "Issue Date",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "violation",
+                  "label": "Violation",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "amount",
+                  "label": "Amount",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "type": "view",
+                  "style": {
+                    "color": "#2563eb",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "textDecoration": "none"
+                  }
+                },
+                {
+                  "label": "Pay Now",
+                  "type": "payment",
+                  "style": {
+                    "backgroundColor": "#16a34a",
+                    "color": "#ffffff",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "padding": "6px 12px",
+                    "borderRadius": "6px",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "Appeal",
+                  "type": "appeal",
+                  "style": {
+                    "backgroundColor": "#f59e0b",
+                    "color": "#ffffff",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "padding": "6px 12px",
+                    "borderRadius": "6px",
+                    "border": "none"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "ParkingTicket.query"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Payment History",
+              "description": "View your payment receipts and transaction history",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "items": [],
+                  "emptyMessage": "No payment history available",
+                  "itemStyle": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "padding": "12px",
+                    "borderBottom": "1px solid #e5e5e5",
+                    "color": "#1a1a1a"
+                  }
+                },
+                "dataBinding": "Payment.query"
+              }
+            ]
+          }
+        ],
+        "style": {
+          "backgroundColor": "#f9fafb",
+          "padding": "32px 24px",
+          "minHeight": "calc(100vh - 200px)"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-details"
+        },
+        "payment": {
+          "type": "modal",
+          "formRef": "paymentform-1764453728927-i8gag6"
+        },
+        "appeal": {
+          "type": "modal",
+          "formRef": "appealsubmissionform-1764453749466-bel0kp"
+        }
+      },
+      "menu": [
+        {
+          "label": "Citizen Portal",
+          "route": "/citizen-portal",
+          "icon": "home"
+        },
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer-dashboard",
+          "icon": "dashboard",
+          "restricted": true
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal",
+      "maxWidth": "1200px",
+      "style": {
+        "fontFamily": "Inter, system-ui, sans-serif"
+      }
+    },
+    "workflowId": "workflow_1735567213"
+  }
+]

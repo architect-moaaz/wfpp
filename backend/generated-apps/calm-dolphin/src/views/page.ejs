@@ -1,0 +1,75 @@
+<div class="mb-4">
+    <h1><%= page.title || page.name %></h1>
+    <% if (page.description) { %>
+        <p class="lead"><%= page.description %></p>
+    <% } %>
+</div>
+
+<% if (pageForms && pageForms.length > 0) { %>
+    <% pageForms.forEach(form => { %>
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="h5 mb-0"><%= form.title || form.name %></h3>
+                <% if (form.description) { %>
+                    <p class="small mb-0 mt-2"><%= form.description %></p>
+                <% } %>
+            </div>
+            <div class="card-body">
+                <form data-dynamic-form action="/forms/<%= form.id %>/submit" method="POST">
+                    <% if (form.fields && form.fields.length > 0) { %>
+                        <% if (form.layout && form.layout.sections && form.layout.sections.length > 0) { %>
+                            <% form.layout.sections.forEach(section => { %>
+                                <div class="form-section mb-4">
+                                    <% if (section.title) { %>
+                                        <h4 class="h6 text-muted mb-3"><%= section.title %></h4>
+                                    <% } %>
+                                    <div class="row g-3">
+                                        <% section.fieldIds.forEach(fieldId => { %>
+                                            <% const field = form.fields.find(f => f.id === fieldId); %>
+                                            <% if (field) { %>
+                                                <div class="col-md-<%= form.layout.type === 'two-column' ? '6' : '12' %>">
+                                                    <%- include('partials/form-field', { field }) %>
+                                                </div>
+                                            <% } %>
+                                        <% }); %>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <% form.fields.forEach(field => { %>
+                                <div class="mb-3">
+                                    <%- include('partials/form-field', { field }) %>
+                                </div>
+                            <% }); %>
+                        <% } %>
+
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Submit
+                            </button>
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Reset
+                            </button>
+                        </div>
+                    <% } else { %>
+                        <div class="alert alert-warning">
+                            This form has no fields defined.
+                        </div>
+                    <% } %>
+                </form>
+            </div>
+        </div>
+    <% }); %>
+<% } else { %>
+    <div class="card">
+        <div class="card-body">
+            <p class="text-muted mb-0">This page has no forms or content yet.</p>
+        </div>
+    </div>
+<% } %>
+
+<div class="mt-4">
+    <a href="/" class="btn btn-outline-secondary">
+        <i class="bi bi-house"></i> Back to Home
+    </a>
+</div>

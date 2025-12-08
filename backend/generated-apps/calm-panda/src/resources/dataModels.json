@@ -1,0 +1,1235 @@
+[
+  {
+    "id": "employee",
+    "name": "Employee",
+    "description": "Stores comprehensive information about new employees being onboarded, including personal details, employment information, and onboarding status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the employee",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "Employee's full legal name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Employee's work email address",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "startDate",
+        "type": "date",
+        "description": "Employment start date",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "department",
+        "type": "string",
+        "description": "Department the employee is assigned to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "position",
+        "type": "string",
+        "description": "Job title or position",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "managerId",
+        "type": "string",
+        "description": "ID of the assigned manager",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "onboardingStatus",
+        "type": "string",
+        "description": "Current onboarding status (e.g., pending, in-progress, completed)",
+        "required": true,
+        "defaultValue": "pending"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "email",
+      "startDate",
+      "onboardingStatus"
+    ],
+    "constraints": {
+      "email": "unique",
+      "onboardingStatus": "enum: pending, in-progress, completed"
+    },
+    "workflowId": "workflow_1735176234567"
+  },
+  {
+    "id": "department",
+    "name": "Department",
+    "description": "Stores organizational department information and their specific onboarding requirements",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the department",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the department",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "managerId",
+        "type": "string",
+        "description": "Reference to the Employee who manages this department",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Brief description of the department's function and responsibilities",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "onboardingDuration",
+        "type": "number",
+        "description": "Standard onboarding duration in days for this department",
+        "required": false,
+        "defaultValue": 30
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates whether the department is currently active",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Employee",
+        "foreignKey": "managerId",
+        "description": "Department manager relationship"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "managerId"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ]
+    },
+    "workflowId": "workflow_1735176234567"
+  },
+  {
+    "id": "onboarding-workflow",
+    "name": "OnboardingWorkflow",
+    "description": "Tracks the overall onboarding process and workflow state for each employee including current step, progress, and completion status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the onboarding workflow",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee being onboarded",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "currentStep",
+        "type": "string",
+        "description": "Current active workflow stage (e.g., 'documentation', 'equipment', 'training', 'review')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "progressPercentage",
+        "type": "number",
+        "description": "Overall completion progress as a percentage (0-100)",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "startDate",
+        "type": "date",
+        "description": "Date when the onboarding workflow was initiated",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "expectedCompletionDate",
+        "type": "date",
+        "description": "Target date for completing the entire onboarding process",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "approvalStatus",
+        "type": "string",
+        "description": "Final approval status (e.g., 'pending', 'approved', 'rejected', 'in_progress')",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "completionDate",
+        "type": "date",
+        "description": "Actual date when onboarding was completed and approved",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId",
+        "description": "Each workflow belongs to one employee"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "employeeId"
+        ],
+        "unique": true,
+        "description": "Ensure one active workflow per employee"
+      },
+      {
+        "fields": [
+          "approvalStatus"
+        ],
+        "unique": false,
+        "description": "Quick lookup by approval status"
+      },
+      {
+        "fields": [
+          "expectedCompletionDate"
+        ],
+        "unique": false,
+        "description": "Track workflows by expected completion"
+      }
+    ],
+    "constraints": {
+      "progressPercentage": "Must be between 0 and 100",
+      "approvalStatus": "Must be one of: 'pending', 'in_progress', 'approved', 'rejected'",
+      "completionDate": "Must be null unless approvalStatus is 'approved'"
+    },
+    "workflowId": "workflow_1735176234567"
+  },
+  {
+    "id": "document",
+    "name": "Document",
+    "description": "Store and manage all onboarding documents and forms submitted by employees",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the document",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee who submitted the document",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "documentType",
+        "type": "string",
+        "description": "Type of document (I-9, W-4, contract, acknowledgment form, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileReference",
+        "type": "string",
+        "description": "Storage path or URL reference to the uploaded file",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "uploadDate",
+        "type": "date",
+        "description": "Date and time when the document was uploaded",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "verificationStatus",
+        "type": "string",
+        "description": "Current verification status (pending, verified, rejected)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "verifiedBy",
+        "type": "string",
+        "description": "User ID of the person who verified the document",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "expirationDate",
+        "type": "date",
+        "description": "Expiration date of the document if applicable",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId",
+        "description": "Each document belongs to one employee"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "employeeId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "verificationStatus"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "documentType"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "verificationStatus": {
+        "enum": [
+          "pending",
+          "verified",
+          "rejected"
+        ]
+      },
+      "documentType": {
+        "enum": [
+          "I-9",
+          "W-4",
+          "contract",
+          "acknowledgment",
+          "identification",
+          "tax-form",
+          "other"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735176234567"
+  },
+  {
+    "id": "equipment-assignment",
+    "name": "EquipmentAssignment",
+    "description": "Tracks equipment provisioned and assigned to employees during onboarding, including assignment details, condition, and acknowledgment status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the equipment assignment record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee receiving the equipment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "equipmentType",
+        "type": "string",
+        "description": "Type of equipment assigned (e.g., Laptop, Monitor, Phone, Keyboard)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "serialNumber",
+        "type": "string",
+        "description": "Unique serial number or asset tag of the equipment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignmentDate",
+        "type": "date",
+        "description": "Date when equipment was assigned to the employee",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "returnDate",
+        "type": "date",
+        "description": "Date when equipment was returned by the employee",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "condition",
+        "type": "string",
+        "description": "Current condition of the equipment (e.g., New, Good, Fair, Damaged)",
+        "required": true,
+        "defaultValue": "New"
+      },
+      {
+        "name": "acknowledged",
+        "type": "boolean",
+        "description": "Whether employee has acknowledged receipt of the equipment",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId",
+        "description": "Each equipment assignment belongs to one employee"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_employee_id",
+        "fields": [
+          "employeeId"
+        ]
+      },
+      {
+        "name": "idx_serial_number",
+        "fields": [
+          "serialNumber"
+        ],
+        "unique": true
+      }
+    ],
+    "constraints": {
+      "uniqueSerialNumber": "Serial number must be unique across all equipment assignments",
+      "validCondition": "Condition must be one of: New, Good, Fair, Damaged",
+      "returnDateAfterAssignment": "Return date must be after or equal to assignment date"
+    },
+    "workflowId": "workflow_1735176234567"
+  },
+  {
+    "id": "system-access",
+    "name": "SystemAccess",
+    "description": "Manages system accounts and access credentials provisioned for new employees during onboarding",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the system access record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee receiving system access",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "systemName",
+        "type": "string",
+        "description": "Name of the system or application being provisioned",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "accountUsername",
+        "type": "string",
+        "description": "Username or account identifier created for the employee",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "accessLevel",
+        "type": "string",
+        "description": "Level of access granted (e.g., Read-Only, Standard, Admin)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "provisioningStatus",
+        "type": "string",
+        "description": "Current status of access provisioning (e.g., Pending, Completed, Failed)",
+        "required": true,
+        "defaultValue": "Pending"
+      },
+      {
+        "name": "provisioningDate",
+        "type": "date",
+        "description": "Date when the system access was provisioned",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "provisionedBy",
+        "type": "string",
+        "description": "IT personnel who completed the access setup",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId",
+        "description": "Each system access record belongs to one employee"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_employee_id",
+        "fields": [
+          "employeeId"
+        ]
+      },
+      {
+        "name": "idx_provisioning_status",
+        "fields": [
+          "provisioningStatus"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "accountUsername",
+        "systemName"
+      ],
+      "check": {
+        "provisioningStatus": [
+          "Pending",
+          "In Progress",
+          "Completed",
+          "Failed"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735176234567"
+  },
+  {
+    "id": "orientation-session",
+    "name": "OrientationSession",
+    "description": "Manages orientation sessions for new employees including scheduling, tracking, and completion status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the orientation session",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sessionDateTime",
+        "type": "date",
+        "description": "Scheduled date and time for the orientation session",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sessionType",
+        "type": "string",
+        "description": "Type of orientation (e.g., 'Company Overview', 'Department Specific', 'IT Systems', 'Safety Training')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "location",
+        "type": "string",
+        "description": "Physical or virtual location where the session will be held",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "facilitatorId",
+        "type": "string",
+        "description": "Reference to the Employee conducting the orientation session",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "attendeeIds",
+        "type": "array",
+        "description": "List of Employee IDs attending the session (supports individual and group sessions)",
+        "required": true,
+        "defaultValue": []
+      },
+      {
+        "name": "completionStatus",
+        "type": "string",
+        "description": "Current status of the session (e.g., 'Scheduled', 'In Progress', 'Completed', 'Cancelled')",
+        "required": true,
+        "defaultValue": "Scheduled"
+      },
+      {
+        "name": "feedbackScore",
+        "type": "number",
+        "description": "Average feedback rating from attendees (1-5 scale)",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "facilitatorId",
+        "description": "Facilitator conducting the orientation session"
+      },
+      {
+        "type": "many-to-many",
+        "relatedModel": "Employee",
+        "foreignKey": "attendeeIds",
+        "description": "Employees attending the orientation session"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "sessionDateTime"
+        ],
+        "description": "Index for querying sessions by date and time"
+      },
+      {
+        "fields": [
+          "completionStatus"
+        ],
+        "description": "Index for filtering sessions by status"
+      },
+      {
+        "fields": [
+          "facilitatorId"
+        ],
+        "description": "Index for querying sessions by facilitator"
+      }
+    ],
+    "constraints": {
+      "sessionType": {
+        "enum": [
+          "Company Overview",
+          "Department Specific",
+          "IT Systems",
+          "Safety Training",
+          "Benefits Enrollment",
+          "Policies and Procedures"
+        ]
+      },
+      "completionStatus": {
+        "enum": [
+          "Scheduled",
+          "In Progress",
+          "Completed",
+          "Cancelled"
+        ]
+      },
+      "feedbackScore": {
+        "min": 1,
+        "max": 5
+      }
+    },
+    "workflowId": "workflow_1735176234567"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Log all automated email notifications sent during the onboarding process with delivery status and audit trail",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee receiving the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "notificationType",
+        "type": "string",
+        "description": "Type of notification (e.g., welcome_email, document_reminder, orientation_invite, equipment_ready)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientEmail",
+        "type": "string",
+        "description": "Email address where the notification was sent",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "description": "Email subject line of the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sentAt",
+        "type": "date",
+        "description": "Date and time when the notification was sent",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "deliveryStatus",
+        "type": "string",
+        "description": "Delivery status (sent, delivered, failed, bounced, opened)",
+        "required": true,
+        "defaultValue": "sent"
+      },
+      {
+        "name": "relatedEntityId",
+        "type": "string",
+        "description": "Optional reference to related entity (document, orientation session, equipment assignment)",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId",
+        "description": "Each notification is sent to one employee"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_employee_id",
+        "fields": [
+          "employeeId"
+        ]
+      },
+      {
+        "name": "idx_sent_at",
+        "fields": [
+          "sentAt"
+        ]
+      },
+      {
+        "name": "idx_delivery_status",
+        "fields": [
+          "deliveryStatus"
+        ]
+      }
+    ],
+    "constraints": {
+      "notificationType": {
+        "enum": [
+          "welcome_email",
+          "document_reminder",
+          "orientation_invite",
+          "equipment_ready",
+          "access_granted",
+          "workflow_update",
+          "deadline_reminder"
+        ]
+      },
+      "deliveryStatus": {
+        "enum": [
+          "sent",
+          "delivered",
+          "failed",
+          "bounced",
+          "opened"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735176234567"
+  },
+  {
+    "id": "user",
+    "name": "User",
+    "description": "Manages system users including HR administrators, managers, IT staff, and employees with role-based access control",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address used for login and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "User's full name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "User role for access control (HR_ADMIN, MANAGER, IT_STAFF, EMPLOYEE)",
+        "required": true,
+        "defaultValue": "EMPLOYEE"
+      },
+      {
+        "name": "departmentId",
+        "type": "string",
+        "description": "Reference to the department the user belongs to",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the user account is active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "lastLoginAt",
+        "type": "date",
+        "description": "Timestamp of the user's last login",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Department",
+        "foreignKey": "departmentId",
+        "description": "User belongs to a department"
+      },
+      {
+        "type": "one-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "userId",
+        "description": "User may be linked to an employee record"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_user_role",
+        "fields": [
+          "role"
+        ]
+      },
+      {
+        "name": "idx_user_department",
+        "fields": [
+          "departmentId"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "email"
+      ],
+      "check": [
+        "role IN ('HR_ADMIN', 'MANAGER', 'IT_STAFF', 'EMPLOYEE')"
+      ]
+    },
+    "workflowId": "workflow_1735176234567"
+  },
+  {
+    "id": "task-template",
+    "name": "TaskTemplate",
+    "description": "Define reusable task templates for standardized onboarding workflows",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the task template",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the task template",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "description": "Detailed description of the task and instructions",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "defaultAssigneeRole",
+        "type": "string",
+        "description": "Role or department responsible for completing this task (e.g., IT, HR, Manager)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "estimatedDurationHours",
+        "type": "number",
+        "description": "Estimated time to complete the task in hours",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "workflowId",
+        "type": "string",
+        "description": "Reference to the onboarding workflow this template belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "dependsOnTaskIds",
+        "type": "array",
+        "description": "Array of task template IDs that must be completed before this task",
+        "required": false,
+        "defaultValue": []
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this template is currently active and available for use",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "OnboardingWorkflow",
+        "foreignKey": "workflowId",
+        "description": "Task template belongs to an onboarding workflow"
+      },
+      {
+        "type": "self-referential",
+        "relatedModel": "TaskTemplate",
+        "foreignKey": "dependsOnTaskIds",
+        "description": "Task templates can depend on other task templates"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "workflowId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "defaultAssigneeRole"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "isActive"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "estimatedDurationHours": "Must be greater than 0",
+      "defaultAssigneeRole": "Must match valid role types in the system"
+    },
+    "workflowId": "workflow_1735176234567"
+  },
+  {
+    "id": "task",
+    "name": "Task",
+    "description": "Represents individual onboarding tasks with tracking of assignment, status, and completion details",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the task",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name or title of the task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of what the task involves",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedUserId",
+        "type": "string",
+        "description": "ID of the user assigned to complete this task",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Date by which the task should be completed",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current completion status (pending, in_progress, completed, overdue)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the task (low, medium, high, critical)",
+        "required": true,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "workflowId",
+        "type": "string",
+        "description": "ID of the onboarding workflow this task belongs to",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "assignedUserId",
+        "description": "Task is assigned to a User"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "OnboardingWorkflow",
+        "foreignKey": "workflowId",
+        "description": "Task belongs to an OnboardingWorkflow"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "workflowId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "assignedUserId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "dueDate"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "status": [
+        "pending",
+        "in_progress",
+        "completed",
+        "overdue"
+      ],
+      "priority": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "workflowId": "workflow_1735176234567"
+  },
+  {
+    "id": "approval-record",
+    "name": "ApprovalRecord",
+    "description": "Tracks approval actions required at various stages of the employee onboarding workflow, supporting multi-level approval processes",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the approval record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "approvalType",
+        "type": "string",
+        "description": "Type of approval (e.g., DOCUMENT_VERIFICATION, EQUIPMENT_ASSIGNMENT, SYSTEM_ACCESS, FINAL_COMPLETION)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "approverId",
+        "type": "string",
+        "description": "Reference to the User who is responsible for providing approval",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "workflowStepId",
+        "type": "string",
+        "description": "Reference to the specific workflow step or task requiring approval",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current approval status (PENDING, APPROVED, REJECTED, ESCALATED)",
+        "required": true,
+        "defaultValue": "PENDING"
+      },
+      {
+        "name": "approvalDate",
+        "type": "date",
+        "description": "Date and time when the approval decision was made",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "comments",
+        "type": "string",
+        "description": "Approver's comments or notes regarding the approval decision",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "approverId",
+        "description": "Links to the user who provides the approval"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Task",
+        "foreignKey": "workflowStepId",
+        "description": "Links to the workflow task requiring approval"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_approver",
+        "fields": [
+          "approverId"
+        ]
+      },
+      {
+        "name": "idx_workflow_step",
+        "fields": [
+          "workflowStepId"
+        ]
+      },
+      {
+        "name": "idx_status",
+        "fields": [
+          "status"
+        ]
+      }
+    ],
+    "constraints": {
+      "approvalType": {
+        "enum": [
+          "DOCUMENT_VERIFICATION",
+          "EQUIPMENT_ASSIGNMENT",
+          "SYSTEM_ACCESS",
+          "FINAL_COMPLETION",
+          "BACKGROUND_CHECK",
+          "MANAGER_REVIEW"
+        ]
+      },
+      "status": {
+        "enum": [
+          "PENDING",
+          "APPROVED",
+          "REJECTED",
+          "ESCALATED"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735176234567"
+  }
+]

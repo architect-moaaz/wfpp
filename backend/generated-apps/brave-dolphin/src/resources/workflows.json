@@ -1,0 +1,540 @@
+[
+  {
+    "id": "workflow_1736629487234",
+    "name": "Library Management System - Comprehensive Circulation Workflow",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_start",
+        "data": {
+          "label": "Library Request Initiated",
+          "formId": "bookcatalogform-1764404203645-gb0skk",
+          "trigger": "Member or Librarian initiates library operation",
+          "formName": "BookCatalogForm",
+          "description": "Starting point for all library management operations"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 50,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_operation_type",
+        "data": {
+          "label": "Determine Operation Type",
+          "condition": "processData.operationType",
+          "description": "Route based on the type of library operation requested",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 250,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_member_lookup",
+        "data": {
+          "label": "Validate Member Status",
+          "script": "Lookup member ID and verify active membership status",
+          "scriptType": "JavaScript",
+          "description": "Verify member exists and has active library privileges"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 150,
+          "y": 200
+        }
+      },
+      {
+        "id": "node_member_validation",
+        "data": {
+          "label": "Member Status Check",
+          "condition": "processData.memberStatus",
+          "description": "Check if member has valid privileges and no outstanding issues",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 150,
+          "y": 300
+        }
+      },
+      {
+        "id": "node_new_member_reg",
+        "data": {
+          "label": "New Member Registration",
+          "formId": "memberregistrationform-1764404224593-wvltj4",
+          "dueDate": "1 day",
+          "formName": "MemberRegistrationForm",
+          "priority": "Medium",
+          "taskName": "member_registration",
+          "assignedTo": "librarian",
+          "instructions": "Complete member registration with required documents and information"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 450,
+          "y": 200
+        }
+      },
+      {
+        "id": "node_parallel_checkout",
+        "data": {
+          "label": "Parallel Checkout Processing",
+          "branches": "Book availability check, Member limit check, Due date calculation",
+          "description": "Simultaneously process multiple checkout validations",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_book_availability",
+        "data": {
+          "label": "Check Book Availability",
+          "script": "Query catalog to verify book is available and not reserved by others",
+          "scriptType": "JavaScript",
+          "description": "Validate requested book is currently available for checkout"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -100,
+          "y": 600
+        }
+      },
+      {
+        "id": "node_checkout_limit",
+        "data": {
+          "label": "Check Member Limits",
+          "script": "Verify member hasn't exceeded checkout limits and has no overdue items",
+          "scriptType": "JavaScript",
+          "description": "Ensure member is within borrowing limits and good standing"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 600
+        }
+      },
+      {
+        "id": "node_due_date_calc",
+        "data": {
+          "label": "Calculate Due Date",
+          "script": "Calculate return date based on book type and member category",
+          "scriptType": "JavaScript",
+          "description": "Determine appropriate loan period for the book and member type"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 200,
+          "y": 600
+        }
+      },
+      {
+        "id": "node_checkout_validation",
+        "data": {
+          "label": "Checkout Authorization",
+          "rules": [
+            "book_available",
+            "member_eligible",
+            "limit_not_exceeded"
+          ],
+          "ruleType": "business_rules",
+          "description": "Final validation before completing checkout transaction"
+        },
+        "type": "validation",
+        "position": {
+          "x": 50,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_checkout_decision",
+        "data": {
+          "label": "Checkout Approved?",
+          "condition": "processData.checkoutApproved",
+          "description": "Determine if checkout can proceed or needs alternative handling",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_ai_recommendation",
+        "data": {
+          "label": "AI Book Recommendation",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Based on member's reading history and current unavailable book request: ${processData.memberHistory}, ${processData.requestedBook}, suggest 3 alternative books with similar themes or by same author that are currently available.",
+          "maxTokens": 500,
+          "description": "Generate intelligent book recommendations when requested item is unavailable",
+          "temperature": 0.8,
+          "outputVariable": "bookRecommendations"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": -150,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_reservation_process",
+        "data": {
+          "label": "Process Reservation",
+          "formId": "bookcatalogform-1764404203645-gb0skk",
+          "dueDate": "2 hours",
+          "formName": "BookCatalogForm",
+          "priority": "Low",
+          "taskName": "book_reservation",
+          "assignedTo": "librarian",
+          "instructions": "Create reservation entry and notify member of estimated availability"
+        },
+        "type": "userTask",
+        "position": {
+          "x": -300,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_transaction_record",
+        "data": {
+          "input": "checkout_data",
+          "label": "Record Transaction",
+          "output": "transaction_log",
+          "operation": "database_insert",
+          "description": "Create official checkout record in library management system"
+        },
+        "type": "dataProcess",
+        "position": {
+          "x": 250,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_return_processing",
+        "data": {
+          "label": "Process Book Return",
+          "script": "Update book status, calculate late fees if applicable, check book condition",
+          "scriptType": "JavaScript",
+          "description": "Handle book return including fee calculation and condition assessment"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 500,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_late_fee_calc",
+        "data": {
+          "label": "AI Late Fee Assessment",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Calculate late fees for returned book. Return date: ${processData.returnDate}, Due date: ${processData.dueDate}, Member type: ${processData.memberType}, Special circumstances: ${processData.notes}. Apply library policy and consider any valid reasons for delay.",
+          "maxTokens": 300,
+          "description": "Intelligently assess late fees considering library policies and special circumstances",
+          "temperature": 0.3,
+          "outputVariable": "lateFeeAssessment"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 500,
+          "y": 600
+        }
+      },
+      {
+        "id": "node_overdue_notification",
+        "data": {
+          "label": "Send Overdue Notice",
+          "channel": "Email",
+          "template": "overdue_book_template",
+          "recipient": "member",
+          "description": "Notify member of overdue items and any applicable fees"
+        },
+        "type": "notification",
+        "position": {
+          "x": 650,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_timer_escalation",
+        "data": {
+          "label": "Escalation Timer",
+          "duration": "PT168H",
+          "timerType": "duration",
+          "description": "Wait 7 days before escalating overdue items to collections"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 800,
+          "y": 600
+        }
+      },
+      {
+        "id": "node_collections_escalation",
+        "data": {
+          "label": "Collections Escalation",
+          "formId": "bookcatalogform-1764404203645-gb0skk",
+          "dueDate": "3 days",
+          "formName": "BookCatalogForm",
+          "priority": "High",
+          "taskName": "collections_review",
+          "assignedTo": "head_librarian",
+          "instructions": "Review severely overdue items and initiate collections process if necessary"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 950,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_completion_notice",
+        "data": {
+          "label": "Operation Completion Notice",
+          "channel": "Email",
+          "template": "operation_complete_template",
+          "recipient": "member_and_staff",
+          "description": "Confirm successful completion of library operation to all relevant parties"
+        },
+        "type": "notification",
+        "position": {
+          "x": 400,
+          "y": 1100
+        }
+      },
+      {
+        "id": "node_error_handler",
+        "data": {
+          "label": "Error Resolution",
+          "formId": "bookcatalogform-1764404203645-gb0skk",
+          "dueDate": "4 hours",
+          "formName": "BookCatalogForm",
+          "priority": "High",
+          "taskName": "error_handling",
+          "assignedTo": "head_librarian",
+          "instructions": "Review and resolve system error or policy exception requiring manual intervention"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 700,
+          "y": 400
+        }
+      },
+      {
+        "id": "node_end",
+        "data": {
+          "label": "Library Operation Complete",
+          "result": "Library transaction successfully processed",
+          "description": "All library management operations have been completed successfully"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 400,
+          "y": 1200
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-29T13:50:21.052+05:30",
+    "updated_at": "2025-11-29T13:50:21.052+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_start",
+        "target": "node_operation_type"
+      },
+      {
+        "id": "edge_2",
+        "label": "Checkout/Return",
+        "source": "node_operation_type",
+        "target": "node_member_lookup",
+        "condition": "processData.operationType === 'checkout' || processData.operationType === 'return'"
+      },
+      {
+        "id": "edge_3",
+        "label": "New Registration",
+        "source": "node_operation_type",
+        "target": "node_new_member_reg",
+        "condition": "processData.operationType === 'registration'"
+      },
+      {
+        "id": "edge_4",
+        "label": "Unknown Operation",
+        "source": "node_operation_type",
+        "target": "node_error_handler",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_member_lookup",
+        "target": "node_member_validation"
+      },
+      {
+        "id": "edge_6",
+        "label": "Valid Member & Checkout",
+        "source": "node_member_validation",
+        "target": "node_parallel_checkout",
+        "condition": "processData.memberStatus === 'active' && processData.operationType === 'checkout'"
+      },
+      {
+        "id": "edge_7",
+        "label": "Valid Member & Return",
+        "source": "node_member_validation",
+        "target": "node_return_processing",
+        "condition": "processData.memberStatus === 'active' && processData.operationType === 'return'"
+      },
+      {
+        "id": "edge_8",
+        "label": "Invalid Member",
+        "source": "node_member_validation",
+        "target": "node_error_handler",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_parallel_checkout",
+        "target": "node_book_availability",
+        "isDefault": true
+      },
+      {
+        "id": "edge_10",
+        "source": "node_parallel_checkout",
+        "target": "node_checkout_limit"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_parallel_checkout",
+        "target": "node_due_date_calc"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_book_availability",
+        "target": "node_checkout_validation"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_checkout_limit",
+        "target": "node_checkout_validation"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_due_date_calc",
+        "target": "node_checkout_validation"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_checkout_validation",
+        "target": "node_checkout_decision"
+      },
+      {
+        "id": "edge_16",
+        "label": "Approved",
+        "source": "node_checkout_decision",
+        "target": "node_transaction_record",
+        "condition": "processData.checkoutApproved === true"
+      },
+      {
+        "id": "edge_17",
+        "label": "Book Unavailable",
+        "source": "node_checkout_decision",
+        "target": "node_ai_recommendation",
+        "condition": "processData.checkoutApproved === false && processData.reason === 'unavailable'"
+      },
+      {
+        "id": "edge_18",
+        "label": "Other Issues",
+        "source": "node_checkout_decision",
+        "target": "node_error_handler",
+        "isDefault": true
+      },
+      {
+        "id": "edge_19",
+        "source": "node_ai_recommendation",
+        "target": "node_reservation_process"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_return_processing",
+        "target": "node_late_fee_calc"
+      },
+      {
+        "id": "edge_21",
+        "label": "Fees Applied",
+        "source": "node_late_fee_calc",
+        "target": "node_overdue_notification",
+        "condition": "processData.lateFeeAssessment.amount > 0"
+      },
+      {
+        "id": "edge_22",
+        "label": "No Fees",
+        "source": "node_late_fee_calc",
+        "target": "node_completion_notice",
+        "condition": "processData.lateFeeAssessment.amount === 0"
+      },
+      {
+        "id": "edge_23",
+        "label": "Severely Overdue",
+        "source": "node_overdue_notification",
+        "target": "node_timer_escalation",
+        "condition": "processData.daysOverdue > 30"
+      },
+      {
+        "id": "edge_24",
+        "label": "Standard Overdue",
+        "source": "node_overdue_notification",
+        "target": "node_completion_notice",
+        "condition": "processData.daysOverdue <= 30"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_timer_escalation",
+        "target": "node_collections_escalation"
+      },
+      {
+        "id": "edge_26",
+        "source": "node_transaction_record",
+        "target": "node_completion_notice"
+      },
+      {
+        "id": "edge_27",
+        "source": "node_new_member_reg",
+        "target": "node_completion_notice"
+      },
+      {
+        "id": "edge_28",
+        "source": "node_reservation_process",
+        "target": "node_completion_notice"
+      },
+      {
+        "id": "edge_29",
+        "source": "node_collections_escalation",
+        "target": "node_completion_notice"
+      },
+      {
+        "id": "edge_30",
+        "source": "node_error_handler",
+        "target": "node_completion_notice"
+      },
+      {
+        "id": "edge_31",
+        "source": "node_completion_notice",
+        "target": "node_end"
+      }
+    ],
+    "description": ""
+  }
+]

@@ -1,0 +1,2924 @@
+[
+  {
+    "id": "documentmanagementpage-1764960200000-xyz123",
+    "name": "DocumentManagementPage",
+    "title": "Document Management",
+    "description": "Centralized interface for managing and reviewing employee documents with verification status, search, filtering, and bulk operations",
+    "route": "/document-management",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "employeedocumentsubmissionform-1764959969702-a0u811",
+      "hrdocumentverificationform-1764959991372-geahe3"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Document Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "View, verify, and manage all employee documents with secure preview and audit trails",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Search & Filter Documents",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "search",
+                "config": {
+                  "placeholder": "Search by employee name, document type, or status...",
+                  "fields": [
+                    "employee.name",
+                    "documentType",
+                    "verificationStatus"
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "padding": "10px 16px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #CBD5E1",
+                    "backgroundColor": "#F8FAFC"
+                  }
+                }
+              },
+              {
+                "type": "filter",
+                "config": {
+                  "filters": [
+                    {
+                      "field": "verificationStatus",
+                      "label": "Status",
+                      "type": "select",
+                      "options": [
+                        "Pending",
+                        "Verified",
+                        "Rejected",
+                        "Expired"
+                      ]
+                    },
+                    {
+                      "field": "documentType",
+                      "label": "Document Type",
+                      "type": "select",
+                      "options": [
+                        "ID",
+                        "Tax Forms",
+                        "Certifications",
+                        "Contracts",
+                        "Background Check"
+                      ]
+                    },
+                    {
+                      "field": "employee.department",
+                      "label": "Department",
+                      "type": "select",
+                      "dataBinding": "Department.query"
+                    },
+                    {
+                      "field": "uploadDate",
+                      "label": "Upload Date",
+                      "type": "dateRange"
+                    }
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Employee Documents",
+              "columns": [
+                {
+                  "key": "employee.name",
+                  "label": "Employee",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "documentType",
+                  "label": "Document Type",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "uploadDate",
+                  "label": "Upload Date",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "verificationStatus",
+                  "label": "Status",
+                  "sortable": true,
+                  "badge": true,
+                  "badgeColors": {
+                    "Pending": "#F59E0B",
+                    "Verified": "#10B981",
+                    "Rejected": "#EF4444",
+                    "Expired": "#6B7280"
+                  },
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px"
+                  }
+                },
+                {
+                  "key": "verifiedBy",
+                  "label": "Verified By",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "Preview",
+                      "icon": "eye",
+                      "action": "preview",
+                      "style": {
+                        "color": "#3B82F6",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px"
+                      }
+                    },
+                    {
+                      "label": "Download",
+                      "icon": "download",
+                      "action": "download",
+                      "style": {
+                        "color": "#10B981",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px"
+                      }
+                    },
+                    {
+                      "label": "Verify",
+                      "icon": "check",
+                      "action": "verify",
+                      "condition": "verificationStatus === 'Pending'",
+                      "style": {
+                        "color": "#8B5CF6",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px"
+                      }
+                    },
+                    {
+                      "label": "Audit Trail",
+                      "icon": "history",
+                      "action": "auditTrail",
+                      "style": {
+                        "color": "#64748B",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "selectable": true,
+              "bulkActions": [
+                {
+                  "label": "Bulk Verify",
+                  "action": "bulkVerify",
+                  "icon": "check-circle",
+                  "style": {
+                    "backgroundColor": "#10B981",
+                    "color": "#FFFFFF",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "Bulk Download",
+                  "action": "bulkDownload",
+                  "icon": "download",
+                  "style": {
+                    "backgroundColor": "#3B82F6",
+                    "color": "#FFFFFF",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "Export Selected",
+                  "action": "export",
+                  "icon": "file-export",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "color": "#475569",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #CBD5E1"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 25,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Document.query",
+            "formRef": "hrdocumentverificationform-1764959991372-geahe3"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Document Statistics",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginTop": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "stats",
+                "config": {
+                  "metrics": [
+                    {
+                      "label": "Total Documents",
+                      "value": "{{Document.count}}",
+                      "icon": "file",
+                      "color": "#3B82F6",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#0F172A"
+                      }
+                    },
+                    {
+                      "label": "Pending Verification",
+                      "value": "{{Document.count({verificationStatus: 'Pending'})}}",
+                      "icon": "clock",
+                      "color": "#F59E0B",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#0F172A"
+                      }
+                    },
+                    {
+                      "label": "Verified",
+                      "value": "{{Document.count({verificationStatus: 'Verified'})}}",
+                      "icon": "check-circle",
+                      "color": "#10B981",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#0F172A"
+                      }
+                    },
+                    {
+                      "label": "Rejected",
+                      "value": "{{Document.count({verificationStatus: 'Rejected'})}}",
+                      "icon": "x-circle",
+                      "color": "#EF4444",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#0F172A"
+                      }
+                    },
+                    {
+                      "label": "Expired",
+                      "value": "{{Document.count({verificationStatus: 'Expired'})}}",
+                      "icon": "alert-triangle",
+                      "color": "#6B7280",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#0F172A"
+                      }
+                    }
+                  ],
+                  "layout": "grid",
+                  "columns": 5
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "preview": {
+          "type": "modal",
+          "target": "documentPreview"
+        },
+        "download": {
+          "type": "download",
+          "target": "{{document.fileUrl}}"
+        },
+        "verify": {
+          "type": "openForm",
+          "target": "hrdocumentverificationform-1764959991372-geahe3"
+        },
+        "auditTrail": {
+          "type": "modal",
+          "target": "auditTrailView",
+          "dataBinding": "WorkflowAudit.query"
+        },
+        "bulkVerify": {
+          "type": "workflow",
+          "target": "HRDocumentVerificationWorkflow"
+        },
+        "bulkDownload": {
+          "type": "download",
+          "target": "bulk"
+        }
+      },
+      "menu": [
+        {
+          "label": "HR Dashboard",
+          "route": "/hr-admin-dashboard",
+          "icon": "home"
+        },
+        {
+          "label": "Document Management",
+          "route": "/document-management",
+          "icon": "file-text",
+          "active": true
+        },
+        {
+          "label": "Equipment Catalog",
+          "route": "/equipment-catalog-management",
+          "icon": "package"
+        },
+        {
+          "label": "Mentor Management",
+          "route": "/mentor-management",
+          "icon": "users"
+        },
+        {
+          "label": "Analytics",
+          "route": "/onboarding-analytics",
+          "icon": "bar-chart"
+        },
+        {
+          "label": "IT Dashboard",
+          "route": "/it-admin-dashboard",
+          "icon": "settings"
+        }
+      ]
+    },
+    "workflowId": "workflow_1736701200000"
+  },
+  {
+    "id": "equipmentcatalogmanagementpage-1764960200000-xyz123",
+    "name": "EquipmentCatalogManagementPage",
+    "title": "Equipment Catalog Management",
+    "description": "Administrative page for creating, editing, and managing equipment catalog items, standard packages, and assignment rules. Includes inventory tracking, availability management, and package templates.",
+    "route": "/equipment-catalog-management",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "itequipmentassignmentform-1764960103233-ce3x9r"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Equipment Catalog Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "2rem",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "0.5rem"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage equipment catalog items, packages, and role-based assignment rules",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "1rem",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "marginBottom": "1.5rem"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Catalog Overview",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "1.5rem",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "1.5rem",
+                "border": "1px solid #E2E8F0"
+              }
+            },
+            "components": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 4,
+                  "gap": "1rem",
+                  "items": [
+                    {
+                      "label": "Total Items",
+                      "value": "{{EquipmentCatalog.count()}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "1.5rem",
+                        "fontWeight": "700",
+                        "color": "#0F172A"
+                      }
+                    },
+                    {
+                      "label": "Available",
+                      "value": "{{EquipmentCatalog.filter(status='available').count()}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "1.5rem",
+                        "fontWeight": "700",
+                        "color": "#10B981"
+                      }
+                    },
+                    {
+                      "label": "Assigned",
+                      "value": "{{EquipmentAssignment.filter(status='assigned').count()}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "1.5rem",
+                        "fontWeight": "700",
+                        "color": "#3B82F6"
+                      }
+                    },
+                    {
+                      "label": "Low Stock",
+                      "value": "{{EquipmentCatalog.filter(quantity<5).count()}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "1.5rem",
+                        "fontWeight": "700",
+                        "color": "#EF4444"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "+ Add Equipment Item",
+              "variant": "primary",
+              "action": "create",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "0.875rem",
+                "fontWeight": "600",
+                "backgroundColor": "#3B82F6",
+                "color": "#FFFFFF",
+                "padding": "0.625rem 1.25rem",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "1.5rem",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease"
+              }
+            },
+            "formRef": "itequipmentassignmentform-1764960103233-ce3x9r"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Equipment Catalog",
+              "searchable": true,
+              "filterable": true,
+              "sortable": true,
+              "pagination": true,
+              "pageSize": 20,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "1.5rem",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0"
+              },
+              "columns": [
+                {
+                  "key": "itemName",
+                  "label": "Item Name",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "600",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "category",
+                  "label": "Category",
+                  "sortable": true,
+                  "filterable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "400",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "manufacturer",
+                  "label": "Manufacturer",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "400",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "quantity",
+                  "label": "Available Qty",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "600",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "rolePackage",
+                  "label": "Role Package",
+                  "filterable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "400",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "filterable": true,
+                  "badge": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.75rem",
+                    "fontWeight": "600",
+                    "padding": "0.25rem 0.75rem",
+                    "borderRadius": "9999px"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "Edit",
+                      "icon": "edit",
+                      "action": "edit",
+                      "style": {
+                        "color": "#3B82F6",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "0.875rem",
+                        "fontWeight": "500"
+                      }
+                    },
+                    {
+                      "label": "View History",
+                      "icon": "history",
+                      "action": "view",
+                      "style": {
+                        "color": "#64748B",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "0.875rem",
+                        "fontWeight": "500"
+                      }
+                    },
+                    {
+                      "label": "Delete",
+                      "icon": "delete",
+                      "action": "delete",
+                      "style": {
+                        "color": "#EF4444",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "0.875rem",
+                        "fontWeight": "500"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "dataBinding": "EquipmentCatalog.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "navigate",
+          "target": "/equipment-catalog-management/new"
+        },
+        "edit": {
+          "type": "navigate",
+          "target": "/equipment-catalog-management/{{id}}/edit"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/equipment-catalog-management/{{id}}"
+        }
+      },
+      "menu": [
+        {
+          "label": "IT Admin Dashboard",
+          "route": "/it-admin-dashboard"
+        },
+        {
+          "label": "Equipment Assignments",
+          "route": "/equipment-assignments"
+        },
+        {
+          "label": "HR Admin Dashboard",
+          "route": "/hr-admin-dashboard"
+        },
+        {
+          "label": "Document Management",
+          "route": "/document-management"
+        },
+        {
+          "label": "Onboarding Analytics",
+          "route": "/onboarding-analytics"
+        }
+      ]
+    },
+    "workflowId": "workflow_1736701200000"
+  },
+  {
+    "id": "mentormanagementpage-1764960200000-xyz123",
+    "name": "MentorManagementPage",
+    "title": "Mentor Management",
+    "description": "Manage mentor pool, availability, and assignment history. View available mentors, their current mentee load, expertise areas, and assignment history.",
+    "route": "/mentor-management",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "mentorassignmentform-1764960029034-dhj4rc"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Mentor Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage mentor pool, availability, and assignment history",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Mentor Pool Overview",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 4,
+                  "gap": "16px"
+                },
+                "components": [
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Total Mentors",
+                      "value": "{{Employee.query.filter(role='Mentor').count()}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#0F172A"
+                      }
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Available Now",
+                      "value": "{{Employee.query.filter(role='Mentor', status='Available').count()}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#10B981"
+                      }
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Active Assignments",
+                      "value": "{{MentorAssignment.query.filter(status='Active').count()}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#3B82F6"
+                      }
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Avg. Mentee Load",
+                      "value": "{{MentorAssignment.query.filter(status='Active').groupBy('mentorId').avg()}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#8B5CF6"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Mentor Directory",
+              "columns": [
+                {
+                  "key": "name",
+                  "label": "Mentor Name",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "department",
+                  "label": "Department",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "expertise",
+                  "label": "Expertise Areas",
+                  "sortable": false,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "currentLoad",
+                  "label": "Current Mentees",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "availability",
+                  "label": "Availability",
+                  "sortable": true,
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "500",
+                    "padding": "4px 12px",
+                    "borderRadius": "6px"
+                  }
+                },
+                {
+                  "key": "performanceScore",
+                  "label": "Performance",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Profile",
+                  "type": "view",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#3B82F6",
+                    "backgroundColor": "transparent",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Assign Mentee",
+                  "type": "assign",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#FFFFFF",
+                    "backgroundColor": "#3B82F6",
+                    "border": "none",
+                    "borderRadius": "6px",
+                    "padding": "6px 12px",
+                    "cursor": "pointer"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "searchable": true,
+              "filterable": true,
+              "filters": [
+                {
+                  "key": "department",
+                  "label": "Department",
+                  "type": "select"
+                },
+                {
+                  "key": "availability",
+                  "label": "Availability",
+                  "type": "select"
+                },
+                {
+                  "key": "expertise",
+                  "label": "Expertise",
+                  "type": "multiselect"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0"
+              }
+            },
+            "dataBinding": "Employee.query.filter(role='Mentor').join(MentorAssignment, 'id', 'mentorId').groupBy('id')",
+            "formRef": "mentorassignmentform-1764960029034-dhj4rc"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Assignment History",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginTop": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "itemTemplate": {
+                    "title": "{{mentorName}} → {{menteeName}}",
+                    "subtitle": "{{assignmentDate}} | Duration: {{duration}} | Status: {{status}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "padding": "12px",
+                      "borderBottom": "1px solid #E2E8F0"
+                    }
+                  },
+                  "emptyState": "No assignment history available",
+                  "style": {
+                    "maxHeight": "400px",
+                    "overflowY": "auto"
+                  }
+                },
+                "dataBinding": "MentorAssignment.query.orderBy('assignmentDate', 'desc').limit(20)"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/mentor-profile/{{id}}"
+        },
+        "assign": {
+          "type": "openForm",
+          "formId": "mentorassignmentform-1764960029034-dhj4rc"
+        }
+      },
+      "menu": [
+        {
+          "label": "HR Dashboard",
+          "route": "/hr-admin-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "New Employee Dashboard",
+          "route": "/new-employee-dashboard",
+          "icon": "person"
+        },
+        {
+          "label": "Manager Dashboard",
+          "route": "/manager-dashboard",
+          "icon": "group"
+        },
+        {
+          "label": "Document Management",
+          "route": "/document-management",
+          "icon": "description"
+        },
+        {
+          "label": "Equipment Catalog",
+          "route": "/equipment-catalog",
+          "icon": "devices"
+        },
+        {
+          "label": "Analytics",
+          "route": "/onboarding-analytics",
+          "icon": "analytics"
+        }
+      ]
+    },
+    "workflowId": "workflow_1736701200000"
+  },
+  {
+    "id": "onboardinganalyticspage-1764960200000-xyz123",
+    "name": "OnboardingAnalyticsPage",
+    "title": "Onboarding Analytics",
+    "description": "Analytics dashboard with metrics on average onboarding time, bottleneck identification, completion rates, department comparisons, and trend analysis.",
+    "route": "/onboarding-analytics",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Onboarding Analytics",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Comprehensive insights into onboarding process efficiency and performance metrics",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Key Performance Metrics",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "OnboardingStatus.aggregateMetrics",
+            "content": [
+              {
+                "type": "metric",
+                "label": "Avg. Onboarding Time",
+                "value": "{{averageOnboardingDays}} days",
+                "trend": "{{onboardingTimeTrend}}",
+                "style": {
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a"
+                }
+              },
+              {
+                "type": "metric",
+                "label": "Completion Rate",
+                "value": "{{completionRate}}%",
+                "trend": "{{completionRateTrend}}",
+                "style": {
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a"
+                }
+              },
+              {
+                "type": "metric",
+                "label": "Active Onboardings",
+                "value": "{{activeOnboardings}}",
+                "style": {
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a"
+                }
+              },
+              {
+                "type": "metric",
+                "label": "Completed This Month",
+                "value": "{{completedThisMonth}}",
+                "trend": "{{monthlyCompletionTrend}}",
+                "style": {
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                  "fontSize": "24px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Department Performance Comparison",
+              "subtitle": "Average onboarding time and completion rates by department",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Department.onboardingMetrics",
+            "content": [
+              {
+                "type": "chart",
+                "chartType": "bar",
+                "xAxis": "departmentName",
+                "yAxis": [
+                  "avgOnboardingDays",
+                  "completionRate"
+                ],
+                "style": {
+                  "height": "300px",
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Onboarding Bottleneck Analysis",
+              "subtitle": "Identify stages with longest average duration",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "WorkflowAudit.bottleneckAnalysis",
+            "content": [
+              {
+                "type": "table",
+                "columns": [
+                  {
+                    "field": "stageName",
+                    "header": "Onboarding Stage",
+                    "style": {
+                      "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "500",
+                      "color": "#1a1a1a"
+                    }
+                  },
+                  {
+                    "field": "avgDuration",
+                    "header": "Avg. Duration (days)",
+                    "style": {
+                      "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                      "fontSize": "14px",
+                      "color": "#1a1a1a"
+                    }
+                  },
+                  {
+                    "field": "delayedCount",
+                    "header": "Delayed Cases",
+                    "style": {
+                      "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                      "fontSize": "14px",
+                      "color": "#1a1a1a"
+                    }
+                  },
+                  {
+                    "field": "impactScore",
+                    "header": "Impact Score",
+                    "style": {
+                      "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "600",
+                      "color": "#d32f2f"
+                    }
+                  }
+                ],
+                "sortable": true,
+                "style": {
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                  "fontSize": "14px"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Onboarding Trends",
+              "subtitle": "Historical completion rates and average time over the past 12 months",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "OnboardingStatus.trendAnalysis",
+            "content": [
+              {
+                "type": "chart",
+                "chartType": "line",
+                "xAxis": "month",
+                "yAxis": [
+                  "completionRate",
+                  "avgOnboardingDays"
+                ],
+                "style": {
+                  "height": "300px",
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif"
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Export Analytics Report",
+              "variant": "primary",
+              "icon": "download",
+              "action": "exportReport",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease",
+                "hoverBackgroundColor": "#1d4ed8"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "exportReport": {
+          "type": "download",
+          "format": "pdf",
+          "filename": "onboarding-analytics-report"
+        }
+      },
+      "menu": [
+        {
+          "label": "HR Admin Dashboard",
+          "route": "/hr-admin-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Document Management",
+          "route": "/document-management",
+          "icon": "document"
+        },
+        {
+          "label": "Equipment Catalog",
+          "route": "/equipment-catalog",
+          "icon": "equipment"
+        },
+        {
+          "label": "Mentor Management",
+          "route": "/mentor-management",
+          "icon": "people"
+        },
+        {
+          "label": "IT Admin Dashboard",
+          "route": "/it-admin-dashboard",
+          "icon": "settings"
+        },
+        {
+          "label": "Manager Dashboard",
+          "route": "/manager-dashboard",
+          "icon": "supervisor"
+        }
+      ]
+    },
+    "workflowId": "workflow_1736701200000"
+  },
+  {
+    "id": "hradmindashboard-1764960200000-xyz123",
+    "name": "HRAdminDashboard",
+    "title": "HR Admin Dashboard",
+    "description": "Comprehensive dashboard showing all employees in onboarding, pending verifications, workflow bottlenecks, completion statistics, and alerts for delayed tasks",
+    "route": "/hr-admin-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "hrdocumentverificationform-1764959991372-geahe3",
+      "trainingplanapprovalform-1764960010907-90bgua",
+      "mentorassignmentform-1764960029034-dhj4rc"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "HR Admin Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Monitor and manage all active onboarding processes",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Onboarding Overview",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "OnboardingStatus.aggregate",
+            "items": [
+              {
+                "label": "Active Onboarding",
+                "value": "{{OnboardingStatus.count(status='in_progress')}}",
+                "icon": "users",
+                "color": "#3B82F6",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#64748B"
+                }
+              },
+              {
+                "label": "Pending Verifications",
+                "value": "{{Document.count(status='pending_verification')}}",
+                "icon": "clock",
+                "color": "#F59E0B",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#64748B"
+                }
+              },
+              {
+                "label": "Delayed Tasks",
+                "value": "{{OnboardingStatus.count(is_delayed=true)}}",
+                "icon": "alert",
+                "color": "#EF4444",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#64748B"
+                }
+              },
+              {
+                "label": "Completed This Month",
+                "value": "{{OnboardingStatus.count(status='completed', month=current)}}",
+                "icon": "check",
+                "color": "#10B981",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#64748B"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Critical Alerts",
+              "collapsible": false,
+              "style": {
+                "backgroundColor": "#FEF2F2",
+                "borderRadius": "12px",
+                "padding": "20px",
+                "border": "1px solid #FEE2E2",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Notification.query(priority='high', status='unread')",
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "itemTemplate": "{{message}} - {{employee.name}}",
+                  "emptyMessage": "No critical alerts at this time",
+                  "maxItems": 5,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#991B1B",
+                    "lineHeight": "1.6"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Active Onboarding Employees",
+              "searchable": true,
+              "filterable": true,
+              "sortable": true,
+              "pagination": true,
+              "pageSize": 10,
+              "bulkActions": [
+                {
+                  "label": "Send Reminder",
+                  "action": "trigger_workflow",
+                  "workflow": "NotificationWorkflow"
+                },
+                {
+                  "label": "Export Selected",
+                  "action": "export",
+                  "format": "csv"
+                }
+              ],
+              "filters": [
+                {
+                  "field": "department",
+                  "type": "select",
+                  "label": "Department",
+                  "dataSource": "Department.all"
+                },
+                {
+                  "field": "onboarding_status",
+                  "type": "select",
+                  "label": "Status",
+                  "options": [
+                    "not_started",
+                    "in_progress",
+                    "pending_review",
+                    "completed"
+                  ]
+                },
+                {
+                  "field": "start_date",
+                  "type": "daterange",
+                  "label": "Start Date"
+                }
+              ],
+              "columns": [
+                {
+                  "key": "employee.name",
+                  "label": "Employee Name",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "employee.department.name",
+                  "label": "Department",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "start_date",
+                  "label": "Start Date",
+                  "type": "date",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "onboarding_status",
+                  "label": "Status",
+                  "type": "badge",
+                  "sortable": true,
+                  "colorMap": {
+                    "not_started": "#94A3B8",
+                    "in_progress": "#3B82F6",
+                    "pending_review": "#F59E0B",
+                    "completed": "#10B981"
+                  },
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "500",
+                    "padding": "4px 12px",
+                    "borderRadius": "9999px"
+                  }
+                },
+                {
+                  "key": "completion_percentage",
+                  "label": "Progress",
+                  "type": "progress",
+                  "style": {
+                    "height": "8px",
+                    "borderRadius": "4px",
+                    "backgroundColor": "#E2E8F0"
+                  }
+                },
+                {
+                  "key": "pending_tasks",
+                  "label": "Pending Tasks",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569",
+                    "textAlign": "center"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "View Details",
+                      "icon": "eye",
+                      "action": "navigate",
+                      "target": "/employee/{{employee.id}}/onboarding"
+                    },
+                    {
+                      "label": "Verify Documents",
+                      "icon": "check-circle",
+                      "action": "open_form",
+                      "formRef": "hrdocumentverificationform-1764959991372-geahe3",
+                      "condition": "{{has_pending_documents}}"
+                    },
+                    {
+                      "label": "Send Reminder",
+                      "icon": "bell",
+                      "action": "trigger_workflow",
+                      "workflow": "NotificationWorkflow"
+                    }
+                  ],
+                  "style": {
+                    "display": "flex",
+                    "gap": "8px"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "border": "1px solid #E2E8F0",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "overflow": "hidden"
+              },
+              "headerStyle": {
+                "backgroundColor": "#F8FAFC",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "12px",
+                "fontWeight": "600",
+                "color": "#475569",
+                "textTransform": "uppercase",
+                "letterSpacing": "0.05em",
+                "padding": "12px 16px"
+              },
+              "rowStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "padding": "16px",
+                "borderBottom": "1px solid #F1F5F9"
+              },
+              "hoverStyle": {
+                "backgroundColor": "#F8FAFC"
+              }
+            },
+            "dataBinding": "Employee.query(onboarding_status__in=['not_started', 'in_progress', 'pending_review']).join(OnboardingStatus, Department)"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Workflow Bottlenecks",
+              "layout": "list",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginTop": "24px"
+              }
+            },
+            "dataBinding": "WorkflowAudit.query(status='blocked').groupBy('workflow_name')",
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "itemTemplate": "{{workflow_name}}: {{count}} blocked tasks (Avg delay: {{avg_delay_days}} days)",
+                  "emptyMessage": "No workflow bottlenecks detected",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#0F172A",
+                    "lineHeight": "1.8",
+                    "padding": "8px 0"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/employee/{{employee.id}}/onboarding"
+        },
+        "verify_documents": {
+          "type": "open_form",
+          "formRef": "hrdocumentverificationform-1764959991372-geahe3"
+        },
+        "assign_mentor": {
+          "type": "open_form",
+          "formRef": "mentorassignmentform-1764960029034-dhj4rc"
+        },
+        "approve_training": {
+          "type": "open_form",
+          "formRef": "trainingplanapprovalform-1764960010907-90bgua"
+        }
+      },
+      "menu": [
+        {
+          "label": "HR Dashboard",
+          "route": "/hr-admin-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Document Management",
+          "route": "/document-management",
+          "icon": "file"
+        },
+        {
+          "label": "Equipment Catalog",
+          "route": "/equipment-catalog",
+          "icon": "package"
+        },
+        {
+          "label": "Mentor Management",
+          "route": "/mentor-management",
+          "icon": "users"
+        },
+        {
+          "label": "Analytics",
+          "route": "/onboarding-analytics",
+          "icon": "chart"
+        },
+        {
+          "label": "IT Admin",
+          "route": "/it-admin-dashboard",
+          "icon": "settings"
+        },
+        {
+          "label": "Manager Dashboard",
+          "route": "/manager-dashboard",
+          "icon": "briefcase"
+        }
+      ]
+    },
+    "workflowId": "workflow_1736701200000"
+  },
+  {
+    "id": "itadmindashboard-1764960200000-itadmin",
+    "name": "ITAdminDashboard",
+    "title": "IT Admin Dashboard",
+    "description": "Dashboard for IT admins to manage equipment assignments, credential delivery, and inventory status",
+    "route": "/it-admin-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "itequipmentassignmentform-1764960103233-ce3x9r",
+      "credentialdeliveryform-1764960080213-ajckci"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "IT Admin Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage equipment assignments, credentials, and inventory",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Pending Equipment Assignments",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "EquipmentAssignment.query",
+            "formRef": "itequipmentassignmentform-1764960103233-ce3x9r"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Credential Generation Tasks",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "Credential.query",
+            "formRef": "credentialdeliveryform-1764960080213-ajckci"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Equipment Inventory Status",
+              "columns": [
+                {
+                  "field": "itemName",
+                  "header": "Equipment",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "field": "category",
+                  "header": "Category",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "field": "availableQuantity",
+                  "header": "Available",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "field": "totalQuantity",
+                  "header": "Total",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "field": "status",
+                  "header": "Status",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "searchable": true,
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              },
+              "headerStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "12px",
+                "fontWeight": "600",
+                "color": "#64748B",
+                "textTransform": "uppercase",
+                "letterSpacing": "0.5px",
+                "backgroundColor": "#F8FAFC",
+                "padding": "12px 16px"
+              },
+              "rowStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#0F172A",
+                "padding": "16px",
+                "borderBottom": "1px solid #E2E8F0"
+              }
+            },
+            "dataBinding": "EquipmentCatalog.query"
+          },
+          {
+            "type": "list",
+            "config": {
+              "title": "Recent Delivery Confirmations",
+              "itemTemplate": {
+                "title": "{{employee.name}}",
+                "subtitle": "{{equipmentItem}} - {{deliveryDate}}",
+                "badge": "{{status}}"
+              },
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "16px"
+              },
+              "itemStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "padding": "12px 16px",
+                "borderBottom": "1px solid #E2E8F0",
+                "cursor": "pointer"
+              },
+              "itemTitleStyle": {
+                "fontWeight": "500",
+                "color": "#0F172A",
+                "marginBottom": "4px"
+              },
+              "itemSubtitleStyle": {
+                "fontSize": "13px",
+                "color": "#64748B"
+              }
+            },
+            "dataBinding": "EquipmentAssignment.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "assign": {
+          "type": "navigate",
+          "target": "/it-equipment-assignment"
+        },
+        "deliver": {
+          "type": "navigate",
+          "target": "/credential-delivery"
+        },
+        "viewCatalog": {
+          "type": "navigate",
+          "target": "/equipment-catalog"
+        }
+      },
+      "menu": [
+        {
+          "label": "IT Dashboard",
+          "route": "/it-admin-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Equipment Catalog",
+          "route": "/equipment-catalog",
+          "icon": "inventory"
+        },
+        {
+          "label": "HR Dashboard",
+          "route": "/hr-admin-dashboard",
+          "icon": "people"
+        },
+        {
+          "label": "Manager Dashboard",
+          "route": "/manager-dashboard",
+          "icon": "supervisor"
+        },
+        {
+          "label": "Document Management",
+          "route": "/document-management",
+          "icon": "description"
+        },
+        {
+          "label": "Analytics",
+          "route": "/onboarding-analytics",
+          "icon": "analytics"
+        }
+      ]
+    },
+    "workflowId": "workflow_1736701200000"
+  },
+  {
+    "id": "managerdashboard-1764960200000-mngr01",
+    "name": "ManagerDashboard",
+    "title": "Manager Dashboard",
+    "description": "Dashboard showing onboarding status for manager's new hires, pending approvals for training plans, scheduled reviews, and mentor assignments with team analytics and intervention alerts.",
+    "route": "/manager-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "trainingplanapprovalform-1764960010907-90bgua",
+      "mentorassignmentform-1764960029034-dhj4rc",
+      "thirtydayreviewform-1764960051125-gzz0lc"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Team Onboarding Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Monitor your team's onboarding progress and take action on pending items",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Intervention Alerts",
+              "subtitle": "New hires requiring immediate attention",
+              "variant": "outlined",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e0e0e0",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
+              }
+            },
+            "dataBinding": "OnboardingStatus.query.filter(status => status.requiresIntervention === true && status.managerId === currentUser.id)"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "My Team's New Hires",
+              "columns": [
+                {
+                  "field": "employeeName",
+                  "header": "Employee",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "startDate",
+                  "header": "Start Date",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "field": "onboardingProgress",
+                  "header": "Progress",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0066cc"
+                  }
+                },
+                {
+                  "field": "currentStage",
+                  "header": "Current Stage",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "field": "mentorAssigned",
+                  "header": "Mentor",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "type": "button",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#0066cc",
+                    "backgroundColor": "transparent",
+                    "border": "none",
+                    "cursor": "pointer",
+                    "padding": "8px 16px",
+                    "borderRadius": "8px"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e0e0e0",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
+              }
+            },
+            "dataBinding": "Employee.query.filter(emp => emp.managerId === currentUser.id && emp.onboardingComplete === false).join(OnboardingStatus)"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Pending Approvals",
+              "subtitle": "Items requiring your review",
+              "variant": "outlined",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e0e0e0",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
+              }
+            },
+            "dataBinding": "TrainingPlan.query.filter(plan => plan.approverId === currentUser.id && plan.status === 'pending')"
+          },
+          {
+            "type": "list",
+            "config": {
+              "title": "Upcoming Reviews",
+              "itemTemplate": {
+                "primary": "{{employeeName}} - {{reviewType}}",
+                "secondary": "Scheduled: {{scheduledDate}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "color": "#1a1a1a",
+                  "padding": "12px 0",
+                  "borderBottom": "1px solid #f0f0f0"
+                }
+              },
+              "emptyMessage": "No upcoming reviews scheduled",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e0e0e0",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
+              }
+            },
+            "dataBinding": "ReviewSchedule.query.filter(review => review.reviewerId === currentUser.id && review.status === 'scheduled').orderBy(scheduledDate)",
+            "formRef": "thirtydayreviewform-1764960051125-gzz0lc"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Team Analytics",
+              "subtitle": "Onboarding performance metrics",
+              "variant": "outlined",
+              "content": {
+                "metrics": [
+                  {
+                    "label": "Active Onboardings",
+                    "value": "{{activeCount}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "32px",
+                      "fontWeight": "700",
+                      "color": "#0066cc"
+                    }
+                  },
+                  {
+                    "label": "Avg. Completion Time",
+                    "value": "{{avgDays}} days",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "32px",
+                      "fontWeight": "700",
+                      "color": "#00a86b"
+                    }
+                  },
+                  {
+                    "label": "Pending Actions",
+                    "value": "{{pendingCount}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "32px",
+                      "fontWeight": "700",
+                      "color": "#ff6b35"
+                    }
+                  }
+                ]
+              },
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e0e0e0",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
+              }
+            },
+            "dataBinding": "OnboardingStatus.query.filter(status => status.managerId === currentUser.id).aggregate()"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/new-employee-dashboard"
+        },
+        "approve": {
+          "type": "openForm",
+          "formId": "trainingplanapprovalform-1764960010907-90bgua"
+        },
+        "assignMentor": {
+          "type": "openForm",
+          "formId": "mentorassignmentform-1764960029034-dhj4rc"
+        },
+        "conductReview": {
+          "type": "openForm",
+          "formId": "thirtydayreviewform-1764960051125-gzz0lc"
+        }
+      },
+      "menu": [
+        {
+          "label": "Manager Dashboard",
+          "route": "/manager-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "New Employee View",
+          "route": "/new-employee-dashboard",
+          "icon": "person"
+        },
+        {
+          "label": "Mentor Management",
+          "route": "/mentor-management",
+          "icon": "group"
+        },
+        {
+          "label": "Document Management",
+          "route": "/document-management",
+          "icon": "description"
+        },
+        {
+          "label": "Analytics",
+          "route": "/onboarding-analytics",
+          "icon": "analytics"
+        },
+        {
+          "label": "HR Admin",
+          "route": "/hr-admin-dashboard",
+          "icon": "admin_panel_settings"
+        },
+        {
+          "label": "IT Admin",
+          "route": "/it-admin-dashboard",
+          "icon": "computer"
+        }
+      ]
+    },
+    "workflowId": "workflow_1736701200000"
+  },
+  {
+    "id": "newemployeedashboard-1764960200000-abc123",
+    "name": "NewEmployeeDashboard",
+    "title": "My Onboarding Dashboard",
+    "description": "Personalized dashboard for new employees showing onboarding progress, tasks, documents, equipment, training, and mentor information",
+    "route": "/newemployeedashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "employeedocumentsubmissionform-1764959969702-a0u811"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Welcome to Your Onboarding Journey",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Track your progress and complete your onboarding tasks",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Onboarding Progress",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "OnboardingStatus.query",
+            "children": [
+              {
+                "type": "progressBar",
+                "config": {
+                  "label": "Overall Completion",
+                  "valueBinding": "completionPercentage",
+                  "showPercentage": true,
+                  "style": {
+                    "height": "8px",
+                    "backgroundColor": "#F1F5F9",
+                    "borderRadius": "4px",
+                    "marginBottom": "16px"
+                  },
+                  "fillStyle": {
+                    "backgroundColor": "#3B82F6"
+                  }
+                }
+              },
+              {
+                "type": "list",
+                "config": {
+                  "items": [
+                    {
+                      "label": "Documents Submitted",
+                      "valueBinding": "documentsCompleted",
+                      "icon": "document",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#475569",
+                        "padding": "8px 0"
+                      }
+                    },
+                    {
+                      "label": "Equipment Assigned",
+                      "valueBinding": "equipmentAssigned",
+                      "icon": "laptop",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#475569",
+                        "padding": "8px 0"
+                      }
+                    },
+                    {
+                      "label": "Training Sessions",
+                      "valueBinding": "trainingCompleted",
+                      "icon": "book",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#475569",
+                        "padding": "8px 0"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Pending Tasks",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "16px"
+              }
+            },
+            "children": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "header": "Task",
+                      "field": "taskName",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#0F172A"
+                      }
+                    },
+                    {
+                      "header": "Due Date",
+                      "field": "dueDate",
+                      "type": "date",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#64748B"
+                      }
+                    },
+                    {
+                      "header": "Status",
+                      "field": "status",
+                      "type": "badge",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "500",
+                        "padding": "4px 12px",
+                        "borderRadius": "9999px"
+                      }
+                    },
+                    {
+                      "header": "Action",
+                      "field": "action",
+                      "type": "button",
+                      "style": {
+                        "backgroundColor": "#3B82F6",
+                        "color": "#FFFFFF",
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "padding": "8px 16px",
+                        "borderRadius": "8px",
+                        "border": "none"
+                      }
+                    }
+                  ],
+                  "style": {
+                    "borderRadius": "8px",
+                    "overflow": "hidden"
+                  },
+                  "headerStyle": {
+                    "backgroundColor": "#F8FAFC",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "color": "#475569",
+                    "textTransform": "uppercase",
+                    "letterSpacing": "0.05em",
+                    "padding": "12px 16px"
+                  },
+                  "rowStyle": {
+                    "borderBottom": "1px solid #F1F5F9",
+                    "padding": "12px 16px"
+                  }
+                },
+                "dataBinding": "OnboardingStatus.pendingTasks",
+                "formRef": "employeedocumentsubmissionform-1764959969702-a0u811"
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "My Mentor",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "MentorAssignment.query",
+            "children": [
+              {
+                "type": "text",
+                "config": {
+                  "textBinding": "mentor.name",
+                  "variant": "h3",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "color": "#0F172A",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "textBinding": "mentor.title",
+                  "variant": "body2",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#64748B",
+                    "marginBottom": "12px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "textBinding": "mentor.email",
+                  "variant": "body2",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#3B82F6",
+                    "marginBottom": "4px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "textBinding": "mentor.phone",
+                  "variant": "body2",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#64748B"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Training Plan & Equipment",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "16px"
+              }
+            },
+            "children": [
+              {
+                "type": "list",
+                "config": {
+                  "title": "Assigned Equipment",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#0F172A",
+                    "marginBottom": "12px"
+                  }
+                },
+                "dataBinding": "EquipmentAssignment.query",
+                "itemConfig": {
+                  "displayField": "equipmentName",
+                  "secondaryField": "assignmentDate",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569",
+                    "padding": "8px 0",
+                    "borderBottom": "1px solid #F1F5F9"
+                  }
+                }
+              },
+              {
+                "type": "list",
+                "config": {
+                  "title": "Training Schedule",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#0F172A",
+                    "marginTop": "24px",
+                    "marginBottom": "12px"
+                  }
+                },
+                "dataBinding": "TrainingPlan.query",
+                "itemConfig": {
+                  "displayField": "trainingName",
+                  "secondaryField": "scheduledDate",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569",
+                    "padding": "8px 0",
+                    "borderBottom": "1px solid #F1F5F9"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Upcoming Reviews",
+              "style": {
+                "backgroundColor": "#FEF3C7",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #FDE68A"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#92400E",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "ReviewSchedule.query",
+            "children": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "30-Day Review",
+                  "variant": "h4",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "color": "#92400E",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "textBinding": "reviewDate",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#78350F",
+                    "marginBottom": "4px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "textBinding": "reviewerName",
+                  "variant": "body2",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#78350F"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/documentmanagement"
+        },
+        "viewDocuments": {
+          "type": "navigate",
+          "target": "/documentmanagement"
+        }
+      },
+      "menu": [
+        {
+          "label": "My Dashboard",
+          "route": "/newemployeedashboard",
+          "icon": "home"
+        },
+        {
+          "label": "Documents",
+          "route": "/documentmanagement",
+          "icon": "document"
+        },
+        {
+          "label": "Mentor",
+          "route": "/mentormanagement",
+          "icon": "person"
+        }
+      ]
+    },
+    "workflowId": "workflow_1736701200000"
+  }
+]

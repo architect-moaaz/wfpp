@@ -1,0 +1,551 @@
+[
+  {
+    "id": "workflow_1732877234567",
+    "name": "Library Management System Workflow",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Member Book Request",
+          "formId": "bookregistrationform-1764401625487-58f0hf",
+          "trigger": "Member initiates book search and request",
+          "formName": "BookRegistrationForm",
+          "description": "Start of library book borrowing workflow"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Member Book Search",
+          "formId": "membersignupform-1764401641260-zi3l0v",
+          "formName": "MemberSignupForm",
+          "priority": "Medium",
+          "taskName": "search_catalog",
+          "assignedTo": "library_member",
+          "instructions": "Search library catalog and select desired book"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 150,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Validate Book Availability",
+          "rules": [
+            "Book exists in catalog",
+            "Book is not already checked out",
+            "Member has valid membership"
+          ],
+          "ruleType": "availability_check",
+          "description": "Verify book is available and member can borrow"
+        },
+        "type": "validation",
+        "position": {
+          "x": 300,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Book Available Decision",
+          "condition": "Check if book is available for immediate checkout",
+          "description": "Route based on book availability status",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 450,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Librarian Approval",
+          "formId": "checkoutreturnform-1764401656809-2kpips",
+          "formName": "CheckoutReturnForm",
+          "priority": "High",
+          "taskName": "approve_checkout",
+          "assignedTo": "librarian",
+          "instructions": "Review and approve book checkout request"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 600,
+          "y": -100
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Create Reservation",
+          "formId": "bookregistrationform-1764401625487-58f0hf",
+          "formName": "BookRegistrationForm",
+          "priority": "Medium",
+          "taskName": "create_reservation",
+          "assignedTo": "librarian",
+          "instructions": "Add member to waiting list for book"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 600,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Approval Decision",
+          "condition": "Check if librarian approved the request",
+          "description": "Process based on librarian approval status",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 750,
+          "y": -100
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Parallel Checkout Processing",
+          "branches": "Update catalog, Generate transaction record, Send confirmation",
+          "description": "Execute checkout tasks in parallel",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 900,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Update Book Status",
+          "script": "updateBookAvailability(bookId, 'checked_out')",
+          "scriptType": "JavaScript",
+          "description": "Mark book as checked out in catalog"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 1050,
+          "y": -150
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "input": "member_id, book_id, checkout_date",
+          "label": "Create Transaction Record",
+          "output": "transaction_record",
+          "operation": "create_checkout_transaction",
+          "description": "Generate checkout transaction with due date"
+        },
+        "type": "dataProcess",
+        "position": {
+          "x": 1050,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Send Checkout Confirmation",
+          "channel": "Email",
+          "template": "checkout_confirmation",
+          "recipient": "member",
+          "description": "Notify member of successful checkout and due date"
+        },
+        "type": "notification",
+        "position": {
+          "x": 1050,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Merge Checkout Tasks",
+          "branches": "Rejoin parallel execution paths",
+          "description": "Wait for all checkout tasks to complete",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 1200,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Due Date Monitor",
+          "duration": "P13D",
+          "timerType": "duration",
+          "description": "Wait until 1 day before due date for reminder"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 1350,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "AI Overdue Risk Assessment",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze member's borrowing history and predict likelihood of overdue return: Member ID: ${processData.member_id}, Previous overdue count: ${processData.overdue_history}, Book type: ${processData.book_category}",
+          "maxTokens": 500,
+          "description": "AI assessment of overdue risk for personalized notifications",
+          "temperature": 0.3,
+          "outputVariable": "overdueRisk"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 1500,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Risk-Based Notification",
+          "condition": "Check AI-assessed overdue risk level",
+          "description": "Send different notifications based on risk assessment",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 1650,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "High Risk Reminder",
+          "channel": "Email and SMS",
+          "template": "urgent_due_reminder",
+          "recipient": "member",
+          "description": "Urgent reminder for high-risk members"
+        },
+        "type": "notification",
+        "position": {
+          "x": 1800,
+          "y": -150
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Standard Reminder",
+          "channel": "Email",
+          "template": "standard_due_reminder",
+          "recipient": "member",
+          "description": "Standard due date reminder"
+        },
+        "type": "notification",
+        "position": {
+          "x": 1800,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Wait for Return",
+          "duration": "P2D",
+          "timerType": "duration",
+          "description": "Wait 2 days past due date"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 1950,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Return Status Check",
+          "condition": "Check if book has been returned",
+          "description": "Determine if book was returned or is overdue",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 2100,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_20",
+        "data": {
+          "label": "Calculate Late Fees",
+          "script": "calculateLateFees(daysOverdue, membershipType)",
+          "scriptType": "JavaScript",
+          "description": "Calculate overdue fees based on library policy"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 2250,
+          "y": -150
+        }
+      },
+      {
+        "id": "node_21",
+        "data": {
+          "label": "Overdue Notice",
+          "channel": "Email and SMS",
+          "template": "overdue_notice_with_fees",
+          "recipient": "member",
+          "description": "Send overdue notice with fee calculation"
+        },
+        "type": "notification",
+        "position": {
+          "x": 2250,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_22",
+        "data": {
+          "label": "Workflow Complete",
+          "result": "Book checkout and monitoring process completed",
+          "description": "End of library management workflow cycle"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 2400,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_23",
+        "data": {
+          "label": "Reservation Confirmation",
+          "channel": "Email",
+          "template": "reservation_confirmation",
+          "recipient": "member",
+          "description": "Confirm book reservation and estimated wait time"
+        },
+        "type": "notification",
+        "position": {
+          "x": 750,
+          "y": 200
+        }
+      },
+      {
+        "id": "node_24",
+        "data": {
+          "label": "Request Denied Notice",
+          "channel": "Email",
+          "template": "request_denied",
+          "recipient": "member",
+          "description": "Notify member of denied checkout request"
+        },
+        "type": "notification",
+        "position": {
+          "x": 900,
+          "y": -200
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-29T13:06:53.78+05:30",
+    "updated_at": "2025-11-29T13:06:53.78+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "label": "Book Available",
+        "source": "node_4",
+        "target": "node_5",
+        "condition": "processData.book_status === 'available'"
+      },
+      {
+        "id": "edge_5",
+        "label": "Book Unavailable",
+        "source": "node_4",
+        "target": "node_6",
+        "condition": "processData.book_status === 'checked_out'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_7",
+        "label": "Approved",
+        "source": "node_7",
+        "target": "node_8",
+        "condition": "processData.librarian_approval === 'approved'"
+      },
+      {
+        "id": "edge_8",
+        "label": "Denied",
+        "source": "node_7",
+        "target": "node_24",
+        "condition": "processData.librarian_approval === 'denied'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_8",
+        "target": "node_9",
+        "isDefault": true
+      },
+      {
+        "id": "edge_10",
+        "source": "node_8",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_8",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_9",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_10",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_15",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_12",
+        "target": "node_13",
+        "isDefault": true
+      },
+      {
+        "id": "edge_16",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_18",
+        "label": "High Risk",
+        "source": "node_15",
+        "target": "node_16",
+        "condition": "processData.overdueRisk === 'high'"
+      },
+      {
+        "id": "edge_19",
+        "label": "Low/Medium Risk",
+        "source": "node_15",
+        "target": "node_17",
+        "condition": "processData.overdueRisk !== 'high'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_20",
+        "source": "node_16",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_17",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_18",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_23",
+        "label": "Returned On Time",
+        "source": "node_19",
+        "target": "node_22",
+        "condition": "processData.return_status === 'returned'"
+      },
+      {
+        "id": "edge_24",
+        "label": "Overdue",
+        "source": "node_19",
+        "target": "node_20",
+        "condition": "processData.return_status === 'overdue'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_25",
+        "source": "node_20",
+        "target": "node_21"
+      },
+      {
+        "id": "edge_26",
+        "source": "node_21",
+        "target": "node_22"
+      },
+      {
+        "id": "edge_27",
+        "source": "node_6",
+        "target": "node_23"
+      },
+      {
+        "id": "edge_28",
+        "source": "node_23",
+        "target": "node_22"
+      },
+      {
+        "id": "edge_29",
+        "source": "node_24",
+        "target": "node_22"
+      }
+    ],
+    "description": ""
+  }
+]

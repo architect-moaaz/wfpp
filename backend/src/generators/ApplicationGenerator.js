@@ -55,13 +55,19 @@ class ApplicationGenerator {
       // 8. Generate models
       files.push(await this.generateModels());
 
-      // 9. Generate utility files
+      // 9. Generate ExecutionLogDatabase for self-healing
+      files.push(await this.generateExecutionLogDatabase());
+
+      // 10. Generate execution logs API routes
+      files.push(await this.generateExecutionLogsRoutes());
+
+      // 11. Generate utility files
       files.push(await this.generateUtils());
 
-      // 10. Generate README
+      // 12. Generate README
       files.push(await this.generateReadme());
 
-      // 11. Generate .gitignore
+      // 13. Generate .gitignore
       files.push(await this.generateGitignore());
 
       console.log(`[ApplicationGenerator] Generated ${files.length} files at ${this.outputPath}`);
@@ -125,7 +131,8 @@ class ApplicationGenerator {
         'node-cron': '^3.0.2',
         kafkajs: '^2.2.4',
         ioredis: '^5.3.2',
-        winston: '^3.9.0'
+        winston: '^3.9.0',
+        '@anthropic-ai/sdk': '^0.71.0'
       },
       devDependencies: {
         nodemon: '^2.0.22'
@@ -153,16 +160,24 @@ class ApplicationGenerator {
       JSON.stringify(resources.dataModels || [], null, 2)
     );
 
-    // Forms
+    // Forms - Load from file-based storage to get complete data including wizard steps
+    // PostgreSQL schema doesn't have 'steps' column, so we load directly from forms.json
+    const formsFromFile = await this.loadFormsFromFileStorage(resources.forms || []);
     await fs.writeFile(
       path.join(resourcesDir, 'forms.json'),
-      JSON.stringify(resources.forms || [], null, 2)
+      JSON.stringify(formsFromFile, null, 2)
     );
 
     // Pages
     await fs.writeFile(
       path.join(resourcesDir, 'pages.json'),
       JSON.stringify(resources.pages || [], null, 2)
+    );
+
+    // Rules
+    await fs.writeFile(
+      path.join(resourcesDir, 'rules.json'),
+      JSON.stringify(resources.rules || [], null, 2)
     );
 
     // Mobile UI
@@ -176,10 +191,36 @@ class ApplicationGenerator {
     return 'resources';
   }
 
+  /**
+   * Load forms from file-based storage to get complete data
+   * This ensures wizard forms get their 'steps' data which isn't stored in PostgreSQL
+   */
+  async loadFormsFromFileStorage(formsFromDB) {
+    try {
+      const formsFilePath = path.join(__dirname, '../../data/forms.json');
+      const formsFileContent = await fs.readFile(formsFilePath, 'utf8');
+      const allForms = JSON.parse(formsFileContent);
+
+      // Get form IDs from the database
+      const formIds = formsFromDB.map(f => f.id);
+
+      // Find matching forms from file storage
+      const matchedForms = allForms.filter(f => formIds.includes(f.id));
+
+      // If we found matches in file storage, use those (they have complete data)
+      // Otherwise fall back to database forms
+      return matchedForms.length > 0 ? matchedForms : formsFromDB;
+    } catch (error) {
+      console.error('[ApplicationGenerator] Error loading forms from file storage:', error);
+      // Fall back to database forms if file read fails
+      return formsFromDB;
+    }
+  }
+
   async generateRuntimeEngine() {
     const runtimeEngine = `/**
- * Workflow Runtime Engine
- * Executes workflow instances and manages workflow state
+ * Workflow Runtime Engine with Self-Healing
+ * Executes workflow instances and manages workflow state with AI-powered error recovery
  */
 
 const fs = require('fs').promises;
@@ -187,12 +228,18 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const WorkflowInstance = require('../models/WorkflowInstance');
 const logger = require('../utils/logger');
+const executionLogDB = require('../database/ExecutionLogDatabase');
+const Anthropic = require('@anthropic-ai/sdk');
 
 class RuntimeEngine {
   constructor() {
     this.workflows = [];
     this.instances = new Map();
     this.nodeExecutors = this.initializeNodeExecutors();
+    this.anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY
+    });
+    this.useLLM = !!process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_anthropic_api_key_here';
   }
 
   async initialize() {
@@ -206,6 +253,308 @@ class RuntimeEngine {
       logger.error('Failed to load workflows:', error);
       throw error;
     }
+  }
+
+  /**
+   * Get helper functions library for script execution
+   */
+  getHelperFunctions() {
+    return {
+      // Data manipulation
+      updateField: (data, field, value) => {
+        return { ...data, [field]: value };
+      },
+      getField: (data, field) => {
+        return data[field];
+      },
+      mergeData: (data, newData) => {
+        return { ...data, ...newData };
+      },
+
+      // Array operations
+      addToArray: (data, field, item) => {
+        const arr = data[field] || [];
+        return { ...data, [field]: [...arr, item] };
+      },
+      filterArray: (data, field, predicate) => {
+        const arr = data[field] || [];
+        return { ...data, [field]: arr.filter(predicate) };
+      },
+
+      // Validation
+      validateRequired: (data, fields) => {
+        const missing = fields.filter(f => !data[f]);
+        return { valid: missing.length === 0, missing };
+      },
+
+      // String operations
+      formatString: (template, data) => {
+        return template.replace(/\\{(\\w+)\\}/g, (_, key) => data[key] || '');
+      },
+
+      // Date operations
+      getCurrentDate: () => new Date().toISOString(),
+      formatDate: (date) => new Date(date).toLocaleDateString(),
+
+      // Logging
+      log: (...args) => {
+        console.log('[ScriptTask]', ...args);
+      }
+    };
+  }
+
+  /**
+   * Use AI to fix a broken script with historical learning
+   */
+  async fixScriptWithAI(originalScript, errorMessage, taskData, processData, workflowId) {
+    if (!this.useLLM) {
+      logger.info('[RuntimeEngine] AI not available for script recovery');
+      return { script: null, method: null };
+    }
+
+    logger.info('[RuntimeEngine] Attempting AI-powered script recovery...');
+
+    // Step 1: Check historical fixes for similar errors
+    const similarFixes = executionLogDB.findSimilarFixes(errorMessage, originalScript, 3);
+
+    if (similarFixes.length > 0) {
+      logger.info(\`[RuntimeEngine] Found \${similarFixes.length} similar historical fixes\`);
+
+      // Try the most successful fix first
+      const bestFix = similarFixes[0];
+      logger.info(\`[RuntimeEngine] Using cached fix (success count: \${bestFix.successCount})\`);
+
+      return {
+        script: bestFix.fixedScript,
+        method: 'cached',
+        reference: bestFix
+      };
+    }
+
+    // Step 2: No historical fix found, use AI to generate new fix
+    logger.info('[RuntimeEngine] No historical fix found, generating AI solution...');
+
+    try {
+      // Build prompt with historical context if available
+      let historicalContext = '';
+      if (similarFixes.length > 0) {
+        historicalContext = '\\n**Similar Past Errors and Fixes:**\\n';
+        similarFixes.forEach((fix, idx) => {
+          historicalContext += \`\\nExample \${idx + 1}:\\n\`;
+          historicalContext += \`Error: \${fix.errorMessage}\\n\`;
+          historicalContext += \`Fix: \${fix.fixedScript}\\n\`;
+        });
+      }
+
+      const prompt = \`You are a script repair expert with access to historical fixes. A JavaScript script failed during execution and you need to fix it.
+
+**Original Script:**
+\\\`\\\`\\\`javascript
+\${originalScript}
+\\\`\\\`\\\`
+
+**Error:**
+\${errorMessage}
+
+**Task Context:**
+- Task Label: \${taskData.label || 'Unknown'}
+- Task Description: \${taskData.description || 'No description'}
+
+**Available Data:**
+- processData: \${JSON.stringify(processData, null, 2)}
+
+**Available Helper Functions:**
+You can ONLY use these pre-defined functions:
+- updateField(data, field, value) - Update a single field
+- getField(data, field) - Get a field value
+- mergeData(data, newData) - Merge objects
+- addToArray(data, field, item) - Add item to array field
+- filterArray(data, field, predicate) - Filter array field
+- validateRequired(data, fields) - Validate required fields
+- formatString(template, data) - Format string with placeholders
+- getCurrentDate() - Get current ISO date
+- formatDate(date) - Format date to locale string
+- log(...args) - Log messages
+\${historicalContext}
+
+**Your Task:**
+Fix the script to accomplish the original intent while:
+1. Using ONLY the available helper functions (no undefined functions)
+2. Working with the processData object
+3. Returning a valid result
+4. Avoiding the error that occurred
+5. Learning from similar past fixes if provided
+
+**Return ONLY the fixed JavaScript code, nothing else. Do not include markdown code blocks or explanations.**\`;
+
+      const response = await this.anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        temperature: 0.3,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
+
+      const fixedScript = response.content[0].text.trim();
+      logger.info('[RuntimeEngine] AI generated new fixed script');
+
+      return {
+        script: fixedScript,
+        method: 'ai',
+        reference: null
+      };
+    } catch (aiError) {
+      logger.error('[RuntimeEngine] AI script recovery failed:', aiError.message);
+      return { script: null, method: null };
+    }
+  }
+
+  /**
+   * Execute script task with self-healing and logging
+   */
+  async executeScriptTask(node, context) {
+    const taskData = node.data || {};
+    const scriptType = taskData.scriptType || 'javascript';
+    const startTime = Date.now();
+    const workflowId = context.workflowId || 'unknown';
+    const instanceId = context.instanceId || 'unknown';
+
+    if (scriptType.toLowerCase() === 'javascript') {
+      const originalScript = taskData.script || 'return { executed: true };';
+      const helpers = this.getHelperFunctions();
+      let attemptCount = 0;
+      let currentScript = originalScript;
+      let fixMethod = null;
+      let lastError = null;
+
+      // Try up to 3 times: original, cached fix, then AI-generated fix
+      while (attemptCount < 3) {
+        attemptCount++;
+
+        try {
+          logger.info(\`[RuntimeEngine] Script execution attempt \${attemptCount}\`);
+
+          // Create function with processData and helper functions
+          const fn = new Function(
+            'processData',
+            'helpers',
+            \`
+            // Destructure helpers for easy access
+            const {
+              updateField, getField, mergeData,
+              addToArray, filterArray,
+              validateRequired, formatString,
+              getCurrentDate, formatDate,
+              log
+            } = helpers;
+
+            // Execute user script
+            \${currentScript}
+            \`
+          );
+
+          const result = fn(context.data, helpers);
+          const executionTime = Date.now() - startTime;
+
+          // Log successful execution
+          executionLogDB.logExecution({
+            workflowId,
+            instanceId,
+            nodeId: node.id,
+            nodeType: node.type,
+            taskLabel: taskData.label,
+            status: attemptCount > 1 ? 'fixed' : 'success',
+            originalScript,
+            fixedScript: attemptCount > 1 ? currentScript : null,
+            fixMethod,
+            executionTime,
+            retryCount: attemptCount - 1
+          });
+
+          // If this was a successful fix, store it for future reference
+          if (attemptCount > 1 && fixMethod) {
+            executionLogDB.storeFix({
+              errorType: lastError.name || 'Error',
+              errorMessage: lastError.message,
+              originalScript,
+              fixedScript: currentScript,
+              taskContext: {
+                label: taskData.label,
+                description: taskData.description
+              }
+            });
+
+            logger.info(\`[RuntimeEngine] ✓ \${fixMethod === 'cached' ? 'Cached' : 'AI'} fix executed successfully!\`);
+          }
+
+          return result;
+        } catch (error) {
+          logger.error(\`[RuntimeEngine] Script execution attempt \${attemptCount} failed:\`, error.message);
+          lastError = error;
+
+          // If first attempt failed and AI/cache is available, try to fix it
+          if (attemptCount === 1) {
+            const fixResult = await this.fixScriptWithAI(
+              originalScript,
+              error.message,
+              taskData,
+              context.data,
+              workflowId
+            );
+
+            if (fixResult.script) {
+              currentScript = fixResult.script;
+              fixMethod = fixResult.method;
+              logger.info(\`[RuntimeEngine] Retrying with \${fixMethod} fix...\`);
+              continue; // Try again with fixed script
+            }
+          }
+
+          // If second attempt failed with cached fix, try AI generation
+          if (attemptCount === 2 && fixMethod === 'cached') {
+            logger.info('[RuntimeEngine] Cached fix failed, trying AI generation...');
+            const fixResult = await this.fixScriptWithAI(
+              originalScript,
+              error.message,
+              taskData,
+              context.data,
+              workflowId
+            );
+
+            if (fixResult.script && fixResult.method === 'ai') {
+              currentScript = fixResult.script;
+              fixMethod = 'ai';
+              logger.info('[RuntimeEngine] Retrying with AI-generated fix...');
+              continue; // Try again
+            }
+          }
+
+          // Log failed execution
+          const executionTime = Date.now() - startTime;
+          executionLogDB.logExecution({
+            workflowId,
+            instanceId,
+            nodeId: node.id,
+            nodeType: node.type,
+            taskLabel: taskData.label,
+            status: 'failed',
+            error: error.message,
+            originalScript,
+            fixedScript: attemptCount > 1 ? currentScript : null,
+            fixMethod,
+            executionTime,
+            retryCount: attemptCount - 1
+          });
+
+          // If we've exhausted attempts, throw error
+          throw new Error(\`Script execution failed: \${error.message}\`);
+        }
+      }
+    }
+
+    return { message: \`Script task executed: \${taskData.label}\` };
   }
 
   initializeNodeExecutors() {
@@ -235,8 +584,8 @@ class RuntimeEngine {
 
       scriptTask: async (node, context) => {
         logger.info(\`Script task: \${node.data?.label}\`);
-        // Execute script
-        const result = await this.executeScript(node.data?.script, context);
+        // Execute script with self-healing
+        const result = await this.executeScriptTask(node, context);
         return { status: 'completed', data: result };
       },
 
@@ -276,17 +625,6 @@ class RuntimeEngine {
   async executeDatabaseService(config, context) {
     // Database service implementation
     return context.data;
-  }
-
-  async executeScript(script, context) {
-    try {
-      // Safe script execution
-      const fn = new Function('context', script);
-      return fn(context.data);
-    } catch (error) {
-      logger.error('Script execution failed:', error);
-      throw error;
-    }
   }
 
   async evaluateGateway(node, context) {
@@ -340,7 +678,15 @@ class RuntimeEngine {
       return;
     }
 
-    const result = await executor(node, { data: instance.data, input: instance.input });
+    // Add workflow and instance IDs to context for logging
+    const context = {
+      data: instance.data,
+      input: instance.input,
+      workflowId: instance.workflowId,
+      instanceId: instance.id
+    };
+
+    const result = await executor(node, context);
 
     if (result.status === 'completed') {
       instance.data = result.data;
@@ -533,6 +879,7 @@ const bodyParser = require('body-parser');
 const config = require('./config');
 const runtimeEngine = require('./runtime/engine');
 const apiRoutes = require('./routes/api');
+const executionLogsRoutes = require('./routes/execution-logs');
 const database = require('./database');
 const logger = require('./utils/logger');
 
@@ -551,6 +898,7 @@ app.use((req, res, next) => {
 
 // API Routes
 app.use('/api', apiRoutes);
+app.use('/api/execution-logs', executionLogsRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {
@@ -582,6 +930,7 @@ async function start() {
       logger.info(\`Server running on port \${PORT}\`);
       logger.info(\`Health check: http://localhost:\${PORT}/api/health\`);
       logger.info(\`API docs: http://localhost:\${PORT}/api/workflows\`);
+      logger.info(\`Execution logs: http://localhost:\${PORT}/api/execution-logs/statistics\`);
     });
   } catch (error) {
     logger.error('Failed to start application:', error);
@@ -631,6 +980,9 @@ REDIS_PORT=6379
 KAFKA_ENABLED=false
 KAFKA_BROKERS=localhost:9092
 KAFKA_CLIENT_ID=${this.application.name.toLowerCase().replace(/\s+/g, '_')}
+
+# AI Self-Healing Configuration
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
 
 # Logging
 LOG_LEVEL=info
@@ -1277,6 +1629,408 @@ module.exports = WorkflowInstance;
     const filePath = path.join(this.outputPath, 'src/models/WorkflowInstance.js');
     await fs.writeFile(filePath, workflowInstance);
     return 'models/WorkflowInstance.js';
+  }
+
+  async generateExecutionLogDatabase() {
+    const executionLogDatabase = `/**
+ * Execution Log Database
+ * Stores workflow execution failures and AI-generated fixes for learning
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+const EXECUTION_LOGS_FILE = path.join(__dirname, '../../data/execution-logs.json');
+
+class ExecutionLogDatabase {
+  constructor() {
+    this.ensureDataFile();
+  }
+
+  ensureDataFile() {
+    if (!fs.existsSync(EXECUTION_LOGS_FILE)) {
+      const initialData = {
+        logs: [],
+        fixes: [],
+        patterns: []
+      };
+      fs.writeFileSync(EXECUTION_LOGS_FILE, JSON.stringify(initialData, null, 2));
+    }
+  }
+
+  loadData() {
+    try {
+      const data = fs.readFileSync(EXECUTION_LOGS_FILE, 'utf8');
+      return JSON.parse(data);
+    } catch (error) {
+      console.error('[ExecutionLogDB] Error loading data:', error);
+      return { logs: [], fixes: [], patterns: [] };
+    }
+  }
+
+  saveData(data) {
+    try {
+      fs.writeFileSync(EXECUTION_LOGS_FILE, JSON.stringify(data, null, 2));
+      return true;
+    } catch (error) {
+      console.error('[ExecutionLogDB] Error saving data:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Log a workflow execution attempt
+   */
+  logExecution(log) {
+    const data = this.loadData();
+
+    const executionLog = {
+      id: \`log_\${Date.now()}_\${Math.random().toString(36).substr(2, 9)}\`,
+      timestamp: new Date().toISOString(),
+      workflowId: log.workflowId,
+      instanceId: log.instanceId,
+      nodeId: log.nodeId,
+      nodeType: log.nodeType,
+      taskLabel: log.taskLabel,
+      status: log.status, // 'success', 'failed', 'fixed'
+      error: log.error,
+      originalScript: log.originalScript,
+      fixedScript: log.fixedScript,
+      fixMethod: log.fixMethod, // 'ai', 'cached', 'manual'
+      executionTime: log.executionTime,
+      retryCount: log.retryCount || 0
+    };
+
+    data.logs.push(executionLog);
+
+    // Keep only last 1000 logs to prevent file bloat
+    if (data.logs.length > 1000) {
+      data.logs = data.logs.slice(-1000);
+    }
+
+    this.saveData(data);
+    return executionLog;
+  }
+
+  /**
+   * Store a successful AI fix for future reference
+   */
+  storeFix(fix) {
+    const data = this.loadData();
+
+    const fixRecord = {
+      id: \`fix_\${Date.now()}_\${Math.random().toString(36).substr(2, 9)}\`,
+      timestamp: new Date().toISOString(),
+      errorType: fix.errorType,
+      errorMessage: fix.errorMessage,
+      errorPattern: this.extractErrorPattern(fix.errorMessage),
+      originalScript: fix.originalScript,
+      fixedScript: fix.fixedScript,
+      taskContext: fix.taskContext,
+      successCount: 1,
+      lastUsed: new Date().toISOString()
+    };
+
+    // Check if similar fix already exists
+    const existingFix = data.fixes.find(f =>
+      f.errorPattern === fixRecord.errorPattern &&
+      f.originalScript === fixRecord.originalScript
+    );
+
+    if (existingFix) {
+      existingFix.successCount++;
+      existingFix.lastUsed = new Date().toISOString();
+    } else {
+      data.fixes.push(fixRecord);
+    }
+
+    this.saveData(data);
+    return fixRecord;
+  }
+
+  /**
+   * Extract error pattern for matching similar errors
+   */
+  extractErrorPattern(errorMessage) {
+    // Extract the core error pattern, removing specific variable names
+    let pattern = errorMessage
+      .replace(/['"\`][^'"\`]+['"\`]/g, 'VAR') // Replace quoted strings
+      .replace(/\\b\\d+\\b/g, 'NUM') // Replace numbers
+      .replace(/\\w+Error:/g, 'ERROR:') // Normalize error types
+      .trim();
+
+    return pattern;
+  }
+
+  /**
+   * Find similar fixes from history
+   */
+  findSimilarFixes(errorMessage, originalScript, limit = 5) {
+    const data = this.loadData();
+    const errorPattern = this.extractErrorPattern(errorMessage);
+
+    // Find fixes with matching error patterns
+    const matches = data.fixes
+      .filter(fix => {
+        // Exact pattern match
+        if (fix.errorPattern === errorPattern) return true;
+
+        // Fuzzy match - check if error messages are similar
+        const similarity = this.calculateSimilarity(errorMessage, fix.errorMessage);
+        return similarity > 0.7; // 70% similarity threshold
+      })
+      .sort((a, b) => {
+        // Sort by success count and recency
+        if (b.successCount !== a.successCount) {
+          return b.successCount - a.successCount;
+        }
+        return new Date(b.lastUsed) - new Date(a.lastUsed);
+      })
+      .slice(0, limit);
+
+    return matches;
+  }
+
+  /**
+   * Calculate similarity between two strings (simple Jaccard similarity)
+   */
+  calculateSimilarity(str1, str2) {
+    const set1 = new Set(str1.toLowerCase().split(/\\s+/));
+    const set2 = new Set(str2.toLowerCase().split(/\\s+/));
+
+    const intersection = new Set([...set1].filter(x => set2.has(x)));
+    const union = new Set([...set1, ...set2]);
+
+    return intersection.size / union.size;
+  }
+
+  /**
+   * Get execution statistics
+   */
+  getStatistics(workflowId = null) {
+    const data = this.loadData();
+    let logs = data.logs;
+
+    if (workflowId) {
+      logs = logs.filter(log => log.workflowId === workflowId);
+    }
+
+    const total = logs.length;
+    const successful = logs.filter(log => log.status === 'success').length;
+    const failed = logs.filter(log => log.status === 'failed').length;
+    const fixed = logs.filter(log => log.status === 'fixed').length;
+
+    const errorTypes = {};
+    logs.filter(log => log.error).forEach(log => {
+      const errorType = this.extractErrorPattern(log.error);
+      errorTypes[errorType] = (errorTypes[errorType] || 0) + 1;
+    });
+
+    return {
+      total,
+      successful,
+      failed,
+      fixed,
+      successRate: total > 0 ? ((successful + fixed) / total * 100).toFixed(2) : 0,
+      fixRate: failed > 0 ? (fixed / (failed + fixed) * 100).toFixed(2) : 0,
+      errorTypes,
+      totalFixes: data.fixes.length,
+      mostCommonErrors: Object.entries(errorTypes)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 10)
+        .map(([error, count]) => ({ error, count }))
+    };
+  }
+
+  /**
+   * Get recent execution history
+   */
+  getRecentExecutions(limit = 50, workflowId = null) {
+    const data = this.loadData();
+    let logs = data.logs;
+
+    if (workflowId) {
+      logs = logs.filter(log => log.workflowId === workflowId);
+    }
+
+    return logs
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, limit);
+  }
+
+  /**
+   * Get all stored fixes
+   */
+  getAllFixes() {
+    const data = this.loadData();
+    return data.fixes.sort((a, b) => b.successCount - a.successCount);
+  }
+
+  /**
+   * Clear old logs (older than specified days)
+   */
+  clearOldLogs(daysToKeep = 30) {
+    const data = this.loadData();
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+
+    const originalCount = data.logs.length;
+    data.logs = data.logs.filter(log => new Date(log.timestamp) > cutoffDate);
+    const removed = originalCount - data.logs.length;
+
+    this.saveData(data);
+    return { removed, remaining: data.logs.length };
+  }
+}
+
+module.exports = new ExecutionLogDatabase();
+`;
+
+    const filePath = path.join(this.outputPath, 'src/database/ExecutionLogDatabase.js');
+    await fs.writeFile(filePath, executionLogDatabase);
+    return 'database/ExecutionLogDatabase.js';
+  }
+
+  async generateExecutionLogsRoutes() {
+    const executionLogsRoutes = `/**
+ * Execution Logs Routes
+ * API endpoints for viewing workflow execution history and learned fixes
+ */
+
+const express = require('express');
+const router = express.Router();
+const executionLogDB = require('../database/ExecutionLogDatabase');
+
+/**
+ * GET /api/execution-logs/statistics
+ * Get overall execution statistics
+ */
+router.get('/statistics', (req, res) => {
+  try {
+    const { workflowId } = req.query;
+    const stats = executionLogDB.getStatistics(workflowId);
+
+    res.json({
+      success: true,
+      statistics: stats
+    });
+  } catch (error) {
+    console.error('[ExecutionLogs] Error getting statistics:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/execution-logs/history
+ * Get recent execution history
+ */
+router.get('/history', (req, res) => {
+  try {
+    const { limit = 50, workflowId } = req.query;
+    const history = executionLogDB.getRecentExecutions(parseInt(limit), workflowId);
+
+    res.json({
+      success: true,
+      history
+    });
+  } catch (error) {
+    console.error('[ExecutionLogs] Error getting history:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/execution-logs/fixes
+ * Get all learned fixes
+ */
+router.get('/fixes', (req, res) => {
+  try {
+    const fixes = executionLogDB.getAllFixes();
+
+    res.json({
+      success: true,
+      fixes,
+      count: fixes.length
+    });
+  } catch (error) {
+    console.error('[ExecutionLogs] Error getting fixes:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/execution-logs/similar-fixes
+ * Find similar fixes for a given error
+ */
+router.get('/similar-fixes', (req, res) => {
+  try {
+    const { errorMessage, script, limit = 5 } = req.query;
+
+    if (!errorMessage) {
+      return res.status(400).json({
+        success: false,
+        error: 'errorMessage parameter is required'
+      });
+    }
+
+    const similarFixes = executionLogDB.findSimilarFixes(
+      errorMessage,
+      script || '',
+      parseInt(limit)
+    );
+
+    res.json({
+      success: true,
+      fixes: similarFixes,
+      count: similarFixes.length
+    });
+  } catch (error) {
+    console.error('[ExecutionLogs] Error finding similar fixes:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/execution-logs/clear-old
+ * Clear old logs
+ */
+router.post('/clear-old', (req, res) => {
+  try {
+    const { daysToKeep = 30 } = req.body;
+    const result = executionLogDB.clearOldLogs(parseInt(daysToKeep));
+
+    res.json({
+      success: true,
+      removed: result.removed,
+      remaining: result.remaining
+    });
+  } catch (error) {
+    console.error('[ExecutionLogs] Error clearing old logs:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+module.exports = router;
+`;
+
+    const filePath = path.join(this.outputPath, 'src/routes/execution-logs.js');
+    await fs.writeFile(filePath, executionLogsRoutes);
+    return 'routes/execution-logs.js';
   }
 
   async generateUtils() {

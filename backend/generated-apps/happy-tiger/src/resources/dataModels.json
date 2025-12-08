@@ -1,0 +1,954 @@
+[
+  {
+    "id": "officer",
+    "name": "Officer",
+    "description": "Store parking enforcement officer information and credentials",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the officer",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "badgeNumber",
+        "type": "string",
+        "description": "Official badge number assigned to the officer",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "Officer's first name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "description": "Officer's last name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Officer's contact email address",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "description": "Officer's contact phone number",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Employment status indicating if officer is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "hireDate",
+        "type": "date",
+        "description": "Date when officer was hired",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "badgeNumber",
+      "email"
+    ],
+    "constraints": {
+      "unique": [
+        "badgeNumber",
+        "email"
+      ]
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "violation-type",
+    "name": "ViolationType",
+    "description": "Catalog of all parking violation types with standardized codes, detailed descriptions, base fine amounts, and escalation rules",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the violation type",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "code",
+        "type": "string",
+        "description": "Standardized violation code (e.g., 'NO-PARK-01', 'METER-EXP')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the violation type",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "baseFineAmount",
+        "type": "number",
+        "description": "Base fine amount in dollars for this violation",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "escalationRate",
+        "type": "number",
+        "description": "Percentage increase for repeat violations (e.g., 0.25 for 25% increase)",
+        "required": false,
+        "defaultValue": 0
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this violation type is currently in use",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "severity",
+        "type": "string",
+        "description": "Severity level of violation (e.g., 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL')",
+        "required": true,
+        "defaultValue": "MEDIUM"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_violation_code",
+        "fields": [
+          "code"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_active_violations",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "baseFineAmount": "Must be greater than 0",
+      "escalationRate": "Must be between 0 and 1",
+      "code": "Must be unique and follow standard format",
+      "severity": "Must be one of: LOW, MEDIUM, HIGH, CRITICAL"
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "parking-location",
+    "name": "ParkingLocation",
+    "description": "Store parking zone and location information for violation tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the parking location",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "zoneCode",
+        "type": "string",
+        "description": "Parking zone code or identifier (e.g., 'ZONE-A', 'DOWNTOWN-1')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "streetAddress",
+        "type": "string",
+        "description": "Street address or block location where parking zone is located",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "zoneType",
+        "type": "string",
+        "description": "Type of parking zone (e.g., 'Metered', 'Residential', 'Commercial', 'No Parking')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "restrictions",
+        "type": "string",
+        "description": "Parking restrictions and rules for this location (e.g., '2-hour limit', 'Permit only')",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "enforcementSchedule",
+        "type": "string",
+        "description": "Days and hours when enforcement is active (e.g., 'Mon-Fri 8AM-6PM')",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "coordinates",
+        "type": "string",
+        "description": "Geographic coordinates in lat,long format for mapping",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this parking location is currently active for enforcement",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_zone_code",
+        "fields": [
+          "zoneCode"
+        ]
+      },
+      {
+        "name": "idx_zone_type",
+        "fields": [
+          "zoneType"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "zoneCode"
+      ]
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "vehicle",
+    "name": "Vehicle",
+    "description": "Stores vehicle information associated with parking tickets including license plate, registration details, and physical characteristics",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the vehicle record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "licensePlate",
+        "type": "string",
+        "description": "Vehicle license plate number",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "state",
+        "type": "string",
+        "description": "State or jurisdiction of vehicle registration",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "make",
+        "type": "string",
+        "description": "Vehicle manufacturer (e.g., Toyota, Ford, Honda)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "model",
+        "type": "string",
+        "description": "Vehicle model name",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "description": "Primary color of the vehicle",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "vin",
+        "type": "string",
+        "description": "Vehicle Identification Number (17-character unique identifier)",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_license_state",
+        "fields": [
+          "licensePlate",
+          "state"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_vin",
+        "fields": [
+          "vin"
+        ],
+        "unique": true
+      }
+    ],
+    "constraints": {
+      "licensePlate": {
+        "pattern": "^[A-Z0-9-]+$",
+        "maxLength": 10
+      },
+      "state": {
+        "maxLength": 2,
+        "pattern": "^[A-Z]{2}$"
+      },
+      "vin": {
+        "minLength": 17,
+        "maxLength": 17,
+        "pattern": "^[A-HJ-NPR-Z0-9]{17}$"
+      }
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "audit-log",
+    "name": "AuditLog",
+    "description": "Records all system actions, data modifications, and events for compliance, security monitoring, and troubleshooting purposes",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the audit log entry",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "timestamp",
+        "type": "date",
+        "description": "Date and time when the action occurred",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "ID of the officer or user who performed the action",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "action",
+        "type": "string",
+        "description": "Type of action performed (CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entityType",
+        "type": "string",
+        "description": "Type of entity affected (Ticket, Officer, Vehicle, ViolationType, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entityId",
+        "type": "string",
+        "description": "ID of the specific entity that was affected by the action",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "changes",
+        "type": "json",
+        "description": "JSON object containing before/after values of modified fields",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "ipAddress",
+        "type": "string",
+        "description": "IP address from which the action was performed",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "timestamp",
+      "userId",
+      "action",
+      "entityType"
+    ],
+    "constraints": {
+      "action": "Must be one of: CREATE, UPDATE, DELETE, LOGIN, LOGOUT, VIEW, EXPORT, APPROVE, REJECT",
+      "entityType": "Must reference valid system entities: Ticket, Officer, Vehicle, ViolationType, ParkingLocation"
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "payment",
+    "name": "Payment",
+    "description": "Records payment transactions for parking tickets including amount, method, and processing status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the payment transaction",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the parking ticket being paid",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "description": "Payment amount in currency units",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentMethod",
+        "type": "string",
+        "description": "Method of payment (credit_card, debit_card, cash, check, online)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "transactionId",
+        "type": "string",
+        "description": "External transaction identifier from payment processor",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentDate",
+        "type": "date",
+        "description": "Date and time when payment was processed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Payment processing status (pending, completed, failed, refunded)",
+        "required": true,
+        "defaultValue": "pending"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Links payment to the associated parking ticket"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "ticketId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "transactionId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "paymentDate"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "amount": "Must be greater than 0",
+      "paymentMethod": "Must be one of: credit_card, debit_card, cash, check, online",
+      "status": "Must be one of: pending, completed, failed, refunded"
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "dispute",
+    "name": "Dispute",
+    "description": "Manages parking ticket disputes and appeals with supporting documentation and resolution tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the dispute",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the parking ticket being disputed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "reason",
+        "type": "string",
+        "description": "Citizen's explanation for disputing the ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "submissionDate",
+        "type": "date",
+        "description": "Date and time when the dispute was submitted",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the dispute (pending, under_review, approved, denied)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "supportingDocuments",
+        "type": "array",
+        "description": "URLs or file paths to uploaded supporting evidence documents",
+        "required": false,
+        "defaultValue": []
+      },
+      {
+        "name": "adminNotes",
+        "type": "string",
+        "description": "Internal notes and comments from reviewing administrator",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "resolutionDate",
+        "type": "date",
+        "description": "Date when the dispute was resolved with final decision",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each dispute is associated with one parking ticket"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "ticketId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "submissionDate"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "pending",
+          "under_review",
+          "approved",
+          "denied"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "late-fee",
+    "name": "LateFee",
+    "description": "Track late fee assessments and calculations for overdue tickets",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the late fee record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the overdue parking ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assessmentDate",
+        "type": "date",
+        "description": "Date when the late fee was assessed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "feeAmount",
+        "type": "number",
+        "description": "Amount of the late fee charged in currency",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentStatus",
+        "type": "string",
+        "description": "Current payment status (pending, paid, waived)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "paymentId",
+        "type": "string",
+        "description": "Reference to the payment record if fee has been paid",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "notes",
+        "type": "string",
+        "description": "Additional notes about fee escalation or waivers",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each late fee is associated with one ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Payment",
+        "foreignKey": "paymentId",
+        "description": "Late fee may be linked to a payment record"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_id",
+        "fields": [
+          "ticketId"
+        ]
+      },
+      {
+        "name": "idx_payment_status",
+        "fields": [
+          "paymentStatus"
+        ]
+      },
+      {
+        "name": "idx_assessment_date",
+        "fields": [
+          "assessmentDate"
+        ]
+      }
+    ],
+    "constraints": {
+      "feeAmount": "Must be greater than 0",
+      "paymentStatus": "Must be one of: pending, paid, waived"
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Log all notifications sent to citizens and officers regarding ticket status changes, payment confirmations, and dispute updates",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientEmail",
+        "type": "string",
+        "description": "Email address of the notification recipient",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientPhone",
+        "type": "string",
+        "description": "Phone number of the recipient for SMS notifications",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "notificationType",
+        "type": "string",
+        "description": "Type of notification (ticket_issued, payment_received, dispute_filed, dispute_resolved, late_fee_applied)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "deliveryMethod",
+        "type": "string",
+        "description": "Method used to send notification (email, sms, both)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "deliveryStatus",
+        "type": "string",
+        "description": "Current delivery status (pending, sent, delivered, failed, retrying)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "retryCount",
+        "type": "number",
+        "description": "Number of delivery retry attempts made",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "sentAt",
+        "type": "date",
+        "description": "Timestamp when the notification was sent",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "recipientEmail",
+      "recipientPhone",
+      "notificationType",
+      "deliveryStatus",
+      "sentAt"
+    ],
+    "constraints": {
+      "notificationType": [
+        "ticket_issued",
+        "payment_received",
+        "dispute_filed",
+        "dispute_resolved",
+        "late_fee_applied"
+      ],
+      "deliveryMethod": [
+        "email",
+        "sms",
+        "both"
+      ],
+      "deliveryStatus": [
+        "pending",
+        "sent",
+        "delivered",
+        "failed",
+        "retrying"
+      ],
+      "atLeastOneRecipient": "Either recipientEmail or recipientPhone must be provided"
+    },
+    "workflowId": "workflow_1735227156483"
+  },
+  {
+    "id": "ticket",
+    "name": "Ticket",
+    "description": "Core entity representing parking violation tickets with all violation details and lifecycle tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique ticket identifier/number",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "violationTypeId",
+        "type": "string",
+        "description": "Reference to the type of parking violation",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "vehicleId",
+        "type": "string",
+        "description": "Reference to the vehicle that received the ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "locationId",
+        "type": "string",
+        "description": "Reference to the parking location where violation occurred",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "officerId",
+        "type": "string",
+        "description": "Reference to the officer who issued the ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "violationDateTime",
+        "type": "date",
+        "description": "Date and time when the violation occurred",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fineAmount",
+        "type": "number",
+        "description": "Base fine amount for the violation in currency units",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the ticket (issued, paid, disputed, overdue, dismissed)",
+        "required": true,
+        "defaultValue": "issued"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "ViolationType",
+        "foreignKey": "violationTypeId"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Vehicle",
+        "foreignKey": "vehicleId"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "ParkingLocation",
+        "foreignKey": "locationId"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Officer",
+        "foreignKey": "officerId"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "Payment",
+        "foreignKey": "ticketId"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "Dispute",
+        "foreignKey": "ticketId"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "LateFee",
+        "foreignKey": "ticketId"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "Notification",
+        "foreignKey": "ticketId"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "AuditLog",
+        "foreignKey": "ticketId"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_status",
+        "fields": [
+          "status"
+        ]
+      },
+      {
+        "name": "idx_ticket_violation_date",
+        "fields": [
+          "violationDateTime"
+        ]
+      },
+      {
+        "name": "idx_ticket_vehicle",
+        "fields": [
+          "vehicleId"
+        ]
+      },
+      {
+        "name": "idx_ticket_officer",
+        "fields": [
+          "officerId"
+        ]
+      }
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "issued",
+          "paid",
+          "disputed",
+          "overdue",
+          "dismissed",
+          "void"
+        ]
+      },
+      "fineAmount": {
+        "min": 0
+      }
+    },
+    "workflowId": "workflow_1735227156483"
+  }
+]

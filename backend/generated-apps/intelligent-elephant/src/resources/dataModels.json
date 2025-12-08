@@ -1,0 +1,773 @@
+[
+  {
+    "id": "app_1764062566704_model_001",
+    "name": "User",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_001",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_002",
+        "name": "employee_id",
+        "type": "varchar",
+        "unique": true,
+        "sqlType": "VARCHAR(50)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_003",
+        "name": "email",
+        "type": "varchar",
+        "unique": true,
+        "sqlType": "VARCHAR(255)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_004",
+        "name": "first_name",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_005",
+        "name": "last_name",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_006",
+        "name": "department_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_007",
+        "name": "manager_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_008",
+        "name": "hire_date",
+        "type": "date",
+        "unique": false,
+        "sqlType": "DATE",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_009",
+        "name": "is_active",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "true"
+      },
+      {
+        "id": "field_010",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_011",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_employee_id",
+        "fields": [
+          "employee_id"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_department_id",
+        "fields": [
+          "department_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_manager_id",
+        "fields": [
+          "manager_id"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "System users including employees and managers",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Department",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "department_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "manager_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764062566704_model_002",
+    "name": "Department",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_012",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_013",
+        "name": "name",
+        "type": "varchar",
+        "unique": true,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_014",
+        "name": "description",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_015",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_016",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_department_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Organizational departments",
+    "relationships": [
+      {
+        "type": "hasMany",
+        "target": "User",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "department_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764062566704_model_003",
+    "name": "LeaveType",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_017",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_018",
+        "name": "name",
+        "type": "varchar",
+        "unique": true,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_019",
+        "name": "description",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_020",
+        "name": "max_days_per_year",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_021",
+        "name": "requires_approval",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "true"
+      },
+      {
+        "id": "field_022",
+        "name": "is_active",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "true"
+      },
+      {
+        "id": "field_023",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_024",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_leave_type_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "max_days_per_year > 0"
+      }
+    ],
+    "description": "Types of leave available (vacation, sick, personal, etc.)",
+    "relationships": [
+      {
+        "type": "hasMany",
+        "target": "LeaveRequest",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "leave_type_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764062566704_model_004",
+    "name": "LeaveRequest",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_025",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_026",
+        "name": "employee_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_027",
+        "name": "leave_type_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_028",
+        "name": "start_date",
+        "type": "date",
+        "unique": false,
+        "sqlType": "DATE",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_029",
+        "name": "end_date",
+        "type": "date",
+        "unique": false,
+        "sqlType": "DATE",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_030",
+        "name": "total_days",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(4,2)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_031",
+        "name": "reason",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_032",
+        "name": "status",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('pending', 'approved', 'rejected', 'cancelled')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "pending"
+      },
+      {
+        "id": "field_033",
+        "name": "approved_by",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_034",
+        "name": "approved_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_035",
+        "name": "approval_comments",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_036",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_037",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_employee_id",
+        "fields": [
+          "employee_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_leave_type_id",
+        "fields": [
+          "leave_type_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_status",
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_start_date",
+        "fields": [
+          "start_date"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_employee_status",
+        "fields": [
+          "employee_id",
+          "status"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "end_date >= start_date"
+      },
+      {
+        "type": "check",
+        "expression": "total_days > 0"
+      }
+    ],
+    "description": "Leave requests submitted by employees",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "employee_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "LeaveType",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "leave_type_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "approved_by"
+      }
+    ]
+  },
+  {
+    "id": "app_1764062566704_model_005",
+    "name": "LeaveBalance",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_038",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_039",
+        "name": "employee_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_040",
+        "name": "leave_type_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_041",
+        "name": "year",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_042",
+        "name": "allocated_days",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(6,2)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "0.00"
+      },
+      {
+        "id": "field_043",
+        "name": "used_days",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(6,2)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "0.00"
+      },
+      {
+        "id": "field_044",
+        "name": "remaining_days",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(6,2)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "0.00"
+      },
+      {
+        "id": "field_045",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_046",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_employee_leave_year",
+        "fields": [
+          "employee_id",
+          "leave_type_id",
+          "year"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_employee_id",
+        "fields": [
+          "employee_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_leave_type_id",
+        "fields": [
+          "leave_type_id"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "allocated_days >= 0"
+      },
+      {
+        "type": "check",
+        "expression": "used_days >= 0"
+      },
+      {
+        "type": "check",
+        "expression": "remaining_days >= 0"
+      },
+      {
+        "type": "check",
+        "expression": "year >= 2000 AND year <= 2099"
+      }
+    ],
+    "description": "Employee leave balances by type and year",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "employee_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "LeaveType",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "leave_type_id"
+      }
+    ]
+  }
+]

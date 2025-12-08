@@ -1,0 +1,171 @@
+[
+  {
+    "id": "app_1764395732607_task",
+    "name": "Task",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "required": true,
+        "primaryKey": true,
+        "description": "Unique identifier for the task"
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "required": true,
+        "maxLength": 200,
+        "description": "Task title or summary"
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "required": false,
+        "description": "Detailed description of the task"
+      },
+      {
+        "name": "status_id",
+        "type": "uuid",
+        "required": true,
+        "description": "Reference to the current task status"
+      },
+      {
+        "name": "priority",
+        "type": "enum",
+        "default": "medium",
+        "required": true,
+        "enumValues": [
+          "low",
+          "medium",
+          "high",
+          "urgent"
+        ],
+        "description": "Task priority level"
+      },
+      {
+        "name": "due_date",
+        "type": "datetime",
+        "required": false,
+        "description": "Task deadline"
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "default": "CURRENT_TIMESTAMP",
+        "required": true,
+        "description": "Timestamp when task was created"
+      },
+      {
+        "name": "updated_at",
+        "type": "datetime",
+        "default": "CURRENT_TIMESTAMP",
+        "required": true,
+        "description": "Timestamp when task was last updated"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_task_status",
+        "fields": [
+          "status_id"
+        ]
+      },
+      {
+        "name": "idx_task_due_date",
+        "fields": [
+          "due_date"
+        ]
+      },
+      {
+        "name": "idx_task_priority",
+        "fields": [
+          "priority"
+        ]
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "foreignKeys": [
+        {
+          "field": "status_id",
+          "references": "TaskStatus.id"
+        }
+      ]
+    },
+    "description": "Stores task information including title, description, status, and metadata",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "model": "TaskStatus",
+        "onDelete": "RESTRICT",
+        "foreignKey": "status_id",
+        "references": "id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764395732607_task-status",
+    "name": "TaskStatus",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "required": true,
+        "primaryKey": true,
+        "description": "Unique identifier for the status"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "maxLength": 50,
+        "description": "Status name (e.g., To Do, In Progress, Done)"
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "maxLength": 255,
+        "description": "Detailed description of what this status represents"
+      },
+      {
+        "name": "order",
+        "type": "integer",
+        "required": true,
+        "description": "Display order for status progression"
+      },
+      {
+        "name": "is_active",
+        "type": "boolean",
+        "default": true,
+        "required": true,
+        "description": "Whether this status is currently available for use"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_status_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_status_order",
+        "fields": [
+          "order"
+        ]
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "unique": [
+        "name"
+      ]
+    },
+    "description": "Defines available status values for task workflow progression",
+    "relationships": []
+  }
+]

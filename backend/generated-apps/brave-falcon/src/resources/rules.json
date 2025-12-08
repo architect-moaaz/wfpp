@@ -1,0 +1,461 @@
+[
+  {
+    "id": "rule_start_process_validation",
+    "name": "Start CRM Process Rule",
+    "description": "Validate initial customer data input before starting the CRM workflow",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Customer.email",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Customer.email",
+          "message": "Customer email is required to start the CRM process"
+        }
+      ]
+    },
+    "node_id": "node_1",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_customer_type_gateway",
+    "name": "Customer Type Gateway Rule",
+    "description": "Route workflow based on customer type classification",
+    "type": "decision",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Customer.type",
+          "operator": "equals",
+          "value": "Enterprise"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.path",
+          "value": "enterprise_registration"
+        },
+        {
+          "type": "logMessage",
+          "message": "Routing to enterprise customer registration path"
+        }
+      ]
+    },
+    "node_id": "node_2",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_customer_registration_validation",
+    "name": "Customer Registration Rule",
+    "description": "Validate required fields during customer registration",
+    "type": "validation",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Customer.name",
+          "operator": "isNull",
+          "value": true
+        },
+        {
+          "field": "Customer.phone",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Customer.name",
+          "message": "Customer name and phone are mandatory fields"
+        },
+        {
+          "type": "throwError",
+          "message": "Cannot proceed with incomplete customer registration"
+        }
+      ]
+    },
+    "node_id": "node_3",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_customer_data_validation",
+    "name": "Customer Data Validation Rule",
+    "description": "Validate customer data against business rules and format requirements",
+    "type": "validation",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Customer.email",
+          "operator": "notContains",
+          "value": "@"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Customer.email",
+          "message": "Invalid email format detected"
+        },
+        {
+          "type": "setVariable",
+          "field": "validation.status",
+          "value": "failed"
+        }
+      ]
+    },
+    "node_id": "node_4",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_data_quality_check",
+    "name": "Data Quality Check Rule",
+    "description": "Evaluate data quality score to determine if correction is needed",
+    "type": "decision",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Customer.dataQualityScore",
+          "operator": "lessThan",
+          "value": 70
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.requiresCorrection",
+          "value": true
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.email",
+          "message": "Customer data quality is below threshold and requires correction"
+        }
+      ]
+    },
+    "node_id": "node_6",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_data_correction_validation",
+    "name": "Data Correction Rule",
+    "description": "Validate corrected data meets minimum quality standards",
+    "type": "validation",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Customer.correctedDataScore",
+          "operator": "lessThan",
+          "value": 80
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Customer.correctedDataScore",
+          "message": "Corrected data still does not meet quality standards (minimum 80)"
+        },
+        {
+          "type": "logMessage",
+          "message": "Data correction failed quality check"
+        }
+      ]
+    },
+    "node_id": "node_7",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_activity_type_router",
+    "name": "Activity Type Router Rule",
+    "description": "Route customer activity based on interaction type",
+    "type": "decision",
+    "priority": 7,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Interaction.type",
+          "operator": "in",
+          "value": [
+            "call",
+            "meeting",
+            "demo"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.activityPath",
+          "value": "high_touch_interaction"
+        },
+        {
+          "type": "updateData",
+          "field": "Customer.lastHighTouchDate",
+          "value": "{{currentDate}}"
+        }
+      ]
+    },
+    "node_id": "node_8",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_log_customer_interaction",
+    "name": "Log Customer Interaction Rule",
+    "description": "Validate and log customer interaction details",
+    "type": "validation",
+    "priority": 8,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Interaction.notes",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Interaction.notes",
+          "message": "Interaction notes are required for activity logging"
+        },
+        {
+          "type": "validateField",
+          "field": "Interaction.type",
+          "message": "Interaction type must be specified"
+        }
+      ]
+    },
+    "node_id": "node_9",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_create_update_deal_validation",
+    "name": "Create/Update Deal Rule",
+    "description": "Validate deal amount and stage before creation or update",
+    "type": "validation",
+    "priority": 9,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Deal.amount",
+          "operator": "lessThan",
+          "value": 0
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Deal.amount",
+          "message": "Deal amount must be a positive value"
+        },
+        {
+          "type": "stopWorkflow",
+          "message": "Invalid deal data detected"
+        }
+      ]
+    },
+    "node_id": "node_10",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_assign_followup_tasks",
+    "name": "Assign Follow-up Tasks Rule",
+    "description": "Validate task assignment has required fields and assignee",
+    "type": "validation",
+    "priority": 10,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Task.assignedTo",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Task.assignedTo",
+          "message": "Follow-up task must be assigned to a user"
+        },
+        {
+          "type": "validateField",
+          "field": "Task.dueDate",
+          "message": "Task due date is required"
+        }
+      ]
+    },
+    "node_id": "node_11",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_deal_risk_gateway",
+    "name": "Deal Risk Gateway Rule",
+    "description": "Evaluate deal risk level to determine if review is required",
+    "type": "decision",
+    "priority": 11,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Deal.amount",
+          "operator": "greaterThan",
+          "value": 100000
+        },
+        {
+          "field": "Customer.creditScore",
+          "operator": "lessThan",
+          "value": 600
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Deal.riskLevel",
+          "value": "high"
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.managerEmail",
+          "message": "High-risk deal detected requiring management review"
+        }
+      ]
+    },
+    "node_id": "node_13",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_high_risk_deal_review",
+    "name": "High-Risk Deal Review Rule",
+    "description": "Validate high-risk deal has required approval documentation",
+    "type": "validation",
+    "priority": 12,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Deal.approvalDocuments",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Deal.approvalDocuments",
+          "message": "High-risk deals require approval documentation before proceeding"
+        },
+        {
+          "type": "logMessage",
+          "message": "High-risk deal review failed due to missing documentation"
+        }
+      ]
+    },
+    "node_id": "node_14",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  },
+  {
+    "id": "rule_error_resolution",
+    "name": "Error Resolution Rule",
+    "description": "Validate error has been properly documented and resolved",
+    "type": "validation",
+    "priority": 13,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ActivityLog.errorResolution",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "ActivityLog.errorResolution",
+          "message": "Error resolution notes are required before closing the error"
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.email",
+          "message": "Please provide error resolution details to complete the workflow"
+        }
+      ]
+    },
+    "node_id": "node_19",
+    "workflow_id": "workflow_1735671234567",
+    "workflowId": "workflow_1735671234567",
+    "application_id": "app_1765047282979"
+  }
+]

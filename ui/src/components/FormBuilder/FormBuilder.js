@@ -60,8 +60,12 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
   };
 
   // Handle layout - ensure it's always an array
+  // Priority: gridLayout > layout > generate from components
   let initialLayout;
-  if (initialForm?.layout) {
+  if (initialForm?.gridLayout && Array.isArray(initialForm.gridLayout)) {
+    // Use gridLayout if available (from FormExpert)
+    initialLayout = initialForm.gridLayout;
+  } else if (initialForm?.layout) {
     // If layout is an object with breakpoints (e.g., {lg: [...], md: [...]})
     if (typeof initialForm.layout === 'object' && !Array.isArray(initialForm.layout)) {
       initialLayout = initialForm.layout.lg || initialForm.layout.md || [];

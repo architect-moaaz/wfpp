@@ -1,0 +1,451 @@
+[
+  {
+    "id": "workflow_1735654321",
+    "name": "Advanced IT Ticket Management System",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_start",
+        "data": {
+          "label": "Ticket Submitted",
+          "formId": "workflow_1735654321_ticket_form",
+          "trigger": "User submits support ticket",
+          "formName": "Ticket Form",
+          "description": "Initiates the IT ticket management workflow when a user submits a support request"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_validate",
+        "data": {
+          "label": "Validate Ticket Data",
+          "rules": [
+            "Required fields present",
+            "Valid contact information",
+            "Category selected"
+          ],
+          "ruleType": "Data integrity check",
+          "description": "Validates that all required ticket information is complete and properly formatted"
+        },
+        "type": "validation",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_ai_analyze",
+        "data": {
+          "label": "AI Ticket Analysis",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze this IT support ticket: Title: ${processData.title}, Description: ${processData.description}, Category: ${processData.category}. Determine: 1) Priority level (Low/Medium/High/Critical) 2) Urgency (Low/Medium/High) 3) Estimated complexity 4) Required skills/department. Return structured analysis.",
+          "maxTokens": 800,
+          "description": "AI analyzes ticket content to determine priority, urgency, complexity and routing requirements",
+          "temperature": 0.3,
+          "outputVariable": "aiAnalysis"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 100,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_priority_decision",
+        "data": {
+          "label": "Priority Classification",
+          "condition": "Routes ticket based on AI-determined priority level",
+          "description": "Determines routing path based on ticket priority and urgency",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_critical_alert",
+        "data": {
+          "label": "Critical Alert",
+          "channel": "SMS + Email + Slack",
+          "template": "CRITICAL TICKET #${processData.ticketId}: ${processData.title} - Requires immediate attention",
+          "recipient": "On-call engineer + IT manager",
+          "description": "Immediately alerts critical support team for high-priority issues"
+        },
+        "type": "notification",
+        "position": {
+          "x": 350,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_parallel_assign",
+        "data": {
+          "label": "Parallel Assignment Gateway",
+          "branches": "Assign to technician AND notify stakeholders AND log in systems",
+          "description": "Triggers multiple parallel processes for ticket handling",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_auto_assign",
+        "data": {
+          "label": "Auto-Assign Technician",
+          "script": "assignTechnicianBasedOnSkillsAndWorkload()",
+          "scriptType": "JavaScript",
+          "description": "Automatically assigns ticket to best available technician based on skills and current workload"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_notify_user",
+        "data": {
+          "label": "Notify User",
+          "channel": "Email",
+          "template": "Your ticket #${processData.ticketId} has been received and assigned to ${processData.assignedTechnician}. Estimated resolution: ${processData.estimatedResolution}",
+          "recipient": "Ticket submitter",
+          "description": "Confirms ticket receipt and provides status to user"
+        },
+        "type": "notification",
+        "position": {
+          "x": 150,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_log_systems",
+        "data": {
+          "input": "Ticket data and assignments",
+          "label": "Update Systems",
+          "output": "ITSM, monitoring, and reporting systems",
+          "operation": "Multi-system logging",
+          "description": "Updates all relevant IT systems with ticket information and status"
+        },
+        "type": "dataProcess",
+        "position": {
+          "x": 250,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_merge_parallel",
+        "data": {
+          "label": "Merge Parallel Paths",
+          "branches": "Wait for all parallel tasks to complete",
+          "description": "Synchronizes parallel processes before continuing",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 150,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_work_progress",
+        "data": {
+          "label": "Technical Work",
+          "formId": "workflow_1735654321_user_form",
+          "dueDate": "${processData.slaDeadline}",
+          "formName": "User Management Form",
+          "priority": "${processData.priority}",
+          "taskName": "resolve_ticket",
+          "assignedTo": "${processData.assignedTechnician}",
+          "instructions": "Investigate and resolve the reported issue. Update progress regularly."
+        },
+        "type": "userTask",
+        "position": {
+          "x": 150,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_sla_timer",
+        "data": {
+          "label": "SLA Monitoring",
+          "duration": "${processData.slaWindow}",
+          "timerType": "duration",
+          "description": "Monitors SLA compliance and triggers escalation if needed"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 350,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_escalate",
+        "data": {
+          "label": "Escalate to Manager",
+          "formId": "workflow_1735654321_login_form",
+          "formName": "Login Form",
+          "priority": "High",
+          "taskName": "sla_breach_review",
+          "assignedTo": "IT Manager",
+          "instructions": "Review SLA breach and take appropriate action. Reassign or provide additional resources."
+        },
+        "type": "userTask",
+        "position": {
+          "x": 550,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_resolution_check",
+        "data": {
+          "label": "Resolution Status",
+          "condition": "Check if issue is resolved or needs further action",
+          "description": "Determines next steps based on resolution status",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 150,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_user_confirm",
+        "data": {
+          "label": "User Confirmation",
+          "formId": "workflow_1735654321_ticket_form",
+          "dueDate": "48 hours",
+          "formName": "Ticket Form",
+          "priority": "Medium",
+          "taskName": "confirm_resolution",
+          "assignedTo": "Ticket submitter",
+          "instructions": "Please confirm if your issue has been resolved satisfactorily."
+        },
+        "type": "userTask",
+        "position": {
+          "x": 150,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_satisfaction_survey",
+        "data": {
+          "label": "Generate Satisfaction Survey",
+          "model": "claude-haiku-4-5-20251001",
+          "prompt": "Create a brief customer satisfaction survey for ticket #${processData.ticketId} resolved by ${processData.assignedTechnician}. Include questions about resolution quality, timeliness, and communication.",
+          "maxTokens": 500,
+          "description": "AI generates personalized satisfaction survey based on ticket details",
+          "temperature": 0.5,
+          "outputVariable": "satisfactionSurvey"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 150,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_close_ticket",
+        "data": {
+          "label": "Close Ticket & Archive",
+          "script": "closeTicketAndUpdateMetrics()",
+          "scriptType": "JavaScript",
+          "description": "Officially closes ticket, updates performance metrics, and archives data"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 150,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_error_handler",
+        "data": {
+          "label": "Manual Review Required",
+          "formId": "workflow_1735654321_ticket_form",
+          "formName": "Ticket Form",
+          "priority": "High",
+          "taskName": "error_resolution",
+          "assignedTo": "IT Supervisor",
+          "instructions": "System error occurred during ticket processing. Manual intervention required."
+        },
+        "type": "userTask",
+        "position": {
+          "x": 400,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_end",
+        "data": {
+          "label": "Ticket Completed",
+          "result": "Ticket successfully resolved and closed",
+          "description": "Workflow completes with resolved ticket and updated metrics"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 150,
+          "y": 1250
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-26T17:43:09.03+05:30",
+    "updated_at": "2025-11-26T17:43:09.03+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_start",
+        "target": "node_validate"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_validate",
+        "target": "node_ai_analyze"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_ai_analyze",
+        "target": "node_priority_decision"
+      },
+      {
+        "id": "edge_4",
+        "label": "Critical Priority",
+        "source": "node_priority_decision",
+        "target": "node_critical_alert",
+        "condition": "processData.aiAnalysis.priority === 'Critical'"
+      },
+      {
+        "id": "edge_5",
+        "label": "Standard Priority",
+        "source": "node_priority_decision",
+        "target": "node_parallel_assign",
+        "isDefault": true
+      },
+      {
+        "id": "edge_6",
+        "source": "node_critical_alert",
+        "target": "node_parallel_assign"
+      },
+      {
+        "id": "edge_7",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_parallel_assign",
+        "target": "node_auto_assign",
+        "isDefault": true
+      },
+      {
+        "id": "edge_8",
+        "source": "node_parallel_assign",
+        "target": "node_notify_user"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_parallel_assign",
+        "target": "node_log_systems"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_auto_assign",
+        "target": "node_merge_parallel"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_notify_user",
+        "target": "node_merge_parallel"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_log_systems",
+        "target": "node_merge_parallel"
+      },
+      {
+        "id": "edge_13",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_merge_parallel",
+        "target": "node_work_progress",
+        "isDefault": true
+      },
+      {
+        "id": "edge_14",
+        "source": "node_work_progress",
+        "target": "node_resolution_check"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_merge_parallel",
+        "target": "node_sla_timer"
+      },
+      {
+        "id": "edge_16",
+        "label": "SLA Breach",
+        "source": "node_sla_timer",
+        "target": "node_escalate"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_escalate",
+        "target": "node_work_progress"
+      },
+      {
+        "id": "edge_19",
+        "label": "Resolved",
+        "source": "node_resolution_check",
+        "target": "node_user_confirm",
+        "isDefault": true
+      },
+      {
+        "id": "edge_20",
+        "source": "node_user_confirm",
+        "target": "node_satisfaction_survey"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_satisfaction_survey",
+        "target": "node_close_ticket"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_close_ticket",
+        "target": "node_end"
+      },
+      {
+        "id": "edge_23",
+        "label": "Validation Failed",
+        "source": "node_validate",
+        "target": "node_error_handler",
+        "condition": "processData.validationResult === 'failed'"
+      },
+      {
+        "id": "edge_24",
+        "label": "AI Error",
+        "source": "node_ai_analyze",
+        "target": "node_error_handler",
+        "condition": "processData.aiError === true"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_error_handler",
+        "target": "node_parallel_assign"
+      }
+    ],
+    "description": ""
+  }
+]

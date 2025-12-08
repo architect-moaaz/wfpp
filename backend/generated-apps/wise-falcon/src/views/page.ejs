@@ -1,0 +1,68 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><%= page.title || page.name %></h1>
+        <% if (page.description) { %>
+            <p class="lead"><%= page.description %></p>
+        <% } %>
+    </div>
+    <a href="/pages" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Pages
+    </a>
+</div>
+
+<% if (page.components && page.components.length > 0) { %>
+    <% page.components.forEach(component => { %>
+        <div class="page-component card mb-3">
+            <div class="card-body">
+                <% if (component.type === 'text') { %>
+                    <div class="text-component">
+                        <%- component.content || '' %>
+                    </div>
+                <% } else if (component.type === 'form') { %>
+                    <h5><%= component.title || 'Form' %></h5>
+                    <p>Form ID: <%= component.formId %></p>
+                    <a href="/forms/<%= component.formId %>" class="btn btn-primary">Open Form</a>
+                <% } else if (component.type === 'table' || component.type === 'data-table') { %>
+                    <h5><%= component.title || 'Data Table' %></h5>
+                    <% if (component.data && component.data.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <% Object.keys(component.data[0]).forEach(key => { %>
+                                            <th><%= key %></th>
+                                        <% }); %>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% component.data.forEach(row => { %>
+                                        <tr>
+                                            <% Object.values(row).forEach(value => { %>
+                                                <td><%= value %></td>
+                                            <% }); %>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <p class="text-muted">No data available</p>
+                    <% } %>
+                <% } else if (component.type === 'card') { %>
+                    <div class="component-card">
+                        <h5><%= component.title || '' %></h5>
+                        <p><%= component.content || '' %></p>
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-info">
+                        Component type: <%= component.type %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    <% }); %>
+<% } else { %>
+    <div class="alert alert-info">
+        This page has no components defined.
+    </div>
+<% } %>

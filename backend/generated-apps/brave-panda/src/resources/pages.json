@@ -1,0 +1,558 @@
+[
+  {
+    "id": "order-dashboard",
+    "name": "OrderDashboard",
+    "title": "Order Dashboard",
+    "description": "Real-time visibility into order status and fulfillment metrics with filtering and drill-down capabilities",
+    "route": "/order-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Order Dashboard",
+              "variant": "h1",
+              "color": "#1a1a1a",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Real-time order status and fulfillment metrics",
+              "variant": "body",
+              "color": "#666666",
+              "fontSize": "16px",
+              "fontWeight": "400"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Order Metrics",
+              "layout": "grid",
+              "columns": 4,
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+              "metrics": [
+                {
+                  "label": "Total Orders",
+                  "value": "{{Order.count()}}",
+                  "color": "#0066cc",
+                  "fontSize": "28px",
+                  "fontWeight": "700"
+                },
+                {
+                  "label": "Pending",
+                  "value": "{{Order.count(status='pending')}}",
+                  "color": "#ff9500",
+                  "fontSize": "28px",
+                  "fontWeight": "700"
+                },
+                {
+                  "label": "Processing",
+                  "value": "{{Order.count(status='processing')}}",
+                  "color": "#0066cc",
+                  "fontSize": "28px",
+                  "fontWeight": "700"
+                },
+                {
+                  "label": "Completed",
+                  "value": "{{Order.count(status='completed')}}",
+                  "color": "#28a745",
+                  "fontSize": "28px",
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            "dataBinding": "Order.aggregate"
+          },
+          {
+            "type": "filter",
+            "config": {
+              "title": "Filter Orders",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "20px",
+              "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+              "filters": [
+                {
+                  "field": "status",
+                  "label": "Order Status",
+                  "type": "select",
+                  "options": [
+                    "all",
+                    "pending",
+                    "processing",
+                    "shipped",
+                    "completed",
+                    "cancelled"
+                  ],
+                  "fontSize": "14px",
+                  "borderRadius": "4px",
+                  "borderColor": "#cccccc"
+                },
+                {
+                  "field": "dateRange",
+                  "label": "Date Range",
+                  "type": "daterange",
+                  "fontSize": "14px",
+                  "borderRadius": "4px",
+                  "borderColor": "#cccccc"
+                },
+                {
+                  "field": "customerId",
+                  "label": "Customer",
+                  "type": "select",
+                  "dataSource": "Customer.query",
+                  "fontSize": "14px",
+                  "borderRadius": "4px",
+                  "borderColor": "#cccccc"
+                }
+              ]
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Order Pipeline",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+              "columns": [
+                {
+                  "key": "orderId",
+                  "label": "Order ID",
+                  "sortable": true,
+                  "fontWeight": "600",
+                  "color": "#1a1a1a"
+                },
+                {
+                  "key": "customer.name",
+                  "label": "Customer",
+                  "sortable": true,
+                  "color": "#1a1a1a"
+                },
+                {
+                  "key": "orderDate",
+                  "label": "Order Date",
+                  "sortable": true,
+                  "format": "date",
+                  "color": "#666666"
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "type": "badge",
+                  "colorMap": {
+                    "pending": "#ff9500",
+                    "processing": "#0066cc",
+                    "shipped": "#5856d6",
+                    "completed": "#28a745",
+                    "cancelled": "#dc3545"
+                  },
+                  "borderRadius": "12px",
+                  "padding": "4px 12px",
+                  "fontSize": "12px",
+                  "fontWeight": "600"
+                },
+                {
+                  "key": "totalAmount",
+                  "label": "Total",
+                  "sortable": true,
+                  "format": "currency",
+                  "fontWeight": "600",
+                  "color": "#1a1a1a"
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "action",
+                  "actions": [
+                    {
+                      "label": "View Details",
+                      "action": "view",
+                      "backgroundColor": "#0066cc",
+                      "color": "#ffffff",
+                      "borderRadius": "4px",
+                      "padding": "6px 12px",
+                      "fontSize": "14px",
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "headerBackgroundColor": "#f8f9fa",
+              "headerFontWeight": "600",
+              "headerColor": "#1a1a1a",
+              "rowHoverColor": "#f8f9fa",
+              "borderColor": "#e0e0e0"
+            },
+            "dataBinding": "Order.query"
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Create New Order",
+              "variant": "primary",
+              "action": "create",
+              "backgroundColor": "#0066cc",
+              "color": "#ffffff",
+              "borderRadius": "4px",
+              "padding": "12px 24px",
+              "fontSize": "16px",
+              "fontWeight": "500",
+              "hoverBackgroundColor": "#0052a3",
+              "width": "auto"
+            },
+            "formRef": "order-creation-form"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/order-details",
+          "params": [
+            "orderId"
+          ]
+        },
+        "create": {
+          "type": "navigate",
+          "target": "/order-creation"
+        }
+      },
+      "menu": [
+        {
+          "label": "Order Dashboard",
+          "route": "/order-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Order Details",
+          "route": "/order-details",
+          "icon": "details"
+        },
+        {
+          "label": "Create Order",
+          "route": "/order-creation",
+          "icon": "add"
+        }
+      ]
+    },
+    "layout": {
+      "type": "dashboard",
+      "responsive": true,
+      "spacing": "normal"
+    },
+    "workflowId": "workflow_1735002847123",
+    "forms": [
+      "fulfillmenttrackingform-1764447943422-wves3s",
+      "ordercreationform-1764447962072-p2io4n"
+    ]
+  },
+  {
+    "id": "order-details-page",
+    "name": "OrderDetailsPage",
+    "title": "Order Details",
+    "description": "Display comprehensive order information and enable status management with customer details, line items, payment status, and workflow history",
+    "route": "/orders/:orderId",
+    "type": "detail",
+    "platform": "both",
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Order #{{Order.orderNumber}}",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "lineHeight": "1.2"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Back to Orders",
+              "variant": "secondary",
+              "action": "navigate",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "backgroundColor": "#ffffff",
+                "color": "#0066cc",
+                "border": "1px solid #e0e0e0",
+                "borderRadius": "8px",
+                "padding": "10px 20px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Order Information",
+              "fields": [
+                {
+                  "label": "Customer",
+                  "value": "{{Customer.name}}",
+                  "type": "text"
+                },
+                {
+                  "label": "Email",
+                  "value": "{{Customer.email}}",
+                  "type": "text"
+                },
+                {
+                  "label": "Order Date",
+                  "value": "{{Order.orderDate}}",
+                  "type": "date"
+                },
+                {
+                  "label": "Status",
+                  "value": "{{Order.status}}",
+                  "type": "badge"
+                },
+                {
+                  "label": "Payment Status",
+                  "value": "{{Order.paymentStatus}}",
+                  "type": "badge"
+                },
+                {
+                  "label": "Total Amount",
+                  "value": "{{Order.totalAmount}}",
+                  "type": "currency"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "border": "1px solid #e0e0e0",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Order.findById"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Order Items",
+              "columns": [
+                {
+                  "header": "Product",
+                  "field": "Product.name",
+                  "type": "text"
+                },
+                {
+                  "header": "SKU",
+                  "field": "Product.sku",
+                  "type": "text"
+                },
+                {
+                  "header": "Quantity",
+                  "field": "quantity",
+                  "type": "number"
+                },
+                {
+                  "header": "Unit Price",
+                  "field": "unitPrice",
+                  "type": "currency"
+                },
+                {
+                  "header": "Subtotal",
+                  "field": "subtotal",
+                  "type": "currency"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "border": "1px solid #e0e0e0",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px"
+              },
+              "headerStyle": {
+                "backgroundColor": "#f8f9fa",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "padding": "12px"
+              },
+              "rowStyle": {
+                "borderBottom": "1px solid #e0e0e0",
+                "padding": "12px"
+              }
+            },
+            "dataBinding": "Order.lineItems"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Shipping & Tracking",
+              "fields": [
+                {
+                  "label": "Shipping Address",
+                  "value": "{{Order.shippingAddress}}",
+                  "type": "text"
+                },
+                {
+                  "label": "Tracking Number",
+                  "value": "{{Order.trackingNumber}}",
+                  "type": "text"
+                },
+                {
+                  "label": "Carrier",
+                  "value": "{{Order.carrier}}",
+                  "type": "text"
+                },
+                {
+                  "label": "Estimated Delivery",
+                  "value": "{{Order.estimatedDelivery}}",
+                  "type": "date"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Update Tracking",
+                  "variant": "primary",
+                  "action": "openForm",
+                  "formRef": "fulfillment-tracking-form"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "border": "1px solid #e0e0e0",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Order.findById",
+            "formRef": "fulfillment-tracking-form"
+          },
+          {
+            "type": "list",
+            "config": {
+              "title": "Workflow History",
+              "itemTemplate": {
+                "title": "{{status}}",
+                "subtitle": "{{timestamp}} - {{performedBy}}",
+                "description": "{{notes}}"
+              },
+              "style": {
+                "backgroundColor": "#ffffff",
+                "border": "1px solid #e0e0e0",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              },
+              "itemStyle": {
+                "borderLeft": "3px solid #0066cc",
+                "paddingLeft": "16px",
+                "marginBottom": "16px",
+                "fontSize": "14px"
+              }
+            },
+            "dataBinding": "OrderFulfillmentWorkflow.history"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Update Order Status",
+              "variant": "primary",
+              "action": "triggerWorkflow",
+              "workflowRef": "order-fulfillment-workflow",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#0066cc",
+                "color": "#ffffff",
+                "border": "none",
+                "borderRadius": "8px",
+                "padding": "12px 24px",
+                "boxShadow": "0 2px 4px rgba(0, 102, 204, 0.2)"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "back": {
+          "type": "navigate",
+          "target": "/orders"
+        },
+        "updateTracking": {
+          "type": "openForm",
+          "target": "fulfillment-tracking-form"
+        },
+        "updateStatus": {
+          "type": "triggerWorkflow",
+          "target": "order-fulfillment-workflow"
+        }
+      },
+      "menu": [
+        {
+          "label": "Order Dashboard",
+          "route": "/orders"
+        },
+        {
+          "label": "Create New Order",
+          "route": "/orders/new"
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal",
+      "maxWidth": "1200px"
+    },
+    "workflowId": "workflow_1735002847123",
+    "forms": [
+      "fulfillmenttrackingform-1764447943422-wves3s",
+      "ordercreationform-1764447962072-p2io4n"
+    ]
+  }
+]

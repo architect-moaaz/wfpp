@@ -3,11 +3,19 @@ import './NodePalette.css';
 import {
   PlayCircle, CheckCircle, GitBranch, Mail, Database,
   ChevronLeft, ChevronRight, Circle, User,
-  FileCode, Clock, Sparkles
+  FileCode, Clock, Sparkles, Boxes
 } from 'lucide-react';
 
-const NodePalette = () => {
+const NodePalette = ({ onCollapseChange }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleToggle = () => {
+    const newCollapsed = !isCollapsed;
+    setIsCollapsed(newCollapsed);
+    if (onCollapseChange) {
+      onCollapseChange(newCollapsed);
+    }
+  };
 
   const nodeCategories = [
     {
@@ -24,6 +32,7 @@ const NodePalette = () => {
         { type: 'userTask', label: 'Human Task', icon: User, description: 'Manual user task' },
         { type: 'scriptTask', label: 'Script', icon: FileCode, description: 'Execute script' },
         { type: 'llmTask', label: 'LLM Task', icon: Sparkles, description: 'AI-powered task' },
+        { type: 'subWorkflow', label: 'Sub Workflow', icon: Boxes, description: 'Call another workflow' },
       ]
     },
     {
@@ -55,7 +64,7 @@ const NodePalette = () => {
     <div className={`node-palette ${isCollapsed ? 'collapsed' : ''}`}>
       <button
         className="palette-toggle"
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={handleToggle}
         title={isCollapsed ? 'Show Components' : 'Hide Components'}
       >
         {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}

@@ -1,0 +1,73 @@
+[
+  {
+    "id": "app_1764273422518_order-dashboard",
+    "name": "OrderDashboard",
+    "forms": [
+      "order-approval-form",
+      "order-submission-form"
+    ],
+    "route": "/dashboard/orders",
+    "title": "Order Dashboard",
+    "config": {},
+    "layout": {
+      "type": "dashboard",
+      "spacing": "normal",
+      "responsive": true
+    },
+    "styling": {},
+    "metadata": {},
+    "workflows": [],
+    "components": [
+      {
+        "id": "order-summary-stats",
+        "type": "card",
+        "label": "Order Summary Statistics",
+        "config": {
+          "variant": "stats-grid",
+          "position": "top"
+        },
+        "dataBinding": "Order.aggregateByStatus"
+      },
+      {
+        "id": "pending-tasks-card",
+        "type": "card",
+        "label": "My Pending Tasks",
+        "config": {
+          "variant": "task-list",
+          "position": "top"
+        },
+        "dataBinding": "OrderProcessingWorkflow.pendingTasksByRole"
+      },
+      {
+        "id": "orders-table",
+        "type": "table",
+        "label": "Orders",
+        "config": {
+          "variant": "interactive",
+          "sortable": true,
+          "filterable": true,
+          "pagination": true,
+          "rowActions": [
+            "view",
+            "edit",
+            "approve"
+          ],
+          "searchable": true
+        },
+        "dataBinding": "Order.listByRole"
+      },
+      {
+        "id": "create-order-btn",
+        "type": "button",
+        "label": "Create New Order",
+        "config": {
+          "variant": "primary",
+          "position": "top"
+        },
+        "formRef": "OrderSubmissionForm"
+      }
+    ],
+    "description": "Role-based dashboard for monitoring and managing orders across all stages with filtering and quick actions",
+    "data_sources": []
+  }
+]

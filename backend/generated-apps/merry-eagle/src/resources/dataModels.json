@@ -1,0 +1,1385 @@
+[
+  {
+    "id": "app_1764188984386_model_001",
+    "name": "Employee",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_001",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_002",
+        "name": "employee_id",
+        "type": "varchar",
+        "unique": true,
+        "sqlType": "VARCHAR(20)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_003",
+        "name": "first_name",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(50)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_004",
+        "name": "last_name",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(50)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_005",
+        "name": "email",
+        "type": "varchar",
+        "unique": true,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_006",
+        "name": "phone",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(20)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_007",
+        "name": "hire_date",
+        "type": "date",
+        "unique": false,
+        "sqlType": "DATE",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_008",
+        "name": "position_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_009",
+        "name": "department_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_010",
+        "name": "manager_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_011",
+        "name": "status",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('pending', 'active', 'inactive', 'terminated')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "pending"
+      },
+      {
+        "id": "field_012",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_013",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_employee_id",
+        "fields": [
+          "employee_id"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_position_id",
+        "fields": [
+          "position_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_department_id",
+        "fields": [
+          "department_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_manager_id",
+        "fields": [
+          "manager_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_status",
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Core employee information",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Position",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "position_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Department",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "department_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Employee",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "manager_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764188984386_model_002",
+    "name": "Department",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_014",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_015",
+        "name": "name",
+        "type": "varchar",
+        "unique": true,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_016",
+        "name": "description",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_017",
+        "name": "head_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_018",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_019",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_head_id",
+        "fields": [
+          "head_id"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Organization departments",
+    "relationships": [
+      {
+        "type": "hasMany",
+        "target": "Employee",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "department_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Employee",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "head_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764188984386_model_003",
+    "name": "Position",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_020",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_021",
+        "name": "title",
+        "type": "varchar",
+        "unique": true,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_022",
+        "name": "description",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_023",
+        "name": "level",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('intern', 'junior', 'mid', 'senior', 'lead', 'manager', 'director', 'executive')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_024",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_025",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_title",
+        "fields": [
+          "title"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_level",
+        "fields": [
+          "level"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Job positions and roles",
+    "relationships": [
+      {
+        "type": "hasMany",
+        "target": "Employee",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "position_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764188984386_model_004",
+    "name": "OnboardingProcess",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_026",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_027",
+        "name": "employee_id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_028",
+        "name": "template_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_029",
+        "name": "status",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('pending', 'in_progress', 'completed', 'cancelled')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "pending"
+      },
+      {
+        "id": "field_030",
+        "name": "start_date",
+        "type": "date",
+        "unique": false,
+        "sqlType": "DATE",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_031",
+        "name": "completion_date",
+        "type": "date",
+        "unique": false,
+        "sqlType": "DATE",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_032",
+        "name": "assigned_to_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_033",
+        "name": "progress_percentage",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(5,2)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "0.00"
+      },
+      {
+        "id": "field_034",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_035",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_employee_id",
+        "fields": [
+          "employee_id"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_template_id",
+        "fields": [
+          "template_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_status",
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_assigned_to_id",
+        "fields": [
+          "assigned_to_id"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "progress_percentage >= 0 AND progress_percentage <= 100"
+      }
+    ],
+    "description": "Employee onboarding workflow instances",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Employee",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "employee_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "OnboardingTemplate",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "template_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Employee",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "assigned_to_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764188984386_model_005",
+    "name": "OnboardingTemplate",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_036",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_037",
+        "name": "name",
+        "type": "varchar",
+        "unique": true,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_038",
+        "name": "description",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_039",
+        "name": "department_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_040",
+        "name": "position_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_041",
+        "name": "is_active",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": true
+      },
+      {
+        "id": "field_042",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_043",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_department_id",
+        "fields": [
+          "department_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_position_id",
+        "fields": [
+          "position_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_is_active",
+        "fields": [
+          "is_active"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Reusable onboarding workflow templates",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Department",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "department_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Position",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "position_id"
+      },
+      {
+        "type": "hasMany",
+        "target": "OnboardingProcess",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "template_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764188984386_model_006",
+    "name": "OnboardingTask",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_044",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_045",
+        "name": "process_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_046",
+        "name": "template_task_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_047",
+        "name": "title",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(200)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_048",
+        "name": "description",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_049",
+        "name": "status",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('pending', 'in_progress', 'completed', 'skipped')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "pending"
+      },
+      {
+        "id": "field_050",
+        "name": "assigned_to_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_051",
+        "name": "due_date",
+        "type": "date",
+        "unique": false,
+        "sqlType": "DATE",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_052",
+        "name": "completed_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_053",
+        "name": "completed_by_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_054",
+        "name": "notes",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_055",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_056",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_process_id",
+        "fields": [
+          "process_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_template_task_id",
+        "fields": [
+          "template_task_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_status",
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_assigned_to_id",
+        "fields": [
+          "assigned_to_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_due_date",
+        "fields": [
+          "due_date"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Individual tasks within onboarding processes",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "OnboardingProcess",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "process_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "OnboardingTemplateTask",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "template_task_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Employee",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "assigned_to_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Employee",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "completed_by_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764188984386_model_007",
+    "name": "OnboardingTemplateTask",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_057",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_058",
+        "name": "template_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_059",
+        "name": "title",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(200)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_060",
+        "name": "description",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_061",
+        "name": "order_index",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_062",
+        "name": "category",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('documentation', 'training', 'equipment', 'access', 'introduction', 'orientation', 'compliance')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_063",
+        "name": "is_required",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": true
+      },
+      {
+        "id": "field_064",
+        "name": "estimated_hours",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(4,2)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_065",
+        "name": "days_offset",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "0"
+      },
+      {
+        "id": "field_066",
+        "name": "assigned_role",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('hr', 'manager', 'it', 'employee', 'buddy')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_067",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_068",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_template_id",
+        "fields": [
+          "template_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_order_index",
+        "fields": [
+          "order_index"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_category",
+        "fields": [
+          "category"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_assigned_role",
+        "fields": [
+          "assigned_role"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_template_order",
+        "fields": [
+          "template_id",
+          "order_index"
+        ],
+        "unique": true
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "estimated_hours >= 0"
+      },
+      {
+        "type": "check",
+        "expression": "days_offset >= 0"
+      }
+    ],
+    "description": "Template tasks for onboarding workflows",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "OnboardingTemplate",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "template_id"
+      },
+      {
+        "type": "hasMany",
+        "target": "OnboardingTask",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "template_task_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764188984386_model_008",
+    "name": "Document",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_069",
+        "name": "id",
+        "type": "int",
+        "unique": true,
+        "sqlType": "INT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_070",
+        "name": "employee_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_071",
+        "name": "task_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_072",
+        "name": "name",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(200)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_073",
+        "name": "type",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('contract', 'handbook', 'policy', 'form', 'certificate', 'identification', 'other')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_074",
+        "name": "file_path",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(500)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_075",
+        "name": "file_size",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_076",
+        "name": "mime_type",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(100)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_077",
+        "name": "status",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('pending', 'submitted', 'approved', 'rejected')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "pending"
+      },
+      {
+        "id": "field_078",
+        "name": "uploaded_by_id",
+        "type": "int",
+        "unique": false,
+        "sqlType": "INT",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_079",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_080",
+        "name": "updated_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_employee_id",
+        "fields": [
+          "employee_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_task_id",
+        "fields": [
+          "task_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_type",
+        "fields": [
+          "type"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_status",
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "file_size >= 0"
+      }
+    ],
+    "description": "Documents required during onboarding",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Employee",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "employee_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "OnboardingTask",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "task_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Employee",
+        "onDelete": "SET NULL",
+        "onUpdate": "CASCADE",
+        "foreignKey": "uploaded_by_id"
+      }
+    ]
+  }
+]

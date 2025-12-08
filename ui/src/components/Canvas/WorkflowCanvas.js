@@ -13,6 +13,8 @@ import { useWorkflow } from '../../context/WorkflowContext';
 import NodePalette from './NodePalette';
 import Toast from '../Common/Toast';
 import ValidationResultsModal from '../Common/ValidationResultsModal';
+import PublishModal from '../PublishModal';
+import axios from 'axios';
 import StartProcessNode from './Nodes/StartProcessNode';
 import ValidationNode from './Nodes/ValidationNode';
 import DecisionNode from './Nodes/DecisionNode';
@@ -23,30 +25,62 @@ import UserTaskNode from './Nodes/UserTaskNode';
 import ScriptTaskNode from './Nodes/ScriptTaskNode';
 import TimerEventNode from './Nodes/TimerEventNode';
 import LLMTaskNode from './Nodes/LLMTaskNode';
-import { Grid3x3, Upload, Save, Download, Rocket, CheckCircle } from 'lucide-react';
+import SubWorkflowNode from './Nodes/SubWorkflowNode';
+import WorkflowOverview from '../Workflow/WorkflowOverview';
+import WorkflowConnectionEditor from '../Workflow/WorkflowConnectionEditor';
+import { Grid3x3, Upload, Save, Download, Rocket, CheckCircle, GitBranch, Map as MapIcon } from 'lucide-react';
 
 const nodeTypes = {
+  // Core node types
   startProcess: StartProcessNode,
+  startEvent: StartProcessNode,
+  start: StartProcessNode,
   validation: ValidationNode,
   decision: DecisionNode,
+  exclusiveGateway: DecisionNode,
+  parallelGateway: DecisionNode,
+  inclusiveGateway: DecisionNode,
   notification: NotificationNode,
   dataProcess: DataProcessNode,
   endEvent: EndEventNode,
+  endProcess: EndEventNode,
+  end: EndEventNode,
   userTask: UserTaskNode,
   scriptTask: ScriptTaskNode,
   timerEvent: TimerEventNode,
   llmTask: LLMTaskNode,
+  subWorkflow: SubWorkflowNode,
+  // Additional node types from WorkflowExpert
+  task: DataProcessNode,
+  form: UserTaskNode,
+  approval: UserTaskNode,
+  humanTask: UserTaskNode,
+  api: DataProcessNode,
+  script: ScriptTaskNode,
+  loop: DecisionNode,
+  parallel: DecisionNode,
+  multiInstanceLoop: DecisionNode,
+  standardLoop: DecisionNode,
 };
 
 let id = 0;
 const getId = () => `node_${id++}`;
 
-const WorkflowCanvas = () => {
-  const { currentWorkflow, setCurrentWorkflow, setSelectedNode, setPropertiesPanelOpen, setConnectedForms, setDataModels } = useWorkflow();
+const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
+  const { currentWorkflow: contextWorkflow, setCurrentWorkflow, setSelectedNode, setPropertiesPanelOpen, setConnectedForms, setDataModels, currentApplication } = useWorkflow();
+
+  // Use initialWorkflow prop if provided (for preview mode), otherwise use context
+  const currentWorkflow = initialWorkflow || contextWorkflow;
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [toast, setToast] = useState(null);
   const [validationResult, setValidationResult] = useState(null);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [deploymentId, setDeploymentId] = useState(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [showWorkflowOverview, setShowWorkflowOverview] = useState(false);
+  const [showConnectionEditor, setShowConnectionEditor] = useState(false);
+  const [isPaletteCollapsed, setIsPaletteCollapsed] = useState(false);
 
   const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type });
@@ -63,14 +97,43 @@ const WorkflowCanvas = () => {
     }, 100);
   }, []);
 
+  // Initialize with proper edge/connection handling
+  // Check for non-empty arrays: empty array is truthy but we need actual data
+  const initialEdges = (currentWorkflow?.edges?.length > 0 ? currentWorkflow.edges : null)
+    || (currentWorkflow?.connections?.length > 0 ? currentWorkflow.connections : null)
+    || [];
+  console.log('[WorkflowCanvas] Initial edges setup:', {
+    hasEdges: !!currentWorkflow?.edges,
+    hasConnections: !!currentWorkflow?.connections,
+    edgesLength: currentWorkflow?.edges?.length,
+    connectionsLength: currentWorkflow?.connections?.length,
+    edgesCount: initialEdges.length,
+    edges: initialEdges
+  });
+
   const [nodes, setNodes, onNodesChange] = useNodesState(currentWorkflow?.nodes || []);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(currentWorkflow?.edges || []);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   // Track last synced workflow ID to prevent re-sync during drag
   const lastWorkflowIdRef = useRef(currentWorkflow?.id);
 
+  // Force sync when initialWorkflow prop changes (for preview mode)
+  useEffect(() => {
+    if (initialWorkflow) {
+      console.log('[WorkflowCanvas] initialWorkflow prop changed, forcing sync:', initialWorkflow.id, initialWorkflow.name);
+      const workflowEdges = (initialWorkflow.edges?.length > 0 ? initialWorkflow.edges : null)
+        || (initialWorkflow.connections?.length > 0 ? initialWorkflow.connections : null)
+        || [];
+      setNodes(initialWorkflow.nodes || []);
+      setEdges(workflowEdges);
+      lastWorkflowIdRef.current = initialWorkflow.id;
+    }
+  }, [initialWorkflow, setNodes, setEdges]);
+
   // Sync React Flow state with context state (only on major changes, not drag updates)
   useEffect(() => {
+    // Skip if using initialWorkflow prop (preview mode handles its own sync)
+    if (initialWorkflow) return;
     if (!currentWorkflow) return;
 
     // Only sync if:
@@ -79,28 +142,49 @@ const WorkflowCanvas = () => {
     const workflowChanged = lastWorkflowIdRef.current !== currentWorkflow.id;
     const nodesCountChanged = nodes.length !== (currentWorkflow.nodes?.length || 0);
 
-    if (workflowChanged || nodesCountChanged) {
-      // Normalize edges: handle both 'edges' and 'connections' properties
-      const workflowEdges = currentWorkflow.edges || currentWorkflow.connections || [];
-      console.log('Syncing workflow state - Nodes:', currentWorkflow.nodes?.length || 0, 'Edges:', workflowEdges.length);
+    // Normalize edges: check for non-empty arrays (empty array is truthy but we need actual data)
+    const workflowEdges = (currentWorkflow.edges?.length > 0 ? currentWorkflow.edges : null)
+      || (currentWorkflow.connections?.length > 0 ? currentWorkflow.connections : null)
+      || [];
+    const edgesCountChanged = edges.length !== workflowEdges.length;
+
+    console.log('[WorkflowCanvas] Sync check:', {
+      workflowChanged,
+      nodesCountChanged,
+      edgesCountChanged,
+      currentEdgesCount: edges.length,
+      workflowEdgesCount: workflowEdges.length,
+      hasEdges: !!(currentWorkflow.edges),
+      hasConnections: !!(currentWorkflow.connections),
+      edgesLength: currentWorkflow.edges?.length,
+      connectionsLength: currentWorkflow.connections?.length
+    });
+
+    if (workflowChanged || nodesCountChanged || edgesCountChanged) {
+      console.log('[WorkflowCanvas] Syncing workflow state - Nodes:', currentWorkflow.nodes?.length || 0, 'Edges:', workflowEdges.length, workflowEdges);
 
       if (currentWorkflow.nodes && currentWorkflow.nodes.length > 0) {
         setNodes(currentWorkflow.nodes);
         setEdges(workflowEdges);
-        console.log('Nodes and edges set from context');
+        console.log('[WorkflowCanvas] Nodes and edges set from context');
         lastWorkflowIdRef.current = currentWorkflow.id;
       }
     }
-  }, [currentWorkflow, nodes.length, setNodes, setEdges]);
+  }, [currentWorkflow, initialWorkflow, nodes.length, edges.length, setNodes, setEdges]);
 
   const onConnect = useCallback(
     (params) => {
       const newEdge = { ...params, id: `edge-${Date.now()}`, animated: false };
       setEdges((eds) => addEdge(newEdge, eds));
-      setCurrentWorkflow(prev => ({
-        ...prev,
-        edges: [...(prev.edges || prev.connections || []), newEdge]
-      }));
+      setCurrentWorkflow(prev => {
+        const prevEdges = (prev.edges?.length > 0 ? prev.edges : null)
+          || (prev.connections?.length > 0 ? prev.connections : null)
+          || [];
+        return {
+          ...prev,
+          edges: [...prevEdges, newEdge]
+        };
+      });
     },
     [setEdges, setCurrentWorkflow]
   );
@@ -120,13 +204,18 @@ const WorkflowCanvas = () => {
       // Handle node deletion
       const removeChanges = changes.filter(change => change.type === 'remove');
       if (removeChanges.length > 0) {
-        setCurrentWorkflow(prev => ({
-          ...prev,
-          nodes: prev.nodes.filter(node => !removeChanges.find(c => c.id === node.id)),
-          edges: (prev.edges || prev.connections || []).filter(edge =>
-            !removeChanges.find(c => c.id === edge.source || c.id === edge.target)
-          )
-        }));
+        setCurrentWorkflow(prev => {
+          const prevEdges = (prev.edges?.length > 0 ? prev.edges : null)
+            || (prev.connections?.length > 0 ? prev.connections : null)
+            || [];
+          return {
+            ...prev,
+            nodes: prev.nodes.filter(node => !removeChanges.find(c => c.id === node.id)),
+            edges: prevEdges.filter(edge =>
+              !removeChanges.find(c => c.id === edge.source || c.id === edge.target)
+            )
+          };
+        });
         return;
       }
 
@@ -196,13 +285,18 @@ const WorkflowCanvas = () => {
 
   const onNodesDelete = useCallback(
     (deleted) => {
-      setCurrentWorkflow(prev => ({
-        ...prev,
-        nodes: prev.nodes.filter(node => !deleted.find(d => d.id === node.id)),
-        edges: (prev.edges || prev.connections || []).filter(edge =>
-          !deleted.find(d => d.id === edge.source || d.id === edge.target)
-        )
-      }));
+      setCurrentWorkflow(prev => {
+        const prevEdges = (prev.edges?.length > 0 ? prev.edges : null)
+          || (prev.connections?.length > 0 ? prev.connections : null)
+          || [];
+        return {
+          ...prev,
+          nodes: prev.nodes.filter(node => !deleted.find(d => d.id === node.id)),
+          edges: prevEdges.filter(edge =>
+            !deleted.find(d => d.id === edge.source || d.id === edge.target)
+          )
+        };
+      });
     },
     [setCurrentWorkflow]
   );
@@ -694,7 +788,10 @@ const WorkflowCanvas = () => {
           setNodes(arrangedNodes);
 
           // Load connections/edges if they exist
-          const edges = workflowJSON.connections || workflowJSON.edges || [];
+          // Check for non-empty arrays: empty array is truthy but we need actual data
+          const edges = (workflowJSON.connections?.length > 0 ? workflowJSON.connections : null)
+            || (workflowJSON.edges?.length > 0 ? workflowJSON.edges : null)
+            || [];
           if (Array.isArray(edges)) {
             setEdges(edges);
           } else {
@@ -734,35 +831,77 @@ const WorkflowCanvas = () => {
     input.click();
   }, [setNodes, setEdges, setCurrentWorkflow, currentWorkflow, reactFlowInstance, showToast]);
 
+  const handlePublish = useCallback(async () => {
+    if (!currentWorkflow || nodes.length === 0) {
+      showToast('No workflow to publish. Please create a workflow first.', 'warning');
+      return;
+    }
+
+    try {
+      setIsPublishing(true);
+
+      const response = await axios.post(
+        `http://localhost:5000/api/workflows/${currentWorkflow.id}/publish`,
+        {
+          platform: 'vercel',
+          environmentVars: {},
+          customDomain: null
+        }
+      );
+
+      setDeploymentId(response.data.deploymentId);
+      setShowPublishModal(true);
+      setIsPublishing(false);
+    } catch (error) {
+      console.error('Publish Error:', error);
+      showToast(`Failed to start deployment: ${error.response?.data?.message || error.message}`, 'error');
+      setIsPublishing(false);
+    }
+  }, [currentWorkflow, nodes, showToast]);
+
+  const handlePublishModalClose = useCallback(() => {
+    setShowPublishModal(false);
+    setDeploymentId(null);
+  }, []);
+
+  // Check if we have multiple workflows
+  const workflows = currentApplication?.resources?.workflows || [];
+  const hasMultipleWorkflows = workflows.length > 1;
+
   return (
     <div className="workflow-canvas-container">
-      <NodePalette />
+      {!readOnly && (
+        <div className={`workflow-left-panel ${isPaletteCollapsed ? 'collapsed' : ''}`}>
+          <NodePalette onCollapseChange={setIsPaletteCollapsed} />
+        </div>
+      )}
       <div className="workflow-canvas" ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChangeHandler}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          onNodesDelete={onNodesDelete}
+          onNodesChange={readOnly ? undefined : onNodesChangeHandler}
+          onEdgesChange={readOnly ? undefined : onEdgesChange}
+          onConnect={readOnly ? undefined : onConnect}
+          onNodeClick={readOnly ? undefined : onNodeClick}
+          onNodesDelete={readOnly ? undefined : onNodesDelete}
           onInit={onInit}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
+          onDrop={readOnly ? undefined : onDrop}
+          onDragOver={readOnly ? undefined : onDragOver}
           nodeTypes={nodeTypes}
-          nodesDraggable={true}
-          nodesConnectable={true}
-          elementsSelectable={true}
+          nodesDraggable={!readOnly}
+          nodesConnectable={!readOnly}
+          elementsSelectable={!readOnly}
           defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
           minZoom={0.1}
           maxZoom={2}
+          fitView={true}
           fitViewOptions={{
             padding: 0.2,
             includeHiddenNodes: false,
             maxZoom: 1
           }}
           attributionPosition="bottom-left"
-          deleteKeyCode="Delete"
+          deleteKeyCode={readOnly ? null : "Delete"}
         >
           <Background color="#e5e7eb" gap={16} />
           <Controls />
@@ -774,24 +913,54 @@ const WorkflowCanvas = () => {
 
         {/* Floating Action Buttons */}
         <div className="fab-container">
-          <button className="fab-button fab-validate" onClick={handleValidate} title="Validate Workflow">
-            <CheckCircle size={20} />
-          </button>
+          {/* Auto-layout is always available (useful for viewing) */}
           <button className="fab-button fab-auto-layout" onClick={handleAutoLayout} title="Auto Layout">
             <Grid3x3 size={20} />
           </button>
-          <button className="fab-button fab-import" onClick={handleImport} title="Import Workflow">
-            <Upload size={20} />
-          </button>
-          <button className="fab-button fab-save" onClick={handleSave} title="Save as JSON">
-            <Save size={20} />
-          </button>
-          <button className="fab-button fab-download" onClick={handleDownloadBPMN} title="Download BPMN">
-            <Download size={20} />
-          </button>
-          <button className="fab-button fab-publish" title="Publish Workflow">
-            <Rocket size={20} />
-          </button>
+
+          {/* Edit/Save buttons only in edit mode */}
+          {!readOnly && (
+            <>
+              <button className="fab-button fab-validate" onClick={handleValidate} title="Validate Workflow">
+                <CheckCircle size={20} />
+              </button>
+              {hasMultipleWorkflows && (
+                <>
+                  <button
+                    className="fab-button fab-overview"
+                    onClick={() => setShowWorkflowOverview(true)}
+                    title="Workflow Overview"
+                  >
+                    <MapIcon size={20} />
+                  </button>
+                  <button
+                    className="fab-button fab-connections"
+                    onClick={() => setShowConnectionEditor(true)}
+                    title="Edit Connections"
+                  >
+                    <GitBranch size={20} />
+                  </button>
+                </>
+              )}
+              <button className="fab-button fab-import" onClick={handleImport} title="Import Workflow">
+                <Upload size={20} />
+              </button>
+              <button className="fab-button fab-save" onClick={handleSave} title="Save as JSON">
+                <Save size={20} />
+              </button>
+              <button className="fab-button fab-download" onClick={handleDownloadBPMN} title="Download BPMN">
+                <Download size={20} />
+              </button>
+              <button
+                className="fab-button fab-publish"
+                onClick={handlePublish}
+                disabled={isPublishing}
+                title="Publish Workflow"
+              >
+                <Rocket size={20} />
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -810,6 +979,38 @@ const WorkflowCanvas = () => {
           validationResult={validationResult}
           onClose={() => setValidationResult(null)}
         />
+      )}
+
+      {/* Publish Modal */}
+      {showPublishModal && deploymentId && (
+        <PublishModal
+          deploymentId={deploymentId}
+          workflowName={currentWorkflow?.name || 'Workflow'}
+          onClose={handlePublishModalClose}
+        />
+      )}
+
+      {/* Workflow Overview Modal */}
+      {showWorkflowOverview && (
+        <div className="modal-overlay" onClick={() => setShowWorkflowOverview(false)}>
+          <div className="modal-content workflow-overview-modal" onClick={(e) => e.stopPropagation()}>
+            <WorkflowOverview
+              isModal={true}
+              onClose={() => setShowWorkflowOverview(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Workflow Connection Editor Modal */}
+      {showConnectionEditor && (
+        <div className="modal-overlay" onClick={() => setShowConnectionEditor(false)}>
+          <div className="modal-content connection-editor-modal" onClick={(e) => e.stopPropagation()}>
+            <WorkflowConnectionEditor
+              onClose={() => setShowConnectionEditor(false)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,0 +1,203 @@
+[
+  {
+    "id": "app_1764281341247_agent-dashboard",
+    "name": "AgentDashboard",
+    "forms": [],
+    "route": "/agent/dashboard",
+    "title": "Agent Dashboard",
+    "config": {},
+    "layout": {
+      "type": "dashboard",
+      "spacing": "normal",
+      "responsive": true
+    },
+    "styling": {},
+    "metadata": {},
+    "workflows": [],
+    "components": [
+      {
+        "id": "dashboard-stats",
+        "type": "card",
+        "label": "Ticket Statistics",
+        "config": {
+          "variant": "stats",
+          "position": "top"
+        },
+        "dataBinding": "Ticket.query.assignedToCurrentUser"
+      },
+      {
+        "id": "ticket-search",
+        "type": "input",
+        "label": "Search Tickets",
+        "config": {
+          "variant": "search",
+          "placeholder": "Search by ticket ID, subject, or customer"
+        }
+      },
+      {
+        "id": "assigned-tickets-table",
+        "type": "table",
+        "label": "My Assigned Tickets",
+        "config": {
+          "columns": [
+            "id",
+            "subject",
+            "priority",
+            "status",
+            "customer",
+            "createdAt"
+          ],
+          "variant": "interactive",
+          "sortable": true,
+          "filterable": true
+        },
+        "dataBinding": "Ticket.query.assignedToCurrentUser"
+      },
+      {
+        "id": "quick-update-form",
+        "type": "form",
+        "label": "Quick Update",
+        "config": {
+          "variant": "inline",
+          "position": "bottom"
+        },
+        "formRef": "TicketUpdateForm"
+      }
+    ],
+    "description": "Agent workspace for managing assigned tickets with priority-based organization and quick actions",
+    "data_sources": []
+  },
+  {
+    "id": "app_1764281341247_customer-portal",
+    "name": "CustomerPortal",
+    "forms": [],
+    "route": "/portal",
+    "title": "My Support Tickets",
+    "config": {},
+    "layout": {
+      "type": "single-column",
+      "spacing": "normal",
+      "responsive": true
+    },
+    "styling": {},
+    "metadata": {},
+    "workflows": [],
+    "components": [
+      {
+        "id": "portal-header",
+        "type": "text",
+        "label": "Welcome to Support Portal",
+        "config": {
+          "variant": "heading",
+          "position": "top"
+        }
+      },
+      {
+        "id": "new-ticket-card",
+        "type": "card",
+        "label": "Submit New Ticket",
+        "config": {
+          "variant": "elevated",
+          "collapsible": false
+        },
+        "formRef": "TicketSubmissionForm"
+      },
+      {
+        "id": "my-tickets-header",
+        "type": "text",
+        "label": "My Tickets",
+        "config": {
+          "variant": "subheading",
+          "position": "center"
+        }
+      },
+      {
+        "id": "customer-tickets-table",
+        "type": "table",
+        "label": "Ticket History",
+        "config": {
+          "columns": [
+            "id",
+            "title",
+            "status",
+            "priority",
+            "createdAt",
+            "updatedAt"
+          ],
+          "variant": "interactive",
+          "sortable": true,
+          "filterable": true
+        },
+        "dataBinding": "Ticket.query.filterByCurrentUser"
+      }
+    ],
+    "description": "Customer dashboard for submitting new tickets and tracking existing ticket status",
+    "data_sources": []
+  },
+  {
+    "id": "app_1764281341247_manager-dashboard",
+    "name": "ManagerDashboard",
+    "forms": [],
+    "route": "/manager/dashboard",
+    "title": "Manager Dashboard",
+    "config": {},
+    "layout": {
+      "type": "dashboard",
+      "spacing": "normal",
+      "responsive": true
+    },
+    "styling": {},
+    "metadata": {},
+    "workflows": [],
+    "components": [
+      {
+        "id": "workload-metrics",
+        "type": "card",
+        "label": "Workload Distribution",
+        "config": {
+          "variant": "metrics",
+          "position": "top"
+        },
+        "dataBinding": "Ticket.aggregateByAgent"
+      },
+      {
+        "id": "unassigned-queue",
+        "type": "card",
+        "label": "Unassigned Tickets",
+        "config": {
+          "variant": "warning",
+          "position": "top"
+        },
+        "dataBinding": "Ticket.query.unassigned"
+      },
+      {
+        "id": "all-tickets-table",
+        "type": "table",
+        "label": "All Tickets",
+        "config": {
+          "filters": [
+            "status",
+            "priority",
+            "assignedTo"
+          ],
+          "variant": "interactive",
+          "sortable": true,
+          "filterable": true
+        },
+        "dataBinding": "Ticket.query.all"
+      },
+      {
+        "id": "ticket-assignment",
+        "type": "form",
+        "label": "Assign/Reassign Ticket",
+        "config": {
+          "trigger": "row-action",
+          "variant": "modal"
+        },
+        "formRef": "TicketAssignmentForm"
+      }
+    ],
+    "description": "Manager oversight interface for ticket management, assignment, and workload distribution",
+    "data_sources": []
+  }
+]

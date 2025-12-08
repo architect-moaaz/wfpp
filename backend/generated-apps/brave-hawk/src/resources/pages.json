@@ -1,0 +1,288 @@
+[
+  {
+    "id": "app_1764272517526_admin-dashboard-page",
+    "name": "AdminDashboardPage",
+    "forms": [],
+    "route": "/admin/dashboard",
+    "title": "Administrative Dashboard",
+    "config": {},
+    "layout": {
+      "type": "dashboard",
+      "spacing": "normal",
+      "responsive": true
+    },
+    "styling": {},
+    "metadata": {},
+    "workflows": [],
+    "components": [
+      {
+        "id": "dashboard-stats",
+        "type": "card",
+        "label": "Ticket Statistics",
+        "config": {
+          "variant": "stats-grid",
+          "position": "top"
+        },
+        "dataBinding": "ParkingTicketDataModel.aggregateStats"
+      },
+      {
+        "id": "pending-reviews-queue",
+        "type": "table",
+        "label": "Pending Reviews Queue",
+        "config": {
+          "actions": [
+            "review",
+            "escalate",
+            "assign"
+          ],
+          "variant": "interactive",
+          "pagination": true
+        },
+        "dataBinding": "ParkingTicketDataModel.query.status:pending_review"
+      },
+      {
+        "id": "quick-actions",
+        "type": "card",
+        "label": "Quick Actions",
+        "config": {
+          "variant": "action-grid",
+          "position": "center"
+        }
+      },
+      {
+        "id": "recent-escalations",
+        "type": "table",
+        "label": "Recent Escalations",
+        "config": {
+          "limit": 10,
+          "variant": "compact"
+        },
+        "dataBinding": "ParkingTicketDataModel.query.escalated:true"
+      }
+    ],
+    "description": "Central hub for administrative staff to manage tickets, payments, disputes, and user access",
+    "data_sources": []
+  },
+  {
+    "id": "app_1764272517526_citizen-portal-page",
+    "name": "CitizenPortalPage",
+    "forms": [],
+    "route": "/citizen/portal",
+    "title": "My Parking Tickets",
+    "config": {},
+    "layout": {
+      "type": "dashboard",
+      "spacing": "normal",
+      "responsive": true
+    },
+    "styling": {},
+    "metadata": {},
+    "workflows": [],
+    "components": [
+      {
+        "id": "ticket-search-input",
+        "type": "input",
+        "label": "Search Tickets",
+        "config": {
+          "variant": "search",
+          "position": "top",
+          "placeholder": "Enter ticket number or license plate"
+        },
+        "dataBinding": "ParkingTicketDataModel.search"
+      },
+      {
+        "id": "outstanding-tickets-table",
+        "type": "table",
+        "label": "Outstanding Tickets",
+        "config": {
+          "actions": [
+            "view",
+            "pay",
+            "dispute"
+          ],
+          "columns": [
+            "ticketNumber",
+            "issueDate",
+            "violation",
+            "amount",
+            "status"
+          ],
+          "variant": "interactive"
+        },
+        "dataBinding": "ParkingTicketDataModel.list"
+      },
+      {
+        "id": "payment-history-card",
+        "type": "card",
+        "label": "Payment History",
+        "config": {
+          "variant": "summary",
+          "collapsible": true
+        },
+        "dataBinding": "ParkingTicketDataModel.paymentHistory"
+      },
+      {
+        "id": "dispute-submission-form",
+        "type": "form",
+        "label": "Submit Dispute",
+        "config": {
+          "trigger": "button",
+          "variant": "modal"
+        },
+        "formRef": "DisputeManagementForm"
+      },
+      {
+        "id": "notification-preferences-button",
+        "type": "button",
+        "label": "Notification Preferences",
+        "config": {
+          "variant": "secondary",
+          "position": "bottom"
+        }
+      }
+    ],
+    "description": "Self-service portal for citizens to view, pay, and dispute parking tickets",
+    "data_sources": []
+  },
+  {
+    "id": "app_1764272517526_officer-mobile-interface",
+    "name": "OfficerMobileInterface",
+    "forms": [],
+    "route": "/officer/mobile",
+    "title": "Issue Ticket",
+    "config": {},
+    "layout": {
+      "type": "single-column",
+      "spacing": "compact",
+      "responsive": true
+    },
+    "styling": {},
+    "metadata": {},
+    "workflows": [],
+    "components": [
+      {
+        "id": "daily-summary-card",
+        "type": "card",
+        "label": "Today's Activity",
+        "config": {
+          "variant": "compact",
+          "position": "top"
+        },
+        "dataBinding": "ParkingTicketDataModel.aggregateByOfficer"
+      },
+      {
+        "id": "quick-ticket-form",
+        "type": "form",
+        "label": "Issue New Ticket",
+        "config": {
+          "variant": "mobile-optimized",
+          "gpsEnabled": true,
+          "cameraEnabled": true,
+          "offlineCapable": true
+        },
+        "formRef": "TicketIssuanceForm",
+        "dataBinding": "ParkingTicketDataModel.create"
+      },
+      {
+        "id": "violation-quick-select",
+        "type": "button",
+        "label": "Common Violations",
+        "config": {
+          "variant": "quick-action",
+          "position": "center"
+        }
+      },
+      {
+        "id": "recent-tickets-list",
+        "type": "list",
+        "label": "Recent Tickets",
+        "config": {
+          "variant": "compact",
+          "maxItems": 5
+        },
+        "dataBinding": "ParkingTicketDataModel.queryByOfficer"
+      }
+    ],
+    "description": "Mobile-optimized interface for field officers to quickly issue parking tickets with camera and GPS integration",
+    "data_sources": []
+  },
+  {
+    "id": "app_1764272517526_reporting-dashboard",
+    "name": "ReportingDashboard",
+    "forms": [],
+    "route": "/dashboard/reporting",
+    "title": "Parking Enforcement Analytics",
+    "config": {},
+    "layout": {
+      "type": "dashboard",
+      "spacing": "normal",
+      "responsive": true
+    },
+    "styling": {},
+    "metadata": {},
+    "workflows": [],
+    "components": [
+      {
+        "id": "filter-controls",
+        "type": "card",
+        "label": "Report Filters",
+        "config": {
+          "variant": "outlined",
+          "position": "top"
+        },
+        "dataBinding": "ParkingTicketDataModel.filters"
+      },
+      {
+        "id": "key-metrics-summary",
+        "type": "card",
+        "label": "Key Performance Indicators",
+        "config": {
+          "columns": 4,
+          "variant": "summary"
+        },
+        "dataBinding": "ParkingTicketDataModel.aggregateMetrics"
+      },
+      {
+        "id": "violation-trends-chart",
+        "type": "card",
+        "label": "Ticket Volume by Violation Type",
+        "config": {
+          "variant": "chart",
+          "chartType": "bar"
+        },
+        "dataBinding": "ParkingTicketDataModel.violationTypeAnalytics"
+      },
+      {
+        "id": "revenue-collection-chart",
+        "type": "card",
+        "label": "Revenue Collection & Outstanding Balances",
+        "config": {
+          "variant": "chart",
+          "chartType": "line"
+        },
+        "dataBinding": "ParkingTicketDataModel.revenueAnalytics"
+      },
+      {
+        "id": "location-performance-table",
+        "type": "table",
+        "label": "Enforcement by Location",
+        "config": {
+          "variant": "sortable",
+          "pagination": true
+        },
+        "dataBinding": "ParkingTicketDataModel.locationAnalytics"
+      },
+      {
+        "id": "export-report-button",
+        "type": "button",
+        "label": "Export Report",
+        "config": {
+          "variant": "primary",
+          "position": "bottom"
+        }
+      }
+    ],
+    "description": "Visualizes key metrics including ticket volume, revenue collection, dispute rates, and enforcement patterns with filtering and export capabilities.",
+    "data_sources": []
+  }
+]

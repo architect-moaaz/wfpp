@@ -1,0 +1,366 @@
+[
+  {
+    "id": "workflow_1734872445123",
+    "name": "Leave Management Approval Workflow",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Submit Leave Request",
+          "trigger": "Employee form submission",
+          "formName": "Leave Request Form",
+          "description": "Employee submits leave request through the leave management system"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Validate Leave Request",
+          "rules": [
+            "Check required fields",
+            "Validate date ranges",
+            "Check leave balance"
+          ],
+          "ruleType": "Form validation",
+          "description": "Validates leave request data and employee leave balance"
+        },
+        "type": "validation",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Submit Notification",
+          "channel": "Email",
+          "template": "Leave request submitted successfully",
+          "recipient": "Employee",
+          "description": "Confirms submission to employee"
+        },
+        "type": "notification",
+        "position": {
+          "x": 100,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Check Leave Duration",
+          "condition": "Leave duration routing",
+          "description": "Routes based on leave duration for appropriate approval level",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Manager Approval",
+          "formId": "workflow_1734872445123_employee_form",
+          "dueDate": "3 business days",
+          "formName": "Employee Registration",
+          "priority": "Medium",
+          "taskName": "approve_leave",
+          "assignedTo": "Direct Manager",
+          "instructions": "Review and approve/reject leave request"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "HR Approval",
+          "formId": "workflow_1734872445123_leave_request_form",
+          "dueDate": "2 business days",
+          "formName": "Leave Request",
+          "priority": "High",
+          "taskName": "hr_approve_leave",
+          "assignedTo": "HR Manager",
+          "instructions": "Review extended leave request and approve/reject"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 500,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Manager Decision",
+          "condition": "Manager approval decision",
+          "description": "Routes based on manager's approval or rejection",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "HR Decision",
+          "condition": "HR approval decision",
+          "description": "Routes based on HR approval or rejection",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 500,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Approval Notification",
+          "channel": "Email",
+          "template": "Leave request approved",
+          "recipient": "Employee",
+          "description": "Notifies employee of approval"
+        },
+        "type": "notification",
+        "position": {
+          "x": 400,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Rejection Notification",
+          "channel": "Email",
+          "template": "Leave request rejected with reason",
+          "recipient": "Employee",
+          "description": "Notifies employee of rejection with reason"
+        },
+        "type": "notification",
+        "position": {
+          "x": 200,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Resubmit Decision",
+          "condition": "Employee resubmission choice",
+          "description": "Employee can choose to resubmit or cancel",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 200,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Update Leave Balance",
+          "script": "updateEmployeeLeaveBalance()",
+          "scriptType": "JavaScript",
+          "description": "Updates employee leave balance and calendar"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 400,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Approval Deadline",
+          "duration": "P5D",
+          "timerType": "duration",
+          "description": "5 day deadline for approval escalation"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 600,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Escalation Alert",
+          "channel": "Email",
+          "template": "Leave approval overdue - requires attention",
+          "recipient": "Senior Manager",
+          "description": "Escalates to senior manager if deadline exceeded"
+        },
+        "type": "notification",
+        "position": {
+          "x": 600,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Leave Approved",
+          "result": "Leave request approved and processed",
+          "description": "Leave request successfully approved and employee balance updated"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 400,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Leave Cancelled",
+          "result": "Leave request cancelled by employee",
+          "description": "Employee chose not to resubmit rejected leave request"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 100,
+          "y": 950
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-25T14:58:35.852+05:30",
+    "updated_at": "2025-11-25T14:58:35.852+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "label": "1-5 days",
+        "source": "node_4",
+        "target": "node_5",
+        "condition": "processData.leaveDays <= 5"
+      },
+      {
+        "id": "edge_5",
+        "label": "> 5 days",
+        "source": "node_4",
+        "target": "node_6",
+        "condition": "processData.leaveDays > 5"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_4",
+        "target": "node_13",
+        "isDefault": true
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_9",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_7",
+        "target": "node_9",
+        "condition": "processData.managerDecision === 'approved'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_10",
+        "label": "Rejected",
+        "source": "node_7",
+        "target": "node_10",
+        "condition": "processData.managerDecision === 'rejected'"
+      },
+      {
+        "id": "edge_11",
+        "label": "Approved",
+        "source": "node_8",
+        "target": "node_9",
+        "condition": "processData.hrDecision === 'approved'"
+      },
+      {
+        "id": "edge_12",
+        "label": "Rejected",
+        "source": "node_8",
+        "target": "node_10",
+        "condition": "processData.hrDecision === 'rejected'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_13",
+        "source": "node_9",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_10",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_16",
+        "label": "Cancel",
+        "source": "node_11",
+        "target": "node_16",
+        "condition": "processData.employeeAction === 'cancel'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_17",
+        "source": "node_12",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_14",
+        "target": "node_5"
+      }
+    ],
+    "description": ""
+  }
+]

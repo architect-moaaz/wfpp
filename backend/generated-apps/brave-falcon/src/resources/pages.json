@@ -1,0 +1,2577 @@
+[
+  {
+    "id": "customerlistpage-1765047850123-xk9pqr",
+    "name": "CustomerListPage",
+    "title": "Customers",
+    "description": "Display searchable and filterable list of all customers with sorting, filtering, and bulk actions",
+    "route": "/customers",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "customersearchform-1765047736586-axbfpq",
+      "customerregistrationform-1765047719263-li8p0s"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Customers",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Add Customer",
+              "variant": "primary",
+              "icon": "plus",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563EB",
+                "color": "#FFFFFF",
+                "borderRadius": "8px",
+                "padding": "10px 16px",
+                "border": "none",
+                "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+              }
+            },
+            "formRef": "customerregistrationform-1765047719263-li8p0s"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Search & Filter",
+              "layout": "inline",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "20px",
+                "border": "1px solid #E2E8F0",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "customersearchform-1765047736586-axbfpq"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "All Customers",
+              "columns": [
+                {
+                  "key": "name",
+                  "label": "Customer Name",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "key": "email",
+                  "label": "Email",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "company",
+                  "label": "Company",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "borderRadius": "6px",
+                    "padding": "4px 12px"
+                  }
+                },
+                {
+                  "key": "lastInteraction",
+                  "label": "Last Contact",
+                  "sortable": true,
+                  "type": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#64748B"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    "view",
+                    "edit",
+                    "delete"
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 25,
+              "selectable": true,
+              "bulkActions": [
+                "export",
+                "assign",
+                "delete"
+              ],
+              "searchable": true,
+              "filterable": true,
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "border": "1px solid #E2E8F0",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "overflow": "hidden"
+              },
+              "headerStyle": {
+                "backgroundColor": "#F8FAFC",
+                "borderBottom": "1px solid #E2E8F0",
+                "padding": "12px 16px",
+                "fontWeight": "600",
+                "color": "#475569"
+              },
+              "rowStyle": {
+                "borderBottom": "1px solid #F1F5F9",
+                "padding": "16px",
+                "hover": {
+                  "backgroundColor": "#F8FAFC"
+                }
+              }
+            },
+            "dataBinding": "Customer.query",
+            "actions": {
+              "view": {
+                "type": "navigate",
+                "target": "/customer/:id"
+              },
+              "edit": {
+                "type": "navigate",
+                "target": "/customer/:id/edit"
+              },
+              "delete": {
+                "type": "workflow",
+                "workflow": "CustomerDeletionWorkflow"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/customer/:id"
+        },
+        "create": {
+          "type": "modal",
+          "formRef": "customerregistrationform-1765047719263-li8p0s"
+        },
+        "search": {
+          "type": "workflow",
+          "workflow": "CustomerSearchWorkflow"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Customers",
+          "route": "/customers",
+          "icon": "users",
+          "active": true
+        },
+        {
+          "label": "Pipeline",
+          "route": "/pipeline",
+          "icon": "pipeline"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks",
+          "icon": "checklist"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "chart"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings",
+          "icon": "settings"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "settingspage-1765048900000-sp9xkl",
+    "name": "SettingsPage",
+    "title": "System Settings",
+    "description": "Administrative interface for managing deal stage configurations, user roles, notification preferences, and system-wide settings",
+    "route": "/settings",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "System Settings",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Configure system settings, deal stages, and user preferences",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "User Management",
+              "description": "Manage user accounts, roles, and permissions",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "User.query",
+            "actions": [
+              {
+                "label": "Manage Users",
+                "type": "navigate",
+                "target": "/users",
+                "style": {
+                  "backgroundColor": "#0066cc",
+                  "color": "#ffffff",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Deal Stage Configuration",
+              "description": "Customize pipeline stages and progression rules",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "DealStage.query",
+            "actions": [
+              {
+                "label": "Configure Stages",
+                "type": "navigate",
+                "target": "/settings/deal-stages",
+                "style": {
+                  "backgroundColor": "#0066cc",
+                  "color": "#ffffff",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Notification Preferences",
+              "description": "Configure system notifications and alerts",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "16px"
+              }
+            },
+            "actions": [
+              {
+                "label": "Notification Settings",
+                "type": "navigate",
+                "target": "/settings/notifications",
+                "style": {
+                  "backgroundColor": "#0066cc",
+                  "color": "#ffffff",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Integration Settings",
+              "description": "Manage third-party integrations and API configurations",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "16px"
+              }
+            },
+            "actions": [
+              {
+                "label": "Manage Integrations",
+                "type": "navigate",
+                "target": "/settings/integrations",
+                "style": {
+                  "backgroundColor": "#0066cc",
+                  "color": "#ffffff",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "configure": {
+          "type": "navigate",
+          "target": "/settings/configure"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Customers",
+          "route": "/customers"
+        },
+        {
+          "label": "Pipeline",
+          "route": "/pipeline"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "pipelinepage-1765048234567-k9m2pq",
+    "name": "PipelinePage",
+    "title": "Sales Pipeline",
+    "description": "Kanban-style board showing deals grouped by pipeline stages with drag-and-drop functionality and stage-specific analytics",
+    "route": "/pipeline",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "dealcreationform-1765047789256-la61ug",
+      "dealupdateform-1765047754852-6kwdyh"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Sales Pipeline",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "4px"
+              }
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Pipeline Metrics",
+              "layout": "horizontal",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0"
+              },
+              "metrics": [
+                {
+                  "label": "Total Pipeline Value",
+                  "value": "$2,450,000",
+                  "trend": "+12%",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "label": "Active Deals",
+                  "value": "47",
+                  "trend": "+5",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "label": "Win Rate",
+                  "value": "34%",
+                  "trend": "+3%",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#0F172A"
+                  }
+                },
+                {
+                  "label": "Avg. Deal Size",
+                  "value": "$52,128",
+                  "trend": "+8%",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "700",
+                    "color": "#0F172A"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "Deal.aggregates"
+          }
+        ]
+      },
+      {
+        "id": "filters",
+        "type": "main",
+        "components": [
+          {
+            "type": "filter",
+            "config": {
+              "filters": [
+                {
+                  "type": "select",
+                  "label": "Owner",
+                  "field": "ownerId",
+                  "dataSource": "User.all",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569",
+                    "borderRadius": "8px",
+                    "border": "1px solid #CBD5E1"
+                  }
+                },
+                {
+                  "type": "daterange",
+                  "label": "Expected Close Date",
+                  "field": "expectedCloseDate",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569",
+                    "borderRadius": "8px",
+                    "border": "1px solid #CBD5E1"
+                  }
+                },
+                {
+                  "type": "range",
+                  "label": "Deal Value",
+                  "field": "value",
+                  "min": 0,
+                  "max": 1000000,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#475569"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#F8FAFC",
+                "padding": "16px",
+                "borderRadius": "12px",
+                "marginBottom": "24px",
+                "border": "1px solid #E2E8F0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "kanban",
+        "type": "main",
+        "components": [
+          {
+            "type": "kanban",
+            "config": {
+              "groupBy": "stageId",
+              "dragAndDrop": true,
+              "onDrop": {
+                "workflow": "DealStageProgressionWorkflow",
+                "updateField": "stageId"
+              },
+              "columns": [
+                {
+                  "id": "prospecting",
+                  "title": "Prospecting",
+                  "color": "#94A3B8",
+                  "style": {
+                    "backgroundColor": "#F8FAFC",
+                    "borderRadius": "12px",
+                    "padding": "16px",
+                    "minWidth": "320px",
+                    "border": "1px solid #E2E8F0"
+                  }
+                },
+                {
+                  "id": "qualification",
+                  "title": "Qualification",
+                  "color": "#60A5FA",
+                  "style": {
+                    "backgroundColor": "#F8FAFC",
+                    "borderRadius": "12px",
+                    "padding": "16px",
+                    "minWidth": "320px",
+                    "border": "1px solid #E2E8F0"
+                  }
+                },
+                {
+                  "id": "proposal",
+                  "title": "Proposal",
+                  "color": "#A78BFA",
+                  "style": {
+                    "backgroundColor": "#F8FAFC",
+                    "borderRadius": "12px",
+                    "padding": "16px",
+                    "minWidth": "320px",
+                    "border": "1px solid #E2E8F0"
+                  }
+                },
+                {
+                  "id": "negotiation",
+                  "title": "Negotiation",
+                  "color": "#F59E0B",
+                  "style": {
+                    "backgroundColor": "#F8FAFC",
+                    "borderRadius": "12px",
+                    "padding": "16px",
+                    "minWidth": "320px",
+                    "border": "1px solid #E2E8F0"
+                  }
+                },
+                {
+                  "id": "closed-won",
+                  "title": "Closed Won",
+                  "color": "#10B981",
+                  "style": {
+                    "backgroundColor": "#F8FAFC",
+                    "borderRadius": "12px",
+                    "padding": "16px",
+                    "minWidth": "320px",
+                    "border": "1px solid #E2E8F0"
+                  }
+                },
+                {
+                  "id": "closed-lost",
+                  "title": "Closed Lost",
+                  "color": "#EF4444",
+                  "style": {
+                    "backgroundColor": "#F8FAFC",
+                    "borderRadius": "12px",
+                    "padding": "16px",
+                    "minWidth": "320px",
+                    "border": "1px solid #E2E8F0"
+                  }
+                }
+              ],
+              "cardTemplate": {
+                "title": "{{name}}",
+                "subtitle": "{{customer.name}}",
+                "fields": [
+                  {
+                    "label": "Value",
+                    "value": "{{value | currency}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "16px",
+                      "fontWeight": "600",
+                      "color": "#0F172A"
+                    }
+                  },
+                  {
+                    "label": "Close Date",
+                    "value": "{{expectedCloseDate | date}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "13px",
+                      "color": "#64748B"
+                    }
+                  },
+                  {
+                    "label": "Owner",
+                    "value": "{{owner.name}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "13px",
+                      "color": "#64748B"
+                    }
+                  },
+                  {
+                    "label": "Probability",
+                    "value": "{{probability}}%",
+                    "type": "progress",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "13px",
+                      "color": "#64748B"
+                    }
+                  }
+                ],
+                "style": {
+                  "backgroundColor": "#FFFFFF",
+                  "borderRadius": "8px",
+                  "padding": "16px",
+                  "marginBottom": "12px",
+                  "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                  "border": "1px solid #E2E8F0",
+                  "cursor": "pointer",
+                  "transition": "all 0.2s ease"
+                },
+                "hoverStyle": {
+                  "boxShadow": "0 4px 6px rgba(0, 0, 0, 0.1)",
+                  "transform": "translateY(-2px)"
+                }
+              },
+              "columnHeader": {
+                "showCount": true,
+                "showValue": true,
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "color": "#0F172A",
+                  "marginBottom": "16px"
+                }
+              }
+            },
+            "dataBinding": "Deal.byStage",
+            "actions": [
+              {
+                "label": "View Details",
+                "type": "navigate",
+                "target": "/deal/{{id}}"
+              },
+              {
+                "label": "Edit Deal",
+                "type": "modal",
+                "formRef": "dealupdateform-1765047754852-6kwdyh"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "actions",
+        "type": "main",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Create New Deal",
+              "variant": "primary",
+              "icon": "plus",
+              "action": "openForm",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "backgroundColor": "#3B82F6",
+                "color": "#FFFFFF",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease"
+              },
+              "hoverStyle": {
+                "backgroundColor": "#2563EB",
+                "boxShadow": "0 4px 6px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "formRef": "dealcreationform-1765047789256-la61ug"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/deal/:id"
+        },
+        "create": {
+          "type": "modal",
+          "formRef": "dealcreationform-1765047789256-la61ug"
+        },
+        "edit": {
+          "type": "modal",
+          "formRef": "dealupdateform-1765047754852-6kwdyh"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Pipeline",
+          "route": "/pipeline",
+          "icon": "pipeline",
+          "active": true
+        },
+        {
+          "label": "Customers",
+          "route": "/customers",
+          "icon": "users"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks",
+          "icon": "checklist"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "chart"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings",
+          "icon": "settings"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "dashboardpage-1765048123456-xyz789",
+    "name": "DashboardPage",
+    "title": "Dashboard",
+    "description": "Home page showing sales pipeline summary, upcoming tasks, recent interactions, and performance metrics with personalized views based on user role",
+    "route": "/dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "dealcreationform-1765047789256-la61ug",
+      "taskassignmentform-1765047811159-cp0uwd",
+      "interactionlogform-1765047771710-l45ark"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Welcome back! Here's your sales overview and key metrics.",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Sales Pipeline Summary",
+              "subtitle": "Deals by stage",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "20px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "Deal.aggregateByStage"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Upcoming Tasks",
+              "subtitle": "Your priorities for today",
+              "actionButton": {
+                "label": "Create Task",
+                "action": "openForm",
+                "style": {
+                  "backgroundColor": "#2563eb",
+                  "color": "#ffffff",
+                  "borderRadius": "8px",
+                  "padding": "10px 20px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none",
+                  "cursor": "pointer"
+                }
+              },
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "20px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "Task.upcomingByUser",
+            "formRef": "taskassignmentform-1765047811159-cp0uwd"
+          },
+          {
+            "type": "list",
+            "config": {
+              "title": "Recent Interactions",
+              "subtitle": "Latest customer activities",
+              "itemsPerPage": 5,
+              "showTimestamp": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "20px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
+              },
+              "itemStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#1a1a1a",
+                "padding": "12px",
+                "borderBottom": "1px solid #f5f5f5"
+              }
+            },
+            "dataBinding": "Interaction.recentByUser"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Performance Metrics",
+              "subtitle": "This month's overview",
+              "metrics": [
+                {
+                  "label": "Active Deals",
+                  "dataBinding": "Deal.countActive",
+                  "icon": "trending_up"
+                },
+                {
+                  "label": "Tasks Completed",
+                  "dataBinding": "Task.completionRate",
+                  "icon": "check_circle"
+                },
+                {
+                  "label": "Customer Interactions",
+                  "dataBinding": "Interaction.countThisMonth",
+                  "icon": "people"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "20px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
+              },
+              "metricStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#2563eb"
+              }
+            },
+            "dataBinding": "ActivityLog.metrics"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "viewDeal": {
+          "type": "navigate",
+          "target": "/deal-detail"
+        },
+        "viewCustomer": {
+          "type": "navigate",
+          "target": "/customer-profile"
+        },
+        "createDeal": {
+          "type": "navigate",
+          "target": "/pipeline"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Customers",
+          "route": "/customers",
+          "icon": "people"
+        },
+        {
+          "label": "Pipeline",
+          "route": "/pipeline",
+          "icon": "trending_up"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks",
+          "icon": "check_box"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "bar_chart"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings",
+          "icon": "settings"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "taskmanagementpage-1765048200000-tm9xkl",
+    "name": "TaskManagementPage",
+    "title": "Task Management",
+    "description": "Manage and track all tasks with filtering and assignment views",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "taskassignmentform-1765047811159-cp0uwd"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Task Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Create Task",
+              "variant": "primary",
+              "action": "openForm",
+              "formRef": "taskassignmentform-1765047811159-cp0uwd",
+              "style": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "cursor": "pointer",
+                "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "filter",
+            "config": {
+              "filters": [
+                {
+                  "field": "status",
+                  "label": "Status",
+                  "type": "select",
+                  "options": [
+                    "Pending",
+                    "In Progress",
+                    "Completed",
+                    "Overdue"
+                  ]
+                },
+                {
+                  "field": "priority",
+                  "label": "Priority",
+                  "type": "select",
+                  "options": [
+                    "Low",
+                    "Medium",
+                    "High",
+                    "Urgent"
+                  ]
+                },
+                {
+                  "field": "assignedTo",
+                  "label": "Assignee",
+                  "type": "select",
+                  "dataSource": "User"
+                },
+                {
+                  "field": "dueDate",
+                  "label": "Due Date",
+                  "type": "dateRange"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "20px",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            }
+          },
+          {
+            "type": "tabs",
+            "config": {
+              "tabs": [
+                {
+                  "id": "list-view",
+                  "label": "List View",
+                  "icon": "list"
+                },
+                {
+                  "id": "calendar-view",
+                  "label": "Calendar View",
+                  "icon": "calendar"
+                },
+                {
+                  "id": "assignee-view",
+                  "label": "By Assignee",
+                  "icon": "user"
+                }
+              ],
+              "style": {
+                "borderBottom": "1px solid #e5e7eb",
+                "marginBottom": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Tasks",
+              "columns": [
+                {
+                  "key": "title",
+                  "label": "Task Title",
+                  "sortable": true,
+                  "style": {
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "assignedTo",
+                  "label": "Assignee",
+                  "sortable": true,
+                  "type": "reference",
+                  "referenceField": "name"
+                },
+                {
+                  "key": "priority",
+                  "label": "Priority",
+                  "sortable": true,
+                  "type": "badge",
+                  "badgeColors": {
+                    "Low": "#10b981",
+                    "Medium": "#f59e0b",
+                    "High": "#ef4444",
+                    "Urgent": "#dc2626"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "type": "badge",
+                  "badgeColors": {
+                    "Pending": "#6b7280",
+                    "In Progress": "#3b82f6",
+                    "Completed": "#10b981",
+                    "Overdue": "#dc2626"
+                  }
+                },
+                {
+                  "key": "dueDate",
+                  "label": "Due Date",
+                  "sortable": true,
+                  "type": "date",
+                  "highlightOverdue": true
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "Complete",
+                      "action": "updateStatus",
+                      "value": "Completed",
+                      "icon": "check"
+                    },
+                    {
+                      "label": "Reassign",
+                      "action": "openForm",
+                      "formRef": "taskassignmentform-1765047811159-cp0uwd",
+                      "icon": "user"
+                    },
+                    {
+                      "label": "Edit",
+                      "action": "edit",
+                      "icon": "edit"
+                    }
+                  ]
+                }
+              ],
+              "selectable": true,
+              "bulkActions": [
+                {
+                  "label": "Mark Complete",
+                  "action": "bulkUpdateStatus",
+                  "value": "Completed"
+                },
+                {
+                  "label": "Reassign",
+                  "action": "bulkReassign"
+                },
+                {
+                  "label": "Delete",
+                  "action": "bulkDelete",
+                  "confirm": true
+                }
+              ],
+              "pagination": {
+                "pageSize": 25,
+                "showSizeChanger": true
+              },
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Task.query",
+            "workflows": [
+              "TaskManagementWorkflow",
+              "TaskReminderWorkflow"
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Task Summary",
+              "content": [
+                {
+                  "label": "Total Tasks",
+                  "value": "{{Task.count}}",
+                  "style": {
+                    "fontSize": "24px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Overdue",
+                  "value": "{{Task.count(status='Overdue')}}",
+                  "style": {
+                    "fontSize": "24px",
+                    "fontWeight": "600",
+                    "color": "#dc2626"
+                  }
+                },
+                {
+                  "label": "Due Today",
+                  "value": "{{Task.count(dueDate=today)}}",
+                  "style": {
+                    "fontSize": "24px",
+                    "fontWeight": "600",
+                    "color": "#f59e0b"
+                  }
+                },
+                {
+                  "label": "Completed This Week",
+                  "value": "{{Task.count(status='Completed', completedDate>=weekStart)}}",
+                  "style": {
+                    "fontSize": "24px",
+                    "fontWeight": "600",
+                    "color": "#10b981"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginTop": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Task.aggregate"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/tasks/{{id}}"
+        },
+        "create": {
+          "type": "openForm",
+          "formRef": "taskassignmentform-1765047811159-cp0uwd"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Customers",
+          "route": "/customers"
+        },
+        {
+          "label": "Pipeline",
+          "route": "/pipeline"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "reportspage-1765048234567-rpt9x2",
+    "name": "ReportsPage",
+    "title": "Analytics Reports",
+    "description": "Generate and view analytics reports on sales performance and activities",
+    "route": "/reports",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Analytics Reports",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Generate and analyze sales performance, pipeline health, and team metrics",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Report Filters",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "dateRangePicker",
+                "config": {
+                  "label": "Date Range",
+                  "defaultRange": "last30days",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#334155",
+                    "marginBottom": "16px"
+                  }
+                }
+              },
+              {
+                "type": "dropdown",
+                "config": {
+                  "label": "Report Type",
+                  "options": [
+                    {
+                      "label": "Sales Performance",
+                      "value": "sales"
+                    },
+                    {
+                      "label": "Pipeline Health",
+                      "value": "pipeline"
+                    },
+                    {
+                      "label": "Team Performance",
+                      "value": "team"
+                    },
+                    {
+                      "label": "Customer Engagement",
+                      "value": "engagement"
+                    }
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#334155",
+                    "borderRadius": "8px",
+                    "border": "1px solid #CBD5E1",
+                    "padding": "10px 14px"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Generate Report",
+                  "variant": "primary",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#3B82F6",
+                    "color": "#FFFFFF",
+                    "borderRadius": "8px",
+                    "padding": "10px 20px",
+                    "border": "none",
+                    "marginTop": "16px",
+                    "cursor": "pointer"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "grid",
+            "config": {
+              "columns": 3,
+              "gap": "24px",
+              "style": {
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Total Revenue",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #E2E8F0"
+                  }
+                },
+                "dataBinding": "Deal.aggregate",
+                "components": [
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "{{sum(Deal.value)}}",
+                      "variant": "h2",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "36px",
+                        "fontWeight": "700",
+                        "color": "#0F172A",
+                        "marginBottom": "8px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "+12.5% from last period",
+                      "variant": "caption",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#10B981"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Deals Closed",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #E2E8F0"
+                  }
+                },
+                "dataBinding": "Deal.count",
+                "components": [
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "{{count(Deal.status='closed')}}",
+                      "variant": "h2",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "36px",
+                        "fontWeight": "700",
+                        "color": "#0F172A",
+                        "marginBottom": "8px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "+8 from last period",
+                      "variant": "caption",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#10B981"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Avg Deal Size",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #E2E8F0"
+                  }
+                },
+                "dataBinding": "Deal.aggregate",
+                "components": [
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "{{avg(Deal.value)}}",
+                      "variant": "h2",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "36px",
+                        "fontWeight": "700",
+                        "color": "#0F172A",
+                        "marginBottom": "8px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "+3.2% from last period",
+                      "variant": "caption",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#10B981"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Sales Performance Chart",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "chart",
+                "config": {
+                  "chartType": "line",
+                  "xAxis": "date",
+                  "yAxis": "revenue",
+                  "height": "300px",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif"
+                  }
+                },
+                "dataBinding": "Deal.timeSeries"
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Team Performance",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "field": "name",
+                      "header": "Team Member",
+                      "sortable": true
+                    },
+                    {
+                      "field": "dealsCount",
+                      "header": "Deals Closed",
+                      "sortable": true
+                    },
+                    {
+                      "field": "revenue",
+                      "header": "Revenue",
+                      "sortable": true
+                    },
+                    {
+                      "field": "conversionRate",
+                      "header": "Conversion Rate",
+                      "sortable": true
+                    }
+                  ],
+                  "pagination": true,
+                  "pageSize": 10,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#334155"
+                  },
+                  "headerStyle": {
+                    "fontWeight": "600",
+                    "color": "#0F172A",
+                    "backgroundColor": "#F8FAFC",
+                    "borderBottom": "2px solid #E2E8F0"
+                  },
+                  "rowStyle": {
+                    "borderBottom": "1px solid #E2E8F0",
+                    "padding": "12px"
+                  }
+                },
+                "dataBinding": "User.query"
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Export Report",
+              "variant": "secondary",
+              "icon": "download",
+              "action": "export",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "backgroundColor": "#FFFFFF",
+                "color": "#3B82F6",
+                "borderRadius": "8px",
+                "padding": "10px 20px",
+                "border": "1px solid #3B82F6",
+                "cursor": "pointer"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "export": {
+          "type": "workflow",
+          "workflow": "DataExportWorkflow"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Pipeline",
+          "route": "/pipeline"
+        },
+        {
+          "label": "Customers",
+          "route": "/customers"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "dealdetailpage-1765048234567-xk9p2m",
+    "name": "DealDetailPage",
+    "title": "Deal Details",
+    "description": "Display comprehensive information about individual deals including customer association, stage, value, probability, history, and related interactions",
+    "route": "/deals/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "dealupdateform-1765047754852-6kwdyh",
+      "interactionlogform-1765047771710-l45ark",
+      "taskassignmentform-1765047811159-cp0uwd"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Deal.title}}",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            },
+            "dataBinding": "Deal.findById"
+          },
+          {
+            "type": "badge",
+            "config": {
+              "text": "{{Deal.stage.name}}",
+              "variant": "status",
+              "style": {
+                "backgroundColor": "#f0f9ff",
+                "color": "#0369a1",
+                "padding": "6px 12px",
+                "borderRadius": "6px",
+                "fontSize": "14px",
+                "fontWeight": "500"
+              }
+            },
+            "dataBinding": "Deal.stage"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Deal Information",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e7eb"
+              },
+              "fields": [
+                {
+                  "label": "Customer",
+                  "value": "{{Deal.customer.name}}",
+                  "type": "link",
+                  "link": "/customers/{{Deal.customer.id}}"
+                },
+                {
+                  "label": "Value",
+                  "value": "${{Deal.value}}",
+                  "type": "currency"
+                },
+                {
+                  "label": "Probability",
+                  "value": "{{Deal.probability}}%",
+                  "type": "text"
+                },
+                {
+                  "label": "Expected Close Date",
+                  "value": "{{Deal.expectedCloseDate}}",
+                  "type": "date"
+                },
+                {
+                  "label": "Owner",
+                  "value": "{{Deal.owner.name}}",
+                  "type": "text"
+                },
+                {
+                  "label": "Created",
+                  "value": "{{Deal.createdAt}}",
+                  "type": "datetime"
+                }
+              ]
+            },
+            "dataBinding": "Deal.findById",
+            "formRef": "dealupdateform-1765047754852-6kwdyh"
+          },
+          {
+            "type": "timeline",
+            "config": {
+              "title": "Stage Progression",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e7eb"
+              },
+              "orientation": "horizontal",
+              "showDates": true
+            },
+            "dataBinding": "ActivityLog.query",
+            "filters": {
+              "entityType": "Deal",
+              "entityId": "{{Deal.id}}",
+              "actionType": "stage_change"
+            }
+          },
+          {
+            "type": "tabs",
+            "config": {
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb"
+              },
+              "tabs": [
+                {
+                  "id": "interactions",
+                  "label": "Interactions",
+                  "content": {
+                    "type": "list",
+                    "dataBinding": "Interaction.query",
+                    "filters": {
+                      "dealId": "{{Deal.id}}"
+                    },
+                    "itemTemplate": {
+                      "title": "{{Interaction.type}} - {{Interaction.date}}",
+                      "subtitle": "{{Interaction.notes}}",
+                      "meta": "by {{Interaction.user.name}}"
+                    },
+                    "emptyState": "No interactions recorded yet"
+                  }
+                },
+                {
+                  "id": "tasks",
+                  "label": "Tasks",
+                  "content": {
+                    "type": "list",
+                    "dataBinding": "Task.query",
+                    "filters": {
+                      "dealId": "{{Deal.id}}"
+                    },
+                    "itemTemplate": {
+                      "title": "{{Task.title}}",
+                      "subtitle": "Due: {{Task.dueDate}}",
+                      "meta": "Assigned to: {{Task.assignedTo.name}}",
+                      "status": "{{Task.status}}"
+                    },
+                    "emptyState": "No tasks assigned"
+                  }
+                },
+                {
+                  "id": "history",
+                  "label": "Activity History",
+                  "content": {
+                    "type": "list",
+                    "dataBinding": "ActivityLog.query",
+                    "filters": {
+                      "entityType": "Deal",
+                      "entityId": "{{Deal.id}}"
+                    },
+                    "itemTemplate": {
+                      "title": "{{ActivityLog.action}}",
+                      "subtitle": "{{ActivityLog.details}}",
+                      "meta": "{{ActivityLog.timestamp}} by {{ActivityLog.user.name}}"
+                    },
+                    "sortBy": "timestamp",
+                    "sortOrder": "desc"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "button-group",
+            "config": {
+              "buttons": [
+                {
+                  "label": "Update Deal",
+                  "variant": "primary",
+                  "action": "openForm",
+                  "formRef": "dealupdateform-1765047754852-6kwdyh",
+                  "style": {
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Log Interaction",
+                  "variant": "secondary",
+                  "action": "openForm",
+                  "formRef": "interactionlogform-1765047771710-l45ark",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "color": "#2563eb",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "1px solid #2563eb",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Create Task",
+                  "variant": "secondary",
+                  "action": "openForm",
+                  "formRef": "taskassignmentform-1765047811159-cp0uwd",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "color": "#2563eb",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "1px solid #2563eb",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "View Customer",
+                  "variant": "tertiary",
+                  "action": "navigate",
+                  "target": "/customers/{{Deal.customer.id}}",
+                  "style": {
+                    "backgroundColor": "transparent",
+                    "color": "#6b7280",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "1px solid #d1d5db",
+                    "cursor": "pointer"
+                  }
+                }
+              ],
+              "alignment": "left",
+              "spacing": "12px"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "update": {
+          "type": "workflow",
+          "workflowId": "DealStageProgressionWorkflow",
+          "successMessage": "Deal updated successfully",
+          "errorMessage": "Failed to update deal"
+        },
+        "logInteraction": {
+          "type": "workflow",
+          "workflowId": "InteractionLoggingWorkflow",
+          "successMessage": "Interaction logged successfully"
+        },
+        "createTask": {
+          "type": "workflow",
+          "workflowId": "TaskManagementWorkflow",
+          "successMessage": "Task created successfully"
+        },
+        "viewCustomer": {
+          "type": "navigate",
+          "target": "/customers/:customerId"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Pipeline",
+          "route": "/pipeline"
+        },
+        {
+          "label": "Customers",
+          "route": "/customers"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "customerprofilepage-1765048234567-xk9p2m",
+    "name": "CustomerProfilePage",
+    "title": "Customer Profile",
+    "description": "Detailed customer profile displaying contact information, interaction history, associated deals, and pending tasks with inline editing capabilities",
+    "route": "/customer/:customerId",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "customerregistrationform-1765047719263-li8p0s",
+      "interactionlogform-1765047771710-l45ark",
+      "dealcreationform-1765047789256-la61ug",
+      "taskassignmentform-1765047811159-cp0uwd"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Customer.name}}",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#0F172A",
+                "marginBottom": "8px"
+              }
+            },
+            "dataBinding": "Customer.findById"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Edit Customer",
+              "variant": "primary",
+              "action": "edit",
+              "style": {
+                "backgroundColor": "#3B82F6",
+                "color": "#FFFFFF",
+                "borderRadius": "8px",
+                "padding": "10px 20px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "border": "none",
+                "boxShadow": "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+              }
+            },
+            "formRef": "customerregistrationform-1765047719263-li8p0s"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Contact Information",
+              "fields": [
+                {
+                  "label": "Email",
+                  "value": "{{Customer.email}}",
+                  "editable": true
+                },
+                {
+                  "label": "Phone",
+                  "value": "{{Customer.phone}}",
+                  "editable": true
+                },
+                {
+                  "label": "Company",
+                  "value": "{{Customer.company}}",
+                  "editable": true
+                },
+                {
+                  "label": "Status",
+                  "value": "{{Customer.status}}",
+                  "editable": false
+                }
+              ],
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              },
+              "titleStyle": {
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "16px"
+              }
+            },
+            "dataBinding": "Customer.findById"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "actions": [
+                {
+                  "label": "Log Interaction",
+                  "icon": "message",
+                  "formRef": "interactionlogform-1765047771710-l45ark"
+                },
+                {
+                  "label": "Create Deal",
+                  "icon": "add",
+                  "formRef": "dealcreationform-1765047789256-la61ug"
+                },
+                {
+                  "label": "Assign Task",
+                  "icon": "task",
+                  "formRef": "taskassignmentform-1765047811159-cp0uwd"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              },
+              "buttonStyle": {
+                "backgroundColor": "#F8FAFC",
+                "color": "#475569",
+                "borderRadius": "8px",
+                "padding": "12px 16px",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "border": "1px solid #E2E8F0",
+                "marginRight": "12px"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Associated Deals",
+              "columns": [
+                {
+                  "header": "Deal Name",
+                  "field": "title",
+                  "sortable": true
+                },
+                {
+                  "header": "Value",
+                  "field": "value",
+                  "sortable": true,
+                  "format": "currency"
+                },
+                {
+                  "header": "Stage",
+                  "field": "stage",
+                  "sortable": true
+                },
+                {
+                  "header": "Close Date",
+                  "field": "expectedCloseDate",
+                  "sortable": true,
+                  "format": "date"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "action": "view"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              },
+              "headerStyle": {
+                "backgroundColor": "#F8FAFC",
+                "color": "#475569",
+                "fontSize": "12px",
+                "fontWeight": "600",
+                "textTransform": "uppercase",
+                "padding": "12px 16px",
+                "borderBottom": "1px solid #E2E8F0"
+              },
+              "rowStyle": {
+                "padding": "16px",
+                "borderBottom": "1px solid #F1F5F9",
+                "fontSize": "14px",
+                "color": "#1E293B"
+              }
+            },
+            "dataBinding": "Deal.query",
+            "filters": {
+              "customerId": "{{Customer.id}}"
+            }
+          },
+          {
+            "type": "list",
+            "config": {
+              "title": "Activity Timeline",
+              "itemTemplate": {
+                "title": "{{Interaction.type}} - {{Interaction.subject}}",
+                "subtitle": "{{Interaction.date}} by {{User.name}}",
+                "description": "{{Interaction.notes}}",
+                "icon": "timeline"
+              },
+              "sortBy": "date",
+              "sortOrder": "desc",
+              "emptyState": "No activities recorded yet",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "marginBottom": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              },
+              "itemStyle": {
+                "padding": "16px",
+                "borderLeft": "3px solid #3B82F6",
+                "marginBottom": "16px",
+                "backgroundColor": "#F8FAFC",
+                "borderRadius": "8px"
+              },
+              "titleStyle": {
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "color": "#0F172A",
+                "marginBottom": "4px"
+              },
+              "subtitleStyle": {
+                "fontSize": "12px",
+                "color": "#64748B",
+                "marginBottom": "8px"
+              },
+              "descriptionStyle": {
+                "fontSize": "14px",
+                "color": "#475569",
+                "lineHeight": "1.5"
+              }
+            },
+            "dataBinding": "Interaction.query",
+            "filters": {
+              "customerId": "{{Customer.id}}"
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Pending Tasks",
+              "columns": [
+                {
+                  "header": "Task",
+                  "field": "title",
+                  "sortable": true
+                },
+                {
+                  "header": "Assigned To",
+                  "field": "assignedTo",
+                  "sortable": true
+                },
+                {
+                  "header": "Due Date",
+                  "field": "dueDate",
+                  "sortable": true,
+                  "format": "date"
+                },
+                {
+                  "header": "Priority",
+                  "field": "priority",
+                  "sortable": true
+                },
+                {
+                  "header": "Status",
+                  "field": "status",
+                  "sortable": true
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Complete",
+                  "action": "complete"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #E2E8F0",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              },
+              "headerStyle": {
+                "backgroundColor": "#F8FAFC",
+                "color": "#475569",
+                "fontSize": "12px",
+                "fontWeight": "600",
+                "textTransform": "uppercase",
+                "padding": "12px 16px",
+                "borderBottom": "1px solid #E2E8F0"
+              },
+              "rowStyle": {
+                "padding": "16px",
+                "borderBottom": "1px solid #F1F5F9",
+                "fontSize": "14px",
+                "color": "#1E293B"
+              }
+            },
+            "dataBinding": "Task.query",
+            "filters": {
+              "customerId": "{{Customer.id}}",
+              "status": "pending"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/deal/:dealId"
+        },
+        "edit": {
+          "type": "modal",
+          "formRef": "customerregistrationform-1765047719263-li8p0s"
+        },
+        "complete": {
+          "type": "workflow",
+          "workflow": "TaskManagementWorkflow"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Customers",
+          "route": "/customers"
+        },
+        {
+          "label": "Pipeline",
+          "route": "/pipeline"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735671234567"
+  }
+]

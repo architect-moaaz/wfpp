@@ -24,59 +24,79 @@ export const WorkflowProvider = ({ children, currentApp }) => {
   const [showAres, setShowAres] = useState(true);
   const [aresMode, setAresMode] = useState('modal'); // 'modal' or 'sidebar'
 
+  // Load application data function (can be called manually or via useEffect)
+  const loadApplicationData = async (appId) => {
+    const applicationId = appId || currentApp?.id;
+    if (applicationId) {
+      try {
+        console.log('[WorkflowContext] Loading application data for:', applicationId);
+        const response = await fetch(`http://localhost:5000/api/applications/${applicationId}`);
+        const data = await response.json();
+
+        if (data.success && data.application) {
+          setCurrentApplication(data.application);
+
+          // Load workflows from application resources
+          const workflows = data.application.resources?.workflows || [];
+          console.log('[WorkflowContext] Loaded workflows:', workflows.length, workflows);
+          if (workflows.length > 0) {
+            // Workflows are already complete objects in the application resources
+            // Set the last workflow as current (most recently added)
+            const latestWorkflow = workflows[workflows.length - 1];
+            const workflowEdges = (latestWorkflow.edges?.length > 0 ? latestWorkflow.edges : null)
+              || (latestWorkflow.connections?.length > 0 ? latestWorkflow.connections : null)
+              || [];
+            console.log('[WorkflowContext] Setting current workflow:', {
+              id: latestWorkflow.id,
+              name: latestWorkflow.name,
+              nodeCount: latestWorkflow.nodes?.length || 0,
+              hasEdges: !!latestWorkflow.edges,
+              hasConnections: !!latestWorkflow.connections,
+              edgesLength: latestWorkflow.edges?.length,
+              connectionsLength: latestWorkflow.connections?.length,
+              edgesCount: workflowEdges.length,
+              edges: latestWorkflow.edges,
+              connections: latestWorkflow.connections,
+              fullWorkflow: latestWorkflow
+            });
+            setCurrentWorkflow(latestWorkflow);
+          }
+
+          // Load forms from application resources (not from global database)
+          const forms = data.application.resources?.forms || [];
+          console.log('[WorkflowContext] Loading forms:', forms.length, forms.map(f => f.name || f.id));
+          setConnectedForms(forms);
+
+          // Load data models from application resources (not from global database)
+          const models = data.application.resources?.dataModels || [];
+          console.log('[WorkflowContext] Loading data models:', models.length);
+          setDataModels(models);
+
+          // Load pages from application resources (not from global database)
+          const appPages = (data.application.resources?.pages || []).map(page => {
+            // Flatten config properties into the page object
+            if (page.config && typeof page.config === 'object') {
+              return { ...page.config, ...page };
+            }
+            return page;
+          });
+          console.log('[WorkflowContext] Loading pages:', appPages.length);
+          setConnectedPages(appPages);
+
+          return data.application;
+        }
+      } catch (error) {
+        console.error('[WorkflowContext] Failed to load application data:', error);
+      }
+    }
+    return null;
+  };
+
   // Load application data when currentApp changes
   useEffect(() => {
-    const loadApplicationData = async () => {
-      if (currentApp && currentApp.id) {
-        try {
-          const response = await fetch(`http://localhost:5000/api/applications/${currentApp.id}`);
-          const data = await response.json();
-
-          if (data.success && data.application) {
-            setCurrentApplication(data.application);
-
-            // Load workflows from application
-            const workflows = data.application.resources?.workflows || [];
-            if (workflows.length > 0) {
-              // Fetch full workflow data for each workflow ID
-              const workflowPromises = workflows.map(async (wf) => {
-                const wfId = wf.id || wf;
-                try {
-                  const wfResponse = await fetch(`http://localhost:5000/api/workflows/${wfId}`);
-                  const wfData = await wfResponse.json();
-                  return wfData.success ? wfData.workflow : null;
-                } catch (error) {
-                  console.error(`Failed to fetch workflow ${wfId}:`, error);
-                  return null;
-                }
-              });
-
-              const loadedWorkflows = (await Promise.all(workflowPromises)).filter(w => w !== null);
-              // Set the first workflow as current if available
-              if (loadedWorkflows.length > 0 && loadedWorkflows[0]) {
-                setCurrentWorkflow(loadedWorkflows[0]);
-              }
-            }
-
-            // Load forms from application resources (not from global database)
-            const forms = data.application.resources?.forms || [];
-            setConnectedForms(forms);
-
-            // Load data models from application resources (not from global database)
-            const models = data.application.resources?.dataModels || [];
-            setDataModels(models);
-
-            // Load pages from application resources (not from global database)
-            const appPages = data.application.resources?.pages || [];
-            setConnectedPages(appPages);
-          }
-        } catch (error) {
-          console.error('Failed to load application data:', error);
-        }
-      }
-    };
-
-    loadApplicationData();
+    if (currentApp && currentApp.id) {
+      loadApplicationData(currentApp.id);
+    }
   }, [currentApp]);
 
   const updateNodeData = (nodeId, newData) => {
@@ -141,6 +161,7 @@ export const WorkflowProvider = ({ children, currentApp }) => {
     setShowAres,
     aresMode,
     setAresMode,
+    loadApplicationData,
     updateNodeData,
     addNode,
     deleteNode,

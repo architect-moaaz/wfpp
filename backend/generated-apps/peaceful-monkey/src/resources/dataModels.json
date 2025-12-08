@@ -1,0 +1,824 @@
+[
+  {
+    "id": "app_1764241800507_model_001",
+    "name": "users",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_001",
+        "ref": null,
+        "name": "_id",
+        "type": "object",
+        "embedded": false,
+        "required": true,
+        "description": "MongoDB ObjectId",
+        "defaultValue": null
+      },
+      {
+        "id": "field_002",
+        "ref": null,
+        "name": "email",
+        "type": "string",
+        "embedded": false,
+        "required": true,
+        "description": "Primary email address",
+        "defaultValue": null
+      },
+      {
+        "id": "field_003",
+        "ref": null,
+        "name": "firstName",
+        "type": "string",
+        "embedded": false,
+        "required": true,
+        "description": "User first name",
+        "defaultValue": null
+      },
+      {
+        "id": "field_004",
+        "ref": null,
+        "name": "lastName",
+        "type": "string",
+        "embedded": false,
+        "required": true,
+        "description": "User last name",
+        "defaultValue": null
+      },
+      {
+        "id": "field_005",
+        "ref": null,
+        "name": "createdAt",
+        "type": "date",
+        "embedded": false,
+        "required": true,
+        "description": "Account creation timestamp",
+        "defaultValue": null
+      },
+      {
+        "id": "field_006",
+        "ref": null,
+        "name": "lastLoginAt",
+        "type": "date",
+        "embedded": false,
+        "required": false,
+        "description": "Last login timestamp",
+        "defaultValue": null
+      },
+      {
+        "id": "field_007",
+        "ref": null,
+        "name": "isActive",
+        "type": "boolean",
+        "embedded": false,
+        "required": true,
+        "description": "Account status",
+        "defaultValue": true
+      }
+    ],
+    "indexes": [
+      {
+        "fields": {
+          "email": 1
+        },
+        "sparse": false,
+        "unique": true
+      },
+      {
+        "fields": {
+          "createdAt": -1
+        },
+        "sparse": false,
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "User accounts with embedded preferences and settings",
+    "relationships": []
+  },
+  {
+    "id": "app_1764241800507_model_002",
+    "name": "emails",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_101",
+        "ref": null,
+        "name": "_id",
+        "type": "object",
+        "embedded": false,
+        "required": true,
+        "description": "MongoDB ObjectId",
+        "defaultValue": null
+      },
+      {
+        "id": "field_102",
+        "ref": null,
+        "name": "messageId",
+        "type": "string",
+        "embedded": false,
+        "required": true,
+        "description": "Unique message identifier",
+        "defaultValue": null
+      },
+      {
+        "id": "field_103",
+        "ref": null,
+        "name": "subject",
+        "type": "string",
+        "embedded": false,
+        "required": true,
+        "description": "Email subject line",
+        "defaultValue": null
+      },
+      {
+        "id": "field_104",
+        "ref": null,
+        "name": "body",
+        "type": "string",
+        "embedded": false,
+        "required": true,
+        "description": "Email body content",
+        "defaultValue": null
+      },
+      {
+        "id": "field_105",
+        "ref": null,
+        "name": "bodyType",
+        "type": "string",
+        "embedded": false,
+        "required": true,
+        "description": "Content type: text, html",
+        "defaultValue": "text"
+      },
+      {
+        "id": "field_106",
+        "ref": null,
+        "name": "receivedAt",
+        "type": "date",
+        "embedded": false,
+        "required": true,
+        "description": "Email received timestamp",
+        "defaultValue": null
+      },
+      {
+        "id": "field_107",
+        "ref": null,
+        "name": "sentAt",
+        "type": "date",
+        "embedded": false,
+        "required": true,
+        "description": "Email sent timestamp",
+        "defaultValue": null
+      },
+      {
+        "id": "field_108",
+        "ref": null,
+        "name": "size",
+        "type": "number",
+        "embedded": false,
+        "required": true,
+        "description": "Email size in bytes",
+        "defaultValue": null
+      },
+      {
+        "id": "field_109",
+        "ref": null,
+        "name": "priority",
+        "type": "string",
+        "embedded": false,
+        "required": false,
+        "description": "Email priority: low, normal, high",
+        "defaultValue": "normal"
+      },
+      {
+        "id": "field_110",
+        "ref": null,
+        "name": "tags",
+        "type": "array",
+        "embedded": false,
+        "required": false,
+        "description": "User-defined tags",
+        "defaultValue": []
+      },
+      {
+        "id": "field_111",
+        "ref": null,
+        "name": "threadId",
+        "type": "string",
+        "embedded": false,
+        "required": false,
+        "description": "Email thread identifier",
+        "defaultValue": null
+      },
+      {
+        "id": "field_112",
+        "ref": "users",
+        "name": "userId",
+        "type": "object",
+        "embedded": false,
+        "required": true,
+        "description": "Owner user reference",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": {
+          "userId": 1,
+          "receivedAt": -1
+        },
+        "sparse": false,
+        "unique": false
+      },
+      {
+        "fields": {
+          "messageId": 1
+        },
+        "sparse": false,
+        "unique": true
+      },
+      {
+        "fields": {
+          "userId": 1,
+          "status.isRead": 1
+        },
+        "sparse": false,
+        "unique": false
+      },
+      {
+        "fields": {
+          "threadId": 1
+        },
+        "sparse": true,
+        "unique": false
+      },
+      {
+        "fields": {
+          "body": "text",
+          "subject": "text"
+        },
+        "sparse": false,
+        "unique": false
+      },
+      {
+        "fields": {
+          "tags": 1
+        },
+        "sparse": true,
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Email messages with embedded metadata and denormalized sender info",
+    "relationships": []
+  },
+  {
+    "id": "app_1764241800507_model_003",
+    "name": "attachments",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_201",
+        "ref": null,
+        "name": "_id",
+        "type": "object",
+        "embedded": false,
+        "required": true,
+        "description": "MongoDB ObjectId",
+        "defaultValue": null
+      },
+      {
+        "id": "field_202",
+        "ref": null,
+        "name": "filename",
+        "type": "string",
+        "embedded": false,
+        "required": true,
+        "description": "Original filename",
+        "defaultValue": null
+      },
+      {
+        "id": "field_203",
+        "ref": null,
+        "name": "mimeType",
+        "type": "string",
+        "embedded": false,
+        "required": true,
+        "description": "File MIME type",
+        "defaultValue": null
+      },
+      {
+        "id": "field_204",
+        "ref": null,
+        "name": "size",
+        "type": "number",
+        "embedded": false,
+        "required": true,
+        "description": "File size in bytes",
+        "defaultValue": null
+      },
+      {
+        "id": "field_205",
+        "ref": null,
+        "name": "contentId",
+        "type": "string",
+        "embedded": false,
+        "required": false,
+        "description": "Content-ID for inline attachments",
+        "defaultValue": null
+      },
+      {
+        "id": "field_206",
+        "ref": null,
+        "name": "storageKey",
+        "type": "string",
+        "embedded": false,
+        "required": true,
+        "description": "File storage location key",
+        "defaultValue": null
+      },
+      {
+        "id": "field_207",
+        "ref": null,
+        "name": "uploadedAt",
+        "type": "date",
+        "embedded": false,
+        "required": true,
+        "description": "Upload timestamp",
+        "defaultValue": null
+      },
+      {
+        "id": "field_208",
+        "ref": "users",
+        "name": "userId",
+        "type": "object",
+        "embedded": false,
+        "required": true,
+        "description": "Owner user reference",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": {
+          "storageKey": 1
+        },
+        "sparse": false,
+        "unique": true
+      },
+      {
+        "fields": {
+          "userId": 1,
+          "uploadedAt": -1
+        },
+        "sparse": false,
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Large file attachments stored separately with metadata",
+    "relationships": []
+  },
+  {
+    "id": "app_1764241800507_model_004",
+    "name": "contacts",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_301",
+        "ref": null,
+        "name": "_id",
+        "type": "object",
+        "embedded": false,
+        "required": true,
+        "description": "MongoDB ObjectId",
+        "defaultValue": null
+      },
+      {
+        "id": "field_302",
+        "ref": null,
+        "name": "email",
+        "type": "string",
+        "embedded": false,
+        "required": true,
+        "description": "Contact email address",
+        "defaultValue": null
+      },
+      {
+        "id": "field_303",
+        "ref": null,
+        "name": "firstName",
+        "type": "string",
+        "embedded": false,
+        "required": false,
+        "description": "Contact first name",
+        "defaultValue": null
+      },
+      {
+        "id": "field_304",
+        "ref": null,
+        "name": "lastName",
+        "type": "string",
+        "embedded": false,
+        "required": false,
+        "description": "Contact last name",
+        "defaultValue": null
+      },
+      {
+        "id": "field_305",
+        "ref": null,
+        "name": "frequency",
+        "type": "number",
+        "embedded": false,
+        "required": true,
+        "description": "Email interaction frequency",
+        "defaultValue": 0
+      },
+      {
+        "id": "field_306",
+        "ref": null,
+        "name": "lastContactedAt",
+        "type": "date",
+        "embedded": false,
+        "required": false,
+        "description": "Last email interaction",
+        "defaultValue": null
+      },
+      {
+        "id": "field_307",
+        "ref": null,
+        "name": "createdAt",
+        "type": "date",
+        "embedded": false,
+        "required": true,
+        "description": "Contact creation timestamp",
+        "defaultValue": null
+      },
+      {
+        "id": "field_308",
+        "ref": "users",
+        "name": "userId",
+        "type": "object",
+        "embedded": false,
+        "required": true,
+        "description": "Owner user reference",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": {
+          "email": 1,
+          "userId": 1
+        },
+        "sparse": false,
+        "unique": true
+      },
+      {
+        "fields": {
+          "userId": 1,
+          "frequency": -1
+        },
+        "sparse": false,
+        "unique": false
+      },
+      {
+        "fields": {
+          "lastName": 1,
+          "firstName": 1
+        },
+        "sparse": true,
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Contact directory with embedded contact information",
+    "relationships": []
+  },
+  {
+    "id": "app_1764241800507_model_005",
+    "name": "UserEmail",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_032",
+        "name": "id",
+        "type": "bigint",
+        "unique": true,
+        "sqlType": "BIGINT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_033",
+        "name": "user_id",
+        "type": "bigint",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_034",
+        "name": "email_id",
+        "type": "bigint",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_035",
+        "name": "folder_id",
+        "type": "bigint",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_036",
+        "name": "is_read",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": false
+      },
+      {
+        "id": "field_037",
+        "name": "is_starred",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": false
+      },
+      {
+        "id": "field_038",
+        "name": "is_archived",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": false
+      },
+      {
+        "id": "field_039",
+        "name": "read_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_040",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_email_unique",
+        "fields": [
+          "user_id",
+          "email_id",
+          "folder_id"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_user_email_user_folder",
+        "fields": [
+          "user_id",
+          "folder_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_user_email_read",
+        "fields": [
+          "is_read"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_user_email_starred",
+        "fields": [
+          "is_starred"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Junction table linking users to their emails in specific folders",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "User",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "user_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Email",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "email_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Folder",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "folder_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1764241800507_model_006",
+    "name": "Attachment",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_041",
+        "name": "id",
+        "type": "bigint",
+        "unique": true,
+        "sqlType": "BIGINT AUTO_INCREMENT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_042",
+        "name": "email_id",
+        "type": "bigint",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_043",
+        "name": "filename",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(255)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_044",
+        "name": "original_filename",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(255)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_045",
+        "name": "mime_type",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_046",
+        "name": "file_size",
+        "type": "bigint",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_047",
+        "name": "file_path",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(500)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_048",
+        "name": "content_id",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(255)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_049",
+        "name": "is_inline",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": false
+      },
+      {
+        "id": "field_050",
+        "name": "created_at",
+        "type": "timestamp",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_attachment_email_id",
+        "fields": [
+          "email_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_attachment_content_id",
+        "fields": [
+          "content_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_attachment_inline",
+        "fields": [
+          "is_inline"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "file_size > 0"
+      }
+    ],
+    "description": "File attachments associated with emails",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Email",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "email_id"
+      }
+    ]
+  }
+]

@@ -182,26 +182,31 @@ async function runGenerationInBackground(aresService, requirements, context, emi
     }
 
     // Extract generated resources from MoE result
-    const generatedWorkflow = moeResult.result.workflow;
-    const generatedForms = moeResult.result.workflow.forms || [];
-    const generatedDataModels = moeResult.result.workflow.dataModels || [];
-    const generatedPages = moeResult.result.workflow.pages || [];
-    const generatedRules = moeResult.result.workflow.rules || [];
+    // Support both multiple workflows (new) and single workflow (backward compat)
+    const resultWorkflow = moeResult.result.workflow;
+    const generatedWorkflows = resultWorkflow.workflows || [resultWorkflow];
+
+    // Get shared resources from the first workflow or the result object
+    const generatedForms = resultWorkflow.forms || [];
+    const generatedDataModels = resultWorkflow.dataModels || [];
+    const generatedPages = resultWorkflow.pages || [];
+    const generatedRules = resultWorkflow.rules || [];
 
     console.log('[ARES] Extracted resources:', {
-      workflow: generatedWorkflow?.id,
+      workflows: generatedWorkflows.length,
+      workflowIds: generatedWorkflows.map(wf => wf.id || wf.name),
       forms: generatedForms.length,
       dataModels: generatedDataModels.length,
       pages: generatedPages.length,
       rules: generatedRules.length
     });
 
-    // Add workflowId to all resources for filtering
-    const workflowId = generatedWorkflow.id;
-    generatedForms.forEach(form => { form.workflowId = workflowId; });
-    generatedDataModels.forEach(model => { model.workflowId = workflowId; });
-    generatedPages.forEach(page => { page.workflowId = workflowId; });
-    generatedRules.forEach(rule => { rule.workflowId = workflowId; });
+    // Add workflowId to all resources for filtering (use first workflow as primary)
+    const primaryWorkflowId = generatedWorkflows[0]?.id;
+    generatedForms.forEach(form => { form.workflowId = form.workflowId || primaryWorkflowId; });
+    generatedDataModels.forEach(model => { model.workflowId = model.workflowId || primaryWorkflowId; });
+    generatedPages.forEach(page => { page.workflowId = page.workflowId || primaryWorkflowId; });
+    generatedRules.forEach(rule => { rule.workflowId = rule.workflowId || primaryWorkflowId; });
 
     // Initialize application resources if not exists
     if (!application.resources) {
@@ -214,10 +219,18 @@ async function runGenerationInBackground(aresService, requirements, context, emi
       };
     }
 
-    // Add workflow to application
-    if (generatedWorkflow) {
+    // Add all workflows to application
+    if (generatedWorkflows.length > 0) {
       application.resources.workflows = application.resources.workflows || [];
-      application.resources.workflows.push(generatedWorkflow);
+      generatedWorkflows.forEach(workflow => {
+        // Clean up internal properties before saving
+        const cleanWorkflow = { ...workflow };
+        delete cleanWorkflow.workflows; // Remove nested workflows array
+        delete cleanWorkflow._isMultiWorkflow;
+        delete cleanWorkflow._workflowCount;
+        application.resources.workflows.push(cleanWorkflow);
+      });
+      console.log('[ARES] Added workflows to application:', generatedWorkflows.map(wf => wf.id || wf.name));
     }
 
     // Add forms to application
@@ -332,16 +345,18 @@ async function runGenerationInBackground(aresService, requirements, context, emi
     // Send completion event with stats and generated resources via WebSocket
     emitProgress({
       type: 'completed',
-      message: 'Generation complete!',
+      message: generatedWorkflows.length > 1
+        ? `Generation complete! Created ${generatedWorkflows.length} workflows.`
+        : 'Generation complete!',
       stats: {
-        workflowsAdded: 1,
+        workflowsAdded: generatedWorkflows.length,
         formsAdded: generatedForms.length,
         dataModelsAdded: generatedDataModels.length,
         pagesAdded: generatedPages.length,
         rulesAdded: generatedRules.length
       },
       resources: {
-        workflows: [generatedWorkflow],
+        workflows: generatedWorkflows,
         forms: generatedForms,
         dataModels: generatedDataModels,
         pages: generatedPages,

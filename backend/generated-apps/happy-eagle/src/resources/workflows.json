@@ -1,0 +1,4860 @@
+[
+  {
+    "id": "workflow_1735091847123",
+    "name": "Customer Lifecycle Management Workflow",
+    "complexity": "complex",
+    "domain": "Customer Relationship Management",
+    "nodes": [
+      {
+        "id": "node_start",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Customer Inquiry Received",
+          "trigger": "Customer registration form submission or lead import",
+          "description": "Initiates the customer lifecycle management process",
+          "formId": "customerregistrationform-1764570394978-6bg2ac",
+          "formName": "CustomerRegistrationForm"
+        }
+      },
+      {
+        "id": "node_validate",
+        "type": "validation",
+        "position": {
+          "x": 100,
+          "y": 200
+        },
+        "data": {
+          "label": "Validate Customer Data",
+          "ruleType": "Data Quality",
+          "rules": [
+            "email format",
+            "required fields",
+            "duplicate check"
+          ],
+          "description": "Validates customer registration data and checks for duplicates"
+        }
+      },
+      {
+        "id": "node_data_error",
+        "type": "notification",
+        "position": {
+          "x": 300,
+          "y": 250
+        },
+        "data": {
+          "label": "Data Validation Error",
+          "channel": "Email",
+          "recipient": "Admin",
+          "template": "Data validation failed for customer ${processData.customerName}",
+          "description": "Notifies admin of data validation failures"
+        }
+      },
+      {
+        "id": "node_ai_classify",
+        "type": "llmTask",
+        "position": {
+          "x": 100,
+          "y": 300
+        },
+        "data": {
+          "label": "AI Lead Classification",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze this customer data and classify as Hot Lead (high potential), Warm Lead (medium potential), or Cold Lead (low potential): Company: ${processData.company}, Source: ${processData.source}, Budget: ${processData.budget}, Urgency: ${processData.urgency}",
+          "outputVariable": "leadClassification",
+          "temperature": 0.3,
+          "maxTokens": 500,
+          "description": "Uses AI to classify lead quality and potential"
+        }
+      },
+      {
+        "id": "node_routing_decision",
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 400
+        },
+        "data": {
+          "label": "Route by Lead Quality",
+          "gatewayType": "exclusive",
+          "condition": "Route based on AI classification",
+          "description": "Routes customers based on lead classification"
+        }
+      },
+      {
+        "id": "node_parallel_onboard",
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 500
+        },
+        "data": {
+          "label": "Parallel Onboarding Tasks",
+          "gatewayType": "parallel",
+          "branches": "Profile creation, welcome communications, assignment",
+          "description": "Initiates parallel onboarding processes"
+        }
+      },
+      {
+        "id": "node_create_profile",
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 600
+        },
+        "data": {
+          "label": "Create Customer Profile",
+          "scriptType": "JavaScript",
+          "script": "createCustomerProfile(processData)",
+          "description": "Creates customer profile in CRM system"
+        }
+      },
+      {
+        "id": "node_welcome_sequence",
+        "type": "notification",
+        "position": {
+          "x": 150,
+          "y": 600
+        },
+        "data": {
+          "label": "Welcome Email Sequence",
+          "channel": "Email",
+          "recipient": "Customer",
+          "template": "Welcome email with onboarding materials",
+          "description": "Sends personalized welcome email to new customer"
+        }
+      },
+      {
+        "id": "node_assign_rep",
+        "type": "userTask",
+        "position": {
+          "x": 250,
+          "y": 600
+        },
+        "data": {
+          "label": "Assign Sales Representative",
+          "taskName": "assign_sales_rep",
+          "assignedTo": "Sales Manager",
+          "priority": "Medium",
+          "dueDate": "24 hours",
+          "instructions": "Assign appropriate sales rep based on territory and lead quality",
+          "formId": "followuptaskform-1764570415715-r2bgs0",
+          "formName": "FollowUpTaskForm"
+        }
+      },
+      {
+        "id": "node_high_priority_task",
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 500
+        },
+        "data": {
+          "label": "Immediate Hot Lead Follow-up",
+          "taskName": "hot_lead_followup",
+          "assignedTo": "Senior Sales Rep",
+          "priority": "High",
+          "dueDate": "2 hours",
+          "instructions": "Contact hot lead immediately for qualification call",
+          "formId": "customerprofileform-1764570433580-3gdbmj",
+          "formName": "CustomerProfileForm"
+        }
+      },
+      {
+        "id": "node_merge_onboard",
+        "type": "decision",
+        "position": {
+          "x": 150,
+          "y": 700
+        },
+        "data": {
+          "label": "Merge Onboarding Complete",
+          "gatewayType": "parallel",
+          "branches": "Merge parallel onboarding tasks",
+          "description": "Waits for all onboarding tasks to complete"
+        }
+      },
+      {
+        "id": "node_initial_interaction",
+        "type": "timerEvent",
+        "position": {
+          "x": 150,
+          "y": 800
+        },
+        "data": {
+          "label": "Schedule Initial Contact",
+          "timerType": "duration",
+          "duration": "PT24H",
+          "description": "Waits 24 hours before scheduling initial contact"
+        }
+      },
+      {
+        "id": "node_ai_followup",
+        "type": "llmTask",
+        "position": {
+          "x": 150,
+          "y": 900
+        },
+        "data": {
+          "label": "AI Follow-up Strategy",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Based on customer profile and lead classification (${processData.leadClassification}), recommend follow-up strategy including frequency, channels, and key messages for: ${processData.customerName} from ${processData.company}",
+          "outputVariable": "followupStrategy",
+          "temperature": 0.5,
+          "maxTokens": 1000,
+          "description": "AI generates personalized follow-up strategy"
+        }
+      },
+      {
+        "id": "node_create_tasks",
+        "type": "scriptTask",
+        "position": {
+          "x": 150,
+          "y": 1000
+        },
+        "data": {
+          "label": "Create Follow-up Tasks",
+          "scriptType": "JavaScript",
+          "script": "createFollowupTasks(processData.followupStrategy)",
+          "description": "Creates scheduled follow-up tasks based on AI strategy"
+        }
+      },
+      {
+        "id": "node_monitor_engagement",
+        "type": "decision",
+        "position": {
+          "x": 150,
+          "y": 1100
+        },
+        "data": {
+          "label": "Monitor Customer Engagement",
+          "gatewayType": "exclusive",
+          "condition": "Check engagement level and response rate",
+          "description": "Monitors customer engagement and determines next actions"
+        }
+      },
+      {
+        "id": "node_escalate_risk",
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 1150
+        },
+        "data": {
+          "label": "At-Risk Customer Intervention",
+          "taskName": "risk_intervention",
+          "assignedTo": "Customer Success Manager",
+          "priority": "High",
+          "dueDate": "4 hours",
+          "instructions": "Contact at-risk customer for retention discussion",
+          "formId": "interactionlogform-1764570453379-ihuwr0",
+          "formName": "InteractionLogForm"
+        }
+      },
+      {
+        "id": "node_update_lifecycle",
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 1150
+        },
+        "data": {
+          "label": "Update Lifecycle Stage",
+          "scriptType": "JavaScript",
+          "script": "updateCustomerLifecycleStage(processData)",
+          "description": "Updates customer lifecycle stage based on engagement"
+        }
+      },
+      {
+        "id": "node_success_notification",
+        "type": "notification",
+        "position": {
+          "x": 150,
+          "y": 1250
+        },
+        "data": {
+          "label": "Lifecycle Update Notification",
+          "channel": "Email",
+          "recipient": "Sales Team",
+          "template": "Customer ${processData.customerName} lifecycle updated",
+          "description": "Notifies team of customer lifecycle changes"
+        }
+      },
+      {
+        "id": "node_end",
+        "type": "endEvent",
+        "position": {
+          "x": 150,
+          "y": 1350
+        },
+        "data": {
+          "label": "Customer Lifecycle Updated",
+          "result": "Customer successfully processed through lifecycle workflow",
+          "description": "Workflow completes with customer in appropriate lifecycle stage"
+        }
+      },
+      {
+        "id": "node_error_end",
+        "type": "endEvent",
+        "position": {
+          "x": 400,
+          "y": 300
+        },
+        "data": {
+          "label": "Process Failed",
+          "result": "Customer processing failed due to validation errors",
+          "description": "Workflow terminates due to unrecoverable errors"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_start",
+        "target": "node_validate"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_validate",
+        "target": "node_ai_classify",
+        "label": "Valid Data"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_validate",
+        "target": "node_data_error",
+        "label": "Validation Failed",
+        "condition": "processData.validationStatus === 'failed'"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_data_error",
+        "target": "node_error_end"
+      },
+      {
+        "id": "edge_5",
+        "source": "node_ai_classify",
+        "target": "node_routing_decision"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_routing_decision",
+        "target": "node_high_priority_task",
+        "label": "Hot Lead",
+        "condition": "processData.leadClassification === 'Hot Lead'"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_routing_decision",
+        "target": "node_parallel_onboard",
+        "label": "Standard Process",
+        "isDefault": true
+      },
+      {
+        "id": "edge_8",
+        "source": "node_parallel_onboard",
+        "target": "node_create_profile",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_parallel_onboard",
+        "target": "node_welcome_sequence"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_parallel_onboard",
+        "target": "node_assign_rep"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_high_priority_task",
+        "target": "node_merge_onboard"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_create_profile",
+        "target": "node_merge_onboard"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_welcome_sequence",
+        "target": "node_merge_onboard"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_assign_rep",
+        "target": "node_merge_onboard"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_merge_onboard",
+        "target": "node_initial_interaction",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_initial_interaction",
+        "target": "node_ai_followup"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_ai_followup",
+        "target": "node_create_tasks"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_create_tasks",
+        "target": "node_monitor_engagement"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_monitor_engagement",
+        "target": "node_escalate_risk",
+        "label": "At Risk",
+        "condition": "processData.engagementScore < 30"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_monitor_engagement",
+        "target": "node_update_lifecycle",
+        "label": "Normal Progression",
+        "isDefault": true
+      },
+      {
+        "id": "edge_21",
+        "source": "node_escalate_risk",
+        "target": "node_update_lifecycle"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_update_lifecycle",
+        "target": "node_success_notification"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_success_notification",
+        "target": "node_end"
+      }
+    ],
+    "parallelPaths": 2,
+    "decisionPoints": 3,
+    "errorHandlers": 2,
+    "expertType": "ComplexWorkflowExpert",
+    "dataModels": [
+      {
+        "id": "customer",
+        "name": "Customer",
+        "description": "Store comprehensive customer information and lifecycle stage tracking",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the customer",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "description": "Primary email address for customer contact",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "fullName",
+            "type": "string",
+            "description": "Customer's complete name",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "companyName",
+            "type": "string",
+            "description": "Name of the customer's company or organization",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "lifecycleStage",
+            "type": "string",
+            "description": "Current stage in customer journey (lead, prospect, customer, churned)",
+            "required": true,
+            "defaultValue": "lead"
+          },
+          {
+            "name": "source",
+            "type": "string",
+            "description": "Attribution source of how customer was acquired",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "createdAt",
+            "type": "date",
+            "description": "Timestamp when customer record was created",
+            "required": true,
+            "defaultValue": "now()"
+          },
+          {
+            "name": "stageUpdatedAt",
+            "type": "date",
+            "description": "Timestamp of last lifecycle stage transition",
+            "required": true,
+            "defaultValue": "now()"
+          }
+        ],
+        "relationships": [],
+        "indexes": [
+          "email",
+          "lifecycleStage",
+          "createdAt"
+        ],
+        "constraints": {
+          "unique": [
+            "email"
+          ],
+          "enum": {
+            "lifecycleStage": [
+              "lead",
+              "prospect",
+              "customer",
+              "churned"
+            ]
+          }
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "lifecycle-stage",
+        "name": "LifecycleStage",
+        "description": "Defines customer lifecycle stage configurations with transition rules and stage-specific attributes",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the lifecycle stage",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Stage name (e.g., Lead, Prospect, Active, At Risk, Churned)",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "sequenceOrder",
+            "type": "number",
+            "description": "Numeric order defining the stage position in the lifecycle progression",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "transitionCriteria",
+            "type": "json",
+            "description": "Rules and conditions that define when a customer moves to this stage",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "allowedNextStages",
+            "type": "array",
+            "description": "List of stage IDs that can be transitioned to from this stage",
+            "required": false,
+            "defaultValue": []
+          },
+          {
+            "name": "isActive",
+            "type": "boolean",
+            "description": "Indicates if this lifecycle stage is currently active and available for use",
+            "required": true,
+            "defaultValue": true
+          },
+          {
+            "name": "color",
+            "type": "string",
+            "description": "Hex color code for visual representation in UI",
+            "required": false,
+            "defaultValue": "#000000"
+          }
+        ],
+        "relationships": [
+          {
+            "type": "oneToMany",
+            "relatedModel": "Customer",
+            "foreignKey": "lifecycleStageId",
+            "description": "Customers assigned to this lifecycle stage"
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_sequence_order",
+            "fields": [
+              "sequenceOrder"
+            ]
+          },
+          {
+            "name": "idx_is_active",
+            "fields": [
+              "isActive"
+            ]
+          }
+        ],
+        "constraints": {
+          "unique": [
+            "name"
+          ],
+          "check": [
+            "sequenceOrder >= 0"
+          ]
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "customer-source",
+        "name": "CustomerSource",
+        "description": "Track and categorize customer acquisition sources to support marketing attribution and source effectiveness analysis",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the customer source",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "sourceName",
+            "type": "string",
+            "description": "Name of the acquisition source (e.g., Google Ads, Referral, Website, Trade Show)",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "sourceCategory",
+            "type": "string",
+            "description": "High-level category of the source (e.g., Paid Advertising, Organic, Referral, Direct, Partner)",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "description": "Additional details about the source or campaign",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "isActive",
+            "type": "boolean",
+            "description": "Indicates if this source is currently active for new customer acquisition",
+            "required": true,
+            "defaultValue": true
+          },
+          {
+            "name": "createdDate",
+            "type": "date",
+            "description": "Date when this source was added to the system",
+            "required": true,
+            "defaultValue": null
+          }
+        ],
+        "relationships": [
+          {
+            "type": "oneToMany",
+            "relatedModel": "Customer",
+            "foreignKey": "sourceId",
+            "description": "A customer source can be associated with multiple customers"
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_source_category",
+            "fields": [
+              "sourceCategory"
+            ]
+          },
+          {
+            "name": "idx_is_active",
+            "fields": [
+              "isActive"
+            ]
+          }
+        ],
+        "constraints": {
+          "unique": [
+            "sourceName"
+          ],
+          "check": []
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "interaction",
+        "name": "Interaction",
+        "description": "Records all customer interactions across multiple communication channels including calls, emails, and meetings",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the interaction",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "customerId",
+            "type": "string",
+            "description": "Reference to the customer involved in this interaction",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Type of interaction (call, email, meeting, chat, etc.)",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "interactionDate",
+            "type": "datetime",
+            "description": "Date and time when the interaction occurred",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "notes",
+            "type": "text",
+            "description": "Detailed notes and summary of the interaction",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "outcome",
+            "type": "string",
+            "description": "Result or outcome of the interaction",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "nextSteps",
+            "type": "text",
+            "description": "Planned follow-up actions or next steps",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "followUpRequired",
+            "type": "boolean",
+            "description": "Indicates if a follow-up task should be generated",
+            "required": true,
+            "defaultValue": false
+          }
+        ],
+        "relationships": [
+          {
+            "type": "manyToOne",
+            "relatedModel": "Customer",
+            "foreignKey": "customerId",
+            "description": "Links interaction to the associated customer"
+          }
+        ],
+        "indexes": [
+          {
+            "fields": [
+              "customerId"
+            ],
+            "unique": false
+          },
+          {
+            "fields": [
+              "interactionDate"
+            ],
+            "unique": false
+          },
+          {
+            "fields": [
+              "type"
+            ],
+            "unique": false
+          }
+        ],
+        "constraints": {
+          "type": {
+            "enum": [
+              "call",
+              "email",
+              "meeting",
+              "chat",
+              "sms",
+              "other"
+            ]
+          }
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "followup-task",
+        "name": "FollowUpTask",
+        "description": "Manages follow-up tasks and action items for customer engagement with assignment tracking, priority levels, and completion status",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the follow-up task",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "customerId",
+            "type": "string",
+            "description": "Reference to the customer this task is associated with",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "title",
+            "type": "string",
+            "description": "Brief title or summary of the follow-up task",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "description": "Detailed description of the task and action items required",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "assignedTo",
+            "type": "string",
+            "description": "User ID or name of the person assigned to complete this task",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "priority",
+            "type": "string",
+            "description": "Priority level of the task (Low, Medium, High, Urgent)",
+            "required": true,
+            "defaultValue": "Medium"
+          },
+          {
+            "name": "dueDate",
+            "type": "date",
+            "description": "Date and time when the task is due for completion",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "description": "Current status of the task (Pending, In Progress, Completed, Cancelled)",
+            "required": true,
+            "defaultValue": "Pending"
+          }
+        ],
+        "relationships": [
+          {
+            "type": "many-to-one",
+            "relatedModel": "Customer",
+            "foreignKey": "customerId",
+            "description": "Each follow-up task belongs to one customer"
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_customer_id",
+            "fields": [
+              "customerId"
+            ]
+          },
+          {
+            "name": "idx_due_date",
+            "fields": [
+              "dueDate"
+            ]
+          },
+          {
+            "name": "idx_assigned_to",
+            "fields": [
+              "assignedTo"
+            ]
+          },
+          {
+            "name": "idx_status_due_date",
+            "fields": [
+              "status",
+              "dueDate"
+            ]
+          }
+        ],
+        "constraints": {
+          "priority": {
+            "type": "enum",
+            "values": [
+              "Low",
+              "Medium",
+              "High",
+              "Urgent"
+            ]
+          },
+          "status": {
+            "type": "enum",
+            "values": [
+              "Pending",
+              "In Progress",
+              "Completed",
+              "Cancelled"
+            ]
+          }
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "notification",
+        "name": "Notification",
+        "description": "Store and manage system notifications for users regarding status changes, overdue tasks, and important customer events",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the notification",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "userId",
+            "type": "string",
+            "description": "ID of the user receiving the notification",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Type of notification (status_change, overdue_task, customer_event)",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "priority",
+            "type": "string",
+            "description": "Priority level of the notification (low, medium, high, urgent)",
+            "required": true,
+            "defaultValue": "medium"
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "description": "Notification message content",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "relatedEntityId",
+            "type": "string",
+            "description": "ID of the related entity (Customer, Task, etc.)",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "isRead",
+            "type": "boolean",
+            "description": "Whether the notification has been read by the user",
+            "required": true,
+            "defaultValue": false
+          },
+          {
+            "name": "createdAt",
+            "type": "date",
+            "description": "Timestamp when the notification was created",
+            "required": true,
+            "defaultValue": null
+          }
+        ],
+        "relationships": [],
+        "indexes": [
+          "userId",
+          "isRead",
+          "createdAt",
+          "type"
+        ],
+        "constraints": {
+          "type": [
+            "status_change",
+            "overdue_task",
+            "customer_event"
+          ],
+          "priority": [
+            "low",
+            "medium",
+            "high",
+            "urgent"
+          ]
+        },
+        "workflowId": "workflow_1735091847123"
+      }
+    ],
+    "forms": [
+      {
+        "id": "customerregistrationform-1764570394978-6bg2ac",
+        "name": "CustomerRegistrationForm",
+        "title": "Customer Registration",
+        "description": "Register as a new customer to begin your onboarding journey with us.",
+        "fields": [
+          {
+            "id": "field-firstname",
+            "name": "firstName",
+            "type": "text",
+            "label": "First Name",
+            "placeholder": "Enter your first name",
+            "required": true,
+            "validation": {
+              "min": 2,
+              "max": 50,
+              "pattern": "^[a-zA-Z\\s'-]+$",
+              "message": "Please enter a valid first name (2-50 characters)"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-lastname",
+            "name": "lastName",
+            "type": "text",
+            "label": "Last Name",
+            "placeholder": "Enter your last name",
+            "required": true,
+            "validation": {
+              "min": 2,
+              "max": 50,
+              "pattern": "^[a-zA-Z\\s'-]+$",
+              "message": "Please enter a valid last name (2-50 characters)"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-email",
+            "name": "email",
+            "type": "email",
+            "label": "Email Address",
+            "placeholder": "your.email@company.com",
+            "required": true,
+            "validation": {
+              "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+              "message": "Please enter a valid email address"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-phone",
+            "name": "phone",
+            "type": "text",
+            "label": "Phone Number",
+            "placeholder": "+1 (555) 123-4567",
+            "required": false,
+            "validation": {
+              "pattern": "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,9}$",
+              "message": "Please enter a valid phone number"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-company",
+            "name": "companyName",
+            "type": "text",
+            "label": "Company Name",
+            "placeholder": "Enter your company name",
+            "required": true,
+            "validation": {
+              "min": 2,
+              "max": 100,
+              "message": "Company name must be between 2-100 characters"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-source",
+            "name": "customerSource",
+            "type": "select",
+            "label": "How did you hear about us?",
+            "placeholder": "Select a source",
+            "required": true,
+            "options": [
+              "Search Engine",
+              "Social Media",
+              "Referral",
+              "Advertisement",
+              "Trade Show",
+              "Email Campaign",
+              "Other"
+            ],
+            "defaultValue": null
+          },
+          {
+            "id": "field-interests",
+            "name": "interests",
+            "type": "textarea",
+            "label": "Areas of Interest",
+            "placeholder": "Tell us about your needs and what solutions you're looking for...",
+            "required": false,
+            "validation": {
+              "max": 500,
+              "message": "Please limit your message to 500 characters"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-consent",
+            "name": "marketingConsent",
+            "type": "checkbox",
+            "label": "I agree to receive marketing communications and updates",
+            "required": false,
+            "defaultValue": false
+          }
+        ],
+        "gridLayout": [
+          {
+            "i": "field-firstname",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "field-lastname",
+            "x": 12,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "field-email",
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "field-phone",
+            "x": 12,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "field-company",
+            "x": 0,
+            "y": 16,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "field-source",
+            "x": 12,
+            "y": 16,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "field-interests",
+            "x": 0,
+            "y": 24,
+            "w": 24,
+            "h": 12,
+            "minW": 12,
+            "minH": 8
+          },
+          {
+            "i": "field-consent",
+            "x": 0,
+            "y": 36,
+            "w": 24,
+            "h": 6,
+            "minW": 12,
+            "minH": 4
+          }
+        ],
+        "layout": {
+          "type": "two-column",
+          "sections": [
+            {
+              "id": "section-personal",
+              "title": "Personal Information",
+              "fieldIds": [
+                "field-firstname",
+                "field-lastname",
+                "field-email",
+                "field-phone"
+              ]
+            },
+            {
+              "id": "section-company",
+              "title": "Company Details",
+              "fieldIds": [
+                "field-company",
+                "field-source"
+              ]
+            },
+            {
+              "id": "section-preferences",
+              "title": "Preferences",
+              "fieldIds": [
+                "field-interests",
+                "field-consent"
+              ]
+            }
+          ]
+        },
+        "submitButton": {
+          "label": "Complete Registration",
+          "position": "right"
+        },
+        "validation": {
+          "mode": "onBlur",
+          "showErrors": true
+        },
+        "styling": {
+          "colors": {
+            "primary": "#2563eb",
+            "secondary": "#64748b",
+            "background": "#ffffff",
+            "text": "#1e293b",
+            "border": "#e2e8f0"
+          },
+          "typography": {
+            "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+            "fontSize": {
+              "label": "14px",
+              "input": "14px"
+            },
+            "fontWeight": {
+              "label": "500",
+              "input": "400"
+            }
+          },
+          "spacing": {
+            "fieldGap": "16px",
+            "sectionGap": "32px",
+            "inputPadding": "10px 12px"
+          },
+          "components": {
+            "input": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "height": "40px"
+            },
+            "textarea": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "minHeight": "100px"
+            },
+            "button": {
+              "primary": {
+                "background": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 24px",
+                "borderRadius": "6px",
+                "fontWeight": "500"
+              }
+            }
+          }
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "followuptaskform-1764570415715-r2bgs0",
+        "name": "FollowUpTaskForm",
+        "title": "Follow-Up Task",
+        "description": "Create and manage follow-up tasks for customer engagement",
+        "fields": [
+          {
+            "id": "task-title",
+            "name": "taskTitle",
+            "type": "text",
+            "label": "Task Title",
+            "placeholder": "Enter task title",
+            "required": true,
+            "validation": {
+              "min": 3,
+              "max": 100,
+              "message": "Task title must be between 3 and 100 characters"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "customer-id",
+            "name": "customerId",
+            "type": "select",
+            "label": "Customer",
+            "placeholder": "Select customer",
+            "required": true,
+            "options": [],
+            "validation": {
+              "message": "Please select a customer"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "assigned-to",
+            "name": "assignedTo",
+            "type": "select",
+            "label": "Assigned To",
+            "placeholder": "Select team member",
+            "required": true,
+            "options": [],
+            "validation": {
+              "message": "Please assign this task to a team member"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "due-date",
+            "name": "dueDate",
+            "type": "date",
+            "label": "Due Date",
+            "placeholder": "Select due date",
+            "required": true,
+            "validation": {
+              "message": "Please select a due date"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "priority",
+            "name": "priority",
+            "type": "select",
+            "label": "Priority",
+            "placeholder": "Select priority level",
+            "required": true,
+            "options": [
+              "Low",
+              "Medium",
+              "High",
+              "Urgent"
+            ],
+            "validation": {
+              "message": "Please select a priority level"
+            },
+            "defaultValue": "Medium"
+          },
+          {
+            "id": "status",
+            "name": "status",
+            "type": "select",
+            "label": "Status",
+            "placeholder": "Select task status",
+            "required": true,
+            "options": [
+              "Pending",
+              "In Progress",
+              "Completed",
+              "Cancelled"
+            ],
+            "validation": {
+              "message": "Please select a task status"
+            },
+            "defaultValue": "Pending"
+          },
+          {
+            "id": "description",
+            "name": "description",
+            "type": "textarea",
+            "label": "Task Description",
+            "placeholder": "Enter detailed task description and notes",
+            "required": false,
+            "validation": {
+              "max": 1000,
+              "message": "Description must not exceed 1000 characters"
+            },
+            "defaultValue": null
+          }
+        ],
+        "gridLayout": [
+          {
+            "i": "task-title",
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 8,
+            "minW": 12,
+            "minH": 8
+          },
+          {
+            "i": "customer-id",
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 8
+          },
+          {
+            "i": "assigned-to",
+            "x": 12,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 8
+          },
+          {
+            "i": "due-date",
+            "x": 0,
+            "y": 16,
+            "w": 8,
+            "h": 8,
+            "minW": 6,
+            "minH": 8
+          },
+          {
+            "i": "priority",
+            "x": 8,
+            "y": 16,
+            "w": 8,
+            "h": 8,
+            "minW": 6,
+            "minH": 8
+          },
+          {
+            "i": "status",
+            "x": 16,
+            "y": 16,
+            "w": 8,
+            "h": 8,
+            "minW": 6,
+            "minH": 8
+          },
+          {
+            "i": "description",
+            "x": 0,
+            "y": 24,
+            "w": 24,
+            "h": 12,
+            "minW": 12,
+            "minH": 12
+          }
+        ],
+        "layout": {
+          "type": "grid",
+          "sections": [
+            {
+              "id": "task-details",
+              "title": "Task Details",
+              "fieldIds": [
+                "task-title",
+                "customer-id",
+                "assigned-to"
+              ]
+            },
+            {
+              "id": "task-settings",
+              "title": "Task Settings",
+              "fieldIds": [
+                "due-date",
+                "priority",
+                "status"
+              ]
+            },
+            {
+              "id": "task-description",
+              "title": "Additional Information",
+              "fieldIds": [
+                "description"
+              ]
+            }
+          ]
+        },
+        "submitButton": {
+          "label": "Create Task",
+          "position": "right"
+        },
+        "validation": {
+          "mode": "onSubmit",
+          "showErrors": true
+        },
+        "styling": {
+          "colors": {
+            "primary": "#3b82f6",
+            "secondary": "#64748b",
+            "background": "#ffffff",
+            "text": "#1e293b",
+            "border": "#e2e8f0"
+          },
+          "typography": {
+            "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+            "fontSize": {
+              "label": "14px",
+              "input": "14px"
+            },
+            "fontWeight": {
+              "label": "500",
+              "input": "400"
+            }
+          },
+          "spacing": {
+            "fieldGap": "16px",
+            "sectionGap": "32px",
+            "inputPadding": "10px 12px"
+          },
+          "components": {
+            "input": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "height": "40px"
+            },
+            "textarea": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "minHeight": "100px"
+            },
+            "button": {
+              "primary": {
+                "background": "#3b82f6",
+                "color": "#ffffff",
+                "padding": "10px 24px",
+                "borderRadius": "6px",
+                "height": "40px"
+              }
+            }
+          }
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "customerprofileform-1764570433580-3gdbmj",
+        "name": "CustomerProfileForm",
+        "title": "Customer Profile",
+        "description": "Update customer details, contact information, and lifecycle stage",
+        "fields": [
+          {
+            "id": "full-name",
+            "name": "fullName",
+            "type": "text",
+            "label": "Full Name",
+            "placeholder": "Enter customer full name",
+            "required": true,
+            "validation": {
+              "min": 2,
+              "max": 100,
+              "pattern": "^[a-zA-Z\\s'-]+$",
+              "message": "Please enter a valid name"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "email",
+            "name": "email",
+            "type": "email",
+            "label": "Email Address",
+            "placeholder": "customer@example.com",
+            "required": true,
+            "validation": {
+              "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+              "message": "Please enter a valid email address"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "phone",
+            "name": "phone",
+            "type": "text",
+            "label": "Phone Number",
+            "placeholder": "+1 (555) 000-0000",
+            "required": false,
+            "validation": {
+              "pattern": "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,9}$",
+              "message": "Please enter a valid phone number"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "lifecycle-stage",
+            "name": "lifecycleStage",
+            "type": "select",
+            "label": "Lifecycle Stage",
+            "placeholder": "Select lifecycle stage",
+            "required": true,
+            "options": [
+              "Lead",
+              "Prospect",
+              "Opportunity",
+              "Customer",
+              "Advocate",
+              "Churned"
+            ],
+            "defaultValue": "Lead"
+          },
+          {
+            "id": "customer-source",
+            "name": "customerSource",
+            "type": "select",
+            "label": "Customer Source",
+            "placeholder": "Select acquisition source",
+            "required": false,
+            "options": [
+              "Website",
+              "Referral",
+              "Social Media",
+              "Email Campaign",
+              "Trade Show",
+              "Cold Outreach",
+              "Partner",
+              "Other"
+            ],
+            "defaultValue": null
+          },
+          {
+            "id": "company",
+            "name": "company",
+            "type": "text",
+            "label": "Company",
+            "placeholder": "Enter company name",
+            "required": false,
+            "validation": {
+              "max": 150,
+              "message": "Company name must be less than 150 characters"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "email-notifications",
+            "name": "emailNotifications",
+            "type": "checkbox",
+            "label": "Email Notifications",
+            "placeholder": "",
+            "required": false,
+            "defaultValue": true
+          },
+          {
+            "id": "notes",
+            "name": "notes",
+            "type": "textarea",
+            "label": "Notes",
+            "placeholder": "Add any additional notes about this customer...",
+            "required": false,
+            "validation": {
+              "max": 1000,
+              "message": "Notes must be less than 1000 characters"
+            },
+            "defaultValue": null
+          }
+        ],
+        "gridLayout": [
+          {
+            "i": "full-name",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "email",
+            "x": 12,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "phone",
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "lifecycle-stage",
+            "x": 12,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "customer-source",
+            "x": 0,
+            "y": 16,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "company",
+            "x": 12,
+            "y": 16,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "email-notifications",
+            "x": 0,
+            "y": 24,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "notes",
+            "x": 0,
+            "y": 32,
+            "w": 24,
+            "h": 12,
+            "minW": 12,
+            "minH": 8
+          }
+        ],
+        "layout": {
+          "type": "two-column",
+          "sections": [
+            {
+              "id": "contact-info",
+              "title": "Contact Information",
+              "fieldIds": [
+                "full-name",
+                "email",
+                "phone"
+              ]
+            },
+            {
+              "id": "customer-details",
+              "title": "Customer Details",
+              "fieldIds": [
+                "lifecycle-stage",
+                "customer-source",
+                "company"
+              ]
+            },
+            {
+              "id": "preferences",
+              "title": "Preferences & Notes",
+              "fieldIds": [
+                "email-notifications",
+                "notes"
+              ]
+            }
+          ]
+        },
+        "submitButton": {
+          "label": "Update Profile",
+          "position": "right"
+        },
+        "validation": {
+          "mode": "onBlur",
+          "showErrors": true
+        },
+        "styling": {
+          "colors": {
+            "primary": "#2563eb",
+            "secondary": "#64748b",
+            "background": "#ffffff",
+            "text": "#0f172a",
+            "border": "#e2e8f0"
+          },
+          "typography": {
+            "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+            "fontSize": {
+              "label": "14px",
+              "input": "14px"
+            },
+            "fontWeight": {
+              "label": "500",
+              "input": "400"
+            }
+          },
+          "spacing": {
+            "fieldGap": "16px",
+            "sectionGap": "32px",
+            "inputPadding": "10px 12px"
+          },
+          "components": {
+            "input": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "height": "40px"
+            },
+            "button": {
+              "primary": {
+                "background": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 24px"
+              }
+            }
+          }
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "interactionlogform-1764570453379-ihuwr0",
+        "name": "InteractionLogForm",
+        "title": "Log Customer Interaction",
+        "description": "Record customer interaction details and automatically generate follow-up tasks",
+        "fields": [
+          {
+            "id": "customer-id",
+            "name": "customerId",
+            "type": "select",
+            "label": "Customer",
+            "placeholder": "Select customer",
+            "required": true,
+            "validation": {
+              "message": "Please select a customer"
+            },
+            "options": [],
+            "defaultValue": null
+          },
+          {
+            "id": "interaction-type",
+            "name": "interactionType",
+            "type": "select",
+            "label": "Interaction Type",
+            "placeholder": "Select type",
+            "required": true,
+            "validation": {
+              "message": "Please select an interaction type"
+            },
+            "options": [
+              "Phone Call",
+              "Email",
+              "Meeting",
+              "Demo",
+              "Support Request",
+              "Follow-up",
+              "Other"
+            ],
+            "defaultValue": null
+          },
+          {
+            "id": "interaction-date",
+            "name": "interactionDate",
+            "type": "date",
+            "label": "Interaction Date",
+            "placeholder": "Select date",
+            "required": true,
+            "validation": {
+              "message": "Please select the interaction date"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "interaction-outcome",
+            "name": "interactionOutcome",
+            "type": "select",
+            "label": "Outcome",
+            "placeholder": "Select outcome",
+            "required": true,
+            "validation": {
+              "message": "Please select an outcome"
+            },
+            "options": [
+              "Successful",
+              "Needs Follow-up",
+              "No Response",
+              "Issue Resolved",
+              "Escalated",
+              "Closed"
+            ],
+            "defaultValue": null
+          },
+          {
+            "id": "interaction-notes",
+            "name": "interactionNotes",
+            "type": "textarea",
+            "label": "Interaction Notes",
+            "placeholder": "Enter detailed notes about the interaction, key points discussed, customer concerns, and any commitments made...",
+            "required": true,
+            "validation": {
+              "min": 10,
+              "max": 2000,
+              "message": "Please provide detailed notes (10-2000 characters)"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "next-steps",
+            "name": "nextSteps",
+            "type": "textarea",
+            "label": "Next Steps",
+            "placeholder": "Describe required follow-up actions, deadlines, and responsibilities...",
+            "required": false,
+            "validation": {
+              "max": 1000,
+              "message": "Next steps cannot exceed 1000 characters"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "create-followup",
+            "name": "createFollowup",
+            "type": "checkbox",
+            "label": "Create Follow-up Task",
+            "placeholder": "",
+            "required": false,
+            "defaultValue": false
+          },
+          {
+            "id": "followup-date",
+            "name": "followupDate",
+            "type": "date",
+            "label": "Follow-up Date",
+            "placeholder": "Select follow-up date",
+            "required": false,
+            "validation": {
+              "message": "Please select a future date for follow-up"
+            },
+            "defaultValue": null
+          }
+        ],
+        "gridLayout": [
+          {
+            "i": "customer-id",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "interaction-type",
+            "x": 12,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "interaction-date",
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "interaction-outcome",
+            "x": 12,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "interaction-notes",
+            "x": 0,
+            "y": 16,
+            "w": 24,
+            "h": 12,
+            "minW": 12,
+            "minH": 8
+          },
+          {
+            "i": "next-steps",
+            "x": 0,
+            "y": 28,
+            "w": 24,
+            "h": 12,
+            "minW": 12,
+            "minH": 8
+          },
+          {
+            "i": "create-followup",
+            "x": 0,
+            "y": 40,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "followup-date",
+            "x": 12,
+            "y": 40,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          }
+        ],
+        "layout": {
+          "type": "two-column",
+          "sections": [
+            {
+              "id": "interaction-details",
+              "title": "Interaction Details",
+              "fieldIds": [
+                "customer-id",
+                "interaction-type",
+                "interaction-date",
+                "interaction-outcome"
+              ]
+            },
+            {
+              "id": "notes-section",
+              "title": "Notes & Next Steps",
+              "fieldIds": [
+                "interaction-notes",
+                "next-steps"
+              ]
+            },
+            {
+              "id": "followup-section",
+              "title": "Follow-up",
+              "fieldIds": [
+                "create-followup",
+                "followup-date"
+              ]
+            }
+          ]
+        },
+        "submitButton": {
+          "label": "Log Interaction",
+          "position": "right"
+        },
+        "validation": {
+          "mode": "onSubmit",
+          "showErrors": true
+        },
+        "styling": {
+          "colors": {
+            "primary": "#3b82f6",
+            "secondary": "#64748b",
+            "background": "#ffffff",
+            "text": "#1e293b",
+            "border": "#e2e8f0"
+          },
+          "typography": {
+            "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+            "fontSize": {
+              "label": "14px",
+              "input": "14px"
+            },
+            "fontWeight": {
+              "label": "500",
+              "input": "400"
+            }
+          },
+          "spacing": {
+            "fieldGap": "16px",
+            "sectionGap": "32px",
+            "inputPadding": "10px 12px"
+          },
+          "components": {
+            "input": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "height": "40px"
+            },
+            "textarea": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "minHeight": "100px"
+            },
+            "button": {
+              "primary": {
+                "background": "#3b82f6",
+                "color": "#ffffff",
+                "padding": "10px 24px",
+                "borderRadius": "6px",
+                "fontWeight": "500"
+              }
+            }
+          }
+        },
+        "workflowId": "workflow_1735091847123"
+      }
+    ],
+    "mobileUI": null,
+    "pages": [
+      {
+        "id": "customerlistpage-1764570500000-abc123",
+        "name": "CustomerListPage",
+        "title": "Customers",
+        "description": "Display searchable and filterable list of all customers with lifecycle stage, source filtering, and bulk actions",
+        "route": "/customers",
+        "type": "list",
+        "platform": "both",
+        "forms": [
+          "customerregistrationform-1764570394978-6bg2ac"
+        ],
+        "sections": [
+          {
+            "id": "header",
+            "type": "header",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Customers",
+                  "variant": "h1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "32px",
+                    "fontWeight": "700",
+                    "color": "#0F172A",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Add New Customer",
+                  "variant": "primary",
+                  "icon": "add",
+                  "action": "openForm",
+                  "style": {
+                    "backgroundColor": "#2563EB",
+                    "color": "#FFFFFF",
+                    "borderRadius": "8px",
+                    "padding": "12px 24px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "border": "none",
+                    "boxShadow": "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+                  }
+                },
+                "formRef": "customerregistrationform-1764570394978-6bg2ac"
+              }
+            ]
+          },
+          {
+            "id": "main",
+            "type": "main",
+            "components": [
+              {
+                "type": "filter",
+                "config": {
+                  "filters": [
+                    {
+                      "field": "lifecycleStage",
+                      "label": "Lifecycle Stage",
+                      "type": "select",
+                      "options": "LifecycleStage.query"
+                    },
+                    {
+                      "field": "source",
+                      "label": "Customer Source",
+                      "type": "select",
+                      "options": "CustomerSource.query"
+                    },
+                    {
+                      "field": "requiresAttention",
+                      "label": "Requires Attention",
+                      "type": "boolean"
+                    }
+                  ],
+                  "searchPlaceholder": "Search customers by name, email, or company...",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "marginBottom": "24px",
+                    "border": "1px solid #E2E8F0",
+                    "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1)"
+                  }
+                }
+              },
+              {
+                "type": "table",
+                "config": {
+                  "title": "Customer Directory",
+                  "columns": [
+                    {
+                      "key": "name",
+                      "label": "Customer Name",
+                      "sortable": true,
+                      "width": "20%"
+                    },
+                    {
+                      "key": "email",
+                      "label": "Email",
+                      "sortable": true,
+                      "width": "20%"
+                    },
+                    {
+                      "key": "company",
+                      "label": "Company",
+                      "sortable": true,
+                      "width": "15%"
+                    },
+                    {
+                      "key": "lifecycleStage",
+                      "label": "Stage",
+                      "sortable": true,
+                      "width": "12%",
+                      "render": "badge"
+                    },
+                    {
+                      "key": "source",
+                      "label": "Source",
+                      "sortable": true,
+                      "width": "12%"
+                    },
+                    {
+                      "key": "lastInteraction",
+                      "label": "Last Contact",
+                      "sortable": true,
+                      "width": "13%",
+                      "format": "date"
+                    },
+                    {
+                      "key": "status",
+                      "label": "Status",
+                      "sortable": false,
+                      "width": "8%",
+                      "render": "indicator"
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "View Profile",
+                      "icon": "visibility",
+                      "action": "view"
+                    },
+                    {
+                      "label": "Log Interaction",
+                      "icon": "note_add",
+                      "action": "logInteraction"
+                    },
+                    {
+                      "label": "Create Task",
+                      "icon": "task",
+                      "action": "createTask"
+                    }
+                  ],
+                  "bulkActions": [
+                    {
+                      "label": "Export Selected",
+                      "icon": "download",
+                      "action": "export"
+                    },
+                    {
+                      "label": "Change Stage",
+                      "icon": "swap_horiz",
+                      "action": "bulkChangeStage"
+                    },
+                    {
+                      "label": "Send Notification",
+                      "icon": "notifications",
+                      "action": "bulkNotify"
+                    }
+                  ],
+                  "pagination": true,
+                  "pageSize": 25,
+                  "selectable": true,
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderRadius": "12px",
+                    "border": "1px solid #E2E8F0",
+                    "boxShadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+                    "overflow": "hidden"
+                  },
+                  "headerStyle": {
+                    "backgroundColor": "#F8FAFC",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "color": "#475569",
+                    "textTransform": "uppercase",
+                    "letterSpacing": "0.05em",
+                    "padding": "12px 16px"
+                  },
+                  "rowStyle": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1E293B",
+                    "padding": "16px",
+                    "borderBottom": "1px solid #F1F5F9"
+                  },
+                  "hoverStyle": {
+                    "backgroundColor": "#F8FAFC"
+                  }
+                },
+                "dataBinding": "Customer.query"
+              }
+            ]
+          }
+        ],
+        "navigation": {
+          "onAction": {
+            "view": {
+              "type": "navigate",
+              "target": "/customer/:id"
+            },
+            "logInteraction": {
+              "type": "openForm",
+              "formId": "interactionlogform-1764570453379-ihuwr0"
+            },
+            "createTask": {
+              "type": "openForm",
+              "formId": "followuptaskform-1764570415715-r2bgs0"
+            },
+            "openForm": {
+              "type": "openModal",
+              "formId": "customerregistrationform-1764570394978-6bg2ac"
+            }
+          },
+          "menu": [
+            {
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "dashboard"
+            },
+            {
+              "label": "Customers",
+              "route": "/customers",
+              "icon": "people",
+              "active": true
+            },
+            {
+              "label": "Interactions",
+              "route": "/interactions",
+              "icon": "forum"
+            },
+            {
+              "label": "Tasks",
+              "route": "/tasks",
+              "icon": "task_alt"
+            },
+            {
+              "label": "Onboarding",
+              "route": "/onboarding",
+              "icon": "person_add"
+            },
+            {
+              "label": "Reports",
+              "route": "/reports",
+              "icon": "analytics"
+            },
+            {
+              "label": "Notifications",
+              "route": "/notifications",
+              "icon": "notifications"
+            }
+          ]
+        },
+        "layout": {
+          "type": "single-column",
+          "responsive": true,
+          "spacing": "normal",
+          "maxWidth": "1400px",
+          "style": {
+            "backgroundColor": "#F8FAFC",
+            "padding": "32px",
+            "fontFamily": "Inter, system-ui, sans-serif"
+          }
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "interactionlistpage-1764570500000-xyz123",
+        "name": "InteractionListPage",
+        "title": "Customer Interactions",
+        "description": "Display all customer interactions with filtering and search capabilities",
+        "route": "/interactions",
+        "type": "list",
+        "platform": "both",
+        "forms": [
+          "interactionlogform-1764570453379-ihuwr0"
+        ],
+        "sections": [
+          {
+            "id": "header",
+            "type": "header",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Customer Interactions",
+                  "variant": "h1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "32px",
+                    "fontWeight": "700",
+                    "color": "#0F172A",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Track and manage all customer interactions across your organization",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "400",
+                    "color": "#64748B",
+                    "lineHeight": "1.5"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "main",
+            "type": "main",
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Interaction Analytics",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #E2E8F0",
+                    "marginBottom": "24px"
+                  }
+                },
+                "components": [
+                  {
+                    "type": "metrics",
+                    "config": {
+                      "metrics": [
+                        {
+                          "label": "Total Interactions",
+                          "value": "{{Interaction.count()}}",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "28px",
+                            "fontWeight": "700",
+                            "color": "#0F172A"
+                          }
+                        },
+                        {
+                          "label": "This Week",
+                          "value": "{{Interaction.countThisWeek()}}",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "28px",
+                            "fontWeight": "700",
+                            "color": "#3B82F6"
+                          }
+                        },
+                        {
+                          "label": "Avg. Per Customer",
+                          "value": "{{Interaction.averagePerCustomer()}}",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "28px",
+                            "fontWeight": "700",
+                            "color": "#10B981"
+                          }
+                        }
+                      ],
+                      "layout": "horizontal"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "filter",
+                "config": {
+                  "filters": [
+                    {
+                      "field": "type",
+                      "label": "Interaction Type",
+                      "type": "select",
+                      "options": [
+                        "Call",
+                        "Email",
+                        "Meeting",
+                        "Note",
+                        "Support"
+                      ]
+                    },
+                    {
+                      "field": "customerId",
+                      "label": "Customer",
+                      "type": "reference",
+                      "dataBinding": "Customer.query"
+                    },
+                    {
+                      "field": "dateRange",
+                      "label": "Date Range",
+                      "type": "daterange"
+                    },
+                    {
+                      "field": "search",
+                      "label": "Search",
+                      "type": "text",
+                      "placeholder": "Search interactions..."
+                    }
+                  ],
+                  "style": {
+                    "backgroundColor": "#F8FAFC",
+                    "borderRadius": "8px",
+                    "padding": "16px",
+                    "marginBottom": "24px",
+                    "border": "1px solid #E2E8F0"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "text": "Log New Interaction",
+                  "variant": "primary",
+                  "icon": "add",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#3B82F6",
+                    "color": "#FFFFFF",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "border": "none",
+                    "marginBottom": "24px",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  }
+                },
+                "formRef": "interactionlogform-1764570453379-ihuwr0",
+                "action": "openForm"
+              },
+              {
+                "type": "table",
+                "config": {
+                  "title": "All Interactions",
+                  "columns": [
+                    {
+                      "key": "date",
+                      "label": "Date",
+                      "sortable": true,
+                      "format": "date"
+                    },
+                    {
+                      "key": "customer.name",
+                      "label": "Customer",
+                      "sortable": true,
+                      "linkTo": "/customers/{{customer.id}}"
+                    },
+                    {
+                      "key": "type",
+                      "label": "Type",
+                      "sortable": true,
+                      "badge": true
+                    },
+                    {
+                      "key": "subject",
+                      "label": "Subject",
+                      "sortable": false
+                    },
+                    {
+                      "key": "notes",
+                      "label": "Notes",
+                      "sortable": false,
+                      "truncate": 50
+                    },
+                    {
+                      "key": "createdBy",
+                      "label": "Logged By",
+                      "sortable": true
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "View",
+                      "icon": "visibility",
+                      "action": "view"
+                    },
+                    {
+                      "label": "Edit",
+                      "icon": "edit",
+                      "action": "edit"
+                    }
+                  ],
+                  "pagination": true,
+                  "pageSize": 25,
+                  "sortable": true,
+                  "defaultSort": {
+                    "field": "date",
+                    "direction": "desc"
+                  },
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderRadius": "12px",
+                    "border": "1px solid #E2E8F0",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "overflow": "hidden"
+                  },
+                  "headerStyle": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#475569",
+                    "backgroundColor": "#F8FAFC",
+                    "padding": "12px 16px",
+                    "borderBottom": "1px solid #E2E8F0"
+                  },
+                  "rowStyle": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#0F172A",
+                    "padding": "16px",
+                    "borderBottom": "1px solid #F1F5F9"
+                  }
+                },
+                "dataBinding": "Interaction.query"
+              }
+            ]
+          }
+        ],
+        "navigation": {
+          "onAction": {
+            "view": {
+              "type": "navigate",
+              "target": "/customers/{{customer.id}}"
+            },
+            "edit": {
+              "type": "openForm",
+              "formRef": "interactionlogform-1764570453379-ihuwr0"
+            }
+          },
+          "menu": [
+            {
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "dashboard"
+            },
+            {
+              "label": "Customers",
+              "route": "/customers",
+              "icon": "people"
+            },
+            {
+              "label": "Interactions",
+              "route": "/interactions",
+              "icon": "chat",
+              "active": true
+            },
+            {
+              "label": "Tasks",
+              "route": "/tasks",
+              "icon": "task"
+            },
+            {
+              "label": "Onboarding",
+              "route": "/onboarding",
+              "icon": "person_add"
+            },
+            {
+              "label": "Notifications",
+              "route": "/notifications",
+              "icon": "notifications"
+            },
+            {
+              "label": "Reports",
+              "route": "/reports",
+              "icon": "analytics"
+            }
+          ]
+        },
+        "layout": {
+          "type": "single-column",
+          "responsive": true,
+          "spacing": "normal",
+          "maxWidth": "1400px",
+          "style": {
+            "backgroundColor": "#F8FAFC",
+            "padding": "24px",
+            "minHeight": "100vh"
+          }
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "taskmanagementpage-1764570500000-tmg001",
+        "name": "TaskManagementPage",
+        "title": "Task Management",
+        "description": "Manage and track all follow-up tasks across customers with filtering, bulk updates, and calendar view",
+        "route": "/tasks",
+        "type": "list",
+        "platform": "both",
+        "forms": [
+          "followuptaskform-1764570415715-r2bgs0"
+        ],
+        "sections": [
+          {
+            "id": "header",
+            "type": "header",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Task Management",
+                  "variant": "h1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "700",
+                    "color": "#1a1a1a",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Track and manage all follow-up tasks across your customer base",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666",
+                    "marginBottom": "24px"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Create New Task",
+                  "variant": "primary",
+                  "action": "openForm",
+                  "formRef": "followuptaskform-1764570415715-r2bgs0",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "main",
+            "type": "main",
+            "components": [
+              {
+                "type": "filter",
+                "config": {
+                  "title": "Filter Tasks",
+                  "filters": [
+                    {
+                      "field": "status",
+                      "label": "Status",
+                      "type": "select",
+                      "options": [
+                        "Pending",
+                        "In Progress",
+                        "Completed",
+                        "Overdue"
+                      ]
+                    },
+                    {
+                      "field": "priority",
+                      "label": "Priority",
+                      "type": "select",
+                      "options": [
+                        "Low",
+                        "Medium",
+                        "High",
+                        "Urgent"
+                      ]
+                    },
+                    {
+                      "field": "assignedTo",
+                      "label": "Assigned To",
+                      "type": "text"
+                    },
+                    {
+                      "field": "dueDate",
+                      "label": "Due Date",
+                      "type": "dateRange"
+                    }
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "backgroundColor": "#ffffff",
+                    "padding": "20px",
+                    "borderRadius": "12px",
+                    "border": "1px solid #e5e7eb",
+                    "marginBottom": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+                  }
+                },
+                "dataBinding": "FollowUpTask.query"
+              },
+              {
+                "type": "table",
+                "config": {
+                  "title": "All Tasks",
+                  "columns": [
+                    {
+                      "key": "title",
+                      "label": "Task Title",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "key": "customer",
+                      "label": "Customer",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "400",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "key": "priority",
+                      "label": "Priority",
+                      "sortable": true,
+                      "badge": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "600",
+                        "padding": "4px 12px",
+                        "borderRadius": "12px"
+                      }
+                    },
+                    {
+                      "key": "status",
+                      "label": "Status",
+                      "sortable": true,
+                      "badge": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "600",
+                        "padding": "4px 12px",
+                        "borderRadius": "12px"
+                      }
+                    },
+                    {
+                      "key": "assignedTo",
+                      "label": "Assigned To",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "400",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "key": "dueDate",
+                      "label": "Due Date",
+                      "sortable": true,
+                      "type": "date",
+                      "highlightOverdue": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "400",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "key": "actions",
+                      "label": "Actions",
+                      "type": "actions",
+                      "actions": [
+                        "view",
+                        "edit",
+                        "complete",
+                        "delete"
+                      ]
+                    }
+                  ],
+                  "bulkActions": [
+                    {
+                      "label": "Mark Complete",
+                      "action": "bulkComplete"
+                    },
+                    {
+                      "label": "Reassign",
+                      "action": "bulkReassign"
+                    },
+                    {
+                      "label": "Change Priority",
+                      "action": "bulkChangePriority"
+                    },
+                    {
+                      "label": "Delete",
+                      "action": "bulkDelete"
+                    }
+                  ],
+                  "pagination": true,
+                  "pageSize": 25,
+                  "selectable": true,
+                  "searchable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "border": "1px solid #e5e7eb",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "overflow": "hidden"
+                  }
+                },
+                "dataBinding": "FollowUpTask.query"
+              },
+              {
+                "type": "calendar",
+                "config": {
+                  "title": "Task Calendar View",
+                  "viewMode": "month",
+                  "viewOptions": [
+                    "day",
+                    "week",
+                    "month"
+                  ],
+                  "eventSource": "FollowUpTask",
+                  "eventFields": {
+                    "title": "title",
+                    "date": "dueDate",
+                    "color": "priority"
+                  },
+                  "colorMapping": {
+                    "Urgent": "#dc2626",
+                    "High": "#f59e0b",
+                    "Medium": "#3b82f6",
+                    "Low": "#10b981"
+                  },
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "backgroundColor": "#ffffff",
+                    "padding": "20px",
+                    "borderRadius": "12px",
+                    "border": "1px solid #e5e7eb",
+                    "marginTop": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+                  }
+                },
+                "dataBinding": "FollowUpTask.query"
+              }
+            ]
+          }
+        ],
+        "navigation": {
+          "onAction": {
+            "view": {
+              "type": "navigate",
+              "target": "/customers/:customerId"
+            },
+            "complete": {
+              "type": "update",
+              "workflow": "InteractionLoggingWorkflow"
+            },
+            "create": {
+              "type": "openForm",
+              "formRef": "followuptaskform-1764570415715-r2bgs0"
+            }
+          },
+          "menu": [
+            {
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "dashboard"
+            },
+            {
+              "label": "Customers",
+              "route": "/customers",
+              "icon": "people"
+            },
+            {
+              "label": "Tasks",
+              "route": "/tasks",
+              "icon": "task",
+              "active": true
+            },
+            {
+              "label": "Interactions",
+              "route": "/interactions",
+              "icon": "chat"
+            },
+            {
+              "label": "Onboarding",
+              "route": "/onboarding",
+              "icon": "rocket"
+            },
+            {
+              "label": "Notifications",
+              "route": "/notifications",
+              "icon": "bell"
+            },
+            {
+              "label": "Reports",
+              "route": "/reports",
+              "icon": "analytics"
+            }
+          ]
+        },
+        "layout": {
+          "type": "single-column",
+          "responsive": true,
+          "spacing": "normal",
+          "maxWidth": "1400px"
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "notificationcenterpage-1764570500000-nc001",
+        "name": "NotificationCenterPage",
+        "title": "Notification Center",
+        "description": "Display and manage user notifications and alerts including status changes, overdue tasks, and system alerts",
+        "route": "/notifications",
+        "type": "list",
+        "platform": "both",
+        "forms": [],
+        "sections": [
+          {
+            "id": "header",
+            "type": "header",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Notification Center",
+                  "variant": "h1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "700",
+                    "color": "#1a1a1a",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Manage your notifications, alerts, and system updates",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666",
+                    "marginBottom": "24px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "main",
+            "type": "main",
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Filter Notifications",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "20px",
+                    "marginBottom": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "components": [
+                  {
+                    "type": "buttonGroup",
+                    "config": {
+                      "buttons": [
+                        {
+                          "label": "All",
+                          "value": "all",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "fontWeight": "500",
+                            "padding": "8px 16px",
+                            "borderRadius": "8px",
+                            "backgroundColor": "#0066cc",
+                            "color": "#ffffff",
+                            "border": "none"
+                          }
+                        },
+                        {
+                          "label": "Unread",
+                          "value": "unread",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "fontWeight": "500",
+                            "padding": "8px 16px",
+                            "borderRadius": "8px",
+                            "backgroundColor": "#f5f5f5",
+                            "color": "#1a1a1a",
+                            "border": "1px solid #e5e5e5"
+                          }
+                        },
+                        {
+                          "label": "Overdue Tasks",
+                          "value": "overdue",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "fontWeight": "500",
+                            "padding": "8px 16px",
+                            "borderRadius": "8px",
+                            "backgroundColor": "#f5f5f5",
+                            "color": "#1a1a1a",
+                            "border": "1px solid #e5e5e5"
+                          }
+                        },
+                        {
+                          "label": "Status Changes",
+                          "value": "status",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "fontWeight": "500",
+                            "padding": "8px 16px",
+                            "borderRadius": "8px",
+                            "backgroundColor": "#f5f5f5",
+                            "color": "#1a1a1a",
+                            "border": "1px solid #e5e5e5"
+                          }
+                        },
+                        {
+                          "label": "System Alerts",
+                          "value": "system",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "fontWeight": "500",
+                            "padding": "8px 16px",
+                            "borderRadius": "8px",
+                            "backgroundColor": "#f5f5f5",
+                            "color": "#1a1a1a",
+                            "border": "1px solid #e5e5e5"
+                          }
+                        }
+                      ],
+                      "orientation": "horizontal"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "list",
+                "config": {
+                  "title": "Notifications",
+                  "itemLayout": "card",
+                  "showSearch": false,
+                  "showPagination": true,
+                  "emptyStateMessage": "No notifications to display",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "20px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "Notification.query",
+                "itemConfig": {
+                  "fields": [
+                    {
+                      "key": "title",
+                      "label": "Title",
+                      "type": "text",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "16px",
+                        "fontWeight": "600",
+                        "color": "#1a1a1a",
+                        "marginBottom": "4px"
+                      }
+                    },
+                    {
+                      "key": "message",
+                      "label": "Message",
+                      "type": "text",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "400",
+                        "color": "#666666",
+                        "marginBottom": "8px"
+                      }
+                    },
+                    {
+                      "key": "type",
+                      "label": "Type",
+                      "type": "badge",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "500",
+                        "padding": "4px 12px",
+                        "borderRadius": "6px",
+                        "backgroundColor": "#e6f2ff",
+                        "color": "#0066cc"
+                      }
+                    },
+                    {
+                      "key": "priority",
+                      "label": "Priority",
+                      "type": "badge",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "500",
+                        "padding": "4px 12px",
+                        "borderRadius": "6px"
+                      }
+                    },
+                    {
+                      "key": "createdAt",
+                      "label": "Time",
+                      "type": "datetime",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "400",
+                        "color": "#999999"
+                      }
+                    },
+                    {
+                      "key": "isRead",
+                      "label": "Status",
+                      "type": "badge",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "500",
+                        "padding": "4px 12px",
+                        "borderRadius": "6px"
+                      }
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "Mark as Read",
+                      "action": "markRead",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "padding": "8px 16px",
+                        "borderRadius": "8px",
+                        "backgroundColor": "#0066cc",
+                        "color": "#ffffff",
+                        "border": "none"
+                      }
+                    },
+                    {
+                      "label": "View Details",
+                      "action": "view",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "padding": "8px 16px",
+                        "borderRadius": "8px",
+                        "backgroundColor": "#f5f5f5",
+                        "color": "#1a1a1a",
+                        "border": "1px solid #e5e5e5"
+                      }
+                    },
+                    {
+                      "label": "Dismiss",
+                      "action": "delete",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "padding": "8px 16px",
+                        "borderRadius": "8px",
+                        "backgroundColor": "#ffffff",
+                        "color": "#cc0000",
+                        "border": "1px solid #cc0000"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Notification Preferences",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "20px",
+                    "marginTop": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "components": [
+                  {
+                    "type": "button",
+                    "config": {
+                      "label": "Configure Notification Settings",
+                      "variant": "outlined",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "padding": "10px 20px",
+                        "borderRadius": "8px",
+                        "backgroundColor": "#ffffff",
+                        "color": "#0066cc",
+                        "border": "1px solid #0066cc"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "navigation": {
+          "onAction": {
+            "view": {
+              "type": "navigate",
+              "target": "/tasks"
+            },
+            "markRead": {
+              "type": "update",
+              "target": "Notification"
+            }
+          },
+          "menu": [
+            {
+              "label": "Dashboard",
+              "route": "/dashboard"
+            },
+            {
+              "label": "Customers",
+              "route": "/customers"
+            },
+            {
+              "label": "Tasks",
+              "route": "/tasks"
+            },
+            {
+              "label": "Interactions",
+              "route": "/interactions"
+            },
+            {
+              "label": "Onboarding",
+              "route": "/onboarding"
+            },
+            {
+              "label": "Reports",
+              "route": "/reports"
+            }
+          ]
+        },
+        "layout": {
+          "type": "single-column",
+          "responsive": true,
+          "spacing": "normal"
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "customeronboardingpage-1764570500000-onboard",
+        "name": "CustomerOnboardingPage",
+        "title": "Welcome to Our CRM",
+        "description": "Guide new customer registration through structured onboarding process with progress tracking and validation",
+        "route": "/onboarding",
+        "type": "form",
+        "platform": "both",
+        "forms": [
+          "customerregistrationform-1764570394978-6bg2ac"
+        ],
+        "sections": [
+          {
+            "id": "header",
+            "type": "header",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Customer Onboarding",
+                  "variant": "h1",
+                  "align": "center",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "2rem",
+                    "fontWeight": "700",
+                    "color": "#1a1a1a",
+                    "marginBottom": "0.5rem"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Complete the steps below to set up your customer profile",
+                  "variant": "body1",
+                  "align": "center",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "1rem",
+                    "fontWeight": "400",
+                    "color": "#666666",
+                    "marginBottom": "2rem"
+                  }
+                }
+              }
+            ],
+            "style": {
+              "backgroundColor": "#ffffff",
+              "padding": "2rem 1rem",
+              "borderBottom": "1px solid #e5e5e5"
+            }
+          },
+          {
+            "id": "main",
+            "type": "main",
+            "components": [
+              {
+                "type": "stepper",
+                "config": {
+                  "steps": [
+                    {
+                      "label": "Basic Information",
+                      "description": "Company and contact details"
+                    },
+                    {
+                      "label": "Business Details",
+                      "description": "Industry and requirements"
+                    },
+                    {
+                      "label": "Preferences",
+                      "description": "Communication and settings"
+                    },
+                    {
+                      "label": "Review",
+                      "description": "Confirm your information"
+                    }
+                  ],
+                  "currentStep": 0,
+                  "orientation": "horizontal",
+                  "style": {
+                    "marginBottom": "2rem",
+                    "fontFamily": "Inter, system-ui, sans-serif"
+                  }
+                }
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Registration Form",
+                  "elevation": 2,
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "2rem",
+                    "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.1)",
+                    "marginBottom": "1.5rem"
+                  }
+                },
+                "components": [
+                  {
+                    "type": "form",
+                    "config": {
+                      "formRef": "customerregistrationform-1764570394978-6bg2ac",
+                      "showLabels": true,
+                      "showValidation": true,
+                      "layout": "vertical",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif"
+                      }
+                    },
+                    "formRef": "customerregistrationform-1764570394978-6bg2ac"
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "What Happens Next?",
+                  "elevation": 1,
+                  "style": {
+                    "backgroundColor": "#f8f9fa",
+                    "borderRadius": "8px",
+                    "padding": "1.5rem",
+                    "borderLeft": "4px solid #007bff"
+                  }
+                },
+                "components": [
+                  {
+                    "type": "list",
+                    "config": {
+                      "items": [
+                        {
+                          "icon": "check_circle",
+                          "primary": "Account Activation",
+                          "secondary": "Your account will be activated immediately upon submission"
+                        },
+                        {
+                          "icon": "email",
+                          "primary": "Welcome Email",
+                          "secondary": "You'll receive a confirmation email with next steps"
+                        },
+                        {
+                          "icon": "person",
+                          "primary": "Account Manager Assignment",
+                          "secondary": "A dedicated account manager will be assigned to assist you"
+                        },
+                        {
+                          "icon": "calendar_today",
+                          "primary": "Onboarding Call",
+                          "secondary": "We'll schedule an introductory call within 24 hours"
+                        }
+                      ],
+                      "dense": false,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "0.875rem",
+                        "color": "#1a1a1a"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "buttonGroup",
+                "config": {
+                  "buttons": [
+                    {
+                      "label": "Save as Draft",
+                      "variant": "outlined",
+                      "action": "draft",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "0.875rem",
+                        "fontWeight": "500",
+                        "padding": "0.625rem 1.25rem",
+                        "borderRadius": "6px",
+                        "textTransform": "none",
+                        "borderColor": "#cccccc",
+                        "color": "#666666"
+                      }
+                    },
+                    {
+                      "label": "Complete Onboarding",
+                      "variant": "contained",
+                      "action": "submit",
+                      "color": "primary",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "0.875rem",
+                        "fontWeight": "500",
+                        "padding": "0.625rem 1.25rem",
+                        "borderRadius": "6px",
+                        "textTransform": "none",
+                        "backgroundColor": "#007bff",
+                        "color": "#ffffff"
+                      }
+                    }
+                  ],
+                  "alignment": "right",
+                  "spacing": "normal",
+                  "style": {
+                    "marginTop": "2rem"
+                  }
+                }
+              }
+            ],
+            "style": {
+              "backgroundColor": "#f8f9fa",
+              "padding": "2rem 1rem",
+              "minHeight": "calc(100vh - 200px)"
+            }
+          },
+          {
+            "id": "footer",
+            "type": "footer",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Need help? Contact our support team at support@crm.com or call 1-800-CRM-HELP",
+                  "variant": "body2",
+                  "align": "center",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                }
+              }
+            ],
+            "style": {
+              "backgroundColor": "#ffffff",
+              "padding": "1.5rem 1rem",
+              "borderTop": "1px solid #e5e5e5"
+            }
+          }
+        ],
+        "navigation": {
+          "onAction": {
+            "submit": {
+              "type": "workflow",
+              "workflowId": "CustomerOnboardingWorkflow",
+              "then": {
+                "type": "navigate",
+                "target": "/confirmation",
+                "message": "Welcome! Your account has been created successfully."
+              }
+            },
+            "draft": {
+              "type": "save",
+              "then": {
+                "type": "navigate",
+                "target": "/dashboard",
+                "message": "Your progress has been saved. You can continue onboarding anytime."
+              }
+            }
+          },
+          "menu": [
+            {
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "dashboard"
+            },
+            {
+              "label": "Customer List",
+              "route": "/customers",
+              "icon": "people"
+            },
+            {
+              "label": "Tasks",
+              "route": "/tasks",
+              "icon": "task"
+            },
+            {
+              "label": "Interactions",
+              "route": "/interactions",
+              "icon": "chat"
+            },
+            {
+              "label": "Notifications",
+              "route": "/notifications",
+              "icon": "notifications"
+            },
+            {
+              "label": "Reports",
+              "route": "/reports",
+              "icon": "assessment"
+            }
+          ]
+        },
+        "layout": {
+          "type": "single-column",
+          "responsive": true,
+          "spacing": "normal",
+          "maxWidth": "800px",
+          "centered": true
+        },
+        "workflows": {
+          "onLoad": [],
+          "onSubmit": [
+            "CustomerOnboardingWorkflow"
+          ],
+          "onSuccess": [
+            "LifecycleStageChangeWorkflow"
+          ]
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "dashboardpage-1764570500000-dashboard",
+        "name": "DashboardPage",
+        "title": "CRM Dashboard",
+        "description": "Overview of key metrics and customer management insights with summary statistics, charts, and performance indicators",
+        "route": "/dashboard",
+        "type": "dashboard",
+        "platform": "both",
+        "forms": [],
+        "sections": [
+          {
+            "id": "header",
+            "type": "header",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "CRM Dashboard",
+                  "variant": "h1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "32px",
+                    "fontWeight": "700",
+                    "color": "#1a1a1a",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Overview of key metrics and customer management insights",
+                  "variant": "subtitle",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "400",
+                    "color": "#666666",
+                    "lineHeight": "1.5"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "main",
+            "type": "main",
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Customer Lifecycle Overview",
+                  "layout": "grid",
+                  "columns": 4,
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5",
+                    "marginBottom": "24px"
+                  }
+                },
+                "dataBinding": "LifecycleStage.aggregateByStage",
+                "items": [
+                  {
+                    "type": "metric",
+                    "label": "Leads",
+                    "value": "{{count}}",
+                    "icon": "user-plus",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "500",
+                      "color": "#666666"
+                    },
+                    "valueStyle": {
+                      "fontSize": "28px",
+                      "fontWeight": "700",
+                      "color": "#1a1a1a"
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "label": "Prospects",
+                    "value": "{{count}}",
+                    "icon": "target",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "500",
+                      "color": "#666666"
+                    },
+                    "valueStyle": {
+                      "fontSize": "28px",
+                      "fontWeight": "700",
+                      "color": "#1a1a1a"
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "label": "Active Customers",
+                    "value": "{{count}}",
+                    "icon": "check-circle",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "500",
+                      "color": "#666666"
+                    },
+                    "valueStyle": {
+                      "fontSize": "28px",
+                      "fontWeight": "700",
+                      "color": "#10b981"
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "label": "At Risk",
+                    "value": "{{count}}",
+                    "icon": "alert-triangle",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "500",
+                      "color": "#666666"
+                    },
+                    "valueStyle": {
+                      "fontSize": "28px",
+                      "fontWeight": "700",
+                      "color": "#ef4444"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "list",
+                "config": {
+                  "title": "Overdue Tasks",
+                  "subtitle": "Tasks requiring immediate attention",
+                  "actionLabel": "View All Tasks",
+                  "actionRoute": "/tasks",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5",
+                    "marginBottom": "24px"
+                  },
+                  "titleStyle": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "18px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a",
+                    "marginBottom": "16px"
+                  }
+                },
+                "dataBinding": "FollowUpTask.findOverdue",
+                "listConfig": {
+                  "itemTemplate": {
+                    "title": "{{taskDescription}}",
+                    "subtitle": "Customer: {{customer.name}} | Due: {{dueDate}}",
+                    "badge": "OVERDUE",
+                    "badgeColor": "#ef4444",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "padding": "12px",
+                      "borderBottom": "1px solid #f5f5f5"
+                    }
+                  },
+                  "emptyState": "No overdue tasks",
+                  "maxItems": 5
+                }
+              },
+              {
+                "type": "list",
+                "config": {
+                  "title": "Recent Interactions",
+                  "subtitle": "Latest customer engagement activity",
+                  "actionLabel": "View All Interactions",
+                  "actionRoute": "/interactions",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5",
+                    "marginBottom": "24px"
+                  },
+                  "titleStyle": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "18px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a",
+                    "marginBottom": "16px"
+                  }
+                },
+                "dataBinding": "Interaction.findRecent",
+                "listConfig": {
+                  "itemTemplate": {
+                    "title": "{{interactionType}} - {{customer.name}}",
+                    "subtitle": "{{interactionDate}} | {{notes}}",
+                    "icon": "message-circle",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "padding": "12px",
+                      "borderBottom": "1px solid #f5f5f5"
+                    }
+                  },
+                  "emptyState": "No recent interactions",
+                  "maxItems": 5
+                }
+              },
+              {
+                "type": "chart",
+                "config": {
+                  "title": "Interaction Trends",
+                  "subtitle": "Last 30 days",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  },
+                  "titleStyle": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "18px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a",
+                    "marginBottom": "16px"
+                  }
+                },
+                "dataBinding": "Interaction.aggregateByDate",
+                "chartConfig": {
+                  "type": "line",
+                  "xAxis": "date",
+                  "yAxis": "count",
+                  "color": "#3b82f6",
+                  "height": "300px"
+                }
+              }
+            ]
+          }
+        ],
+        "navigation": {
+          "onAction": {
+            "viewTasks": {
+              "type": "navigate",
+              "target": "/tasks"
+            },
+            "viewInteractions": {
+              "type": "navigate",
+              "target": "/interactions"
+            },
+            "viewCustomers": {
+              "type": "navigate",
+              "target": "/customers"
+            }
+          },
+          "menu": [
+            {
+              "label": "Dashboard",
+              "route": "/dashboard",
+              "icon": "home"
+            },
+            {
+              "label": "Customers",
+              "route": "/customers",
+              "icon": "users"
+            },
+            {
+              "label": "Interactions",
+              "route": "/interactions",
+              "icon": "message-circle"
+            },
+            {
+              "label": "Tasks",
+              "route": "/tasks",
+              "icon": "check-square"
+            },
+            {
+              "label": "Onboarding",
+              "route": "/onboarding",
+              "icon": "user-plus"
+            },
+            {
+              "label": "Reports",
+              "route": "/reports",
+              "icon": "bar-chart"
+            },
+            {
+              "label": "Notifications",
+              "route": "/notifications",
+              "icon": "bell"
+            }
+          ]
+        },
+        "layout": {
+          "type": "dashboard",
+          "responsive": true,
+          "spacing": "normal",
+          "gridColumns": 2,
+          "style": {
+            "backgroundColor": "#f9fafb",
+            "padding": "24px",
+            "fontFamily": "Inter, system-ui, sans-serif"
+          }
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "reportspage-1764570500000-rpt001",
+        "name": "ReportsPage",
+        "title": "Customer Management Reports",
+        "description": "Generate and view customer management reports and analytics with customizable date ranges and export functionality",
+        "route": "/reports",
+        "type": "dashboard",
+        "platform": "both",
+        "forms": [],
+        "sections": [
+          {
+            "id": "header",
+            "type": "header",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Reports & Analytics",
+                  "variant": "h1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "700",
+                    "color": "#1a1a1a",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Generate customizable reports on customer lifecycle, interactions, and task performance",
+                  "variant": "body",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666",
+                    "lineHeight": "1.5"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "main",
+            "type": "main",
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Report Filters",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "marginBottom": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "components": [
+                  {
+                    "type": "dateRangePicker",
+                    "config": {
+                      "label": "Date Range",
+                      "placeholder": "Select date range",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "marginBottom": "16px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "dropdown",
+                    "config": {
+                      "label": "Report Type",
+                      "options": [
+                        "Lifecycle Progression",
+                        "Interaction Metrics",
+                        "Task Completion Rates",
+                        "Source Effectiveness",
+                        "Comprehensive Overview"
+                      ],
+                      "placeholder": "Select report type",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "marginBottom": "16px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "text": "Generate Report",
+                      "variant": "primary",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "backgroundColor": "#2563eb",
+                        "color": "#ffffff",
+                        "padding": "10px 20px",
+                        "borderRadius": "8px",
+                        "border": "none",
+                        "cursor": "pointer",
+                        "marginRight": "12px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "text": "Export to CSV",
+                      "variant": "secondary",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "backgroundColor": "#ffffff",
+                        "color": "#2563eb",
+                        "padding": "10px 20px",
+                        "borderRadius": "8px",
+                        "border": "1px solid #2563eb",
+                        "cursor": "pointer"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 2,
+                  "gap": "24px",
+                  "style": {
+                    "marginBottom": "24px"
+                  }
+                },
+                "components": [
+                  {
+                    "type": "card",
+                    "config": {
+                      "title": "Lifecycle Progression",
+                      "style": {
+                        "backgroundColor": "#ffffff",
+                        "borderRadius": "12px",
+                        "padding": "24px",
+                        "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                        "border": "1px solid #e5e5e5"
+                      }
+                    },
+                    "dataBinding": "Customer.aggregateByLifecycleStage",
+                    "components": [
+                      {
+                        "type": "chart",
+                        "config": {
+                          "chartType": "bar",
+                          "xAxis": "lifecycleStage",
+                          "yAxis": "count",
+                          "height": "300px",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "card",
+                    "config": {
+                      "title": "Source Effectiveness",
+                      "style": {
+                        "backgroundColor": "#ffffff",
+                        "borderRadius": "12px",
+                        "padding": "24px",
+                        "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                        "border": "1px solid #e5e5e5"
+                      }
+                    },
+                    "dataBinding": "Customer.aggregateBySource",
+                    "components": [
+                      {
+                        "type": "chart",
+                        "config": {
+                          "chartType": "pie",
+                          "dataKey": "source",
+                          "valueKey": "count",
+                          "height": "300px",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Interaction Metrics",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "marginBottom": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "Interaction.aggregateByType",
+                "components": [
+                  {
+                    "type": "chart",
+                    "config": {
+                      "chartType": "line",
+                      "xAxis": "date",
+                      "yAxis": "count",
+                      "groupBy": "type",
+                      "height": "350px",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Task Completion Rates",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "FollowUpTask.completionStats",
+                "components": [
+                  {
+                    "type": "table",
+                    "config": {
+                      "columns": [
+                        {
+                          "key": "status",
+                          "label": "Status",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "fontWeight": "600",
+                            "color": "#1a1a1a"
+                          }
+                        },
+                        {
+                          "key": "count",
+                          "label": "Count",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "color": "#1a1a1a"
+                          }
+                        },
+                        {
+                          "key": "percentage",
+                          "label": "Percentage",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "color": "#1a1a1a"
+                          }
+                        },
+                        {
+                          "key": "avgCompletionTime",
+                          "label": "Avg Completion Time",
+                          "style": {
+                            "fontFamily": "Inter, system-ui, sans-serif",
+                            "fontSize": "14px",
+                            "color": "#1a1a1a"
+                          }
+                        }
+                      ],
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "navigation": {
+          "onAction": {
+            "export": {
+              "type": "download",
+              "format": "csv"
+            }
+          },
+          "menu": [
+            {
+              "label": "Dashboard",
+              "route": "/dashboard"
+            },
+            {
+              "label": "Customers",
+              "route": "/customers"
+            },
+            {
+              "label": "Interactions",
+              "route": "/interactions"
+            },
+            {
+              "label": "Tasks",
+              "route": "/tasks"
+            },
+            {
+              "label": "Notifications",
+              "route": "/notifications"
+            },
+            {
+              "label": "Onboarding",
+              "route": "/onboarding"
+            }
+          ]
+        },
+        "layout": {
+          "type": "dashboard",
+          "responsive": true,
+          "spacing": "normal"
+        },
+        "workflowId": "workflow_1735091847123"
+      },
+      {
+        "id": "customerdetailpage-1764570500000-xyz123",
+        "name": "CustomerDetailPage",
+        "title": "Customer Profile",
+        "description": "Displays full customer information, interaction timeline, associated follow-up tasks, and lifecycle stage history with quick actions for logging interactions and creating tasks.",
+        "route": "/customer/:id",
+        "type": "detail",
+        "platform": "both",
+        "forms": [
+          "customerprofileform-1764570433580-3gdbmj",
+          "interactionlogform-1764570453379-ihuwr0",
+          "followuptaskform-1764570415715-r2bgs0"
+        ],
+        "sections": [
+          {
+            "id": "header",
+            "type": "header",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "{{Customer.name}}",
+                  "variant": "h1",
+                  "color": "#1a1a1a",
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "marginBottom": "8px"
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "{{Customer.email}} • {{Customer.phone}} • {{LifecycleStage.name}}",
+                  "variant": "body1",
+                  "color": "#666666",
+                  "fontSize": "14px",
+                  "fontWeight": "400"
+                }
+              }
+            ]
+          },
+          {
+            "id": "main",
+            "type": "main",
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Customer Information",
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": "12px",
+                  "padding": "24px",
+                  "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                  "marginBottom": "24px"
+                },
+                "dataBinding": "Customer.findById",
+                "formRef": "customerprofileform-1764570433580-3gdbmj"
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Interaction Timeline",
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": "12px",
+                  "padding": "24px",
+                  "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                  "marginBottom": "24px"
+                },
+                "dataBinding": "Interaction.query",
+                "components": [
+                  {
+                    "type": "list",
+                    "config": {
+                      "itemTemplate": "{{Interaction.type}} - {{Interaction.date}} - {{Interaction.notes}}",
+                      "emptyMessage": "No interactions recorded yet",
+                      "color": "#1a1a1a",
+                      "fontSize": "14px",
+                      "fontWeight": "400",
+                      "lineHeight": "1.6"
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "text": "Log New Interaction",
+                      "variant": "primary",
+                      "backgroundColor": "#007bff",
+                      "color": "#ffffff",
+                      "borderRadius": "8px",
+                      "padding": "12px 24px",
+                      "fontSize": "14px",
+                      "fontWeight": "600",
+                      "hoverBackgroundColor": "#0056b3",
+                      "marginTop": "16px"
+                    },
+                    "formRef": "interactionlogform-1764570453379-ihuwr0",
+                    "action": "openForm"
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Follow-Up Tasks",
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": "12px",
+                  "padding": "24px",
+                  "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                  "marginBottom": "24px"
+                },
+                "dataBinding": "FollowUpTask.query",
+                "components": [
+                  {
+                    "type": "table",
+                    "config": {
+                      "columns": [
+                        {
+                          "field": "title",
+                          "header": "Task",
+                          "sortable": true,
+                          "color": "#1a1a1a",
+                          "fontSize": "14px",
+                          "fontWeight": "500"
+                        },
+                        {
+                          "field": "dueDate",
+                          "header": "Due Date",
+                          "sortable": true,
+                          "color": "#666666",
+                          "fontSize": "14px",
+                          "fontWeight": "400"
+                        },
+                        {
+                          "field": "status",
+                          "header": "Status",
+                          "sortable": true,
+                          "color": "#666666",
+                          "fontSize": "14px",
+                          "fontWeight": "400"
+                        },
+                        {
+                          "field": "priority",
+                          "header": "Priority",
+                          "sortable": true,
+                          "color": "#666666",
+                          "fontSize": "14px",
+                          "fontWeight": "400"
+                        }
+                      ],
+                      "rowsPerPage": 5,
+                      "emptyMessage": "No tasks assigned",
+                      "striped": true,
+                      "hover": true,
+                      "borderColor": "#e0e0e0"
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "text": "Create New Task",
+                      "variant": "primary",
+                      "backgroundColor": "#007bff",
+                      "color": "#ffffff",
+                      "borderRadius": "8px",
+                      "padding": "12px 24px",
+                      "fontSize": "14px",
+                      "fontWeight": "600",
+                      "hoverBackgroundColor": "#0056b3",
+                      "marginTop": "16px"
+                    },
+                    "formRef": "followuptaskform-1764570415715-r2bgs0",
+                    "action": "openForm"
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Lifecycle Stage History",
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": "12px",
+                  "padding": "24px",
+                  "boxShadow": "0 2px 8px rgba(0,0,0,0.08)"
+                },
+                "dataBinding": "LifecycleStage.query",
+                "components": [
+                  {
+                    "type": "list",
+                    "config": {
+                      "itemTemplate": "{{LifecycleStage.name}} - {{LifecycleStage.changedDate}}",
+                      "emptyMessage": "No lifecycle history available",
+                      "color": "#1a1a1a",
+                      "fontSize": "14px",
+                      "fontWeight": "400",
+                      "lineHeight": "1.6"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "navigation": {
+          "onAction": {
+            "submit": {
+              "type": "navigate",
+              "target": "/customers"
+            },
+            "back": {
+              "type": "navigate",
+              "target": "/customers"
+            },
+            "viewInteractions": {
+              "type": "navigate",
+              "target": "/interactions"
+            },
+            "viewTasks": {
+              "type": "navigate",
+              "target": "/tasks"
+            }
+          },
+          "menu": [
+            {
+              "label": "Dashboard",
+              "route": "/dashboard"
+            },
+            {
+              "label": "Customers",
+              "route": "/customers"
+            },
+            {
+              "label": "Interactions",
+              "route": "/interactions"
+            },
+            {
+              "label": "Tasks",
+              "route": "/tasks"
+            },
+            {
+              "label": "Onboarding",
+              "route": "/onboarding"
+            },
+            {
+              "label": "Notifications",
+              "route": "/notifications"
+            },
+            {
+              "label": "Reports",
+              "route": "/reports"
+            }
+          ]
+        },
+        "layout": {
+          "type": "single-column",
+          "responsive": true,
+          "spacing": "normal"
+        },
+        "workflowId": "workflow_1735091847123"
+      }
+    ],
+    "generatedBy": "MoE",
+    "routing": {
+      "routing": {
+        "workflowExperts": [
+          "ComplexWorkflowExpert"
+        ],
+        "dataModelExperts": [
+          "SQLExpert"
+        ],
+        "formExperts": [
+          "AdvancedFormExpert"
+        ],
+        "mobileExperts": [
+          "CrossPlatformExpert"
+        ],
+        "designExperts": [],
+        "pageExperts": [
+          "PageExpert"
+        ]
+      },
+      "complexity": {
+        "workflow": "complex",
+        "forms": "advanced",
+        "dataModel": "sql"
+      },
+      "domain": "onboarding",
+      "useDesignExpert": false,
+      "designSource": null,
+      "combineStrategy": "ensemble",
+      "confidence": 0.95,
+      "reasoning": "Complex CRM system with multiple interconnected workflows (onboarding, interaction tracking, lifecycle management, notifications, alerts). Requires advanced forms with validation and conditional logic. SQL database needed for relational customer data, interactions, and follow-ups. Cross-platform mobile support for sales teams. Multiple parallel processes and decision points make this a complex workflow requiring ensemble approach."
+    },
+    "expertsUsed": {
+      "workflow": [
+        "ComplexWorkflowExpert"
+      ],
+      "dataModel": [
+        "SQLExpert"
+      ],
+      "forms": [
+        "AdvancedFormExpert"
+      ],
+      "mobile": [
+        "CrossPlatformExpert"
+      ],
+      "pages": [
+        "PageExpert"
+      ]
+    },
+    "combineStrategy": "ensemble",
+    "confidence": 0.95,
+    "autoFixesApplied": [
+      "Added default path to decision node node_parallel_onboard: set connection to node_create_profile as default",
+      "Added default path to decision node node_merge_onboard: set connection to node_initial_interaction as default"
+    ],
+    "validationWarnings": [
+      "Connection edge_9 from decision node_parallel_onboard has no condition and is not marked as default",
+      "Connection edge_10 from decision node_parallel_onboard has no condition and is not marked as default",
+      "Decision node node_merge_onboard has only one outgoing path (not really a decision)"
+    ],
+    "applicationValidation": {
+      "valid": false,
+      "summary": {
+        "totalIssues": 12,
+        "criticalIssues": 6,
+        "warnings": 5,
+        "info": 1
+      },
+      "timestamp": "2025-12-01T06:33:23.175Z",
+      "hasIssues": true,
+      "criticalIssues": 6,
+      "warnings": 5,
+      "recommendations": [
+        {
+          "priority": "medium",
+          "category": "navigation",
+          "message": "2 navigation issues detected",
+          "action": "Update page navigation to reference existing routes"
+        },
+        {
+          "priority": "low",
+          "category": "unused_components",
+          "message": "1 forms are not referenced",
+          "action": "Consider removing unused forms or linking them to pages/workflows"
+        }
+      ]
+    },
+    "applicationValidationDetails": {
+      "valid": false,
+      "timestamp": "2025-12-01T06:33:23.175Z",
+      "summary": {
+        "totalIssues": 12,
+        "criticalIssues": 6,
+        "warnings": 5,
+        "info": 1
+      },
+      "components": {
+        "workflows": {
+          "valid": true,
+          "issues": [
+            {
+              "workflowId": "workflow_1735091847123",
+              "workflowName": "Customer Lifecycle Management Workflow",
+              "severity": "warning",
+              "type": "workflow_warning",
+              "details": "Connection edge_9 from decision node_parallel_onboard has no condition and is not marked as default"
+            },
+            {
+              "workflowId": "workflow_1735091847123",
+              "workflowName": "Customer Lifecycle Management Workflow",
+              "severity": "warning",
+              "type": "workflow_warning",
+              "details": "Connection edge_10 from decision node_parallel_onboard has no condition and is not marked as default"
+            },
+            {
+              "workflowId": "workflow_1735091847123",
+              "workflowName": "Customer Lifecycle Management Workflow",
+              "severity": "warning",
+              "type": "workflow_warning",
+              "details": "Decision node node_merge_onboard has only one outgoing path (not really a decision)"
+            }
+          ]
+        },
+        "forms": {
+          "valid": true,
+          "issues": []
+        },
+        "pages": {
+          "valid": true,
+          "issues": []
+        },
+        "dataModels": {
+          "valid": false,
+          "issues": [
+            {
+              "modelName": "Customer",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "LifecycleStage",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "CustomerSource",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "Interaction",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "FollowUpTask",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "Notification",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            }
+          ]
+        }
+      },
+      "crossComponent": {
+        "valid": true,
+        "issues": [
+          {
+            "pageId": "interactionlistpage-1764570500000-xyz123",
+            "pageName": "InteractionListPage",
+            "action": "view",
+            "severity": "warning",
+            "type": "invalid_navigation_target",
+            "message": "Navigation action 'view' targets non-existent route: /customers/{{customer.id}}"
+          },
+          {
+            "pageId": "taskmanagementpage-1764570500000-tmg001",
+            "pageName": "TaskManagementPage",
+            "action": "view",
+            "severity": "warning",
+            "type": "invalid_navigation_target",
+            "message": "Navigation action 'view' targets non-existent route: /customers/:customerId"
+          },
+          {
+            "formId": "followuptaskform-1764570415715-r2bgs0",
+            "formName": "FollowUpTaskForm",
+            "severity": "info",
+            "type": "orphaned_form",
+            "message": "Form is not referenced by any page or workflow: FollowUpTaskForm"
+          }
+        ]
+      },
+      "recommendations": [
+        {
+          "priority": "medium",
+          "category": "navigation",
+          "message": "2 navigation issues detected",
+          "action": "Update page navigation to reference existing routes"
+        },
+        {
+          "priority": "low",
+          "category": "unused_components",
+          "message": "1 forms are not referenced",
+          "action": "Consider removing unused forms or linking them to pages/workflows"
+        }
+      ],
+      "missingComponents": []
+    }
+  }
+]

@@ -1,0 +1,2309 @@
+[
+  {
+    "id": "workflow_1734879456123",
+    "name": "Employee Onboarding System",
+    "complexity": "complex",
+    "domain": "Corporate HR",
+    "nodes": [
+      {
+        "id": "node_start",
+        "type": "startProcess",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "data": {
+          "label": "Offer Accepted",
+          "trigger": "Candidate accepts job offer",
+          "description": "Initiate comprehensive employee onboarding process",
+          "formId": "newhireintakeform-1764477763146-asm3xw",
+          "formName": "NewHireIntakeForm"
+        }
+      },
+      {
+        "id": "node_validate_offer",
+        "type": "validation",
+        "position": {
+          "x": 50,
+          "y": 150
+        },
+        "data": {
+          "label": "Validate Offer Details",
+          "ruleType": "business_rules",
+          "rules": [
+            "offer_date_valid",
+            "position_exists",
+            "salary_approved"
+          ],
+          "description": "Ensure offer acceptance is complete and valid"
+        }
+      },
+      {
+        "id": "node_create_profile",
+        "type": "userTask",
+        "position": {
+          "x": 50,
+          "y": 250
+        },
+        "data": {
+          "label": "Create Employee Profile",
+          "taskName": "hr_profile_creation",
+          "assignedTo": "HR_Staff",
+          "priority": "High",
+          "dueDate": "1 day",
+          "instructions": "Create employee profile in HRIS and assign employee ID",
+          "formId": "documentuploadform-1764477783130-117ykn",
+          "formName": "DocumentUploadForm"
+        }
+      },
+      {
+        "id": "node_parallel_split",
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 350
+        },
+        "data": {
+          "label": "Initialize Parallel Processes",
+          "gatewayType": "parallel",
+          "branches": "Document collection, Background check, Equipment setup",
+          "description": "Start multiple onboarding tracks simultaneously"
+        }
+      },
+      {
+        "id": "node_doc_collection",
+        "type": "userTask",
+        "position": {
+          "x": -200,
+          "y": 450
+        },
+        "data": {
+          "label": "Document Collection",
+          "taskName": "document_upload",
+          "assignedTo": "New_Employee",
+          "priority": "High",
+          "dueDate": "3 days",
+          "instructions": "Upload required documents: ID, tax forms, emergency contacts",
+          "formId": "equipmentrequestform-1764477802729-ewu3w2",
+          "formName": "EquipmentRequestForm"
+        }
+      },
+      {
+        "id": "node_background_check",
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 450
+        },
+        "data": {
+          "label": "Initiate Background Check",
+          "scriptType": "API_Call",
+          "script": "background_check_service.initiate(employee_id)",
+          "description": "Submit background check request to third-party service"
+        }
+      },
+      {
+        "id": "node_equipment_request",
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 450
+        },
+        "data": {
+          "label": "Equipment Request",
+          "taskName": "equipment_setup",
+          "assignedTo": "IT_Department",
+          "priority": "Medium",
+          "dueDate": "5 days",
+          "instructions": "Prepare laptop, phone, and office setup based on role requirements",
+          "formId": "newhireintakeform-1764477763146-asm3xw",
+          "formName": "NewHireIntakeForm"
+        }
+      },
+      {
+        "id": "node_doc_validation",
+        "type": "validation",
+        "position": {
+          "x": -200,
+          "y": 550
+        },
+        "data": {
+          "label": "Document Validation",
+          "ruleType": "compliance",
+          "rules": [
+            "id_verified",
+            "tax_forms_complete",
+            "emergency_contacts_provided"
+          ],
+          "description": "Validate all required documents are properly submitted"
+        }
+      },
+      {
+        "id": "node_background_decision",
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 550
+        },
+        "data": {
+          "label": "Background Check Decision",
+          "gatewayType": "exclusive",
+          "condition": "background_check_status evaluation",
+          "description": "Route based on background check results"
+        }
+      },
+      {
+        "id": "node_manager_approval",
+        "type": "userTask",
+        "position": {
+          "x": 200,
+          "y": 650
+        },
+        "data": {
+          "label": "Manager Final Approval",
+          "taskName": "manager_approval",
+          "assignedTo": "Hiring_Manager",
+          "priority": "High",
+          "dueDate": "2 days",
+          "instructions": "Review all onboarding progress and provide final approval",
+          "formId": "newhireintakeform-1764477763146-asm3xw",
+          "formName": "NewHireIntakeForm"
+        }
+      },
+      {
+        "id": "node_training_assignment",
+        "type": "llmTask",
+        "position": {
+          "x": 50,
+          "y": 750
+        },
+        "data": {
+          "label": "AI Training Assignment",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Based on the employee role ${processData.position} and department ${processData.department}, recommend appropriate training modules from our catalog and create a personalized training schedule.",
+          "outputVariable": "training_plan",
+          "temperature": 0.3,
+          "maxTokens": 1500,
+          "description": "Generate personalized training plan based on role and department"
+        }
+      },
+      {
+        "id": "node_timeout_handler",
+        "type": "timerEvent",
+        "position": {
+          "x": -400,
+          "y": 450
+        },
+        "data": {
+          "label": "Document Timeout",
+          "timerType": "duration",
+          "duration": "PT72H",
+          "description": "Handle cases where documents are not submitted within 3 days"
+        }
+      },
+      {
+        "id": "node_escalation",
+        "type": "notification",
+        "position": {
+          "x": -400,
+          "y": 550
+        },
+        "data": {
+          "label": "Escalation Notification",
+          "channel": "Email",
+          "recipient": "HR_Manager",
+          "template": "Document submission overdue - employee requires follow-up",
+          "description": "Alert HR manager when document collection is delayed"
+        }
+      },
+      {
+        "id": "node_parallel_join",
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 850
+        },
+        "data": {
+          "label": "Merge Onboarding Tracks",
+          "gatewayType": "parallel",
+          "branches": "All parallel processes complete",
+          "description": "Wait for all onboarding activities to complete before proceeding"
+        }
+      },
+      {
+        "id": "node_first_day_prep",
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 950
+        },
+        "data": {
+          "label": "First Day Preparation",
+          "scriptType": "Automation",
+          "script": "prepare_first_day_checklist(employee_id, start_date)",
+          "description": "Generate first day checklist and schedule orientation"
+        }
+      },
+      {
+        "id": "node_welcome_notification",
+        "type": "notification",
+        "position": {
+          "x": 50,
+          "y": 1050
+        },
+        "data": {
+          "label": "Welcome Notification",
+          "channel": "Email",
+          "recipient": "New_Employee",
+          "template": "Welcome aboard! Your first day information and checklist",
+          "description": "Send comprehensive welcome package with first day details"
+        }
+      },
+      {
+        "id": "node_end",
+        "type": "endEvent",
+        "position": {
+          "x": 50,
+          "y": 1150
+        },
+        "data": {
+          "label": "Onboarding Complete",
+          "result": "Employee successfully onboarded",
+          "description": "All onboarding activities completed, employee ready for first day"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_start",
+        "target": "node_validate_offer"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_validate_offer",
+        "target": "node_create_profile"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_create_profile",
+        "target": "node_parallel_split"
+      },
+      {
+        "id": "edge_4",
+        "source": "node_parallel_split",
+        "target": "node_doc_collection",
+        "label": "Default",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        }
+      },
+      {
+        "id": "edge_5",
+        "source": "node_parallel_split",
+        "target": "node_background_check",
+        "label": "Background Track"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_parallel_split",
+        "target": "node_equipment_request",
+        "label": "Equipment Track"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_doc_collection",
+        "target": "node_doc_validation"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_background_check",
+        "target": "node_background_decision"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_background_decision",
+        "target": "node_manager_approval",
+        "label": "Approved",
+        "condition": "processData.background_status === 'approved'"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_background_decision",
+        "target": "node_escalation",
+        "label": "Issues Found",
+        "condition": "processData.background_status === 'issues'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_11",
+        "source": "node_doc_collection",
+        "target": "node_timeout_handler",
+        "label": "Timeout Path"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_timeout_handler",
+        "target": "node_escalation"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_doc_validation",
+        "target": "node_parallel_join"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_manager_approval",
+        "target": "node_parallel_join"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_equipment_request",
+        "target": "node_parallel_join"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_parallel_join",
+        "target": "node_training_assignment",
+        "isDefault": true,
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_training_assignment",
+        "target": "node_first_day_prep"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_first_day_prep",
+        "target": "node_welcome_notification"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_welcome_notification",
+        "target": "node_end"
+      }
+    ],
+    "parallelPaths": 3,
+    "decisionPoints": 2,
+    "errorHandlers": 2,
+    "expertType": "ComplexWorkflowExpert",
+    "dataModels": [
+      {
+        "id": "new-hire",
+        "name": "NewHire",
+        "description": "Central data model capturing new employee information and onboarding status throughout the hiring and onboarding lifecycle",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the new hire record",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "fullName",
+            "type": "string",
+            "description": "Complete legal name of the new employee",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "description": "Primary email address for communication and system access",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "positionTitle",
+            "type": "string",
+            "description": "Job title or position the new hire will fill",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "startDate",
+            "type": "date",
+            "description": "Official first day of employment",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "onboardingStatus",
+            "type": "string",
+            "description": "Current stage in the onboarding process (e.g., pending, in_progress, completed)",
+            "required": true,
+            "defaultValue": "pending"
+          },
+          {
+            "name": "departmentId",
+            "type": "string",
+            "description": "Reference to the department the new hire will join",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "managerId",
+            "type": "string",
+            "description": "Reference to the direct manager or supervisor",
+            "required": false,
+            "defaultValue": null
+          }
+        ],
+        "relationships": [],
+        "indexes": [
+          "email",
+          "startDate",
+          "onboardingStatus"
+        ],
+        "constraints": {
+          "uniqueFields": [
+            "email"
+          ],
+          "enumValues": {
+            "onboardingStatus": [
+              "pending",
+              "in_progress",
+              "completed",
+              "cancelled"
+            ]
+          }
+        },
+        "workflowId": "workflow_1734879456123"
+      },
+      {
+        "id": "onboarding-task",
+        "name": "OnboardingTask",
+        "description": "Tracks individual tasks and milestones in the onboarding workflow with status tracking, assignments, and completion records",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the onboarding task",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "newHireId",
+            "type": "string",
+            "description": "Reference to the new hire this task belongs to",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "title",
+            "type": "string",
+            "description": "Name of the task (e.g., 'Complete I-9 Form', 'Manager Sign-off', 'Background Check')",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "assignedTo",
+            "type": "string",
+            "description": "User ID of the person responsible for completing the task (HR staff, manager, or new hire)",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "description": "Current status of the task (pending, in_progress, completed, approved, rejected)",
+            "required": true,
+            "defaultValue": "pending"
+          },
+          {
+            "name": "dueDate",
+            "type": "date",
+            "description": "Deadline for task completion",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "completedAt",
+            "type": "date",
+            "description": "Timestamp when the task was completed",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "completedBy",
+            "type": "string",
+            "description": "User ID of the person who completed or approved the task",
+            "required": false,
+            "defaultValue": null
+          }
+        ],
+        "relationships": [
+          {
+            "type": "many-to-one",
+            "relatedModel": "NewHire",
+            "foreignKey": "newHireId",
+            "description": "Each task belongs to one new hire"
+          }
+        ],
+        "indexes": [
+          {
+            "fields": [
+              "newHireId"
+            ],
+            "unique": false
+          },
+          {
+            "fields": [
+              "assignedTo",
+              "status"
+            ],
+            "unique": false
+          },
+          {
+            "fields": [
+              "dueDate"
+            ],
+            "unique": false
+          }
+        ],
+        "constraints": {
+          "status": {
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "approved",
+              "rejected"
+            ]
+          }
+        },
+        "workflowId": "workflow_1734879456123"
+      },
+      {
+        "id": "document",
+        "name": "Document",
+        "description": "Stores uploaded documents and tracks document submission requirements for new hires",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the document",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "newHireId",
+            "type": "string",
+            "description": "Reference to the new hire who submitted the document",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "documentType",
+            "type": "string",
+            "description": "Type of document (e.g., ID, tax_form, certification, contract)",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "fileName",
+            "type": "string",
+            "description": "Original name of the uploaded file",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "fileUrl",
+            "type": "string",
+            "description": "Storage location or URL reference to the uploaded file",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "description": "Submission status (e.g., pending, approved, rejected)",
+            "required": true,
+            "defaultValue": "pending"
+          },
+          {
+            "name": "uploadedAt",
+            "type": "date",
+            "description": "Timestamp when the document was uploaded",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "reviewedAt",
+            "type": "date",
+            "description": "Timestamp when the document was reviewed/approved",
+            "required": false,
+            "defaultValue": null
+          }
+        ],
+        "relationships": [
+          {
+            "type": "many-to-one",
+            "relatedModel": "NewHire",
+            "foreignKey": "newHireId",
+            "description": "Each document belongs to one new hire"
+          }
+        ],
+        "indexes": [
+          {
+            "fields": [
+              "newHireId"
+            ],
+            "unique": false
+          },
+          {
+            "fields": [
+              "status"
+            ],
+            "unique": false
+          },
+          {
+            "fields": [
+              "documentType"
+            ],
+            "unique": false
+          }
+        ],
+        "constraints": {
+          "status": [
+            "pending",
+            "approved",
+            "rejected"
+          ],
+          "documentType": [
+            "ID",
+            "tax_form",
+            "certification",
+            "contract",
+            "background_check",
+            "reference"
+          ]
+        },
+        "workflowId": "workflow_1734879456123"
+      },
+      {
+        "id": "equipment-request",
+        "name": "EquipmentRequest",
+        "description": "Manages IT and office equipment requests for new hires including approval, fulfillment, and delivery tracking",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the equipment request",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "newHireId",
+            "type": "string",
+            "description": "Reference to the new hire receiving the equipment",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "equipmentItems",
+            "type": "json",
+            "description": "List of requested equipment items (laptops, monitors, phones, software licenses, office supplies)",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "approvalStatus",
+            "type": "string",
+            "description": "Current approval status (pending, approved, rejected)",
+            "required": true,
+            "defaultValue": "pending"
+          },
+          {
+            "name": "fulfillmentStatus",
+            "type": "string",
+            "description": "Current fulfillment status (not_started, in_progress, completed, delivered)",
+            "required": true,
+            "defaultValue": "not_started"
+          },
+          {
+            "name": "requestedDate",
+            "type": "date",
+            "description": "Date when the equipment request was created",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "targetDeliveryDate",
+            "type": "date",
+            "description": "Expected delivery date to ensure first-day readiness",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "notes",
+            "type": "string",
+            "description": "Additional notes or special instructions for the equipment request",
+            "required": false,
+            "defaultValue": null
+          }
+        ],
+        "relationships": [
+          {
+            "type": "many-to-one",
+            "relatedModel": "NewHire",
+            "foreignKey": "newHireId",
+            "description": "Each equipment request belongs to one new hire"
+          }
+        ],
+        "indexes": [
+          {
+            "fields": [
+              "newHireId"
+            ],
+            "unique": false
+          },
+          {
+            "fields": [
+              "approvalStatus",
+              "fulfillmentStatus"
+            ],
+            "unique": false
+          },
+          {
+            "fields": [
+              "targetDeliveryDate"
+            ],
+            "unique": false
+          }
+        ],
+        "constraints": {
+          "approvalStatus": [
+            "pending",
+            "approved",
+            "rejected"
+          ],
+          "fulfillmentStatus": [
+            "not_started",
+            "in_progress",
+            "completed",
+            "delivered"
+          ]
+        },
+        "workflowId": "workflow_1734879456123"
+      },
+      {
+        "id": "training-assignment",
+        "name": "TrainingAssignment",
+        "description": "Manages training module assignments and completion tracking for new hires",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique identifier for the training assignment",
+            "required": true,
+            "primaryKey": true,
+            "defaultValue": null
+          },
+          {
+            "name": "newHireId",
+            "type": "string",
+            "description": "Reference to the new hire assigned to this training",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "trainingModuleName",
+            "type": "string",
+            "description": "Name of the training module or course",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "enrollmentDate",
+            "type": "date",
+            "description": "Date when the training was assigned to the new hire",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "dueDate",
+            "type": "date",
+            "description": "Deadline for completing the training module",
+            "required": true,
+            "defaultValue": null
+          },
+          {
+            "name": "completionDate",
+            "type": "date",
+            "description": "Date when the training was completed",
+            "required": false,
+            "defaultValue": null
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "description": "Current status of the training assignment (Not Started, In Progress, Completed, Overdue)",
+            "required": true,
+            "defaultValue": "Not Started"
+          },
+          {
+            "name": "certificationUrl",
+            "type": "string",
+            "description": "URL or reference to the certification document upon completion",
+            "required": false,
+            "defaultValue": null
+          }
+        ],
+        "relationships": [
+          {
+            "type": "many-to-one",
+            "relatedModel": "NewHire",
+            "foreignKey": "newHireId",
+            "description": "Each training assignment belongs to one new hire"
+          }
+        ],
+        "indexes": [
+          {
+            "fields": [
+              "newHireId"
+            ],
+            "unique": false
+          },
+          {
+            "fields": [
+              "status"
+            ],
+            "unique": false
+          },
+          {
+            "fields": [
+              "dueDate"
+            ],
+            "unique": false
+          }
+        ],
+        "constraints": {
+          "statusValues": [
+            "Not Started",
+            "In Progress",
+            "Completed",
+            "Overdue"
+          ],
+          "dueDateAfterEnrollment": "dueDate must be after enrollmentDate",
+          "completionDateValidation": "completionDate must be after enrollmentDate when set"
+        },
+        "workflowId": "workflow_1734879456123"
+      }
+    ],
+    "forms": [
+      {
+        "id": "newhireintakeform-1764477763146-asm3xw",
+        "name": "NewHireIntakeForm",
+        "title": "New Hire Intake Form",
+        "description": "Initial information collection for new employee onboarding process",
+        "fields": [
+          {
+            "id": "firstName",
+            "name": "firstName",
+            "type": "text",
+            "label": "First Name",
+            "placeholder": "Enter first name",
+            "required": true,
+            "validation": {
+              "min": 2,
+              "max": 50,
+              "pattern": "^[a-zA-Z\\s'-]+$",
+              "message": "Please enter a valid first name"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "lastName",
+            "name": "lastName",
+            "type": "text",
+            "label": "Last Name",
+            "placeholder": "Enter last name",
+            "required": true,
+            "validation": {
+              "min": 2,
+              "max": 50,
+              "pattern": "^[a-zA-Z\\s'-]+$",
+              "message": "Please enter a valid last name"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "email",
+            "name": "email",
+            "type": "email",
+            "label": "Personal Email Address",
+            "placeholder": "your.email@example.com",
+            "required": true,
+            "validation": {
+              "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+              "message": "Please enter a valid email address"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "phone",
+            "name": "phone",
+            "type": "text",
+            "label": "Phone Number",
+            "placeholder": "(555) 123-4567",
+            "required": true,
+            "validation": {
+              "pattern": "^[\\d\\s()+-]+$",
+              "message": "Please enter a valid phone number"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "position",
+            "name": "position",
+            "type": "text",
+            "label": "Position Title",
+            "placeholder": "e.g., Software Engineer",
+            "required": true,
+            "validation": {
+              "min": 2,
+              "max": 100,
+              "message": "Please enter the position title"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "department",
+            "name": "department",
+            "type": "select",
+            "label": "Department",
+            "placeholder": "Select department",
+            "required": true,
+            "options": [
+              "Engineering",
+              "Product",
+              "Sales",
+              "Marketing",
+              "Human Resources",
+              "Finance",
+              "Operations",
+              "Customer Success"
+            ],
+            "defaultValue": null
+          },
+          {
+            "id": "startDate",
+            "name": "startDate",
+            "type": "date",
+            "label": "Preferred Start Date",
+            "placeholder": "Select start date",
+            "required": true,
+            "validation": {
+              "message": "Please select a valid start date"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "emergencyContact",
+            "name": "emergencyContact",
+            "type": "text",
+            "label": "Emergency Contact Name",
+            "placeholder": "Full name of emergency contact",
+            "required": true,
+            "validation": {
+              "min": 2,
+              "max": 100,
+              "message": "Please enter emergency contact name"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "emergencyPhone",
+            "name": "emergencyPhone",
+            "type": "text",
+            "label": "Emergency Contact Phone",
+            "placeholder": "(555) 123-4567",
+            "required": true,
+            "validation": {
+              "pattern": "^[\\d\\s()+-]+$",
+              "message": "Please enter a valid phone number"
+            },
+            "defaultValue": null
+          }
+        ],
+        "gridLayout": [
+          {
+            "i": "firstName",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "lastName",
+            "x": 12,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "email",
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "phone",
+            "x": 12,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "position",
+            "x": 0,
+            "y": 16,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "department",
+            "x": 12,
+            "y": 16,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "startDate",
+            "x": 0,
+            "y": 24,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "emergencyContact",
+            "x": 0,
+            "y": 32,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "emergencyPhone",
+            "x": 12,
+            "y": 32,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          }
+        ],
+        "layout": {
+          "type": "two-column",
+          "sections": [
+            {
+              "id": "personal-info",
+              "title": "Personal Information",
+              "fieldIds": [
+                "firstName",
+                "lastName",
+                "email",
+                "phone"
+              ]
+            },
+            {
+              "id": "position-details",
+              "title": "Position Details",
+              "fieldIds": [
+                "position",
+                "department",
+                "startDate"
+              ]
+            },
+            {
+              "id": "emergency-contact",
+              "title": "Emergency Contact",
+              "fieldIds": [
+                "emergencyContact",
+                "emergencyPhone"
+              ]
+            }
+          ]
+        },
+        "submitButton": {
+          "label": "Submit Intake Form",
+          "position": "right"
+        },
+        "validation": {
+          "mode": "onSubmit",
+          "showErrors": true
+        },
+        "styling": {
+          "colors": {
+            "primary": "#2563eb",
+            "secondary": "#64748b",
+            "background": "#ffffff",
+            "text": "#0f172a",
+            "border": "#e2e8f0"
+          },
+          "typography": {
+            "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+            "fontSize": {
+              "label": "14px",
+              "input": "14px"
+            },
+            "fontWeight": {
+              "label": "500",
+              "input": "400"
+            }
+          },
+          "spacing": {
+            "fieldGap": "16px",
+            "sectionGap": "32px",
+            "inputPadding": "10px 12px"
+          },
+          "components": {
+            "input": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "height": "40px"
+            },
+            "button": {
+              "primary": {
+                "background": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 24px"
+              }
+            }
+          }
+        },
+        "workflowId": "workflow_1734879456123"
+      },
+      {
+        "id": "documentuploadform-1764477783130-117ykn",
+        "name": "DocumentUploadForm",
+        "title": "Upload Required Documents",
+        "description": "Securely upload your identification, tax forms, certifications, and other required documents to complete your onboarding process.",
+        "fields": [
+          {
+            "id": "field-document-type",
+            "name": "documentType",
+            "type": "select",
+            "label": "Document Type",
+            "placeholder": "Select document type",
+            "required": true,
+            "validation": {
+              "message": "Please select a document type"
+            },
+            "options": [
+              "Government-Issued ID",
+              "Tax Form (W-4/W-9)",
+              "Direct Deposit Authorization",
+              "Professional Certification",
+              "Educational Diploma/Degree",
+              "Background Check Authorization",
+              "Emergency Contact Form",
+              "Other"
+            ],
+            "defaultValue": null
+          },
+          {
+            "id": "field-document-name",
+            "name": "documentName",
+            "type": "text",
+            "label": "Document Name",
+            "placeholder": "Enter a descriptive name for this document",
+            "required": true,
+            "validation": {
+              "min": 3,
+              "max": 100,
+              "message": "Document name must be between 3 and 100 characters"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-file-upload",
+            "name": "fileUpload",
+            "type": "file",
+            "label": "Upload Document",
+            "placeholder": "Choose file or drag and drop",
+            "required": true,
+            "validation": {
+              "message": "Please upload a valid document (PDF, JPG, PNG, or DOCX, max 10MB)",
+              "pattern": "\\.(pdf|jpg|jpeg|png|docx)$",
+              "max": 10485760
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-expiration-date",
+            "name": "expirationDate",
+            "type": "date",
+            "label": "Expiration Date (if applicable)",
+            "placeholder": "Select expiration date",
+            "required": false,
+            "validation": {
+              "message": "Expiration date must be in the future"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-notes",
+            "name": "notes",
+            "type": "textarea",
+            "label": "Additional Notes",
+            "placeholder": "Add any relevant notes or comments about this document (optional)",
+            "required": false,
+            "validation": {
+              "max": 500,
+              "message": "Notes must not exceed 500 characters"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "field-confidentiality",
+            "name": "confidentialityAcknowledgment",
+            "type": "checkbox",
+            "label": "I acknowledge that the information provided is accurate and will be stored securely in compliance with company privacy policies",
+            "required": true,
+            "validation": {
+              "message": "You must acknowledge the confidentiality statement to proceed"
+            },
+            "defaultValue": false
+          }
+        ],
+        "gridLayout": [
+          {
+            "i": "field-document-type",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 8
+          },
+          {
+            "i": "field-document-name",
+            "x": 12,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 8
+          },
+          {
+            "i": "field-file-upload",
+            "x": 0,
+            "y": 8,
+            "w": 24,
+            "h": 8,
+            "minW": 12,
+            "minH": 8
+          },
+          {
+            "i": "field-expiration-date",
+            "x": 0,
+            "y": 16,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 8
+          },
+          {
+            "i": "field-notes",
+            "x": 0,
+            "y": 24,
+            "w": 24,
+            "h": 12,
+            "minW": 12,
+            "minH": 12
+          },
+          {
+            "i": "field-confidentiality",
+            "x": 0,
+            "y": 36,
+            "w": 24,
+            "h": 8,
+            "minW": 12,
+            "minH": 8
+          }
+        ],
+        "layout": {
+          "type": "two-column",
+          "sections": [
+            {
+              "id": "section-document-info",
+              "title": "Document Information",
+              "fieldIds": [
+                "field-document-type",
+                "field-document-name",
+                "field-file-upload",
+                "field-expiration-date"
+              ]
+            },
+            {
+              "id": "section-additional",
+              "title": "Additional Information",
+              "fieldIds": [
+                "field-notes",
+                "field-confidentiality"
+              ]
+            }
+          ]
+        },
+        "submitButton": {
+          "label": "Upload Document",
+          "position": "right"
+        },
+        "validation": {
+          "mode": "onSubmit",
+          "showErrors": true
+        },
+        "styling": {
+          "colors": {
+            "primary": "#2563eb",
+            "secondary": "#64748b",
+            "background": "#ffffff",
+            "text": "#1e293b",
+            "border": "#e2e8f0"
+          },
+          "typography": {
+            "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+            "fontSize": {
+              "label": "14px",
+              "input": "14px"
+            },
+            "fontWeight": {
+              "label": "500",
+              "input": "400"
+            }
+          },
+          "spacing": {
+            "fieldGap": "16px",
+            "sectionGap": "32px",
+            "inputPadding": "10px 12px"
+          },
+          "components": {
+            "input": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "height": "40px"
+            },
+            "button": {
+              "primary": {
+                "background": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 24px"
+              }
+            }
+          }
+        },
+        "workflowId": "workflow_1734879456123"
+      },
+      {
+        "id": "equipmentrequestform-1764477802729-ewu3w2",
+        "name": "EquipmentRequestForm",
+        "title": "Equipment Request Form",
+        "description": "Request IT equipment, software access, and workspace setup for new hires",
+        "fields": [
+          {
+            "id": "new-hire-name",
+            "name": "newHireName",
+            "type": "text",
+            "label": "New Hire Name",
+            "placeholder": "Enter employee full name",
+            "required": true,
+            "validation": {
+              "min": 2,
+              "max": 100,
+              "message": "Please enter a valid name"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "start-date",
+            "name": "startDate",
+            "type": "date",
+            "label": "Start Date",
+            "placeholder": "Select start date",
+            "required": true,
+            "validation": {
+              "message": "Start date is required"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "role-department",
+            "name": "roleDepartment",
+            "type": "text",
+            "label": "Role / Department",
+            "placeholder": "e.g., Software Engineer - Engineering",
+            "required": true,
+            "validation": {
+              "min": 2,
+              "max": 100,
+              "message": "Please enter role and department"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "equipment-package",
+            "name": "equipmentPackage",
+            "type": "select",
+            "label": "Standard Equipment Package",
+            "placeholder": "Select equipment package",
+            "required": true,
+            "options": [
+              "Developer Package (Laptop, Monitor, Keyboard, Mouse)",
+              "Designer Package (MacBook Pro, 4K Monitor, Tablet, Accessories)",
+              "Manager Package (Laptop, Monitor, Webcam, Headset)",
+              "Sales Package (Laptop, Mobile Phone, Headset)",
+              "Administrative Package (Desktop, Monitor, Keyboard, Mouse)",
+              "Custom Package (Specify below)"
+            ],
+            "defaultValue": null
+          },
+          {
+            "id": "software-access",
+            "name": "softwareAccess",
+            "type": "textarea",
+            "label": "Software & System Access Required",
+            "placeholder": "List required software licenses and system access (e.g., Microsoft Office, Salesforce, GitHub, Slack)",
+            "required": true,
+            "validation": {
+              "min": 10,
+              "max": 500,
+              "message": "Please specify required software and access"
+            },
+            "defaultValue": null
+          },
+          {
+            "id": "workspace-setup",
+            "name": "workspaceSetup",
+            "type": "select",
+            "label": "Workspace Setup",
+            "placeholder": "Select workspace type",
+            "required": true,
+            "options": [
+              "Office Desk - Assigned",
+              "Office Desk - Hot Desk",
+              "Remote Work - Home Office",
+              "Hybrid - Office & Remote",
+              "No Physical Workspace Required"
+            ],
+            "defaultValue": null
+          },
+          {
+            "id": "custom-requests",
+            "name": "customRequests",
+            "type": "textarea",
+            "label": "Custom Equipment or Special Requests",
+            "placeholder": "Specify any additional equipment, accessories, or special requirements with justification",
+            "required": false,
+            "validation": {
+              "max": 500,
+              "message": "Custom requests must not exceed 500 characters"
+            },
+            "defaultValue": null
+          }
+        ],
+        "gridLayout": [
+          {
+            "i": "new-hire-name",
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "start-date",
+            "x": 12,
+            "y": 0,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "role-department",
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "equipment-package",
+            "x": 12,
+            "y": 8,
+            "w": 12,
+            "h": 8,
+            "minW": 6,
+            "minH": 6
+          },
+          {
+            "i": "software-access",
+            "x": 0,
+            "y": 16,
+            "w": 24,
+            "h": 12,
+            "minW": 12,
+            "minH": 8
+          },
+          {
+            "i": "workspace-setup",
+            "x": 0,
+            "y": 28,
+            "w": 24,
+            "h": 8,
+            "minW": 12,
+            "minH": 6
+          },
+          {
+            "i": "custom-requests",
+            "x": 0,
+            "y": 36,
+            "w": 24,
+            "h": 12,
+            "minW": 12,
+            "minH": 8
+          }
+        ],
+        "layout": {
+          "type": "two-column",
+          "sections": [
+            {
+              "id": "employee-info",
+              "title": "Employee Information",
+              "fieldIds": [
+                "new-hire-name",
+                "start-date",
+                "role-department"
+              ]
+            },
+            {
+              "id": "equipment-details",
+              "title": "Equipment & Access Requirements",
+              "fieldIds": [
+                "equipment-package",
+                "software-access",
+                "workspace-setup",
+                "custom-requests"
+              ]
+            }
+          ]
+        },
+        "submitButton": {
+          "label": "Submit Equipment Request",
+          "position": "right"
+        },
+        "validation": {
+          "mode": "onSubmit",
+          "showErrors": true
+        },
+        "styling": {
+          "colors": {
+            "primary": "#2563eb",
+            "secondary": "#64748b",
+            "background": "#ffffff",
+            "text": "#0f172a",
+            "border": "#e2e8f0"
+          },
+          "typography": {
+            "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+            "fontSize": {
+              "label": "14px",
+              "input": "14px"
+            },
+            "fontWeight": {
+              "label": "500",
+              "input": "400"
+            }
+          },
+          "spacing": {
+            "fieldGap": "16px",
+            "sectionGap": "32px",
+            "inputPadding": "10px 12px"
+          },
+          "components": {
+            "input": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "height": "40px"
+            },
+            "textarea": {
+              "borderRadius": "6px",
+              "borderWidth": "1px",
+              "minHeight": "100px"
+            },
+            "button": {
+              "primary": {
+                "background": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 24px",
+                "borderRadius": "6px",
+                "fontWeight": "500"
+              }
+            }
+          }
+        },
+        "workflowId": "workflow_1734879456123"
+      }
+    ],
+    "mobileUI": null,
+    "pages": [
+      {
+        "id": "onboardingdashboard-1764477850000-abc123",
+        "name": "OnboardingDashboard",
+        "title": "Onboarding Dashboard",
+        "description": "Central dashboard displaying onboarding pipeline, task lists, pending approvals, and progress tracking with role-based views",
+        "route": "/onboarding-dashboard",
+        "type": "dashboard",
+        "platform": "both",
+        "forms": [
+          "newhireintakeform-1764477763146-asm3xw"
+        ],
+        "sections": [
+          {
+            "id": "header",
+            "type": "header",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Onboarding Dashboard",
+                  "variant": "h1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "32px",
+                    "fontWeight": "700",
+                    "color": "#0F172A",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Manage and track onboarding activities across your organization",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "400",
+                    "color": "#64748B",
+                    "lineHeight": "1.5"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "main",
+            "type": "main",
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Onboarding Pipeline",
+                  "layout": "grid",
+                  "columns": 4,
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #E2E8F0",
+                    "marginBottom": "24px"
+                  }
+                },
+                "dataBinding": "NewHire.aggregateByStatus",
+                "content": [
+                  {
+                    "type": "metric",
+                    "label": "Pending Start",
+                    "value": "{{count.pending}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "500",
+                      "color": "#64748B"
+                    },
+                    "valueStyle": {
+                      "fontSize": "32px",
+                      "fontWeight": "700",
+                      "color": "#F59E0B"
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "label": "In Progress",
+                    "value": "{{count.in_progress}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "500",
+                      "color": "#64748B"
+                    },
+                    "valueStyle": {
+                      "fontSize": "32px",
+                      "fontWeight": "700",
+                      "color": "#3B82F6"
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "label": "Needs Attention",
+                    "value": "{{count.blocked}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "500",
+                      "color": "#64748B"
+                    },
+                    "valueStyle": {
+                      "fontSize": "32px",
+                      "fontWeight": "700",
+                      "color": "#EF4444"
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "label": "Completed",
+                    "value": "{{count.completed}}",
+                    "style": {
+                      "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "500",
+                      "color": "#64748B"
+                    },
+                    "valueStyle": {
+                      "fontSize": "32px",
+                      "fontWeight": "700",
+                      "color": "#10B981"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "table",
+                "config": {
+                  "title": "Active New Hires",
+                  "dataSource": "NewHire",
+                  "columns": [
+                    {
+                      "key": "fullName",
+                      "label": "Name",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#0F172A"
+                      }
+                    },
+                    {
+                      "key": "position",
+                      "label": "Position",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "400",
+                        "color": "#64748B"
+                      }
+                    },
+                    {
+                      "key": "department",
+                      "label": "Department",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "400",
+                        "color": "#64748B"
+                      }
+                    },
+                    {
+                      "key": "startDate",
+                      "label": "Start Date",
+                      "sortable": true,
+                      "format": "date",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "400",
+                        "color": "#64748B"
+                      }
+                    },
+                    {
+                      "key": "progress",
+                      "label": "Progress",
+                      "type": "progress",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#0F172A"
+                      }
+                    },
+                    {
+                      "key": "status",
+                      "label": "Status",
+                      "type": "badge",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "500",
+                        "padding": "4px 12px",
+                        "borderRadius": "6px"
+                      }
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "View Details",
+                      "type": "navigate",
+                      "target": "/newhire/{{id}}"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "field": "status",
+                      "operator": "in",
+                      "value": [
+                        "pending",
+                        "in_progress"
+                      ]
+                    }
+                  ],
+                  "pagination": true,
+                  "pageSize": 10,
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #E2E8F0",
+                    "marginBottom": "24px"
+                  }
+                },
+                "dataBinding": "NewHire.list"
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Pending Tasks & Approvals",
+                  "layout": "list",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #E2E8F0",
+                    "marginBottom": "24px"
+                  }
+                },
+                "dataBinding": "OnboardingTask.pendingTasks",
+                "content": [
+                  {
+                    "type": "list",
+                    "items": "{{tasks}}",
+                    "itemTemplate": {
+                      "title": "{{taskName}}",
+                      "subtitle": "{{newHireName}} - Due: {{dueDate}}",
+                      "badge": "{{priority}}",
+                      "action": {
+                        "label": "Review",
+                        "type": "navigate",
+                        "target": "/task/{{taskId}}"
+                      },
+                      "style": {
+                        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                        "padding": "16px",
+                        "borderBottom": "1px solid #E2E8F0"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "button",
+                "config": {
+                  "text": "Add New Hire",
+                  "variant": "primary",
+                  "icon": "add",
+                  "action": {
+                    "type": "navigate",
+                    "target": "/newhire/create"
+                  },
+                  "style": {
+                    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#3B82F6",
+                    "color": "#FFFFFF",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "border": "none",
+                    "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)",
+                    "cursor": "pointer"
+                  }
+                },
+                "formRef": "newhireintakeform-1764477763146-asm3xw"
+              }
+            ]
+          }
+        ],
+        "navigation": {
+          "onAction": {
+            "view": {
+              "type": "navigate",
+              "target": "/newhire/{{id}}"
+            },
+            "create": {
+              "type": "navigate",
+              "target": "/newhire/create"
+            },
+            "task": {
+              "type": "navigate",
+              "target": "/task/{{taskId}}"
+            }
+          },
+          "menu": [
+            {
+              "label": "Dashboard",
+              "route": "/onboarding-dashboard",
+              "icon": "dashboard"
+            },
+            {
+              "label": "New Hires",
+              "route": "/newhires",
+              "icon": "people"
+            },
+            {
+              "label": "Tasks",
+              "route": "/tasks",
+              "icon": "checklist"
+            },
+            {
+              "label": "Documents",
+              "route": "/documents",
+              "icon": "description"
+            },
+            {
+              "label": "Equipment",
+              "route": "/equipment",
+              "icon": "devices"
+            },
+            {
+              "label": "Training",
+              "route": "/training",
+              "icon": "school"
+            }
+          ]
+        },
+        "layout": {
+          "type": "dashboard",
+          "responsive": true,
+          "spacing": "normal"
+        },
+        "workflowId": "workflow_1734879456123"
+      }
+    ],
+    "generatedBy": "MoE",
+    "routing": {
+      "routing": {
+        "workflowExperts": [
+          "ComplexWorkflowExpert"
+        ],
+        "dataModelExperts": [
+          "SQLExpert"
+        ],
+        "formExperts": [
+          "AdvancedFormExpert",
+          "WizardFormExpert"
+        ],
+        "mobileExperts": [
+          "CrossPlatformExpert"
+        ],
+        "designExperts": [],
+        "pageExperts": [
+          "PageExpert"
+        ]
+      },
+      "complexity": {
+        "workflow": "complex",
+        "forms": "wizard",
+        "dataModel": "sql"
+      },
+      "domain": "onboarding",
+      "useDesignExpert": false,
+      "designSource": null,
+      "combineStrategy": "ensemble",
+      "confidence": 0.95,
+      "reasoning": "This is a complex multi-stage onboarding workflow with 6+ sequential steps, multiple approval points, parallel task execution (document collection + equipment setup), and sub-workflows (background check, training enrollment). Requires SQL for relational data (employee records, approvals, task tracking), wizard forms for guided multi-step processes, advanced forms for complex validation (document uploads, equipment requests), and cross-platform mobile access for all user types (HR, managers, employees)."
+    },
+    "expertsUsed": {
+      "workflow": [
+        "ComplexWorkflowExpert"
+      ],
+      "dataModel": [
+        "SQLExpert"
+      ],
+      "forms": [
+        "AdvancedFormExpert",
+        "WizardFormExpert"
+      ],
+      "mobile": [
+        "CrossPlatformExpert"
+      ],
+      "pages": [
+        "PageExpert"
+      ]
+    },
+    "combineStrategy": "ensemble",
+    "confidence": 0.95,
+    "autoFixesApplied": [
+      "Removed circular dependency: broke loop by removing connection from node_escalation to node_doc_collection",
+      "Added default path to decision node node_parallel_split: set connection to node_doc_collection as default",
+      "Added default path to decision node node_parallel_join: set connection to node_training_assignment as default"
+    ],
+    "validationWarnings": [
+      "Connection edge_5 from decision node_parallel_split has no condition and is not marked as default",
+      "Connection edge_6 from decision node_parallel_split has no condition and is not marked as default",
+      "Decision node node_parallel_join has only one outgoing path (not really a decision)"
+    ],
+    "applicationValidation": {
+      "valid": false,
+      "summary": {
+        "totalIssues": 18,
+        "criticalIssues": 5,
+        "warnings": 11,
+        "info": 2
+      },
+      "timestamp": "2025-11-30T04:46:06.049Z",
+      "hasIssues": true,
+      "criticalIssues": 5,
+      "warnings": 11,
+      "recommendations": [
+        {
+          "priority": "medium",
+          "category": "navigation",
+          "message": "8 navigation issues detected",
+          "action": "Update page navigation to reference existing routes"
+        },
+        {
+          "priority": "low",
+          "category": "unused_components",
+          "message": "2 forms are not referenced",
+          "action": "Consider removing unused forms or linking them to pages/workflows"
+        }
+      ]
+    },
+    "applicationValidationDetails": {
+      "valid": false,
+      "timestamp": "2025-11-30T04:46:06.049Z",
+      "summary": {
+        "totalIssues": 18,
+        "criticalIssues": 5,
+        "warnings": 11,
+        "info": 2
+      },
+      "components": {
+        "workflows": {
+          "valid": true,
+          "issues": [
+            {
+              "workflowId": "workflow_1734879456123",
+              "workflowName": "Employee Onboarding System",
+              "severity": "warning",
+              "type": "workflow_warning",
+              "details": "Connection edge_5 from decision node_parallel_split has no condition and is not marked as default"
+            },
+            {
+              "workflowId": "workflow_1734879456123",
+              "workflowName": "Employee Onboarding System",
+              "severity": "warning",
+              "type": "workflow_warning",
+              "details": "Connection edge_6 from decision node_parallel_split has no condition and is not marked as default"
+            },
+            {
+              "workflowId": "workflow_1734879456123",
+              "workflowName": "Employee Onboarding System",
+              "severity": "warning",
+              "type": "workflow_warning",
+              "details": "Decision node node_parallel_join has only one outgoing path (not really a decision)"
+            }
+          ]
+        },
+        "forms": {
+          "valid": true,
+          "issues": []
+        },
+        "pages": {
+          "valid": true,
+          "issues": []
+        },
+        "dataModels": {
+          "valid": false,
+          "issues": [
+            {
+              "modelName": "NewHire",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "OnboardingTask",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "Document",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "EquipmentRequest",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            },
+            {
+              "modelName": "TrainingAssignment",
+              "severity": "critical",
+              "type": "missing_schema",
+              "message": "Data model missing schema object"
+            }
+          ]
+        }
+      },
+      "crossComponent": {
+        "valid": true,
+        "issues": [
+          {
+            "pageId": "onboardingdashboard-1764477850000-abc123",
+            "pageName": "OnboardingDashboard",
+            "action": "view",
+            "severity": "warning",
+            "type": "invalid_navigation_target",
+            "message": "Navigation action 'view' targets non-existent route: /newhire/{{id}}"
+          },
+          {
+            "pageId": "onboardingdashboard-1764477850000-abc123",
+            "pageName": "OnboardingDashboard",
+            "action": "create",
+            "severity": "warning",
+            "type": "invalid_navigation_target",
+            "message": "Navigation action 'create' targets non-existent route: /newhire/create"
+          },
+          {
+            "pageId": "onboardingdashboard-1764477850000-abc123",
+            "pageName": "OnboardingDashboard",
+            "action": "task",
+            "severity": "warning",
+            "type": "invalid_navigation_target",
+            "message": "Navigation action 'task' targets non-existent route: /task/{{taskId}}"
+          },
+          {
+            "pageId": "onboardingdashboard-1764477850000-abc123",
+            "pageName": "OnboardingDashboard",
+            "menuLabel": "New Hires",
+            "severity": "warning",
+            "type": "invalid_menu_target",
+            "message": "Menu item 'New Hires' targets non-existent route: /newhires"
+          },
+          {
+            "pageId": "onboardingdashboard-1764477850000-abc123",
+            "pageName": "OnboardingDashboard",
+            "menuLabel": "Tasks",
+            "severity": "warning",
+            "type": "invalid_menu_target",
+            "message": "Menu item 'Tasks' targets non-existent route: /tasks"
+          },
+          {
+            "pageId": "onboardingdashboard-1764477850000-abc123",
+            "pageName": "OnboardingDashboard",
+            "menuLabel": "Documents",
+            "severity": "warning",
+            "type": "invalid_menu_target",
+            "message": "Menu item 'Documents' targets non-existent route: /documents"
+          },
+          {
+            "pageId": "onboardingdashboard-1764477850000-abc123",
+            "pageName": "OnboardingDashboard",
+            "menuLabel": "Equipment",
+            "severity": "warning",
+            "type": "invalid_menu_target",
+            "message": "Menu item 'Equipment' targets non-existent route: /equipment"
+          },
+          {
+            "pageId": "onboardingdashboard-1764477850000-abc123",
+            "pageName": "OnboardingDashboard",
+            "menuLabel": "Training",
+            "severity": "warning",
+            "type": "invalid_menu_target",
+            "message": "Menu item 'Training' targets non-existent route: /training"
+          },
+          {
+            "formId": "documentuploadform-1764477783130-117ykn",
+            "formName": "DocumentUploadForm",
+            "severity": "info",
+            "type": "orphaned_form",
+            "message": "Form is not referenced by any page or workflow: DocumentUploadForm"
+          },
+          {
+            "formId": "equipmentrequestform-1764477802729-ewu3w2",
+            "formName": "EquipmentRequestForm",
+            "severity": "info",
+            "type": "orphaned_form",
+            "message": "Form is not referenced by any page or workflow: EquipmentRequestForm"
+          }
+        ]
+      },
+      "recommendations": [
+        {
+          "priority": "medium",
+          "category": "navigation",
+          "message": "8 navigation issues detected",
+          "action": "Update page navigation to reference existing routes"
+        },
+        {
+          "priority": "low",
+          "category": "unused_components",
+          "message": "2 forms are not referenced",
+          "action": "Consider removing unused forms or linking them to pages/workflows"
+        }
+      ],
+      "missingComponents": []
+    }
+  }
+]

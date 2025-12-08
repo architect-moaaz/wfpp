@@ -1,0 +1,439 @@
+[
+  {
+    "id": "workflow_1704892800000",
+    "name": "Email Management System",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Start Email Processing",
+          "formId": "workflow_1704892800000_compose_email_form",
+          "trigger": "Incoming email received",
+          "formName": "Compose Email",
+          "description": "Initiates email management workflow when new email arrives"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 50,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Email Format Validation",
+          "rules": [
+            "Valid email headers",
+            "Not spam/malware",
+            "Proper encoding"
+          ],
+          "ruleType": "Email structure validation",
+          "description": "Validates incoming email format and security"
+        },
+        "type": "validation",
+        "position": {
+          "x": 200,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Email Valid?",
+          "condition": "Check if email passes validation",
+          "description": "Determines if email is valid and safe to process",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 350,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "AI Email Classification",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Classify this email into categories (urgent, support, sales, billing, general) and extract priority level: Subject: ${processData.subject}, Body: ${processData.body}",
+          "maxTokens": 500,
+          "description": "Uses AI to classify email type and determine priority level",
+          "temperature": 0.3,
+          "outputVariable": "emailClassification"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 500,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Priority Router",
+          "condition": "Route based on priority and category",
+          "description": "Routes emails based on AI classification results",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 650,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Urgent Processing",
+          "branches": "Parallel urgent email handling",
+          "description": "Splits urgent emails for parallel processing",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 800,
+          "y": -100
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Manager Review",
+          "formId": "workflow_1704892800000_compose_email_form",
+          "dueDate": "15 minutes",
+          "formName": "Compose Email",
+          "priority": "High",
+          "taskName": "urgent_email_review",
+          "assignedTo": "Manager",
+          "instructions": "Review urgent email and provide immediate response"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 950,
+          "y": -150
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Urgent Alert",
+          "channel": "SMS",
+          "template": "Urgent email received: ${processData.subject}",
+          "recipient": "On-call team",
+          "description": "Sends immediate SMS alert for urgent emails"
+        },
+        "type": "notification",
+        "position": {
+          "x": 950,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Auto-Categorize",
+          "script": "assignToQueue(emailClassification, priority)",
+          "scriptType": "JavaScript",
+          "description": "Automatically assigns emails to appropriate queues"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 800,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Agent Assignment",
+          "formId": "workflow_1704892800000_compose_email_form",
+          "dueDate": "2 hours",
+          "formName": "Compose Email",
+          "priority": "Normal",
+          "taskName": "email_response",
+          "assignedTo": "Available Agent",
+          "instructions": "Review and respond to customer email"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 950,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Response Timer",
+          "duration": "PT2H",
+          "timerType": "duration",
+          "description": "Wait for agent response or timeout after 2 hours"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 1100,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Response Status",
+          "condition": "Check if response was provided",
+          "description": "Determines if agent responded or if escalation needed",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 1250,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "AI Response Generation",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Generate a professional response to this email based on context: ${processData.body}. Use company tone and policies.",
+          "maxTokens": 1000,
+          "description": "Generates AI response when human agent unavailable",
+          "temperature": 0.5,
+          "outputVariable": "aiResponse"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 1400,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Supervisor Escalation",
+          "formId": "workflow_1704892800000_compose_email_form",
+          "dueDate": "30 minutes",
+          "formName": "Compose Email",
+          "priority": "High",
+          "taskName": "escalated_email",
+          "assignedTo": "Supervisor",
+          "instructions": "Handle escalated email that missed SLA"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 1400,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "input": "Email thread data",
+          "label": "Response Tracking",
+          "output": "Analytics database",
+          "operation": "Log response metrics",
+          "description": "Tracks response times and quality metrics"
+        },
+        "type": "dataProcess",
+        "position": {
+          "x": 1550,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Send Response",
+          "channel": "Email",
+          "template": "Response email with tracking",
+          "recipient": "Original sender",
+          "description": "Sends final response to customer"
+        },
+        "type": "notification",
+        "position": {
+          "x": 1700,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Error Handler",
+          "script": "logError(errorData); notifyAdmin()",
+          "scriptType": "JavaScript",
+          "description": "Handles invalid emails and system errors"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 350,
+          "y": 200
+        }
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Email Processed",
+          "result": "Email successfully managed and responded to",
+          "description": "Workflow completes with email properly handled"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 1850,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Invalid Email Rejected",
+          "result": "Email rejected due to validation failure",
+          "description": "Workflow ends with email being rejected"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 500,
+          "y": 200
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-27T16:47:15.269+05:30",
+    "updated_at": "2025-11-27T16:47:15.269+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "label": "Valid",
+        "source": "node_3",
+        "target": "node_4",
+        "condition": "processData.isValid === true"
+      },
+      {
+        "id": "edge_4",
+        "label": "Invalid",
+        "source": "node_3",
+        "target": "node_17",
+        "condition": "processData.isValid === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_6",
+        "label": "Urgent",
+        "source": "node_5",
+        "target": "node_6",
+        "condition": "processData.emailClassification.priority === 'urgent'"
+      },
+      {
+        "id": "edge_7",
+        "label": "Normal",
+        "source": "node_5",
+        "target": "node_9",
+        "condition": "processData.emailClassification.priority !== 'urgent'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_8",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_6",
+        "target": "node_7",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "source": "node_6",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_7",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_8",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_10",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_15",
+        "label": "Responded",
+        "source": "node_12",
+        "target": "node_15",
+        "condition": "processData.responseProvided === true"
+      },
+      {
+        "id": "edge_16",
+        "label": "Timeout - AI",
+        "source": "node_12",
+        "target": "node_13",
+        "condition": "processData.timeoutType === 'ai'"
+      },
+      {
+        "id": "edge_17",
+        "label": "Escalate",
+        "source": "node_12",
+        "target": "node_14",
+        "condition": "processData.timeoutType === 'escalate'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_18",
+        "source": "node_13",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_16",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_17",
+        "target": "node_19"
+      }
+    ],
+    "description": ""
+  }
+]

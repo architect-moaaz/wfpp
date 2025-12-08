@@ -130,12 +130,20 @@ class WorkflowValidator {
 
   /**
    * Detect circular paths using DFS with cycle detection
+   * Note: Intentional loops (through loop nodes, decision back-edges) are allowed in BPMN
    */
   validateNoCircularPaths(nodes, connections) {
     const adjacencyList = this.buildAdjacencyList(nodes, connections);
     const visited = new Set();
     const recursionStack = new Set();
     const path = [];
+
+    // Build node type map for checking loop nodes
+    const nodeTypeMap = new Map();
+    nodes.forEach(n => nodeTypeMap.set(n.id, n.type));
+
+    // Types that can legitimately create loops
+    const loopAllowedTypes = ['loop', 'multiInstanceLoop', 'standardLoop', 'decision', 'exclusiveGateway', 'parallelGateway', 'inclusiveGateway'];
 
     const hasCycle = (nodeId) => {
       visited.add(nodeId);
@@ -150,11 +158,26 @@ class WorkflowValidator {
             return true;
           }
         } else if (recursionStack.has(neighbor)) {
-          // Found a cycle
+          // Found a cycle - check if it's an intentional loop
           const cycleStart = path.indexOf(neighbor);
           const cycle = path.slice(cycleStart).concat(neighbor);
-          this.errors.push(`Circular dependency detected: ${cycle.join(' → ')}`);
-          return true;
+
+          // Check if cycle contains loop/gateway nodes - these are intentional loops
+          const containsLoopNode = cycle.some(nodeId => {
+            const nodeType = nodeTypeMap.get(nodeId);
+            return loopAllowedTypes.includes(nodeType) ||
+                   nodeId.includes('loop') ||
+                   nodeId.includes('gateway');
+          });
+
+          if (containsLoopNode) {
+            // This is an intentional loop - add as info, not error
+            this.warnings.push(`Detected intentional loop: ${cycle.join(' → ')}`);
+          } else {
+            // True circular dependency without loop construct
+            this.errors.push(`Circular dependency detected: ${cycle.join(' → ')}`);
+            return true;
+          }
         }
       }
 
@@ -170,9 +193,8 @@ class WorkflowValidator {
 
     for (const startNode of startNodes) {
       if (!visited.has(startNode.id)) {
-        if (hasCycle(startNode.id)) {
-          break; // Stop after finding first cycle
-        }
+        hasCycle(startNode.id);
+        // Don't break - check all paths for info
       }
     }
   }

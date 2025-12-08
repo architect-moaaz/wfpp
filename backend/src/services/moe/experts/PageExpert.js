@@ -14,6 +14,56 @@ class PageExpert {
   }
 
   /**
+   * Check if error is a network/connection error that should trigger retry
+   */
+  isNetworkError(error) {
+    const networkErrorCodes = [
+      'ENOTFOUND', 'ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT',
+      'ENETUNREACH', 'EHOSTUNREACH', 'EPIPE', 'EAI_AGAIN',
+      'CERT_HAS_EXPIRED', 'UNABLE_TO_VERIFY_LEAF_SIGNATURE'
+    ];
+    const errorCode = error.code || error.cause?.code;
+    if (errorCode && networkErrorCodes.includes(errorCode)) return true;
+    if (error.name === 'APIConnectionError' ||
+        error.message?.includes('Connection error') ||
+        error.message?.includes('fetch failed') ||
+        error.message?.includes('ENOTFOUND') ||
+        error.message?.includes('getaddrinfo')) return true;
+    return false;
+  }
+
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Execute API call with network retry and exponential backoff
+   */
+  async executeWithNetworkRetry(apiCall, maxRetries = 3, baseDelayMs = 1000) {
+    let lastError = null;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await apiCall();
+      } catch (error) {
+        lastError = error;
+        if (this.isNetworkError(error)) {
+          const delay = baseDelayMs * Math.pow(2, attempt - 1);
+          console.warn(`[${this.name}] Network error on attempt ${attempt}/${maxRetries}: ${error.message}`);
+          if (attempt < maxRetries) {
+            console.log(`[${this.name}] Retrying in ${delay}ms...`);
+            await this.sleep(delay);
+          } else {
+            console.error(`[${this.name}] All ${maxRetries} network retry attempts failed`);
+          }
+        } else {
+          throw error;
+        }
+      }
+    }
+    throw lastError;
+  }
+
+  /**
    * Generate a single page
    */
   async generateSingle(spec, componentPlan, existingComponents) {
@@ -21,14 +71,16 @@ class PageExpert {
 
     const prompt = this.buildSinglePrompt(spec, componentPlan, existingComponents);
 
-    const response = await this.anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 3000, // Increased from 2000 to handle dashboard pages
-      temperature: 0.3,
-      messages: [{
-        role: 'user',
-        content: prompt
-      }]
+    const response = await this.executeWithNetworkRetry(async () => {
+      return await this.anthropic.messages.create({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 8000,
+        temperature: 0.3,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
     });
 
     // Check for truncation
@@ -106,14 +158,16 @@ Return ONLY valid JSON:
   }
 }`;
 
-    const response = await this.anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 2000,
-      temperature: 0.2,
-      messages: [{
-        role: 'user',
-        content: simplifiedPrompt
-      }]
+    const response = await this.executeWithNetworkRetry(async () => {
+      return await this.anthropic.messages.create({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 8000,
+        temperature: 0.2,
+        messages: [{
+          role: 'user',
+          content: simplifiedPrompt
+        }]
+      });
     });
 
     const pageText = response.content[0].text;
@@ -126,22 +180,24 @@ Return ONLY valid JSON:
   /**
    * Generate multiple pages in one call (for parallel strategy)
    */
-  async generateBatch(specs, componentPlan) {
+  async generateBatch(specs, componentPlan, existingComponents = {}) {
     if (specs.length === 0) return [];
-    if (specs.length === 1) return [await this.generateSingle(specs[0], componentPlan, {})];
+    if (specs.length === 1) return [await this.generateSingle(specs[0], componentPlan, existingComponents)];
 
     console.log(`[PageExpert] Generating ${specs.length} pages in batch...`);
 
-    const prompt = this.buildBatchPrompt(specs, componentPlan);
+    const prompt = this.buildBatchPrompt(specs, componentPlan, existingComponents);
 
-    const response = await this.anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 5000, // Increased from 4000 to handle multiple pages
-      temperature: 0.3,
-      messages: [{
-        role: 'user',
-        content: prompt
-      }]
+    const response = await this.executeWithNetworkRetry(async () => {
+      return await this.anthropic.messages.create({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 8000,
+        temperature: 0.3,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
     });
 
     const pagesText = response.content[0].text;
@@ -157,6 +213,10 @@ Return ONLY valid JSON:
       .filter(c => c.type === 'page' && c.name !== spec.name)
       .map(p => ({ name: p.name, route: `/${p.name.toLowerCase().replace(/\s+/g, '-')}` }));
 
+    // Extract design system if available
+    const designSystem = componentPlan.designSystem;
+    const designGuidelines = designSystem ? this.formatDesignGuidelines(designSystem) : '';
+
     return `Generate a page for: ${spec.name}
 
 Purpose: ${spec.purpose}
@@ -166,17 +226,21 @@ Context:
 - Application: ${componentPlan.overview.name}
 - Domain: ${componentPlan.overview.category || 'General'}
 ${existingComponents.dataModels ? `- Available data models: ${existingComponents.dataModels.map(dm => dm.name).join(', ')}` : ''}
-${existingComponents.forms ? `- Available forms: ${existingComponents.forms.map(f => f.name).join(', ')}` : ''}
+${existingComponents.forms ? `- Available forms: ${existingComponents.forms.map(f => `${f.name} (ID: ${f.id})`).join(', ')}` : ''}
 ${existingComponents.workflows ? `- Available workflows: ${existingComponents.workflows.map(w => w.name).join(', ')}` : ''}
 ${otherPages.length > 0 ? `- Other pages in app: ${otherPages.map(p => p.name).join(', ')}` : ''}
 
+${designGuidelines}
+
 CRITICAL Requirements:
-1. Structure pages using SECTIONS (header, main, footer) with components inside sections
-2. Add NAVIGATION connections to other pages using navigation.onAction and navigation.menu
-3. Link forms using formRef in components
-4. Include actual content in components (text, labels, data bindings)
-5. Maximum 4-6 components total across all sections
-6. Use appropriate page type (list, detail, form, dashboard, auth, confirmation)
+1. **POPULATE FORMS ARRAY**: Add relevant form IDs to the "forms" array based on page purpose (e.g., list pages get create forms, detail pages get edit forms)
+2. **ADD NAVIGATION**: Include navigation.menu with links to other pages in the app
+3. Structure pages using SECTIONS (header, main, footer) with components inside sections
+4. Link forms using formRef in components if needed
+5. Include actual content in components (text, labels, data bindings)
+6. Maximum 4-6 components total across all sections
+7. Use appropriate page type (list, detail, form, dashboard, auth, confirmation)
+${designSystem ? '8. CRITICAL: Apply the design system specifications above to ALL styling properties' : ''}
 
 Return ONLY valid JSON in this format:
 {
@@ -187,6 +251,7 @@ Return ONLY valid JSON in this format:
   "route": "/${spec.name.toLowerCase().replace(/\s+/g, '-')}",
   "type": "list|detail|form|dashboard|auth|confirmation",
   "platform": "both",
+  "forms": ["relevant-form-id-1", "relevant-form-id-2"],
   "sections": [
     {
       "id": "header",
@@ -222,7 +287,8 @@ Return ONLY valid JSON in this format:
       "view": { "type": "navigate", "target": "/details-page" }
     },
     "menu": [
-      { "label": "Menu Item", "route": "/other-page" }
+      { "label": "Other Page", "route": "/other-page" },
+      { "label": "Dashboard", "route": "/dashboard" }
     ]
   },
   "layout": {
@@ -233,21 +299,33 @@ Return ONLY valid JSON in this format:
 }`;
   }
 
-  buildBatchPrompt(specs, componentPlan) {
+  buildBatchPrompt(specs, componentPlan, existingComponents = {}) {
     const specList = specs.map(s => `- ${s.name}: ${s.purpose}`).join('\n');
     const allPageNames = specs.map(s => s.name);
+
+    // Extract design system if available
+    const designSystem = componentPlan.designSystem;
+    const designGuidelines = designSystem ? this.formatDesignGuidelines(designSystem) : '';
 
     return `Generate ${specs.length} pages for: ${componentPlan.overview.name}
 
 Pages to generate:
 ${specList}
 
+${designGuidelines}
+
+Context:
+${existingComponents.forms ? `- Available forms: ${existingComponents.forms.map(f => `${f.name} (ID: ${f.id})`).join(', ')}` : '- No forms available yet'}
+${existingComponents.dataModels ? `- Available data models: ${existingComponents.dataModels.map(dm => dm.name).join(', ')}` : ''}
+
 CRITICAL Requirements for EACH page:
-1. Structure with SECTIONS (header, main) containing components
-2. Add NAVIGATION to connect pages (navigation.onAction and navigation.menu)
-3. Include actual content in components (not empty)
-4. Link forms using formRef where applicable
-5. Use appropriate page types (list, detail, form, dashboard, auth, confirmation)
+1. **POPULATE FORMS ARRAY**: Add relevant form IDs to the "forms" array (list pages get create forms, detail pages get edit forms)
+2. **ADD NAVIGATION MENU**: Include navigation.menu with links to ALL other pages in the app
+3. Structure with SECTIONS (header, main) containing components
+4. Include actual content in components (not empty)
+5. Link forms using formRef where applicable
+6. Use appropriate page types (list, detail, form, dashboard, auth, confirmation)
+${designSystem ? '7. CRITICAL: Apply the design system specifications above to ALL styling properties' : ''}
 
 Available pages for navigation: ${allPageNames.join(', ')}
 
@@ -261,6 +339,7 @@ Return ONLY valid JSON array:
     "route": "/page-name",
     "type": "list|detail|form|dashboard|auth|confirmation",
     "platform": "both",
+    "forms": ["form-id-1", "form-id-2"],
     "sections": [
       {
         "id": "header",
@@ -277,7 +356,10 @@ Return ONLY valid JSON array:
       "onAction": {
         "action": { "type": "navigate", "target": "/other-page" }
       },
-      "menu": [{ "label": "Link", "route": "/other-page" }]
+      "menu": [
+        { "label": "Page 1", "route": "/page-1" },
+        { "label": "Page 2", "route": "/page-2" }
+      ]
     },
     "layout": {
       "type": "single-column|grid|dashboard",
@@ -306,12 +388,47 @@ Return ONLY valid JSON array:
         if (jsonMatch) jsonText = jsonMatch[0];
       }
 
+      // Try to repair common JSON issues
+      jsonText = this.repairJSON(jsonText);
+
       return JSON.parse(jsonText);
     } catch (error) {
       console.error('[PageExpert] Parse error:', error);
       console.error('[PageExpert] Text:', text.substring(0, 500));
-      throw new Error(`Failed to parse page: ${error.message}`);
+      // Return fallback instead of throwing
+      console.warn('[PageExpert] Returning fallback page');
+      return this.createFallbackPage();
     }
+  }
+
+  /**
+   * Create fallback page when parsing fails
+   */
+  createFallbackPage() {
+    return {
+      id: `page_fallback_${Date.now()}`,
+      name: 'GeneratedPage',
+      title: 'Generated Page',
+      description: 'Auto-generated page',
+      route: '/generated-page',
+      type: 'list',
+      platform: 'both',
+      forms: [],
+      sections: [
+        {
+          id: 'header',
+          type: 'header',
+          components: [{ type: 'text', config: { text: 'Generated Page', variant: 'h1' } }]
+        },
+        {
+          id: 'main',
+          type: 'main',
+          components: [{ type: 'card', config: { title: 'Content' } }]
+        }
+      ],
+      navigation: { onAction: {}, menu: [] },
+      layout: { type: 'single-column', responsive: true, spacing: 'normal' }
+    };
   }
 
   parsePages(text) {
@@ -331,12 +448,161 @@ Return ONLY valid JSON array:
         if (jsonMatch) jsonText = jsonMatch[0];
       }
 
+      // Attempt to repair common JSON issues
+      jsonText = this.repairJSON(jsonText);
+
       return JSON.parse(jsonText);
     } catch (error) {
       console.error('[PageExpert] Parse error:', error);
-      console.error('[PageExpert] Text:', text.substring(0, 500));
-      throw new Error(`Failed to parse pages: ${error.message}`);
+
+      // Enhanced error logging with context
+      if (error.message.includes('position')) {
+        const posMatch = error.message.match(/position (\d+)/);
+        if (posMatch) {
+          const position = parseInt(posMatch[1]);
+          const start = Math.max(0, position - 200);
+          const end = Math.min(text.length, position + 200);
+          const context = text.substring(start, end);
+
+          console.error('[PageExpert] Error context (200 chars before/after):');
+          console.error(context);
+          console.error('[PageExpert] Error position marker:', ' '.repeat(Math.min(200, position - start)) + '^');
+        }
+      }
+
+      console.error('[PageExpert] Full response length:', text.length);
+      console.error('[PageExpert] First 1000 chars:', text.substring(0, 1000));
+      console.error('[PageExpert] Last 1000 chars:', text.substring(Math.max(0, text.length - 1000)));
+
+      // Return fallback instead of throwing
+      console.warn('[PageExpert] Returning fallback pages array');
+      return [this.createFallbackPage()];
     }
+  }
+
+  /**
+   * Attempt to repair common JSON formatting issues
+   */
+  repairJSON(jsonText) {
+    let repaired = jsonText;
+
+    // Remove trailing commas before closing brackets/braces
+    repaired = repaired.replace(/,(\s*[\]}])/g, '$1');
+
+    // Fix missing commas between array elements
+    repaired = repaired.replace(/\}(\s*)\{/g, '},$1{');
+
+    // Fix missing commas between object properties (common when truncated)
+    repaired = repaired.replace(/"(\s*)"(\w+)":/g, '",$1"$2":');
+
+    // Remove any text after the final closing bracket
+    const lastBracket = repaired.lastIndexOf(']');
+    if (lastBracket !== -1 && lastBracket < repaired.length - 1) {
+      const afterBracket = repaired.substring(lastBracket + 1).trim();
+      if (afterBracket && !afterBracket.match(/^[\s\n]*$/)) {
+        console.warn('[PageExpert] Removing text after final bracket:', afterBracket.substring(0, 100));
+        repaired = repaired.substring(0, lastBracket + 1);
+      }
+    }
+
+    // Fix truncated JSON by closing unclosed arrays/objects
+    const openBraces = (repaired.match(/\{/g) || []).length;
+    const closeBraces = (repaired.match(/\}/g) || []).length;
+    const openBrackets = (repaired.match(/\[/g) || []).length;
+    const closeBrackets = (repaired.match(/\]/g) || []).length;
+
+    if (openBraces > closeBraces) {
+      console.warn(`[PageExpert] Closing ${openBraces - closeBraces} unclosed braces`);
+      repaired += '}'.repeat(openBraces - closeBraces);
+    }
+
+    if (openBrackets > closeBrackets) {
+      console.warn(`[PageExpert] Closing ${openBrackets - closeBrackets} unclosed brackets`);
+      repaired += ']'.repeat(openBrackets - closeBrackets);
+    }
+
+    return repaired;
+  }
+
+  /**
+   * Format design system into prompt-friendly text
+   */
+  formatDesignGuidelines(designSystem) {
+    if (!designSystem) return '';
+
+    let guidelines = '**DESIGN SYSTEM - APPLY TO ALL PAGES**:\n\n';
+
+    // Colors
+    if (designSystem.colors) {
+      guidelines += '**Colors**:\n';
+      if (designSystem.colors.primary) guidelines += `- Primary: ${designSystem.colors.primary}\n`;
+      if (designSystem.colors.secondary) guidelines += `- Secondary: ${designSystem.colors.secondary}\n`;
+      if (designSystem.colors.background) guidelines += `- Background: ${designSystem.colors.background}\n`;
+      if (designSystem.colors.text) guidelines += `- Text: ${designSystem.colors.text}\n`;
+      if (designSystem.colors.border) guidelines += `- Border: ${designSystem.colors.border}\n`;
+      guidelines += '\n';
+    }
+
+    // Typography
+    if (designSystem.typography) {
+      guidelines += '**Typography**:\n';
+      if (designSystem.typography.fontFamily) guidelines += `- Font: ${designSystem.typography.fontFamily}\n`;
+      if (designSystem.typography.fontSize) {
+        guidelines += `- Base size: ${designSystem.typography.fontSize.base}\n`;
+        guidelines += `- Heading sizes: H1=${designSystem.typography.fontSize.h1 || '24px'}, H2=${designSystem.typography.fontSize.h2 || '20px'}\n`;
+        guidelines += `- Label size: ${designSystem.typography.fontSize.label}\n`;
+      }
+      if (designSystem.typography.fontWeight) {
+        guidelines += `- Title weight: ${designSystem.typography.fontWeight.title || '600'}\n`;
+        guidelines += `- Label weight: ${designSystem.typography.fontWeight.label}\n`;
+      }
+      guidelines += '\n';
+    }
+
+    // Spacing
+    if (designSystem.spacing) {
+      guidelines += '**Spacing**:\n';
+      if (designSystem.spacing.container) guidelines += `- Container padding: ${designSystem.spacing.container}\n`;
+      if (designSystem.spacing.sectionGap) guidelines += `- Section gap: ${designSystem.spacing.sectionGap}\n`;
+      if (designSystem.spacing.componentGap) guidelines += `- Component gap: ${designSystem.spacing.componentGap || '16px'}\n`;
+      guidelines += '\n';
+    }
+
+    // Components (Cards)
+    if (designSystem.components?.card) {
+      const card = designSystem.components.card;
+      guidelines += '**Cards**:\n';
+      if (card.borderRadius) guidelines += `- Border radius: ${card.borderRadius}\n`;
+      if (card.shadow) guidelines += `- Shadow: ${card.shadow}\n`;
+      if (card.padding) guidelines += `- Padding: ${card.padding}\n`;
+      guidelines += '\n';
+    }
+
+    // Components (Buttons)
+    if (designSystem.components?.button) {
+      const button = designSystem.components.button;
+      guidelines += '**Buttons**:\n';
+      if (button.primary) {
+        guidelines += `- Primary: bg=${button.primary.background}, color=${button.primary.color}, padding=${button.primary.padding}\n`;
+      }
+      if (button.secondary) {
+        guidelines += `- Secondary: bg=${button.secondary.background}, color=${button.secondary.color}, border=${button.secondary.border}\n`;
+      }
+      guidelines += '\n';
+    }
+
+    // Layout
+    if (designSystem.layout) {
+      guidelines += '**Layout**:\n';
+      if (designSystem.layout.maxWidth) guidelines += `- Max width: ${designSystem.layout.maxWidth}\n`;
+      if (designSystem.layout.columns) {
+        guidelines += `- Desktop columns: ${designSystem.layout.columns.desktop}\n`;
+        guidelines += `- Mobile columns: ${designSystem.layout.columns.mobile}\n`;
+      }
+      guidelines += '\n';
+    }
+
+    return guidelines;
   }
 }
 

@@ -32,13 +32,26 @@ router.get('/', async (req, res) => {
 
 /**
  * GET /api/forms/:id
- * Get form by ID
+ * Get form by ID (also tries to match by name if ID lookup fails)
  */
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const form = await formDatabase.getForm(id);
+    // First try to get form by ID
+    let form = await formDatabase.getForm(id);
+
+    // If not found by ID, try to find by matching form name or ID pattern
+    if (!form) {
+      const allForms = await formDatabase.loadForms();
+
+      // Try to find form where the stored ID contains the requested ID
+      // This handles cases where ID was modified with prefixes (app_xxx_workflow_xxx_formId)
+      form = allForms.find(f =>
+        f.id.includes(id) || // ID contains the search term
+        f.name.toLowerCase().replace(/\s+/g, '-') === id.toLowerCase() // Name matches (normalized)
+      );
+    }
 
     if (!form) {
       return res.status(404).json({

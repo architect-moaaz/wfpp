@@ -24,7 +24,7 @@ const PagePreview = () => {
         }
 
         const data = await response.json();
-        setPage(data);
+        setPage(data.page);
         setLoading(false);
       } catch (err) {
         setError(err.message);

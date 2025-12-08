@@ -1,0 +1,342 @@
+[
+  {
+    "id": "book",
+    "name": "Book",
+    "description": "Store and manage the complete catalog of books in the library including availability status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the book",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isbn",
+        "type": "string",
+        "description": "International Standard Book Number for unique book identification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Title of the book",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "author",
+        "type": "string",
+        "description": "Author name(s) of the book",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "description": "Genre or category classification of the book",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "publicationYear",
+        "type": "number",
+        "description": "Year the book was published",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "availabilityStatus",
+        "type": "string",
+        "description": "Current status of the book (available, checked_out, reserved)",
+        "required": true,
+        "defaultValue": "available"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "isbn",
+      "title",
+      "author",
+      "availabilityStatus"
+    ],
+    "constraints": {
+      "unique": [
+        "isbn"
+      ],
+      "enum": {
+        "availabilityStatus": [
+          "available",
+          "checked_out",
+          "reserved"
+        ]
+      }
+    },
+    "workflowId": "workflow_1734899573"
+  },
+  {
+    "id": "member",
+    "name": "Member",
+    "description": "Store library member information and membership status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the member",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "membershipId",
+        "type": "string",
+        "description": "Unique membership ID displayed on member card",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "Full name of the library member",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Email address for contact and notifications",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "description": "Contact phone number",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "registrationDate",
+        "type": "date",
+        "description": "Date when member registered with the library",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if membership is currently active",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "membershipId",
+      "email"
+    ],
+    "constraints": {
+      "unique": [
+        "membershipId",
+        "email"
+      ]
+    },
+    "workflowId": "workflow_1734899573"
+  },
+  {
+    "id": "transaction",
+    "name": "Transaction",
+    "description": "Records book checkout and return activities with associated fees and dates",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the transaction",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "memberId",
+        "type": "string",
+        "description": "Reference to the member who checked out the book",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "bookId",
+        "type": "string",
+        "description": "Reference to the book being checked out",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "checkoutDate",
+        "type": "date",
+        "description": "Date when the book was checked out",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Date when the book is due for return",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "returnDate",
+        "type": "date",
+        "description": "Actual date when the book was returned",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "lateFee",
+        "type": "number",
+        "description": "Calculated late fee amount for overdue returns",
+        "required": false,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Member",
+        "foreignKey": "memberId",
+        "description": "Transaction belongs to a Member"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "Book",
+        "foreignKey": "bookId",
+        "description": "Transaction belongs to a Book"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "memberId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "bookId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "checkoutDate"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "dueDateAfterCheckout": "dueDate must be after checkoutDate",
+      "returnDateAfterCheckout": "returnDate must be after checkoutDate if provided"
+    },
+    "workflowId": "workflow_1734899573"
+  },
+  {
+    "id": "reservation",
+    "name": "Reservation",
+    "description": "Manages the queue of book reservations by members for currently checked-out books",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the reservation",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "bookId",
+        "type": "string",
+        "description": "Reference to the reserved book",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "memberId",
+        "type": "string",
+        "description": "Reference to the member who made the reservation",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "reservedAt",
+        "type": "date",
+        "description": "Timestamp when the reservation was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of reservation (pending, available, fulfilled, cancelled)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "notifiedAt",
+        "type": "date",
+        "description": "Timestamp when member was notified of book availability",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "expiresAt",
+        "type": "date",
+        "description": "Timestamp when the reservation expires if not fulfilled",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Book",
+        "foreignKey": "bookId",
+        "description": "Each reservation is for one book"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "Member",
+        "foreignKey": "memberId",
+        "description": "Each reservation is made by one member"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "bookId",
+          "status"
+        ],
+        "description": "Optimize queries for active reservations per book"
+      },
+      {
+        "fields": [
+          "memberId",
+          "status"
+        ],
+        "description": "Optimize queries for member's active reservations"
+      },
+      {
+        "fields": [
+          "reservedAt"
+        ],
+        "description": "Support queue ordering by reservation time"
+      }
+    ],
+    "constraints": {
+      "uniqueActiveReservation": "A member can only have one active reservation per book",
+      "statusValues": "Status must be one of: pending, available, fulfilled, cancelled"
+    },
+    "workflowId": "workflow_1734899573"
+  }
+]

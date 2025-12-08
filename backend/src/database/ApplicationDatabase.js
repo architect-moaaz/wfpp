@@ -67,7 +67,12 @@ class ApplicationDatabase {
                 'data_model_id', f.data_model_id,
                 'config', f.config,
                 'styling', f.styling,
-                'metadata', f.metadata
+                'metadata', f.metadata,
+                'title', f.title,
+                'formType', f.form_type,
+                'nodeId', f.node_id,
+                'steps', f.steps,
+                'gridLayout', f.grid_layout
               )
             ) FILTER (WHERE f.id IS NOT NULL),
             '[]'
@@ -261,6 +266,19 @@ class ApplicationDatabase {
         id, application_id, name, description, version, nodes, edges, connections,
         metadata, node_count, edge_count, is_active, created_at, updated_at
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      ON CONFLICT (id) DO UPDATE SET
+        application_id = EXCLUDED.application_id,
+        name = EXCLUDED.name,
+        description = EXCLUDED.description,
+        version = EXCLUDED.version,
+        nodes = EXCLUDED.nodes,
+        edges = EXCLUDED.edges,
+        connections = EXCLUDED.connections,
+        metadata = EXCLUDED.metadata,
+        node_count = EXCLUDED.node_count,
+        edge_count = EXCLUDED.edge_count,
+        is_active = EXCLUDED.is_active,
+        updated_at = EXCLUDED.updated_at
     `, [
       workflowId,
       applicationId,
@@ -285,15 +303,17 @@ class ApplicationDatabase {
    * Helper: Insert form
    */
   async insertForm(client, applicationId, form) {
-    // Generate unique ID by appending application ID to avoid conflicts
-    const baseId = form.id || `form_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const formId = `${applicationId}_${baseId}`;
+    // Use the form's existing ID or generate a new one
+    // DO NOT prepend applicationId - it causes mismatch with workflow node references
+    const formId = form.id || `form_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     await client.query(`
       INSERT INTO k1.forms (
         id, application_id, name, description, fields, layout, validation,
-        data_model_id, config, styling, metadata, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        data_model_id, config, styling, metadata,
+        title, form_type, node_id, steps, grid_layout,
+        created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       ON CONFLICT (id) DO UPDATE SET
         name = EXCLUDED.name,
         description = EXCLUDED.description,
@@ -304,6 +324,11 @@ class ApplicationDatabase {
         config = EXCLUDED.config,
         styling = EXCLUDED.styling,
         metadata = EXCLUDED.metadata,
+        title = EXCLUDED.title,
+        form_type = EXCLUDED.form_type,
+        node_id = EXCLUDED.node_id,
+        steps = EXCLUDED.steps,
+        grid_layout = EXCLUDED.grid_layout,
         updated_at = EXCLUDED.updated_at
     `, [
       formId,
@@ -317,6 +342,11 @@ class ApplicationDatabase {
       JSON.stringify(form.config || {}),
       JSON.stringify(form.styling || {}),
       JSON.stringify(form.metadata || {}),
+      form.title || null,
+      form.formType || null,
+      form.nodeId || null,
+      JSON.stringify(form.steps || []),
+      JSON.stringify(form.gridLayout || []),
       form.createdAt || new Date().toISOString(),
       new Date().toISOString()
     ]);
@@ -437,6 +467,46 @@ class ApplicationDatabase {
     ]);
 
     return mobileUIId;
+  }
+
+  /**
+   * Helper: Insert rule
+   */
+  async insertRule(client, applicationId, rule) {
+    // Generate unique ID by appending application ID to avoid conflicts
+    const baseId = rule.id || `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const ruleId = `${applicationId}_${baseId}`;
+
+    await client.query(`
+      INSERT INTO k1.rules (
+        id, application_id, name, description, conditions, actions, type, priority, is_active, metadata, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      ON CONFLICT (id) DO UPDATE SET
+        name = EXCLUDED.name,
+        description = EXCLUDED.description,
+        conditions = EXCLUDED.conditions,
+        actions = EXCLUDED.actions,
+        type = EXCLUDED.type,
+        priority = EXCLUDED.priority,
+        is_active = EXCLUDED.is_active,
+        metadata = EXCLUDED.metadata,
+        updated_at = EXCLUDED.updated_at
+    `, [
+      ruleId,
+      applicationId,
+      rule.name || 'Untitled Rule',
+      rule.description || '',
+      JSON.stringify(rule.conditions || []),
+      JSON.stringify(rule.actions || []),
+      rule.type || 'validation',
+      rule.priority || 0,
+      rule.is_active !== undefined ? rule.is_active : true,
+      JSON.stringify(rule.metadata || {}),
+      rule.createdAt || new Date().toISOString(),
+      new Date().toISOString()
+    ]);
+
+    return ruleId;
   }
 
   /**
@@ -624,7 +694,12 @@ class ApplicationDatabase {
                 'data_model_id', f.data_model_id,
                 'config', f.config,
                 'styling', f.styling,
-                'metadata', f.metadata
+                'metadata', f.metadata,
+                'title', f.title,
+                'formType', f.form_type,
+                'nodeId', f.node_id,
+                'steps', f.steps,
+                'gridLayout', f.grid_layout
               )
             ) FILTER (WHERE f.id IS NOT NULL),
             '[]'
@@ -797,6 +872,9 @@ class ApplicationDatabase {
           break;
         case 'pages':
           resourceId = await this.insertPage(client, applicationId, resource);
+          break;
+        case 'rules':
+          resourceId = await this.insertRule(client, applicationId, resource);
           break;
         case 'mobileUI':
           resourceId = await this.insertMobileUI(client, applicationId, resource);

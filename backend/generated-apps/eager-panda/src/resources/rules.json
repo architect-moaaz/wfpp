@@ -1,0 +1,426 @@
+[
+  {
+    "id": "rule_onboarding_start_validation",
+    "name": "New Employee Onboarding Started Rule",
+    "description": "Validates required employee information when onboarding process begins",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Employee.email",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Employee.email",
+          "message": "Employee email is required to start onboarding process"
+        },
+        {
+          "type": "logMessage",
+          "message": "Onboarding validation failed: Missing employee email"
+        }
+      ]
+    },
+    "node_id": "node_1",
+    "workflow_id": "workflow_1736701200000",
+    "workflowId": "workflow_1736701200000",
+    "application_id": "app_1764959238254"
+  },
+  {
+    "id": "rule_document_submission_validation",
+    "name": "Employee Document Submission Rule",
+    "description": "Validates document uploads during employee submission phase",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Document.fileSize",
+          "operator": "greaterThan",
+          "value": 10485760
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Document.fileSize",
+          "message": "Document size exceeds 10MB limit. Please upload a smaller file"
+        },
+        {
+          "type": "setVariable",
+          "field": "Document.status",
+          "value": "rejected"
+        }
+      ]
+    },
+    "node_id": "node_2",
+    "workflow_id": "workflow_1736701200000",
+    "workflowId": "workflow_1736701200000",
+    "application_id": "app_1764959238254"
+  },
+  {
+    "id": "rule_document_completeness_check",
+    "name": "Document Completeness Check Rule",
+    "description": "Validates that all mandatory documents have been submitted",
+    "type": "validation",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Document.mandatoryDocsCount",
+          "operator": "lessThan",
+          "value": 5
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "OnboardingStatus.documentsComplete",
+          "value": false
+        },
+        {
+          "type": "sendNotification",
+          "field": "Employee.email",
+          "message": "Please submit all mandatory documents: ID, Tax Forms, Bank Details, Emergency Contact, Signed Offer Letter"
+        },
+        {
+          "type": "logMessage",
+          "message": "Document completeness check failed: Missing mandatory documents"
+        }
+      ]
+    },
+    "node_id": "node_3",
+    "workflow_id": "workflow_1736701200000",
+    "workflowId": "workflow_1736701200000",
+    "application_id": "app_1764959238254"
+  },
+  {
+    "id": "rule_documents_complete_decision",
+    "name": "Documents Complete? Rule",
+    "description": "Determines workflow path based on document submission completeness",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "OnboardingStatus.documentsComplete",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "Document.mandatoryDocsCount",
+          "operator": "greaterThan",
+          "value": 4
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "OnboardingStatus.currentStage",
+          "value": "hr_verification"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Department.hrEmail",
+          "message": "New employee documents ready for HR verification"
+        },
+        {
+          "type": "logMessage",
+          "message": "Documents complete - routing to HR verification"
+        }
+      ]
+    },
+    "node_id": "node_4",
+    "workflow_id": "workflow_1736701200000",
+    "workflowId": "workflow_1736701200000",
+    "application_id": "app_1764959238254"
+  },
+  {
+    "id": "rule_hr_document_verification",
+    "name": "HR Document Verification Rule",
+    "description": "Validates HR verification input and document approval status",
+    "type": "validation",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Document.verificationNotes",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Document.verificationNotes",
+          "message": "HR verification notes are required for all document reviews"
+        },
+        {
+          "type": "setVariable",
+          "field": "Document.verificationStatus",
+          "value": "pending"
+        }
+      ]
+    },
+    "node_id": "node_6",
+    "workflow_id": "workflow_1736701200000",
+    "workflowId": "workflow_1736701200000",
+    "application_id": "app_1764959238254"
+  },
+  {
+    "id": "rule_hr_verification_decision",
+    "name": "HR Verification Decision Rule",
+    "description": "Routes workflow based on HR document verification outcome",
+    "type": "decision",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Document.verificationStatus",
+          "operator": "equals",
+          "value": "approved"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "OnboardingStatus.currentStage",
+          "value": "parallel_processing"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Employee.email",
+          "message": "Your documents have been verified. Proceeding with equipment and training setup"
+        },
+        {
+          "type": "logMessage",
+          "message": "HR verification approved - initiating parallel processing"
+        }
+      ]
+    },
+    "node_id": "node_7",
+    "workflow_id": "workflow_1736701200000",
+    "workflowId": "workflow_1736701200000",
+    "application_id": "app_1764959238254"
+  },
+  {
+    "id": "rule_parallel_gateway_split",
+    "name": "Parallel Processing Gateway Rule",
+    "description": "Initiates parallel tasks for IT, Training, and Mentor assignment",
+    "type": "decision",
+    "priority": 7,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "OnboardingStatus.currentStage",
+          "operator": "equals",
+          "value": "parallel_processing"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "OnboardingStatus.parallelTasksActive",
+          "value": true
+        },
+        {
+          "type": "sendNotification",
+          "field": "Department.itEmail",
+          "message": "New employee equipment assignment required"
+        },
+        {
+          "type": "logMessage",
+          "message": "Parallel gateway activated: IT, Training, and Mentor tasks initiated"
+        }
+      ]
+    },
+    "node_id": "node_9",
+    "workflow_id": "workflow_1736701200000",
+    "workflowId": "workflow_1736701200000",
+    "application_id": "app_1764959238254"
+  },
+  {
+    "id": "rule_it_equipment_assignment",
+    "name": "IT Equipment Assignment Rule",
+    "description": "Validates IT equipment assignment data and availability",
+    "type": "validation",
+    "priority": 8,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "EquipmentCatalog.availableQuantity",
+          "operator": "lessThan",
+          "value": 1
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "EquipmentAssignment.equipmentId",
+          "message": "Selected equipment is out of stock. Please choose alternative equipment"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Department.itEmail",
+          "message": "Equipment inventory low - reorder required"
+        }
+      ]
+    },
+    "node_id": "node_12",
+    "workflow_id": "workflow_1736701200000",
+    "workflowId": "workflow_1736701200000",
+    "application_id": "app_1764959238254"
+  },
+  {
+    "id": "rule_training_plan_approval",
+    "name": "Training Plan Approval Rule",
+    "description": "Validates training plan completeness and manager approval",
+    "type": "validation",
+    "priority": 9,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "TrainingPlan.totalHours",
+          "operator": "lessThan",
+          "value": 8
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "TrainingPlan.totalHours",
+          "message": "Training plan must include minimum 8 hours of training"
+        },
+        {
+          "type": "setVariable",
+          "field": "TrainingPlan.status",
+          "value": "incomplete"
+        }
+      ]
+    },
+    "node_id": "node_14",
+    "workflow_id": "workflow_1736701200000",
+    "workflowId": "workflow_1736701200000",
+    "application_id": "app_1764959238254"
+  },
+  {
+    "id": "rule_mentor_assignment",
+    "name": "Mentor Assignment Rule",
+    "description": "Validates mentor assignment and availability",
+    "type": "validation",
+    "priority": 10,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "MentorAssignment.mentorId",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "MentorAssignment.mentorId",
+          "message": "A mentor must be assigned to the new employee"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Department.managerEmail",
+          "message": "Please assign a mentor for the new employee"
+        }
+      ]
+    },
+    "node_id": "node_16",
+    "workflow_id": "workflow_1736701200000",
+    "workflowId": "workflow_1736701200000",
+    "application_id": "app_1764959238254"
+  },
+  {
+    "id": "rule_parallel_merge_gateway",
+    "name": "Parallel Merge Gateway Rule",
+    "description": "Validates all parallel tasks completion before proceeding",
+    "type": "decision",
+    "priority": 11,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "EquipmentAssignment.status",
+          "operator": "equals",
+          "value": "completed"
+        },
+        {
+          "field": "TrainingPlan.status",
+          "operator": "equals",
+          "value": "approved"
+        },
+        {
+          "field": "MentorAssignment.status",
+          "operator": "equals",
+          "value": "confirmed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "OnboardingStatus.currentStage",
+          "value": "onboarding_complete"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Employee.email",
+          "message": "Congratulations! Your onboarding is complete. Welcome to the team!"
+        },
+        {
+          "type": "updateData",
+          "field": "OnboardingStatus.completionDate",
+          "value": "{{currentDate}}"
+        },
+        {
+          "type": "logMessage",
+          "message": "All parallel tasks completed - onboarding process finished"
+        }
+      ]
+    },
+    "node_id": "node_18",
+    "workflow_id": "workflow_1736701200000",
+    "workflowId": "workflow_1736701200000",
+    "application_id": "app_1764959238254"
+  }
+]

@@ -1,0 +1,570 @@
+[
+  {
+    "id": "officer-dashboard",
+    "name": "OfficerDashboard",
+    "title": "Officer Dashboard",
+    "description": "Dashboard for parking officers to issue tickets, view activity, and search existing tickets",
+    "route": "/officer-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Officer Dashboard",
+              "variant": "h1",
+              "color": "#1a1a1a",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Issue tickets and manage your daily activity",
+              "variant": "body1",
+              "color": "#666666",
+              "fontSize": "16px",
+              "fontWeight": "400"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Daily Activity Summary",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "metrics": [
+                {
+                  "label": "Tickets Issued Today",
+                  "value": "{{ParkingTicket.query.filter(issuedBy=currentUser.id, issuedDate=today).count}}",
+                  "color": "#0066cc"
+                },
+                {
+                  "label": "Total This Week",
+                  "value": "{{ParkingTicket.query.filter(issuedBy=currentUser.id, issuedDate>=weekStart).count}}",
+                  "color": "#00aa44"
+                },
+                {
+                  "label": "Pending Appeals",
+                  "value": "{{Appeal.query.filter(ticketIssuedBy=currentUser.id, status='pending').count}}",
+                  "color": "#ff9900"
+                }
+              ]
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Issue New Ticket",
+              "variant": "primary",
+              "backgroundColor": "#0066cc",
+              "color": "#ffffff",
+              "fontSize": "16px",
+              "fontWeight": "600",
+              "padding": "12px 24px",
+              "borderRadius": "6px",
+              "width": "100%",
+              "marginBottom": "24px"
+            },
+            "formRef": "ticket-issuance-form",
+            "action": "openForm"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "My Recent Tickets",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "columns": [
+                {
+                  "field": "ticketNumber",
+                  "header": "Ticket #",
+                  "sortable": true,
+                  "fontWeight": "600",
+                  "color": "#1a1a1a"
+                },
+                {
+                  "field": "vehiclePlate",
+                  "header": "License Plate",
+                  "sortable": true,
+                  "color": "#1a1a1a"
+                },
+                {
+                  "field": "violation",
+                  "header": "Violation",
+                  "sortable": true,
+                  "color": "#1a1a1a"
+                },
+                {
+                  "field": "location",
+                  "header": "Location",
+                  "sortable": false,
+                  "color": "#666666"
+                },
+                {
+                  "field": "issuedDate",
+                  "header": "Date Issued",
+                  "sortable": true,
+                  "format": "date",
+                  "color": "#666666"
+                },
+                {
+                  "field": "status",
+                  "header": "Status",
+                  "sortable": true,
+                  "badge": true,
+                  "statusColors": {
+                    "unpaid": "#ff9900",
+                    "paid": "#00aa44",
+                    "appealed": "#0066cc",
+                    "voided": "#cc0000"
+                  }
+                }
+              ],
+              "searchable": true,
+              "searchPlaceholder": "Search by ticket #, plate, or location...",
+              "pagination": true,
+              "pageSize": 20,
+              "rowsPerPageOptions": [
+                10,
+                20,
+                50
+              ],
+              "emptyMessage": "No tickets issued yet"
+            },
+            "dataBinding": "ParkingTicket.query.filter(issuedBy=currentUser.id).orderBy(issuedDate, desc)"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/ticket-details"
+        },
+        "openForm": {
+          "type": "modal",
+          "target": "ticket-issuance-form"
+        }
+      },
+      "menu": [
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard",
+          "icon": "admin",
+          "requiredRole": "admin"
+        }
+      ]
+    },
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal",
+      "maxWidth": "1200px",
+      "mobileOptimized": true
+    },
+    "workflowId": "workflow_1735669200"
+  },
+  {
+    "id": "admin-dashboard",
+    "name": "AdminDashboard",
+    "title": "Administrative Dashboard",
+    "description": "Comprehensive administrative interface with analytics, reporting tools, ticket management, appeal review queue, user management, and system configuration",
+    "route": "/admin/dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Administrative Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Comprehensive oversight and reporting capabilities",
+              "variant": "subtitle",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Key Metrics Overview",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              },
+              "metrics": [
+                {
+                  "label": "Total Tickets Issued",
+                  "value": "{{ParkingTicket.count()}}",
+                  "icon": "ticket",
+                  "color": "#2563eb",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "label": "Pending Appeals",
+                  "value": "{{Appeal.count({status: 'pending'})}}",
+                  "icon": "gavel",
+                  "color": "#f59e0b",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "label": "Total Revenue",
+                  "value": "${{Payment.sum('amount')}}",
+                  "icon": "dollar",
+                  "color": "#10b981",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "label": "Active Officers",
+                  "value": "{{User.count({role: 'officer', status: 'active'})}}",
+                  "icon": "users",
+                  "color": "#8b5cf6",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#666666"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Appeal Review Queue",
+              "columns": [
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket #",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "submittedDate",
+                  "label": "Submitted",
+                  "type": "date",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "reason",
+                  "label": "Appeal Reason",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "amount",
+                  "label": "Amount",
+                  "type": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "priority",
+                  "label": "Priority",
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "500",
+                    "padding": "4px 12px",
+                    "borderRadius": "6px"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Review",
+                  "type": "primary",
+                  "action": "view",
+                  "style": {
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Appeal.query({status: 'pending'}).sort({submittedDate: 'desc'})"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Recent Tickets & Violations",
+              "layout": "list",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              },
+              "items": [
+                {
+                  "label": "Violation Trends",
+                  "description": "View violation patterns and hotspots",
+                  "action": "viewTrends",
+                  "icon": "chart",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a",
+                    "padding": "12px",
+                    "borderBottom": "1px solid #f3f4f6"
+                  }
+                },
+                {
+                  "label": "Revenue Tracking",
+                  "description": "Monitor payment collection and outstanding balances",
+                  "action": "viewRevenue",
+                  "icon": "dollar-sign",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a",
+                    "padding": "12px",
+                    "borderBottom": "1px solid #f3f4f6"
+                  }
+                },
+                {
+                  "label": "Export Reports",
+                  "description": "Generate and download comprehensive reports",
+                  "action": "exportReports",
+                  "icon": "download",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a",
+                    "padding": "12px"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "System Management",
+              "layout": "grid",
+              "columns": 2,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "actions": [
+                {
+                  "label": "User Management",
+                  "description": "Manage officers and system users",
+                  "icon": "users",
+                  "action": "manageUsers",
+                  "style": {
+                    "backgroundColor": "#f9fafb",
+                    "borderRadius": "8px",
+                    "padding": "16px",
+                    "border": "1px solid #e5e5e5",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "System Configuration",
+                  "description": "Configure system settings and parameters",
+                  "icon": "settings",
+                  "action": "systemConfig",
+                  "style": {
+                    "backgroundColor": "#f9fafb",
+                    "borderRadius": "8px",
+                    "padding": "16px",
+                    "border": "1px solid #e5e5e5",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a",
+                    "cursor": "pointer"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/admin/appeals/{{id}}"
+        },
+        "viewTrends": {
+          "type": "navigate",
+          "target": "/admin/reports/violations"
+        },
+        "viewRevenue": {
+          "type": "navigate",
+          "target": "/admin/reports/revenue"
+        },
+        "exportReports": {
+          "type": "action",
+          "handler": "exportReport"
+        },
+        "manageUsers": {
+          "type": "navigate",
+          "target": "/admin/users"
+        },
+        "systemConfig": {
+          "type": "navigate",
+          "target": "/admin/settings"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer/dashboard",
+          "icon": "badge"
+        },
+        {
+          "label": "Reports",
+          "route": "/admin/reports",
+          "icon": "chart"
+        },
+        {
+          "label": "User Management",
+          "route": "/admin/users",
+          "icon": "users"
+        },
+        {
+          "label": "Settings",
+          "route": "/admin/settings",
+          "icon": "settings"
+        }
+      ]
+    },
+    "layout": {
+      "type": "dashboard",
+      "responsive": true,
+      "spacing": "normal"
+    },
+    "workflowId": "workflow_1735669200"
+  }
+]

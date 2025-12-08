@@ -1,0 +1,768 @@
+[
+  {
+    "id": "customer",
+    "name": "Customer",
+    "description": "Central data model for customer records containing personal details, company affiliation, contact methods, and status tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the customer",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Full name of the customer",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Primary email address for contact",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "description": "Primary phone number",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "company",
+        "type": "string",
+        "description": "Company or organization name",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Customer status (e.g., active, inactive, prospect, lead)",
+        "required": true,
+        "defaultValue": "prospect"
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when customer record was created",
+        "required": true,
+        "defaultValue": "now()"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_customer_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_customer_status",
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "email": {
+        "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+        "message": "Must be a valid email address"
+      },
+      "status": {
+        "enum": [
+          "prospect",
+          "lead",
+          "active",
+          "inactive",
+          "churned"
+        ],
+        "message": "Status must be one of the predefined values"
+      }
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "deal-stage",
+    "name": "DealStage",
+    "description": "Configuration model for sales pipeline stages with ordering, probability percentages, and stage-specific requirements",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the deal stage",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Display name of the stage (e.g., Prospecting, Qualification, Proposal)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "order",
+        "type": "number",
+        "description": "Sequence order of the stage in the pipeline (lower numbers appear first)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "probability",
+        "type": "number",
+        "description": "Win probability percentage for deals in this stage (0-100)",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "pipelineType",
+        "type": "string",
+        "description": "Type of pipeline this stage belongs to (e.g., Sales, Renewal, Upsell)",
+        "required": false,
+        "defaultValue": "Sales"
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this stage is currently active and available for use",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "isFinalStage",
+        "type": "boolean",
+        "description": "Indicates if this is a terminal stage (Won or Lost)",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_pipeline_order",
+        "fields": [
+          "pipelineType",
+          "order"
+        ]
+      },
+      {
+        "name": "idx_active_stages",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name",
+        "pipelineType"
+      ],
+      "check": {
+        "probability_range": "probability >= 0 AND probability <= 100"
+      }
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "user",
+    "name": "User",
+    "description": "Store user accounts for sales team members, account managers, and administrators with role-based access control",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address for authentication and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "User's full name for display purposes",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "User role for access control (admin, account_manager, sales_rep)",
+        "required": true,
+        "defaultValue": "sales_rep"
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the user account is active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "lastLoginAt",
+        "type": "date",
+        "description": "Timestamp of the user's last login",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the user account was created",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_user_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_user_role",
+        "fields": [
+          "role"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "email": "Must be a valid email format",
+      "role": "Must be one of: admin, account_manager, sales_rep"
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "interaction",
+    "name": "Interaction",
+    "description": "Records all customer interactions and communication history including calls, emails, meetings, and notes",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the interaction",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "description": "Reference to the customer involved in this interaction",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "interactionType",
+        "type": "string",
+        "description": "Type of interaction (call, email, meeting, note, chat)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "interactionDate",
+        "type": "date",
+        "description": "Date and time when the interaction occurred",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user who logged or participated in the interaction",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "dealId",
+        "type": "string",
+        "description": "Reference to associated deal if applicable",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "notes",
+        "type": "text",
+        "description": "Detailed notes and content of the interaction",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "durationMinutes",
+        "type": "number",
+        "description": "Duration of the interaction in minutes",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Customer",
+        "foreignKey": "customerId",
+        "description": "Each interaction belongs to one customer"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Each interaction is logged by one user"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Deal",
+        "foreignKey": "dealId",
+        "description": "Each interaction may be associated with one deal"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "customerId"
+        ],
+        "unique": false,
+        "description": "Index for quick lookup of all interactions by customer"
+      },
+      {
+        "fields": [
+          "interactionDate"
+        ],
+        "unique": false,
+        "description": "Index for chronological queries and reporting"
+      },
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": false,
+        "description": "Index for filtering interactions by user"
+      }
+    ],
+    "constraints": {
+      "interactionType": {
+        "enum": [
+          "call",
+          "email",
+          "meeting",
+          "note",
+          "chat"
+        ],
+        "description": "Interaction type must be one of the predefined values"
+      },
+      "durationMinutes": {
+        "min": 0,
+        "description": "Duration cannot be negative"
+      }
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "deal",
+    "name": "Deal",
+    "description": "Represents sales opportunities with stage progression, estimated value, probability, and expected close dates",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the deal",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Name or title of the sales opportunity",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "description": "Reference to the customer associated with this deal",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "stageId",
+        "type": "string",
+        "description": "Current pipeline stage of the deal",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "value",
+        "type": "number",
+        "description": "Estimated monetary value of the deal",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "probability",
+        "type": "number",
+        "description": "Win probability percentage (0-100)",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "expectedCloseDate",
+        "type": "date",
+        "description": "Anticipated date for deal closure",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "ownerId",
+        "type": "string",
+        "description": "Reference to the user responsible for this deal",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Customer",
+        "foreignKey": "customerId",
+        "description": "Deal belongs to a customer"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "DealStage",
+        "foreignKey": "stageId",
+        "description": "Deal is in a specific stage"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "ownerId",
+        "description": "Deal is owned by a user"
+      },
+      {
+        "type": "oneToMany",
+        "relatedModel": "Interaction",
+        "foreignKey": "dealId",
+        "description": "Deal has multiple interactions"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "customerId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "stageId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "ownerId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "expectedCloseDate"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "probability": {
+        "min": 0,
+        "max": 100
+      },
+      "value": {
+        "min": 0
+      }
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "activity-log",
+    "name": "ActivityLog",
+    "description": "Comprehensive audit trail tracking all system activities, changes, and user actions for compliance and reporting purposes",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the activity log entry",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user who performed the action",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entityType",
+        "type": "string",
+        "description": "Type of entity affected (Customer, Deal, Interaction, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entityId",
+        "type": "string",
+        "description": "Unique identifier of the affected entity",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "action",
+        "type": "string",
+        "description": "Type of operation performed (CREATE, UPDATE, DELETE, VIEW)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changes",
+        "type": "json",
+        "description": "JSON object containing before/after values of modified fields",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "timestamp",
+        "type": "date",
+        "description": "Date and time when the activity occurred",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "name": "ipAddress",
+        "type": "string",
+        "description": "IP address from which the action was performed",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Links activity log entry to the user who performed the action"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_timestamp",
+        "fields": [
+          "userId",
+          "timestamp"
+        ],
+        "description": "Optimize queries filtering by user and time range"
+      },
+      {
+        "name": "idx_entity",
+        "fields": [
+          "entityType",
+          "entityId"
+        ],
+        "description": "Optimize queries retrieving all activities for a specific entity"
+      },
+      {
+        "name": "idx_timestamp",
+        "fields": [
+          "timestamp"
+        ],
+        "description": "Optimize time-based queries and reporting"
+      }
+    ],
+    "constraints": {
+      "action": {
+        "type": "enum",
+        "values": [
+          "CREATE",
+          "UPDATE",
+          "DELETE",
+          "VIEW",
+          "LOGIN",
+          "LOGOUT"
+        ],
+        "description": "Restrict action types to predefined values"
+      },
+      "entityType": {
+        "type": "enum",
+        "values": [
+          "Customer",
+          "Deal",
+          "Interaction",
+          "User",
+          "DealStage"
+        ],
+        "description": "Restrict entity types to existing data models"
+      }
+    },
+    "workflowId": "workflow_1735671234567"
+  },
+  {
+    "id": "task",
+    "name": "Task",
+    "description": "Action items and reminders for sales team with assignment, due dates, priority levels, and completion tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the task",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Brief title or summary of the task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedUserId",
+        "type": "string",
+        "description": "ID of the user assigned to complete this task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Date and time when the task is due",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the task (low, medium, high, urgent)",
+        "required": true,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the task (pending, in_progress, completed, cancelled)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "relatedEntityType",
+        "type": "string",
+        "description": "Type of entity this task relates to (customer, deal, interaction)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "relatedEntityId",
+        "type": "string",
+        "description": "ID of the related customer, deal, or interaction",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "assignedUserId",
+        "description": "Task is assigned to a user"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Customer",
+        "foreignKey": "relatedEntityId",
+        "description": "Task may be related to a customer"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Deal",
+        "foreignKey": "relatedEntityId",
+        "description": "Task may be related to a deal"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "assignedUserId"
+        ],
+        "description": "Quick lookup of tasks by assigned user"
+      },
+      {
+        "fields": [
+          "dueDate"
+        ],
+        "description": "Efficient querying of tasks by due date for reminders"
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "description": "Filter tasks by completion status"
+      },
+      {
+        "fields": [
+          "relatedEntityType",
+          "relatedEntityId"
+        ],
+        "description": "Retrieve all tasks related to a specific entity"
+      }
+    ],
+    "constraints": {
+      "priority": {
+        "type": "enum",
+        "values": [
+          "low",
+          "medium",
+          "high",
+          "urgent"
+        ]
+      },
+      "status": {
+        "type": "enum",
+        "values": [
+          "pending",
+          "in_progress",
+          "completed",
+          "cancelled"
+        ]
+      },
+      "relatedEntityType": {
+        "type": "enum",
+        "values": [
+          "customer",
+          "deal",
+          "interaction"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735671234567"
+  }
+]

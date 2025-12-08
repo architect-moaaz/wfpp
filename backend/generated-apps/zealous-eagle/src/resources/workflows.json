@@ -1,0 +1,422 @@
+[
+  {
+    "id": "workflow_1703567890123",
+    "name": "Comprehensive Library Management System",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Library Request Initiated",
+          "formId": "workflow_1703567890123_form_001",
+          "trigger": "User submits library request",
+          "formName": "book_registration_form",
+          "description": "Starts the comprehensive library management workflow for book requests, returns, reservations, and administrative tasks"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Validate User Credentials",
+          "rules": [
+            "Valid library card",
+            "Account in good standing",
+            "No outstanding fines > $50"
+          ],
+          "ruleType": "User Authentication",
+          "description": "Validates user eligibility and account status before processing request"
+        },
+        "type": "validation",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Route by Request Type",
+          "condition": "Route based on processData.requestType",
+          "description": "Routes workflow based on the type of library service requested",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Check Book Availability",
+          "script": "checkBookInventory(processData.bookId, processData.requestDate)",
+          "scriptType": "JavaScript",
+          "description": "Queries library database to check book availability and due dates"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 300,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Book Status Decision",
+          "condition": "Based on book availability status",
+          "description": "Determines next action based on book availability - available, reserved, or needs approval",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 300,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Parallel Return Processing",
+          "branches": "Process return validation, calculate fines, update inventory simultaneously",
+          "description": "Handles multiple aspects of book return processing in parallel",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Calculate Late Fees",
+          "script": "calculateLateFees(processData.dueDate, processData.returnDate, processData.bookType)",
+          "scriptType": "JavaScript",
+          "description": "Calculates any late fees based on return date and book type"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Inspect Book Condition",
+          "rules": [
+            "No water damage",
+            "All pages intact",
+            "Cover in good condition",
+            "No excessive wear"
+          ],
+          "ruleType": "Physical Condition",
+          "description": "Validates physical condition of returned book"
+        },
+        "type": "validation",
+        "position": {
+          "x": 150,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Librarian Approval Required",
+          "formId": "workflow_1703567890123_form_002",
+          "dueDate": "2 business days",
+          "formName": "member_registration_form",
+          "priority": "Medium",
+          "taskName": "Special Request Review",
+          "assignedTo": "Head Librarian",
+          "instructions": "Review special collection access request and verify research credentials"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 500,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Approval Timeout Timer",
+          "duration": "PT48H",
+          "timerType": "duration",
+          "description": "Waits 48 hours for librarian approval before escalation"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 500,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "AI Request Categorization",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze this library request and categorize it: Type: ${processData.requestType}, Description: ${processData.description}, User History: ${processData.userHistory}. Determine priority level and recommend processing path.",
+          "maxTokens": 500,
+          "description": "Uses AI to analyze and categorize complex library requests for optimal routing",
+          "temperature": 0.3,
+          "outputVariable": "aiAnalysis"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 400,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Send Status Notification",
+          "channel": "Email",
+          "template": "Library request status update with tracking number",
+          "recipient": "processData.userEmail",
+          "description": "Notifies user of request status and next steps"
+        },
+        "type": "notification",
+        "position": {
+          "x": 300,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Merge Return Processing",
+          "branches": "Merge parallel return processing results",
+          "description": "Combines results from parallel return processing tasks",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Update Library Records",
+          "script": "updateLibraryDatabase(processData.bookId, processData.userId, processData.transactionType)",
+          "scriptType": "JavaScript",
+          "description": "Updates central library database with transaction details"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 100,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "input": "Transaction logs and user data",
+          "label": "Generate Usage Analytics",
+          "output": "Analytics dashboard",
+          "operation": "Data Aggregation",
+          "description": "Processes transaction data for library usage analytics and reporting"
+        },
+        "type": "dataProcess",
+        "position": {
+          "x": 500,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Handle Escalated Request",
+          "formId": "workflow_1703567890123_form_003",
+          "dueDate": "1 business day",
+          "formName": "checkout_return_form",
+          "priority": "High",
+          "taskName": "Senior Librarian Review",
+          "assignedTo": "Senior Librarian",
+          "instructions": "Review escalated request that timed out - make final decision on approval"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 600,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Library Process Completed",
+          "result": "Request processed successfully",
+          "description": "Library management workflow completed with all tasks processed and records updated"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 300,
+          "y": 750
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-27T00:07:52.202+05:30",
+    "updated_at": "2025-11-27T00:07:52.202+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "label": "Book Request",
+        "source": "node_3",
+        "target": "node_4",
+        "condition": "processData.requestType === 'checkout'"
+      },
+      {
+        "id": "edge_4",
+        "label": "Book Return",
+        "source": "node_3",
+        "target": "node_6",
+        "condition": "processData.requestType === 'return'"
+      },
+      {
+        "id": "edge_5",
+        "label": "Special Collection",
+        "source": "node_3",
+        "target": "node_9",
+        "condition": "processData.requestType === 'special'"
+      },
+      {
+        "id": "edge_6",
+        "label": "Other Requests",
+        "source": "node_3",
+        "target": "node_11",
+        "isDefault": true
+      },
+      {
+        "id": "edge_7",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_8",
+        "label": "Available",
+        "source": "node_5",
+        "target": "node_12",
+        "condition": "processData.bookStatus === 'available'"
+      },
+      {
+        "id": "edge_9",
+        "label": "Needs Approval",
+        "source": "node_5",
+        "target": "node_9",
+        "condition": "processData.bookStatus === 'restricted'"
+      },
+      {
+        "id": "edge_10",
+        "label": "Create Reservation",
+        "source": "node_5",
+        "target": "node_12",
+        "isDefault": true
+      },
+      {
+        "id": "edge_11",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_6",
+        "target": "node_7",
+        "isDefault": true
+      },
+      {
+        "id": "edge_12",
+        "source": "node_6",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_7",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_8",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_16",
+        "label": "Approved in Time",
+        "source": "node_10",
+        "target": "node_12",
+        "condition": "processData.approvalStatus === 'approved'"
+      },
+      {
+        "id": "edge_17",
+        "label": "Timeout Escalation",
+        "source": "node_10",
+        "target": "node_16",
+        "isDefault": true
+      },
+      {
+        "id": "edge_18",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_12",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_20",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_13",
+        "target": "node_14",
+        "isDefault": true
+      },
+      {
+        "id": "edge_21",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_15",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_23",
+        "label": "Final Decision",
+        "source": "node_16",
+        "target": "node_12",
+        "condition": "processData.escalationDecision !== null"
+      }
+    ],
+    "description": ""
+  }
+]

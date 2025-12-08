@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './PropertiesPanel.css';
 import { useWorkflow } from '../../context/WorkflowContext';
 import { useNotification } from '../../context/NotificationContext';
-import { X, ExternalLink, Plus, GitBranch, Trash2 } from 'lucide-react';
+import { X, ExternalLink, Plus, GitBranch, Trash2, Workflow, Zap, Clock, Play, Link } from 'lucide-react';
 import DataModelViewer from '../DataModels/DataModelViewer';
 
 const PropertiesPanel = () => {
@@ -10,12 +10,14 @@ const PropertiesPanel = () => {
     selectedNode,
     setPropertiesPanelOpen,
     currentWorkflow,
+    currentApplication,
     updateNodeData,
     mappedRules,
     dataModels,
     connectedForms,
     deleteNode,
-    setSelectedNode
+    setSelectedNode,
+    updateCurrentWorkflow
   } = useWorkflow();
 
   const { confirm } = useNotification();
@@ -502,6 +504,235 @@ const PropertiesPanel = () => {
                 />
                 <div className="config-field-hint">
                   Name of variable to store LLM response in processData
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SubWorkflow Configuration */}
+        {node.type === 'subWorkflow' && (
+          <div className="property-section">
+            <div className="section-header">
+              <h4>
+                <Workflow size={16} style={{ marginRight: '6px' }} />
+                Sub Workflow Configuration
+              </h4>
+            </div>
+
+            <div className="gateway-config-section">
+              <div className="config-field">
+                <label className="config-field-label">Target Workflow</label>
+                <select
+                  className="config-select"
+                  value={node.data.targetWorkflow || ''}
+                  onChange={(e) => updateNodeData(node.id, { targetWorkflow: e.target.value })}
+                >
+                  <option value="">Select workflow...</option>
+                  {(currentApplication?.resources?.workflows || [])
+                    .filter(wf => wf.id !== currentWorkflow?.id && wf.name !== currentWorkflow?.name)
+                    .map(wf => (
+                      <option key={wf.id} value={wf.name}>{wf.name}</option>
+                    ))
+                  }
+                </select>
+                <div className="config-field-hint">
+                  The workflow to execute as a sub-process
+                </div>
+              </div>
+
+              <div className="config-field">
+                <label className="config-field-label">Execution Mode</label>
+                <div className="toggle-buttons">
+                  <button
+                    className={`toggle-btn ${!node.data.async ? 'active' : ''}`}
+                    onClick={() => updateNodeData(node.id, { async: false })}
+                  >
+                    <Play size={14} />
+                    Synchronous
+                  </button>
+                  <button
+                    className={`toggle-btn ${node.data.async ? 'active' : ''}`}
+                    onClick={() => updateNodeData(node.id, { async: true })}
+                  >
+                    <Clock size={14} />
+                    Async
+                  </button>
+                </div>
+                <div className="config-field-hint">
+                  {node.data.async
+                    ? 'Async: Parent workflow continues immediately'
+                    : 'Sync: Parent waits for sub-workflow to complete'}
+                </div>
+              </div>
+
+              <div className="config-field">
+                <label className="config-field-label">Input Mapping</label>
+                <textarea
+                  className="config-input"
+                  placeholder="e.g., customerId: processData.customer.id"
+                  rows="3"
+                  value={node.data.inputMapping || ''}
+                  onChange={(e) => updateNodeData(node.id, { inputMapping: e.target.value })}
+                  style={{ resize: 'vertical', fontFamily: 'monospace', fontSize: '12px' }}
+                />
+                <div className="config-field-hint">
+                  Map parent variables to sub-workflow inputs (one per line)
+                </div>
+              </div>
+
+              <div className="config-field">
+                <label className="config-field-label">Output Mapping</label>
+                <textarea
+                  className="config-input"
+                  placeholder="e.g., result: subWorkflowOutput.status"
+                  rows="3"
+                  value={node.data.outputMapping || ''}
+                  onChange={(e) => updateNodeData(node.id, { outputMapping: e.target.value })}
+                  style={{ resize: 'vertical', fontFamily: 'monospace', fontSize: '12px' }}
+                />
+                <div className="config-field-hint">
+                  Map sub-workflow outputs back to parent variables
+                </div>
+              </div>
+
+              {node.data.targetWorkflow && (
+                <div className="subworkflow-preview">
+                  <div className="preview-header">
+                    <Link size={14} />
+                    <span>Links to: <strong>{node.data.targetWorkflow}</strong></span>
+                  </div>
+                  <div className="preview-mode">
+                    {node.data.async ? (
+                      <span className="mode-tag async"><Clock size={12} /> Async</span>
+                    ) : (
+                      <span className="mode-tag sync"><Play size={12} /> Synchronous</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Workflow Triggers (shown when Start Event is selected) */}
+        {node.type === 'startProcess' && (
+          <div className="property-section">
+            <div className="section-header">
+              <h4>
+                <Zap size={16} style={{ marginRight: '6px' }} />
+                Workflow Triggers
+              </h4>
+            </div>
+
+            <div className="gateway-config-section">
+              <div className="config-field">
+                <label className="config-field-label">Trigger Type</label>
+                <select
+                  className="config-select"
+                  value={node.data.triggerType || 'user_action'}
+                  onChange={(e) => updateNodeData(node.id, { triggerType: e.target.value })}
+                >
+                  <option value="user_action">User Action</option>
+                  <option value="event">Event</option>
+                  <option value="schedule">Schedule</option>
+                  <option value="api">API Call</option>
+                  <option value="direct_call">Direct Call (Sub-workflow)</option>
+                </select>
+                <div className="config-field-hint">
+                  How this workflow is triggered
+                </div>
+              </div>
+
+              {node.data.triggerType === 'event' && (
+                <div className="config-field">
+                  <label className="config-field-label">Listen to Event</label>
+                  <input
+                    type="text"
+                    className="config-input"
+                    placeholder="e.g., order.completed, user.registered"
+                    value={node.data.listenToEvent || ''}
+                    onChange={(e) => updateNodeData(node.id, { listenToEvent: e.target.value })}
+                  />
+                  <div className="config-field-hint">
+                    Event name that triggers this workflow
+                  </div>
+                </div>
+              )}
+
+              {node.data.triggerType === 'schedule' && (
+                <div className="config-field">
+                  <label className="config-field-label">CRON Expression</label>
+                  <input
+                    type="text"
+                    className="config-input"
+                    placeholder="e.g., 0 9 * * 1-5 (9am weekdays)"
+                    value={node.data.cronExpression || ''}
+                    onChange={(e) => updateNodeData(node.id, { cronExpression: e.target.value })}
+                  />
+                  <div className="config-field-hint">
+                    Schedule pattern in CRON format
+                  </div>
+                </div>
+              )}
+
+              {node.data.triggerType === 'api' && (
+                <div className="config-field">
+                  <label className="config-field-label">API Endpoint</label>
+                  <input
+                    type="text"
+                    className="config-input"
+                    placeholder="/api/trigger/workflow-name"
+                    value={node.data.apiEndpoint || ''}
+                    onChange={(e) => updateNodeData(node.id, { apiEndpoint: e.target.value })}
+                    disabled
+                  />
+                  <div className="config-field-hint">
+                    Auto-generated endpoint for this workflow
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Event Emitting (shown for End Event) */}
+        {node.type === 'endEvent' && (
+          <div className="property-section">
+            <div className="section-header">
+              <h4>
+                <Zap size={16} style={{ marginRight: '6px' }} />
+                Event Emitting
+              </h4>
+            </div>
+
+            <div className="gateway-config-section">
+              <div className="config-field">
+                <label className="config-field-label">Emit Event on Completion</label>
+                <input
+                  type="text"
+                  className="config-input"
+                  placeholder="e.g., order.processed, review.completed"
+                  value={node.data.emitEvent || ''}
+                  onChange={(e) => updateNodeData(node.id, { emitEvent: e.target.value })}
+                />
+                <div className="config-field-hint">
+                  Event to emit when workflow completes (triggers listening workflows)
+                </div>
+              </div>
+
+              <div className="config-field">
+                <label className="config-field-label">Include Data</label>
+                <textarea
+                  className="config-input"
+                  placeholder="e.g., orderId: processData.order.id"
+                  rows="3"
+                  value={node.data.eventData || ''}
+                  onChange={(e) => updateNodeData(node.id, { eventData: e.target.value })}
+                  style={{ resize: 'vertical', fontFamily: 'monospace', fontSize: '12px' }}
+                />
+                <div className="config-field-hint">
+                  Data to include in the emitted event (one mapping per line)
                 </div>
               </div>
             </div>

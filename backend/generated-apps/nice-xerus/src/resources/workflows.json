@@ -1,0 +1,488 @@
+[
+  {
+    "id": "workflow_1735065434",
+    "name": "Travel Ticket Booking Management System",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Start Booking Request",
+          "formId": "workflow_1735065434_form_001",
+          "trigger": "User initiates ticket booking",
+          "formName": "customer_booking_request",
+          "description": "Begins the travel ticket booking process"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Validate Booking Data",
+          "rules": [
+            "Check required fields",
+            "Validate dates",
+            "Verify passenger info",
+            "Check destination validity"
+          ],
+          "ruleType": "comprehensive",
+          "description": "Validates all booking request data for completeness and accuracy"
+        },
+        "type": "validation",
+        "position": {
+          "x": 200,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Booking Type Decision",
+          "condition": "Route based on booking complexity",
+          "description": "Determines processing path based on booking type and value",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 400,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Check Flight Availability",
+          "script": "Query airline systems for available flights",
+          "scriptType": "API",
+          "description": "Searches for available flights matching criteria"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 600,
+          "y": -150
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Availability Check",
+          "condition": "Check if seats available",
+          "description": "Determines if requested flights have available seats",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 800,
+          "y": -150
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Multi-City Processing",
+          "branches": "Process multiple segments simultaneously",
+          "description": "Parallel processing for complex multi-city bookings",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 600,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Check Hotels",
+          "script": "Query hotel booking systems",
+          "scriptType": "API",
+          "description": "Searches for available hotel accommodations"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 800,
+          "y": 80
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Check Car Rentals",
+          "script": "Query car rental systems",
+          "scriptType": "API",
+          "description": "Searches for available car rental options"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 800,
+          "y": 220
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Customer Selection",
+          "formId": "workflow_1735065434_form_002",
+          "dueDate": "30 minutes",
+          "formName": "booking_confirmation_form",
+          "priority": "High",
+          "taskName": "select_booking_options",
+          "assignedTo": "customer",
+          "instructions": "Select preferred flights and options from available choices"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 1000,
+          "y": -150
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Selection Timeout",
+          "duration": "PT30M",
+          "timerType": "duration",
+          "description": "30-minute timeout for customer selection"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 1200,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Merge Parallel Results",
+          "branches": "Join all booking component results",
+          "description": "Combines results from parallel booking checks",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 1200,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "AI Booking Optimization",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze the booking options and recommend the best combination based on cost, convenience, and customer preferences: ${processData.bookingOptions}",
+          "maxTokens": 1000,
+          "description": "Uses AI to optimize booking selection and provide recommendations",
+          "temperature": 0.3,
+          "outputVariable": "aiRecommendation"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 1400,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Payment Decision",
+          "condition": "Check payment amount threshold",
+          "description": "Routes to appropriate payment processing based on amount",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 1600,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Process Payment",
+          "script": "Process payment through payment gateway",
+          "scriptType": "API",
+          "description": "Handles payment processing and fraud detection"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 1800,
+          "y": -100
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Manager Approval",
+          "formId": "workflow_1735065434_form_003",
+          "dueDate": "2 hours",
+          "formName": "ticket_management_form",
+          "priority": "High",
+          "taskName": "approve_high_value_booking",
+          "assignedTo": "booking_manager",
+          "instructions": "Review and approve high-value booking request"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 1800,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Confirm Booking",
+          "script": "Confirm booking with all providers",
+          "scriptType": "API",
+          "description": "Finalizes booking with airlines, hotels, and car rental companies"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 2000,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Send Confirmation",
+          "channel": "Email",
+          "template": "booking_confirmation",
+          "recipient": "customer",
+          "description": "Sends booking confirmation email with tickets and details"
+        },
+        "type": "notification",
+        "position": {
+          "x": 2200,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Booking Complete",
+          "result": "Successful booking completion",
+          "description": "Travel booking process completed successfully"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 2400,
+          "y": 0
+        }
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "No Availability Alert",
+          "channel": "Email",
+          "template": "no_availability",
+          "recipient": "customer",
+          "description": "Notifies customer that requested flights are not available"
+        },
+        "type": "notification",
+        "position": {
+          "x": 1000,
+          "y": -300
+        }
+      },
+      {
+        "id": "node_20",
+        "data": {
+          "label": "Booking Failed",
+          "result": "No availability - booking unsuccessful",
+          "description": "Booking process ended due to lack of availability"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 1200,
+          "y": -300
+        }
+      },
+      {
+        "id": "node_21",
+        "data": {
+          "label": "Timeout Notification",
+          "channel": "Email",
+          "template": "selection_timeout",
+          "recipient": "customer",
+          "description": "Notifies customer that selection time has expired"
+        },
+        "type": "notification",
+        "position": {
+          "x": 1400,
+          "y": -50
+        }
+      },
+      {
+        "id": "node_22",
+        "data": {
+          "label": "Timeout End",
+          "result": "Booking cancelled due to timeout",
+          "description": "Booking process ended due to customer timeout"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 1600,
+          "y": -50
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-27T01:20:08.802+05:30",
+    "updated_at": "2025-11-27T01:20:08.802+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "label": "Simple Booking",
+        "source": "node_3",
+        "target": "node_4",
+        "condition": "processData.bookingType === 'simple'"
+      },
+      {
+        "id": "edge_4",
+        "label": "Multi-City Booking",
+        "source": "node_3",
+        "target": "node_6",
+        "condition": "processData.bookingType === 'multi-city'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_6",
+        "label": "Available",
+        "source": "node_5",
+        "target": "node_9",
+        "condition": "processData.seatsAvailable === true"
+      },
+      {
+        "id": "edge_7",
+        "label": "Not Available",
+        "source": "node_5",
+        "target": "node_19",
+        "condition": "processData.seatsAvailable === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_8",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_6",
+        "target": "node_7",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "source": "node_6",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_7",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_8",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_10",
+        "target": "node_21"
+      },
+      {
+        "id": "edge_14",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_11",
+        "target": "node_12",
+        "isDefault": true
+      },
+      {
+        "id": "edge_15",
+        "label": "Selection Made",
+        "source": "node_9",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_17",
+        "label": "Standard Amount",
+        "source": "node_13",
+        "target": "node_14",
+        "condition": "processData.totalAmount < 5000"
+      },
+      {
+        "id": "edge_18",
+        "label": "High Value",
+        "source": "node_13",
+        "target": "node_15",
+        "condition": "processData.totalAmount >= 5000",
+        "isDefault": true
+      },
+      {
+        "id": "edge_19",
+        "source": "node_14",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_16",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_22",
+        "source": "node_17",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_19",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_21",
+        "target": "node_22"
+      }
+    ],
+    "description": ""
+  }
+]

@@ -1,0 +1,177 @@
+[
+  {
+    "id": "app_1764273422518_inventory-item",
+    "name": "InventoryItem",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the inventory item",
+        "defaultValue": null
+      },
+      {
+        "name": "productId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the product in the catalog",
+        "defaultValue": null
+      },
+      {
+        "name": "quantityAvailable",
+        "type": "number",
+        "required": true,
+        "description": "Current available stock quantity for sale",
+        "defaultValue": 0
+      },
+      {
+        "name": "quantityReserved",
+        "type": "number",
+        "required": true,
+        "description": "Quantity reserved for pending orders awaiting fulfillment",
+        "defaultValue": 0
+      },
+      {
+        "name": "isAvailable",
+        "type": "boolean",
+        "required": true,
+        "description": "Indicates if the product is currently available for ordering",
+        "defaultValue": true
+      },
+      {
+        "name": "lastSyncedAt",
+        "type": "date",
+        "required": true,
+        "description": "Timestamp of last synchronization with external inventory management system",
+        "defaultValue": null
+      },
+      {
+        "name": "reorderThreshold",
+        "type": "number",
+        "required": false,
+        "description": "Minimum quantity level that triggers reorder alerts",
+        "defaultValue": 10
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "productId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "isAvailable",
+          "quantityAvailable"
+        ]
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "quantityReserved": "Must be >= 0",
+      "reorderThreshold": "Must be >= 0",
+      "quantityAvailable": "Must be >= 0"
+    },
+    "description": "Manages product inventory with stock levels, reserved quantities, and availability status for order fulfillment",
+    "relationships": [
+      {
+        "type": "one-to-many",
+        "description": "An inventory item can be referenced by multiple orders",
+        "relatedModel": "Order"
+      }
+    ]
+  },
+  {
+    "id": "app_1764273422518_order-data-model",
+    "name": "Order",
+    "config": {},
+    "fields": [
+      {
+        "name": "orderId",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the order",
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the customer who placed the order",
+        "defaultValue": null
+      },
+      {
+        "name": "orderDate",
+        "type": "date",
+        "required": true,
+        "description": "Timestamp when the order was submitted",
+        "defaultValue": null
+      },
+      {
+        "name": "totalAmount",
+        "type": "number",
+        "required": true,
+        "description": "Total order value including taxes and shipping",
+        "defaultValue": null
+      },
+      {
+        "name": "paymentStatus",
+        "type": "string",
+        "required": true,
+        "description": "Current payment status (pending, verified, failed, refunded)",
+        "defaultValue": "pending"
+      },
+      {
+        "name": "fulfillmentStatus",
+        "type": "string",
+        "required": true,
+        "description": "Current fulfillment stage (submitted, approved, allocated, shipped, delivered, cancelled)",
+        "defaultValue": "submitted"
+      },
+      {
+        "name": "shippingAddress",
+        "type": "string",
+        "required": true,
+        "description": "Delivery address for order fulfillment",
+        "defaultValue": null
+      },
+      {
+        "name": "trackingNumber",
+        "type": "string",
+        "required": false,
+        "description": "Shipping carrier tracking number for delivery monitoring",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      "orderId",
+      "customerId",
+      "orderDate",
+      "fulfillmentStatus"
+    ],
+    "metadata": {},
+    "constraints": {
+      "uniqueFields": [
+        "orderId"
+      ],
+      "paymentStatusValues": [
+        "pending",
+        "verified",
+        "failed",
+        "refunded"
+      ],
+      "fulfillmentStatusValues": [
+        "submitted",
+        "approved",
+        "allocated",
+        "shipped",
+        "delivered",
+        "cancelled"
+      ]
+    },
+    "description": "Central data model capturing order lifecycle from submission through delivery, including customer details, payment status, and fulfillment tracking",
+    "relationships": []
+  }
+]

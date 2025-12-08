@@ -1,0 +1,136 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><%= form.title || form.name %></h1>
+        <% if (form.description) { %>
+            <p class="lead"><%= form.description %></p>
+        <% } %>
+    </div>
+    <a href="/forms" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Forms
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form data-dynamic-form action="/forms/<%= form.id %>/submit" method="POST">
+            <% if (form.fields && form.fields.length > 0) { %>
+                <% form.fields.forEach(field => { %>
+                    <div class="form-field">
+                        <label for="<%= field.id %>" class="form-label">
+                            <%= field.label || field.name %>
+                            <% if (field.required) { %><span class="text-danger">*</span><% } %>
+                        </label>
+
+                        <% if (field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'url') { %>
+                            <input
+                                type="<%= field.type %>"
+                                class="form-control"
+                                id="<%= field.id %>"
+                                name="<%= field.name %>"
+                                placeholder="<%= field.placeholder || '' %>"
+                                <%= field.required ? 'required' : '' %>
+                                <%= field.validation?.pattern ? 'pattern="' + field.validation.pattern + '"' : '' %>
+                            >
+                        <% } else if (field.type === 'textarea') { %>
+                            <textarea
+                                class="form-control"
+                                id="<%= field.id %>"
+                                name="<%= field.name %>"
+                                rows="<%= field.rows || 3 %>"
+                                placeholder="<%= field.placeholder || '' %>"
+                                <%= field.required ? 'required' : '' %>
+                            ></textarea>
+                        <% } else if (field.type === 'select' || field.type === 'dropdown') { %>
+                            <select
+                                class="form-select"
+                                id="<%= field.id %>"
+                                name="<%= field.name %>"
+                                <%= field.required ? 'required' : '' %>
+                            >
+                                <option value="">Select...</option>
+                                <% (field.options || []).forEach(option => { %>
+                                    <option value="<%= option.value %>"><%= option.label %></option>
+                                <% }); %>
+                            </select>
+                        <% } else if (field.type === 'checkbox') { %>
+                            <div class="form-check">
+                                <input
+                                    type="checkbox"
+                                    class="form-check-input"
+                                    id="<%= field.id %>"
+                                    name="<%= field.name %>"
+                                    value="true"
+                                    <%= field.required ? 'required' : '' %>
+                                >
+                                <label class="form-check-label" for="<%= field.id %>">
+                                    <%= field.description || '' %>
+                                </label>
+                            </div>
+                        <% } else if (field.type === 'radio') { %>
+                            <% (field.options || []).forEach((option, index) => { %>
+                                <div class="form-check">
+                                    <input
+                                        type="radio"
+                                        class="form-check-input"
+                                        id="<%= field.id %>_<%= index %>"
+                                        name="<%= field.name %>"
+                                        value="<%= option.value %>"
+                                        <%= field.required && index === 0 ? 'required' : '' %>
+                                    >
+                                    <label class="form-check-label" for="<%= field.id %>_<%= index %>">
+                                        <%= option.label %>
+                                    </label>
+                                </div>
+                            <% }); %>
+                        <% } else if (field.type === 'number') { %>
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="<%= field.id %>"
+                                name="<%= field.name %>"
+                                placeholder="<%= field.placeholder || '' %>"
+                                <%= field.required ? 'required' : '' %>
+                                <%= field.validation?.min !== undefined ? 'min="' + field.validation.min + '"' : '' %>
+                                <%= field.validation?.max !== undefined ? 'max="' + field.validation.max + '"' : '' %>
+                            >
+                        <% } else if (field.type === 'date') { %>
+                            <input
+                                type="date"
+                                class="form-control"
+                                id="<%= field.id %>"
+                                name="<%= field.name %>"
+                                <%= field.required ? 'required' : '' %>
+                            >
+                        <% } else { %>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="<%= field.id %>"
+                                name="<%= field.name %>"
+                                placeholder="<%= field.placeholder || '' %>"
+                                <%= field.required ? 'required' : '' %>
+                            >
+                        <% } %>
+
+                        <% if (field.description) { %>
+                            <small class="form-text text-muted"><%= field.description %></small>
+                        <% } %>
+                    </div>
+                <% }); %>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Submit
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Reset
+                    </button>
+                </div>
+            <% } else { %>
+                <div class="alert alert-warning">
+                    This form has no fields defined.
+                </div>
+            <% } %>
+        </form>
+    </div>
+</div>

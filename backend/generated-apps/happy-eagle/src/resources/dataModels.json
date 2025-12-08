@@ -1,0 +1,563 @@
+[
+  {
+    "id": "customer",
+    "name": "Customer",
+    "description": "Store comprehensive customer information and lifecycle stage tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the customer",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Primary email address for customer contact",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "Customer's complete name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "companyName",
+        "type": "string",
+        "description": "Name of the customer's company or organization",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "lifecycleStage",
+        "type": "string",
+        "description": "Current stage in customer journey (lead, prospect, customer, churned)",
+        "required": true,
+        "defaultValue": "lead"
+      },
+      {
+        "name": "source",
+        "type": "string",
+        "description": "Attribution source of how customer was acquired",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when customer record was created",
+        "required": true,
+        "defaultValue": "now()"
+      },
+      {
+        "name": "stageUpdatedAt",
+        "type": "date",
+        "description": "Timestamp of last lifecycle stage transition",
+        "required": true,
+        "defaultValue": "now()"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "email",
+      "lifecycleStage",
+      "createdAt"
+    ],
+    "constraints": {
+      "unique": [
+        "email"
+      ],
+      "enum": {
+        "lifecycleStage": [
+          "lead",
+          "prospect",
+          "customer",
+          "churned"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735091847123"
+  },
+  {
+    "id": "lifecycle-stage",
+    "name": "LifecycleStage",
+    "description": "Defines customer lifecycle stage configurations with transition rules and stage-specific attributes",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the lifecycle stage",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Stage name (e.g., Lead, Prospect, Active, At Risk, Churned)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sequenceOrder",
+        "type": "number",
+        "description": "Numeric order defining the stage position in the lifecycle progression",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "transitionCriteria",
+        "type": "json",
+        "description": "Rules and conditions that define when a customer moves to this stage",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "allowedNextStages",
+        "type": "array",
+        "description": "List of stage IDs that can be transitioned to from this stage",
+        "required": false,
+        "defaultValue": []
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if this lifecycle stage is currently active and available for use",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "description": "Hex color code for visual representation in UI",
+        "required": false,
+        "defaultValue": "#000000"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "relatedModel": "Customer",
+        "foreignKey": "lifecycleStageId",
+        "description": "Customers assigned to this lifecycle stage"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_sequence_order",
+        "fields": [
+          "sequenceOrder"
+        ]
+      },
+      {
+        "name": "idx_is_active",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ],
+      "check": [
+        "sequenceOrder >= 0"
+      ]
+    },
+    "workflowId": "workflow_1735091847123"
+  },
+  {
+    "id": "customer-source",
+    "name": "CustomerSource",
+    "description": "Track and categorize customer acquisition sources to support marketing attribution and source effectiveness analysis",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the customer source",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sourceName",
+        "type": "string",
+        "description": "Name of the acquisition source (e.g., Google Ads, Referral, Website, Trade Show)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sourceCategory",
+        "type": "string",
+        "description": "High-level category of the source (e.g., Paid Advertising, Organic, Referral, Direct, Partner)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Additional details about the source or campaign",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if this source is currently active for new customer acquisition",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdDate",
+        "type": "date",
+        "description": "Date when this source was added to the system",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "relatedModel": "Customer",
+        "foreignKey": "sourceId",
+        "description": "A customer source can be associated with multiple customers"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_source_category",
+        "fields": [
+          "sourceCategory"
+        ]
+      },
+      {
+        "name": "idx_is_active",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "sourceName"
+      ],
+      "check": []
+    },
+    "workflowId": "workflow_1735091847123"
+  },
+  {
+    "id": "interaction",
+    "name": "Interaction",
+    "description": "Records all customer interactions across multiple communication channels including calls, emails, and meetings",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the interaction",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "description": "Reference to the customer involved in this interaction",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of interaction (call, email, meeting, chat, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "interactionDate",
+        "type": "datetime",
+        "description": "Date and time when the interaction occurred",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "notes",
+        "type": "text",
+        "description": "Detailed notes and summary of the interaction",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "outcome",
+        "type": "string",
+        "description": "Result or outcome of the interaction",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "nextSteps",
+        "type": "text",
+        "description": "Planned follow-up actions or next steps",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "followUpRequired",
+        "type": "boolean",
+        "description": "Indicates if a follow-up task should be generated",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Customer",
+        "foreignKey": "customerId",
+        "description": "Links interaction to the associated customer"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "customerId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "interactionDate"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "type"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "type": {
+        "enum": [
+          "call",
+          "email",
+          "meeting",
+          "chat",
+          "sms",
+          "other"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735091847123"
+  },
+  {
+    "id": "followup-task",
+    "name": "FollowUpTask",
+    "description": "Manages follow-up tasks and action items for customer engagement with assignment tracking, priority levels, and completion status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the follow-up task",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "description": "Reference to the customer this task is associated with",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Brief title or summary of the follow-up task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the task and action items required",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedTo",
+        "type": "string",
+        "description": "User ID or name of the person assigned to complete this task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the task (Low, Medium, High, Urgent)",
+        "required": true,
+        "defaultValue": "Medium"
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Date and time when the task is due for completion",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the task (Pending, In Progress, Completed, Cancelled)",
+        "required": true,
+        "defaultValue": "Pending"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Customer",
+        "foreignKey": "customerId",
+        "description": "Each follow-up task belongs to one customer"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_customer_id",
+        "fields": [
+          "customerId"
+        ]
+      },
+      {
+        "name": "idx_due_date",
+        "fields": [
+          "dueDate"
+        ]
+      },
+      {
+        "name": "idx_assigned_to",
+        "fields": [
+          "assignedTo"
+        ]
+      },
+      {
+        "name": "idx_status_due_date",
+        "fields": [
+          "status",
+          "dueDate"
+        ]
+      }
+    ],
+    "constraints": {
+      "priority": {
+        "type": "enum",
+        "values": [
+          "Low",
+          "Medium",
+          "High",
+          "Urgent"
+        ]
+      },
+      "status": {
+        "type": "enum",
+        "values": [
+          "Pending",
+          "In Progress",
+          "Completed",
+          "Cancelled"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735091847123"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Store and manage system notifications for users regarding status changes, overdue tasks, and important customer events",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "ID of the user receiving the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of notification (status_change, overdue_task, customer_event)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the notification (low, medium, high, urgent)",
+        "required": true,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "message",
+        "type": "string",
+        "description": "Notification message content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "relatedEntityId",
+        "type": "string",
+        "description": "ID of the related entity (Customer, Task, etc.)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isRead",
+        "type": "boolean",
+        "description": "Whether the notification has been read by the user",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the notification was created",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "userId",
+      "isRead",
+      "createdAt",
+      "type"
+    ],
+    "constraints": {
+      "type": [
+        "status_change",
+        "overdue_task",
+        "customer_event"
+      ],
+      "priority": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ]
+    },
+    "workflowId": "workflow_1735091847123"
+  }
+]

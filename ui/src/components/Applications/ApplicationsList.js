@@ -182,20 +182,13 @@ const ApplicationsList = () => {
         // Set the current application
         setCurrentApplication(application);
 
-        // Load all workflows
+        // Load all workflows from application resources
         const workflows = application.resources?.workflows || [];
-        if (workflows.length > 0) {
-          // Fetch full workflow data for the first workflow
-          const firstWorkflowId = workflows[0].id || workflows[0];
-          try {
-            const wfResponse = await fetch(`http://localhost:5000/api/workflows/${firstWorkflowId}`);
-            const wfData = await wfResponse.json();
-            if (wfData.success && wfData.workflow) {
-              setCurrentWorkflow(wfData.workflow);
-            }
-          } catch (error) {
-            console.error(`Failed to fetch workflow ${firstWorkflowId}:`, error);
-          }
+        console.log('[ApplicationsList] Loaded workflows:', workflows.length, workflows);
+        if (workflows.length > 0 && workflows[0]) {
+          // Workflows are already complete objects in the application resources
+          console.log('[ApplicationsList] Setting current workflow:', workflows[0]);
+          setCurrentWorkflow(workflows[0]);
         }
 
         // Load forms
@@ -211,7 +204,7 @@ const ApplicationsList = () => {
         setConnectedPages(pages);
 
         // Navigate to workflow editor
-        setActiveSidebar('workflow-editor');
+        setActiveSidebar('workflows');
 
         console.log(`Loaded application "${application.name}" with:`, {
           workflows: workflows.length,
@@ -372,18 +365,27 @@ const ApplicationsList = () => {
                 >
                   <Square size={16} />
                 </button>
-                {app.deployment?.url && (
-                  <button
-                    className="btn-icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.open(app.deployment.url, '_blank');
-                    }}
-                    title="Open Application"
-                  >
-                    <ExternalLink size={16} />
-                  </button>
-                )}
+                <button
+                  className="btn-icon"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    try {
+                      const response = await fetch(`http://localhost:5000/api/applications/${app.id}/open`);
+                      const data = await response.json();
+                      if (data.success && data.url) {
+                        window.open(data.url, '_blank');
+                      } else {
+                        alert('Application URL not available. Please start the application first.');
+                      }
+                    } catch (error) {
+                      console.error('Failed to get application URL:', error);
+                      alert('Failed to open application');
+                    }
+                  }}
+                  title="Open Application in Browser"
+                >
+                  <ExternalLink size={16} />
+                </button>
                 <button
                   className="btn-icon"
                   onClick={(e) => {

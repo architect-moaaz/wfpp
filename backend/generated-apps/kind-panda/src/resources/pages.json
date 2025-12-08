@@ -1,0 +1,3401 @@
+[
+  {
+    "id": "systemsettingspage-1765051500000-admin",
+    "name": "SystemSettingsPage",
+    "title": "System Settings",
+    "description": "Administrative interface for managing library settings including loan periods, late fee structures, notification schedules, and membership rules.",
+    "route": "/system-settings",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "librarysettingsform-1765051431972-w5bps2"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "System Settings",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Configure system-wide operational parameters and policies",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Current Settings Overview",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "LibrarySettings.query",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Review current system configuration before making changes",
+                  "variant": "body2",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666",
+                    "marginBottom": "16px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Update System Settings",
+              "submitLabel": "Save Settings",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "buttonStyle": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "border": "none",
+                "cursor": "pointer",
+                "transition": "background-color 0.2s"
+              }
+            },
+            "formRef": "librarysettingsform-1765051431972-w5bps2",
+            "dataBinding": "LibrarySettings.update"
+          }
+        ]
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "⚠️ Changes to system settings will affect all library operations. Please review carefully before saving.",
+              "variant": "caption",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#dc2626",
+                "backgroundColor": "#fef2f2",
+                "padding": "12px 16px",
+                "borderRadius": "8px",
+                "border": "1px solid #fecaca",
+                "textAlign": "center"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/librarian-dashboard"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/librarian-dashboard"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/book-catalog"
+        },
+        {
+          "label": "Member Management",
+          "route": "/member-management"
+        },
+        {
+          "label": "Circulation Desk",
+          "route": "/circulation-desk"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "System Settings",
+          "route": "/system-settings"
+        }
+      ]
+    },
+    "workflowId": "member-registration-workflow"
+  },
+  {
+    "id": "bookcatalogpage-1765051500000-xyz123",
+    "name": "BookCatalogPage",
+    "title": "Book Catalog",
+    "description": "Display searchable book catalog with availability status and management actions",
+    "route": "/book-catalog",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "booksearchform-1765051414671-s19thp",
+      "bookcatalogentryform-1765051375347-mskujo"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Book Catalog",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Browse and search our complete library collection",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Search Books",
+              "submitLabel": "Search",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "12px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "booksearchform-1765051414671-s19thp"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Add New Book",
+              "variant": "primary",
+              "action": "openForm",
+              "formRef": "bookcatalogentryform-1765051375347-mskujo",
+              "permissions": [
+                "librarian",
+                "admin"
+              ],
+              "style": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "border": "none",
+                "cursor": "pointer",
+                "marginBottom": "24px",
+                "transition": "all 0.2s ease"
+              },
+              "hoverStyle": {
+                "backgroundColor": "#1d4ed8",
+                "transform": "translateY(-1px)",
+                "boxShadow": "0 4px 6px rgba(37, 99, 235, 0.2)"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Available Books",
+              "columns": [
+                {
+                  "field": "title",
+                  "header": "Title",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "author",
+                  "header": "Author",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "field": "isbn",
+                  "header": "ISBN",
+                  "sortable": false,
+                  "style": {
+                    "fontFamily": "Consolas, monospace",
+                    "fontSize": "13px",
+                    "color": "#6b7280"
+                  }
+                },
+                {
+                  "field": "category",
+                  "header": "Category",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "field": "availabilityStatus",
+                  "header": "Status",
+                  "sortable": true,
+                  "render": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "16px"
+                  },
+                  "conditionalStyle": {
+                    "available": {
+                      "backgroundColor": "#dcfce7",
+                      "color": "#166534"
+                    },
+                    "checked_out": {
+                      "backgroundColor": "#fef3c7",
+                      "color": "#92400e"
+                    },
+                    "reserved": {
+                      "backgroundColor": "#dbeafe",
+                      "color": "#1e40af"
+                    },
+                    "unavailable": {
+                      "backgroundColor": "#fee2e2",
+                      "color": "#991b1b"
+                    }
+                  }
+                },
+                {
+                  "field": "copiesAvailable",
+                  "header": "Copies",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a",
+                    "textAlign": "center"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "type": "navigate",
+                  "target": "/book-detail",
+                  "icon": "eye",
+                  "style": {
+                    "color": "#2563eb",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "label": "Edit",
+                  "type": "openForm",
+                  "formRef": "bookcatalogentryform-1765051375347-mskujo",
+                  "icon": "edit",
+                  "permissions": [
+                    "librarian",
+                    "admin"
+                  ],
+                  "style": {
+                    "color": "#059669",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "label": "Checkout",
+                  "type": "openForm",
+                  "formRef": "checkoutform-1765051453054-ige4jw",
+                  "icon": "checkout",
+                  "condition": "availabilityStatus === 'available'",
+                  "permissions": [
+                    "librarian",
+                    "admin"
+                  ],
+                  "style": {
+                    "color": "#7c3aed",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "filterable": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "overflow": "hidden"
+              },
+              "headerStyle": {
+                "backgroundColor": "#f9fafb",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "12px",
+                "fontWeight": "700",
+                "color": "#374151",
+                "textTransform": "uppercase",
+                "letterSpacing": "0.05em",
+                "padding": "16px"
+              },
+              "rowStyle": {
+                "borderBottom": "1px solid #e5e7eb",
+                "padding": "16px",
+                "transition": "background-color 0.15s ease"
+              },
+              "rowHoverStyle": {
+                "backgroundColor": "#f9fafb"
+              }
+            },
+            "dataBinding": "Book.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/book-detail"
+        },
+        "checkout": {
+          "type": "navigate",
+          "target": "/circulation-desk"
+        },
+        "add": {
+          "type": "navigate",
+          "target": "/book-catalog",
+          "refresh": true
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/librarian-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/book-catalog",
+          "icon": "book",
+          "active": true
+        },
+        {
+          "label": "Circulation Desk",
+          "route": "/circulation-desk",
+          "icon": "circulation"
+        },
+        {
+          "label": "Member Management",
+          "route": "/member-management",
+          "icon": "people"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management",
+          "icon": "warning"
+        },
+        {
+          "label": "Borrowing History",
+          "route": "/borrowing-history",
+          "icon": "history"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "analytics"
+        },
+        {
+          "label": "Settings",
+          "route": "/system-settings",
+          "icon": "settings"
+        }
+      ]
+    },
+    "workflowId": "member-registration-workflow"
+  },
+  {
+    "id": "membermanagementpage-1765051500000-xyz123",
+    "name": "MemberManagementPage",
+    "title": "Member Management",
+    "description": "View, search, and manage library member accounts with status indicators and borrowing history access",
+    "route": "/member-management",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "memberregistrationform-1765051354368-laychg",
+      "memberprofileupdateform-1765051397034-w42xyn"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Member Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "2rem",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "0.5rem"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage library member accounts, registrations, and borrowing privileges",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "0.875rem",
+                "color": "#666666",
+                "marginBottom": "1.5rem"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Search Members",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "1.5rem",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "1.5rem",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "input",
+                "config": {
+                  "placeholder": "Search by name, email, or member ID...",
+                  "variant": "outlined",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "padding": "0.75rem",
+                    "borderRadius": "8px",
+                    "border": "1px solid #d1d1d1",
+                    "width": "100%"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Register New Member",
+              "variant": "primary",
+              "action": "openForm",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "0.875rem",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "0.75rem 1.5rem",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "1.5rem",
+                "cursor": "pointer"
+              }
+            },
+            "formRef": "memberregistrationform-1765051354368-laychg"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Member Directory",
+              "columns": [
+                {
+                  "key": "memberId",
+                  "label": "Member ID",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "name",
+                  "label": "Name",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "email",
+                  "label": "Email",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "membershipStatus",
+                  "label": "Status",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.75rem",
+                    "fontWeight": "600",
+                    "padding": "0.25rem 0.75rem",
+                    "borderRadius": "12px",
+                    "backgroundColor": "#dcfce7",
+                    "color": "#166534"
+                  }
+                },
+                {
+                  "key": "activeCheckouts",
+                  "label": "Active Checkouts",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#1a1a1a",
+                    "textAlign": "center"
+                  }
+                },
+                {
+                  "key": "overdueItems",
+                  "label": "Overdue",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#dc2626",
+                    "fontWeight": "600",
+                    "textAlign": "center"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "type": "navigate",
+                  "target": "/member-detail",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#2563eb",
+                    "textDecoration": "none",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "label": "Edit Profile",
+                  "type": "openForm",
+                  "formRef": "memberprofileupdateform-1765051397034-w42xyn",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#059669",
+                    "textDecoration": "none",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "label": "History",
+                  "type": "navigate",
+                  "target": "/borrowing-history",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#7c3aed",
+                    "textDecoration": "none",
+                    "fontWeight": "500"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "1.5rem",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Member.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/member-detail"
+        },
+        "edit": {
+          "type": "openForm",
+          "formRef": "memberprofileupdateform-1765051397034-w42xyn"
+        },
+        "register": {
+          "type": "openForm",
+          "formRef": "memberregistrationform-1765051354368-laychg"
+        },
+        "history": {
+          "type": "navigate",
+          "target": "/borrowing-history"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/librarian-dashboard"
+        },
+        {
+          "label": "Circulation Desk",
+          "route": "/circulation-desk"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/book-catalog"
+        },
+        {
+          "label": "Member Management",
+          "route": "/member-management"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "System Settings",
+          "route": "/system-settings"
+        }
+      ]
+    },
+    "workflowId": "member-registration-workflow"
+  },
+  {
+    "id": "borrowinghistorypage-1765051600000-bhp001",
+    "name": "BorrowingHistoryPage",
+    "title": "Borrowing History",
+    "description": "Display complete borrowing history for members and librarians with filtering and search capabilities",
+    "route": "/borrowing-history",
+    "type": "list",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Borrowing History",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "2rem",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "0.5rem"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "View complete checkout transaction history with filtering options",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "1rem",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Filter History",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "1.5rem",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "1.5rem",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "input",
+                "config": {
+                  "label": "Search by Book Title or Member",
+                  "placeholder": "Enter book title or member name...",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "padding": "0.75rem",
+                    "borderRadius": "8px",
+                    "border": "1px solid #d1d5db",
+                    "width": "100%",
+                    "marginBottom": "1rem"
+                  }
+                }
+              },
+              {
+                "type": "select",
+                "config": {
+                  "label": "Status",
+                  "options": [
+                    {
+                      "label": "All Transactions",
+                      "value": "all"
+                    },
+                    {
+                      "label": "Currently Borrowed",
+                      "value": "borrowed"
+                    },
+                    {
+                      "label": "Returned",
+                      "value": "returned"
+                    },
+                    {
+                      "label": "Overdue",
+                      "value": "overdue"
+                    }
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "padding": "0.75rem",
+                    "borderRadius": "8px",
+                    "border": "1px solid #d1d5db",
+                    "width": "100%"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Transaction History",
+              "columns": [
+                {
+                  "header": "Checkout Date",
+                  "field": "checkoutDate",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Book Title",
+                  "field": "book.title",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Member",
+                  "field": "member.name",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Due Date",
+                  "field": "dueDate",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Return Date",
+                  "field": "returnDate",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Status",
+                  "field": "status",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "600"
+                  },
+                  "render": "badge"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "type": "view",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "color": "#2563eb",
+                    "textDecoration": "none",
+                    "fontWeight": "500"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "1.5rem",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Checkout.query"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Summary Statistics",
+              "style": {
+                "backgroundColor": "#f9fafb",
+                "borderRadius": "12px",
+                "padding": "1.5rem",
+                "marginTop": "1.5rem",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Total Transactions: {{Checkout.count}}",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a",
+                    "marginBottom": "0.5rem"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Currently Borrowed: {{Checkout.activeBorrowCount}}",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "500",
+                    "color": "#2563eb",
+                    "marginBottom": "0.5rem"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Overdue Items: {{OverdueRecord.count}}",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "500",
+                    "color": "#dc2626"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/book-detail"
+        }
+      },
+      "menu": [
+        {
+          "label": "Librarian Dashboard",
+          "route": "/librarian-dashboard"
+        },
+        {
+          "label": "Member Portal",
+          "route": "/member-portal"
+        },
+        {
+          "label": "Circulation Desk",
+          "route": "/circulation-desk"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/book-catalog"
+        },
+        {
+          "label": "Member Management",
+          "route": "/member-management"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "System Settings",
+          "route": "/system-settings"
+        }
+      ]
+    },
+    "workflowId": "member-registration-workflow"
+  },
+  {
+    "id": "bookdetailpage-1765051500000-xyz123",
+    "name": "BookDetailPage",
+    "title": "Book Details",
+    "description": "Display detailed book information and circulation history",
+    "route": "/books/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "bookcatalogentryform-1765051375347-mskujo"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Book Details",
+              "variant": "h1",
+              "color": "#1a1a1a",
+              "fontSize": "28px",
+              "fontWeight": "600",
+              "marginBottom": "8px"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Bibliographic Information",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+              "fields": [
+                {
+                  "label": "Title",
+                  "value": "{{Book.title}}",
+                  "fontWeight": "500"
+                },
+                {
+                  "label": "Author",
+                  "value": "{{Book.author}}"
+                },
+                {
+                  "label": "ISBN",
+                  "value": "{{Book.isbn}}"
+                },
+                {
+                  "label": "Publisher",
+                  "value": "{{Book.publisher}}"
+                },
+                {
+                  "label": "Publication Year",
+                  "value": "{{Book.publicationYear}}"
+                },
+                {
+                  "label": "Category",
+                  "value": "{{Book.category}}"
+                },
+                {
+                  "label": "Total Copies",
+                  "value": "{{Book.totalCopies}}"
+                },
+                {
+                  "label": "Available Copies",
+                  "value": "{{Book.availableCopies}}",
+                  "color": "{{Book.availableCopies > 0 ? '#10b981' : '#ef4444'}}",
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            "dataBinding": "Book.findById"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Edit Book Details",
+              "variant": "primary",
+              "backgroundColor": "#3b82f6",
+              "color": "#ffffff",
+              "borderRadius": "6px",
+              "padding": "10px 20px",
+              "fontSize": "14px",
+              "fontWeight": "500",
+              "marginTop": "16px",
+              "hoverBackgroundColor": "#2563eb"
+            },
+            "formRef": "bookcatalogentryform-1765051375347-mskujo"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Current Status",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+              "marginTop": "24px",
+              "fields": [
+                {
+                  "label": "Status",
+                  "value": "{{Book.availableCopies > 0 ? 'Available' : 'All Copies Checked Out'}}",
+                  "badge": true,
+                  "badgeColor": "{{Book.availableCopies > 0 ? '#10b981' : '#ef4444'}}"
+                },
+                {
+                  "label": "Active Checkouts",
+                  "value": "{{Book.totalCopies - Book.availableCopies}}"
+                },
+                {
+                  "label": "Pending Reservations",
+                  "value": "{{Book.reservationCount || 0}}"
+                }
+              ]
+            },
+            "dataBinding": "Book.findById"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Circulation History",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+              "marginTop": "24px",
+              "columns": [
+                {
+                  "header": "Member",
+                  "field": "member.name",
+                  "sortable": true,
+                  "fontWeight": "500"
+                },
+                {
+                  "header": "Checkout Date",
+                  "field": "checkoutDate",
+                  "type": "date",
+                  "sortable": true
+                },
+                {
+                  "header": "Due Date",
+                  "field": "dueDate",
+                  "type": "date",
+                  "sortable": true
+                },
+                {
+                  "header": "Return Date",
+                  "field": "returnDate",
+                  "type": "date",
+                  "sortable": true
+                },
+                {
+                  "header": "Status",
+                  "field": "status",
+                  "badge": true,
+                  "badgeColors": {
+                    "active": "#3b82f6",
+                    "returned": "#10b981",
+                    "overdue": "#ef4444"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "striped": true,
+              "hover": true
+            },
+            "dataBinding": "Checkout.query",
+            "filters": {
+              "bookId": "{{Book.id}}"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "edit": {
+          "type": "navigate",
+          "target": "/books/:id/edit"
+        },
+        "back": {
+          "type": "navigate",
+          "target": "/books"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/books"
+        },
+        {
+          "label": "Circulation Desk",
+          "route": "/circulation"
+        },
+        {
+          "label": "Members",
+          "route": "/members"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings"
+        }
+      ]
+    },
+    "workflowId": "member-registration-workflow"
+  },
+  {
+    "id": "librariandashboard-1765051500000-xyz123",
+    "name": "LibrarianDashboard",
+    "title": "Librarian Dashboard",
+    "description": "Comprehensive operational overview with real-time statistics and quick access to key library functions",
+    "route": "/librarian-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "checkoutform-1765051453054-ige4jw",
+      "returnform-1765051473709-qjnerv",
+      "booksearchform-1765051414671-s19thp"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Librarian Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Real-time library operations overview and quick actions",
+              "variant": "subtitle",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Today's Activity",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              },
+              "metrics": [
+                {
+                  "label": "Checkouts Today",
+                  "value": "{{Checkout.count({date: 'today'})}}",
+                  "icon": "book-open",
+                  "color": "#2563eb",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "700"
+                  }
+                },
+                {
+                  "label": "Returns Today",
+                  "value": "{{Checkout.count({returnDate: 'today'})}}",
+                  "icon": "check-circle",
+                  "color": "#16a34a",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "700"
+                  }
+                },
+                {
+                  "label": "Overdue Items",
+                  "value": "{{OverdueRecord.count({status: 'active'})}}",
+                  "icon": "alert-circle",
+                  "color": "#dc2626",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "700"
+                  }
+                },
+                {
+                  "label": "Active Members",
+                  "value": "{{Member.count({status: 'active'})}}",
+                  "icon": "users",
+                  "color": "#7c3aed",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "28px",
+                    "fontWeight": "700"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "Checkout.aggregate"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "layout": "horizontal",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              },
+              "buttons": [
+                {
+                  "label": "Check Out Book",
+                  "icon": "book-plus",
+                  "action": "openForm",
+                  "formRef": "checkoutform-1765051453054-ige4jw",
+                  "style": {
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Return Book",
+                  "icon": "book-check",
+                  "action": "openForm",
+                  "formRef": "returnform-1765051473709-qjnerv",
+                  "style": {
+                    "backgroundColor": "#16a34a",
+                    "color": "#ffffff",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Search Books",
+                  "icon": "search",
+                  "action": "openForm",
+                  "formRef": "booksearchform-1765051414671-s19thp",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "color": "#1a1a1a",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "border": "1px solid #e5e5e5",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Manage Members",
+                  "icon": "users",
+                  "action": "navigate",
+                  "target": "/member-management",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "color": "#1a1a1a",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "border": "1px solid #e5e5e5",
+                    "cursor": "pointer"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Recent Overdue Items - Requires Attention",
+              "columns": [
+                {
+                  "key": "book.title",
+                  "label": "Book Title",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "member.name",
+                  "label": "Member",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "dueDate",
+                  "label": "Due Date",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "daysOverdue",
+                  "label": "Days Overdue",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#dc2626"
+                  }
+                },
+                {
+                  "key": "fineAmount",
+                  "label": "Fine",
+                  "format": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Contact Member",
+                  "icon": "mail",
+                  "type": "primary",
+                  "style": {
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "6px 12px",
+                    "borderRadius": "6px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "border": "none"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "OverdueRecord.query({status: 'active', orderBy: 'daysOverdue DESC', limit: 10})"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "System Alerts",
+              "layout": "list",
+              "style": {
+                "backgroundColor": "#fef3c7",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "border": "1px solid #fbbf24",
+                "marginTop": "24px"
+              },
+              "alerts": [
+                {
+                  "type": "warning",
+                  "message": "{{OverdueRecord.count({daysOverdue: '>30'})}} items overdue for more than 30 days",
+                  "icon": "alert-triangle",
+                  "action": {
+                    "label": "View Details",
+                    "route": "/overdue-management"
+                  },
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#92400e"
+                  }
+                },
+                {
+                  "type": "info",
+                  "message": "{{NotificationLog.count({status: 'pending'})}} pending notifications to send",
+                  "icon": "info",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1e40af"
+                  }
+                }
+              ]
+            },
+            "dataBinding": "NotificationLog.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "checkout": {
+          "type": "navigate",
+          "target": "/circulation-desk"
+        },
+        "viewOverdue": {
+          "type": "navigate",
+          "target": "/overdue-management"
+        },
+        "viewMember": {
+          "type": "navigate",
+          "target": "/member-detail"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/librarian-dashboard",
+          "icon": "home"
+        },
+        {
+          "label": "Circulation Desk",
+          "route": "/circulation-desk",
+          "icon": "book-open"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/book-catalog",
+          "icon": "library"
+        },
+        {
+          "label": "Member Management",
+          "route": "/member-management",
+          "icon": "users"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management",
+          "icon": "alert-circle"
+        },
+        {
+          "label": "Borrowing History",
+          "route": "/borrowing-history",
+          "icon": "history"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "bar-chart"
+        },
+        {
+          "label": "System Settings",
+          "route": "/system-settings",
+          "icon": "settings"
+        }
+      ]
+    },
+    "workflowId": "member-registration-workflow"
+  },
+  {
+    "id": "memberselfserviceportal-1765051500000-abc123",
+    "name": "MemberSelfServicePortal",
+    "title": "My Library Account",
+    "description": "Member self-service portal for viewing account details, borrowed books, borrowing history, and notifications",
+    "route": "/member/portal",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "memberprofileupdateform-1765051397034-w42xyn"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "My Library Account",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Member.name}} - Member ID: {{Member.memberId}}",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666"
+              }
+            },
+            "dataBinding": "Member.current"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Current Checkouts",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Checkout.query",
+            "components": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "field": "book.title",
+                      "header": "Book Title",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "field": "checkoutDate",
+                      "header": "Checkout Date",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#666666"
+                      }
+                    },
+                    {
+                      "field": "dueDate",
+                      "header": "Due Date",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#d97706"
+                      }
+                    },
+                    {
+                      "field": "status",
+                      "header": "Status",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500"
+                      }
+                    }
+                  ],
+                  "filters": {
+                    "memberId": "{{Member.current.id}}",
+                    "status": "checked_out"
+                  },
+                  "emptyMessage": "No books currently checked out",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "borderRadius": "6px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Notifications & Alerts",
+              "style": {
+                "backgroundColor": "#fef3c7",
+                "borderRadius": "8px",
+                "padding": "20px",
+                "marginBottom": "24px",
+                "border": "1px solid #fbbf24"
+              }
+            },
+            "dataBinding": "OverdueRecord.query",
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "itemTemplate": "{{book.title}} - Overdue since {{overdueDate}}",
+                  "filters": {
+                    "memberId": "{{Member.current.id}}",
+                    "status": "overdue"
+                  },
+                  "emptyMessage": "No overdue items. All books are on track!",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#92400e",
+                    "lineHeight": "1.6"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Borrowing History",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Checkout.query",
+            "components": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "field": "book.title",
+                      "header": "Book Title",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "field": "checkoutDate",
+                      "header": "Borrowed On",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#666666"
+                      }
+                    },
+                    {
+                      "field": "returnDate",
+                      "header": "Returned On",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#666666"
+                      }
+                    }
+                  ],
+                  "filters": {
+                    "memberId": "{{Member.current.id}}"
+                  },
+                  "pagination": true,
+                  "pageSize": 10,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "borderRadius": "6px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Update My Profile",
+              "variant": "primary",
+              "action": "openForm",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 20px",
+                "borderRadius": "6px",
+                "border": "none",
+                "cursor": "pointer"
+              }
+            },
+            "formRef": "memberprofileupdateform-1765051397034-w42xyn"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/book/details"
+        },
+        "updateProfile": {
+          "type": "navigate",
+          "target": "/member/profile"
+        }
+      },
+      "menu": [
+        {
+          "label": "My Account",
+          "route": "/member/portal"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/catalog"
+        },
+        {
+          "label": "Borrowing History",
+          "route": "/borrowing-history"
+        },
+        {
+          "label": "Circulation Desk",
+          "route": "/circulation"
+        }
+      ]
+    },
+    "workflowId": "member-registration-workflow"
+  },
+  {
+    "id": "overduemanagementpage-1765051500000-xk9pmq",
+    "name": "OverdueManagementPage",
+    "title": "Overdue Management",
+    "description": "Enable librarians to monitor and manage overdue items and late fees",
+    "route": "/overdue-management",
+    "type": "list",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Overdue Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Monitor overdue items, manage late fees, and send notifications to members",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Overdue Summary",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 4,
+                  "gap": "16px",
+                  "items": [
+                    {
+                      "label": "Total Overdue Items",
+                      "value": "{{OverdueRecord.count}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#dc2626"
+                      }
+                    },
+                    {
+                      "label": "Total Members Affected",
+                      "value": "{{OverdueRecord.distinctMembers}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#ea580c"
+                      }
+                    },
+                    {
+                      "label": "Total Fees Outstanding",
+                      "value": "${{OverdueRecord.totalFees}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#0066cc"
+                      }
+                    },
+                    {
+                      "label": "Notifications Sent Today",
+                      "value": "{{NotificationLog.todayCount}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "700",
+                        "color": "#16a34a"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Send Bulk Notifications",
+              "variant": "primary",
+              "action": "trigger_workflow",
+              "workflowId": "NotificationDispatchWorkflow",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "backgroundColor": "#0066cc",
+                "color": "#ffffff",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "24px",
+                "cursor": "pointer"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Overdue Items",
+              "columns": [
+                {
+                  "key": "member.name",
+                  "label": "Member Name",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "member.email",
+                  "label": "Email",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "book.title",
+                  "label": "Book Title",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "dueDate",
+                  "label": "Due Date",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "daysOverdue",
+                  "label": "Days Overdue",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#dc2626"
+                  }
+                },
+                {
+                  "key": "lateFee",
+                  "label": "Late Fee",
+                  "sortable": true,
+                  "format": "currency",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#0066cc"
+                  }
+                },
+                {
+                  "key": "notificationsSent",
+                  "label": "Notifications",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions",
+                  "actions": [
+                    {
+                      "label": "Send Notice",
+                      "icon": "mail",
+                      "action": "notify",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "13px",
+                        "color": "#0066cc"
+                      }
+                    },
+                    {
+                      "label": "Waive Fee",
+                      "icon": "cancel",
+                      "action": "waive",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "13px",
+                        "color": "#16a34a"
+                      }
+                    },
+                    {
+                      "label": "View Details",
+                      "icon": "visibility",
+                      "action": "view",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "13px",
+                        "color": "#666666"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": true,
+              "filterable": true,
+              "filters": [
+                {
+                  "key": "daysOverdue",
+                  "label": "Days Overdue",
+                  "type": "range",
+                  "options": [
+                    "1-7",
+                    "8-14",
+                    "15-30",
+                    "30+"
+                  ]
+                },
+                {
+                  "key": "notificationStatus",
+                  "label": "Notification Status",
+                  "type": "select",
+                  "options": [
+                    "Not Sent",
+                    "Sent Once",
+                    "Multiple Reminders"
+                  ]
+                }
+              ],
+              "selectable": true,
+              "bulkActions": [
+                {
+                  "label": "Send Notifications",
+                  "action": "bulk_notify"
+                },
+                {
+                  "label": "Waive Fees",
+                  "action": "bulk_waive"
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "OverdueRecord.list"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/member-detail"
+        },
+        "notify": {
+          "type": "workflow",
+          "workflowId": "NotificationDispatchWorkflow"
+        },
+        "waive": {
+          "type": "update",
+          "target": "OverdueRecord"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/librarian-dashboard"
+        },
+        {
+          "label": "Circulation Desk",
+          "route": "/circulation-desk"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/book-catalog"
+        },
+        {
+          "label": "Member Management",
+          "route": "/member-management"
+        },
+        {
+          "label": "Borrowing History",
+          "route": "/borrowing-history"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "System Settings",
+          "route": "/system-settings"
+        }
+      ]
+    },
+    "workflowId": "member-registration-workflow"
+  },
+  {
+    "id": "reportspage-1765051500000-rpt001",
+    "name": "ReportsPage",
+    "title": "Reports & Analytics",
+    "description": "Generate operational reports and analytics for library management including circulation statistics, popular books, member activity, overdue trends, and collection utilization",
+    "route": "/reports",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Reports & Analytics",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Generate operational reports and view library analytics",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Report Filters",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "dateRangePicker",
+                "config": {
+                  "label": "Date Range",
+                  "startDateField": "startDate",
+                  "endDateField": "endDate",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "marginBottom": "16px"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Generate Reports",
+                  "variant": "primary",
+                  "action": "filter",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "none",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "grid",
+            "config": {
+              "columns": 2,
+              "gap": "24px",
+              "style": {
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Circulation Statistics",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "Checkout.aggregateStats",
+                "components": [
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Total Checkouts",
+                      "valueField": "totalCheckouts",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "color": "#1a1a1a",
+                        "marginBottom": "8px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Active Checkouts",
+                      "valueField": "activeCheckouts",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#2563eb"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "label": "Export Report",
+                      "variant": "secondary",
+                      "action": "export",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "backgroundColor": "#f5f5f5",
+                        "color": "#1a1a1a",
+                        "padding": "8px 16px",
+                        "borderRadius": "8px",
+                        "border": "1px solid #e5e5e5",
+                        "cursor": "pointer",
+                        "marginTop": "16px"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Member Activity",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "Member.activityStats",
+                "components": [
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Active Members",
+                      "valueField": "activeMembers",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "color": "#1a1a1a",
+                        "marginBottom": "8px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "New Registrations",
+                      "valueField": "newRegistrations",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#16a34a"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "label": "Export Report",
+                      "variant": "secondary",
+                      "action": "export",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "backgroundColor": "#f5f5f5",
+                        "color": "#1a1a1a",
+                        "padding": "8px 16px",
+                        "borderRadius": "8px",
+                        "border": "1px solid #e5e5e5",
+                        "cursor": "pointer",
+                        "marginTop": "16px"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Popular Books",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Book.popularBooks",
+            "components": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "field": "title",
+                      "header": "Book Title",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "field": "author",
+                      "header": "Author",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#666666"
+                      }
+                    },
+                    {
+                      "field": "checkoutCount",
+                      "header": "Checkouts",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "color": "#2563eb"
+                      }
+                    },
+                    {
+                      "field": "category",
+                      "header": "Category",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#666666"
+                      }
+                    }
+                  ],
+                  "pagination": true,
+                  "pageSize": 10,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "borderRadius": "8px",
+                    "overflow": "hidden"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Export to CSV",
+                  "variant": "secondary",
+                  "action": "export",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#f5f5f5",
+                    "color": "#1a1a1a",
+                    "padding": "8px 16px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #e5e5e5",
+                    "cursor": "pointer",
+                    "marginTop": "16px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "grid",
+            "config": {
+              "columns": 2,
+              "gap": "24px"
+            },
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Overdue Trends",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "OverdueRecord.trendStats",
+                "components": [
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Current Overdue",
+                      "valueField": "currentOverdue",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "color": "#dc2626",
+                        "marginBottom": "8px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Avg Days Overdue",
+                      "valueField": "avgDaysOverdue",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#ea580c"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "label": "Export Report",
+                      "variant": "secondary",
+                      "action": "export",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "backgroundColor": "#f5f5f5",
+                        "color": "#1a1a1a",
+                        "padding": "8px 16px",
+                        "borderRadius": "8px",
+                        "border": "1px solid #e5e5e5",
+                        "cursor": "pointer",
+                        "marginTop": "16px"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "config": {
+                  "title": "Collection Utilization",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "12px",
+                    "padding": "24px",
+                    "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    "border": "1px solid #e5e5e5"
+                  }
+                },
+                "dataBinding": "Book.utilizationStats",
+                "components": [
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Utilization Rate",
+                      "valueField": "utilizationRate",
+                      "suffix": "%",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "color": "#1a1a1a",
+                        "marginBottom": "8px"
+                      }
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Available Books",
+                      "valueField": "availableBooks",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "24px",
+                        "fontWeight": "600",
+                        "color": "#16a34a"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "label": "Export Report",
+                      "variant": "secondary",
+                      "action": "export",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "backgroundColor": "#f5f5f5",
+                        "color": "#1a1a1a",
+                        "padding": "8px 16px",
+                        "borderRadius": "8px",
+                        "border": "1px solid #e5e5e5",
+                        "cursor": "pointer",
+                        "marginTop": "16px"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "export": {
+          "type": "download",
+          "format": "csv"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/books"
+        },
+        {
+          "label": "Member Management",
+          "route": "/members"
+        },
+        {
+          "label": "Circulation Desk",
+          "route": "/circulation"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue"
+        },
+        {
+          "label": "System Settings",
+          "route": "/settings"
+        }
+      ]
+    },
+    "workflowId": "member-registration-workflow"
+  },
+  {
+    "id": "memberdetailpage-1765051500000-xyz123",
+    "name": "MemberDetailPage",
+    "title": "Member Details",
+    "description": "Display comprehensive member information and activity for librarians",
+    "route": "/members/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "memberprofileupdateform-1765051397034-w42xyn",
+      "checkoutform-1765051453054-ige4jw"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Member.name}}",
+              "variant": "h1",
+              "color": "#1a1a1a",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Edit Profile",
+              "variant": "primary",
+              "backgroundColor": "#2563eb",
+              "textColor": "#ffffff",
+              "borderRadius": "8px",
+              "paddingVertical": "12px",
+              "paddingHorizontal": "24px",
+              "fontSize": "16px",
+              "fontWeight": "600",
+              "hoverBackgroundColor": "#1d4ed8",
+              "action": "openForm"
+            },
+            "formRef": "memberprofileupdateform-1765051397034-w42xyn"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Member Information",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "12px",
+              "padding": "24px",
+              "shadowColor": "#000000",
+              "shadowOpacity": 0.08,
+              "shadowRadius": 8,
+              "borderWidth": "1px",
+              "borderColor": "#e5e7eb",
+              "fields": [
+                {
+                  "label": "Member ID",
+                  "value": "{{Member.memberId}}",
+                  "labelColor": "#6b7280",
+                  "valueColor": "#1a1a1a",
+                  "labelFontSize": "14px",
+                  "valueFontSize": "16px",
+                  "labelFontWeight": "500",
+                  "valueFontWeight": "600"
+                },
+                {
+                  "label": "Email",
+                  "value": "{{Member.email}}",
+                  "labelColor": "#6b7280",
+                  "valueColor": "#1a1a1a",
+                  "labelFontSize": "14px",
+                  "valueFontSize": "16px"
+                },
+                {
+                  "label": "Phone",
+                  "value": "{{Member.phone}}",
+                  "labelColor": "#6b7280",
+                  "valueColor": "#1a1a1a",
+                  "labelFontSize": "14px",
+                  "valueFontSize": "16px"
+                },
+                {
+                  "label": "Membership Status",
+                  "value": "{{Member.membershipStatus}}",
+                  "labelColor": "#6b7280",
+                  "valueColor": "#059669",
+                  "labelFontSize": "14px",
+                  "valueFontSize": "16px",
+                  "valueFontWeight": "600"
+                },
+                {
+                  "label": "Join Date",
+                  "value": "{{Member.joinDate}}",
+                  "labelColor": "#6b7280",
+                  "valueColor": "#1a1a1a",
+                  "labelFontSize": "14px",
+                  "valueFontSize": "16px"
+                },
+                {
+                  "label": "Outstanding Fees",
+                  "value": "${{Member.outstandingFees}}",
+                  "labelColor": "#6b7280",
+                  "valueColor": "#dc2626",
+                  "labelFontSize": "14px",
+                  "valueFontSize": "16px",
+                  "valueFontWeight": "600"
+                }
+              ]
+            },
+            "dataBinding": "Member.findById"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Current Checkouts",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "12px",
+              "padding": "24px",
+              "shadowColor": "#000000",
+              "shadowOpacity": 0.08,
+              "shadowRadius": 8,
+              "borderWidth": "1px",
+              "borderColor": "#e5e7eb",
+              "headerBackgroundColor": "#f9fafb",
+              "headerTextColor": "#1a1a1a",
+              "headerFontSize": "14px",
+              "headerFontWeight": "600",
+              "rowTextColor": "#374151",
+              "rowFontSize": "14px",
+              "rowHoverBackgroundColor": "#f3f4f6",
+              "columns": [
+                {
+                  "header": "Book Title",
+                  "field": "book.title",
+                  "width": "40%"
+                },
+                {
+                  "header": "Checkout Date",
+                  "field": "checkoutDate",
+                  "width": "20%"
+                },
+                {
+                  "header": "Due Date",
+                  "field": "dueDate",
+                  "width": "20%"
+                },
+                {
+                  "header": "Status",
+                  "field": "status",
+                  "width": "20%",
+                  "textColor": "#059669"
+                }
+              ]
+            },
+            "dataBinding": "Checkout.query",
+            "filters": {
+              "memberId": "{{Member.id}}",
+              "status": "active"
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Overdue Items",
+              "backgroundColor": "#fef2f2",
+              "borderRadius": "12px",
+              "padding": "24px",
+              "shadowColor": "#000000",
+              "shadowOpacity": 0.08,
+              "shadowRadius": 8,
+              "borderWidth": "1px",
+              "borderColor": "#fecaca",
+              "headerBackgroundColor": "#fee2e2",
+              "headerTextColor": "#991b1b",
+              "headerFontSize": "14px",
+              "headerFontWeight": "600",
+              "rowTextColor": "#7f1d1d",
+              "rowFontSize": "14px",
+              "columns": [
+                {
+                  "header": "Book Title",
+                  "field": "checkout.book.title",
+                  "width": "40%"
+                },
+                {
+                  "header": "Due Date",
+                  "field": "checkout.dueDate",
+                  "width": "20%"
+                },
+                {
+                  "header": "Days Overdue",
+                  "field": "daysOverdue",
+                  "width": "20%"
+                },
+                {
+                  "header": "Fine Amount",
+                  "field": "fineAmount",
+                  "width": "20%",
+                  "textColor": "#dc2626",
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            "dataBinding": "OverdueRecord.query",
+            "filters": {
+              "memberId": "{{Member.id}}",
+              "resolved": false
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Borrowing History",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "12px",
+              "padding": "24px",
+              "shadowColor": "#000000",
+              "shadowOpacity": 0.08,
+              "shadowRadius": 8,
+              "borderWidth": "1px",
+              "borderColor": "#e5e7eb",
+              "headerBackgroundColor": "#f9fafb",
+              "headerTextColor": "#1a1a1a",
+              "headerFontSize": "14px",
+              "headerFontWeight": "600",
+              "rowTextColor": "#374151",
+              "rowFontSize": "14px",
+              "rowHoverBackgroundColor": "#f3f4f6",
+              "columns": [
+                {
+                  "header": "Book Title",
+                  "field": "book.title",
+                  "width": "35%"
+                },
+                {
+                  "header": "Checkout Date",
+                  "field": "checkoutDate",
+                  "width": "20%"
+                },
+                {
+                  "header": "Return Date",
+                  "field": "returnDate",
+                  "width": "20%"
+                },
+                {
+                  "header": "Status",
+                  "field": "status",
+                  "width": "15%"
+                },
+                {
+                  "header": "Actions",
+                  "field": "actions",
+                  "width": "10%"
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10
+            },
+            "dataBinding": "Checkout.query",
+            "filters": {
+              "memberId": "{{Member.id}}"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "edit": {
+          "type": "navigate",
+          "target": "/members/:id/edit"
+        },
+        "checkout": {
+          "type": "navigate",
+          "target": "/circulation"
+        },
+        "viewBook": {
+          "type": "navigate",
+          "target": "/books/:bookId"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Member Management",
+          "route": "/members"
+        },
+        {
+          "label": "Circulation Desk",
+          "route": "/circulation"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/books"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        }
+      ]
+    },
+    "workflowId": "member-registration-workflow"
+  },
+  {
+    "id": "circulationdeskpage-1765051500000-xyz123",
+    "name": "CirculationDeskPage",
+    "title": "Circulation Desk",
+    "description": "Centralized interface for processing checkouts and returns at the circulation desk with quick lookup functionality",
+    "route": "/circulation-desk",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "checkoutform-1765051453054-ige4jw",
+      "returnform-1765051473709-qjnerv",
+      "booksearchform-1765051414671-s19thp"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Circulation Desk",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Process checkouts, returns, and quick lookups",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Lookup",
+              "subtitle": "Scan or search for members and books",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "booksearchform-1765051414671-s19thp"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Check Out Book",
+              "subtitle": "Process new book checkouts",
+              "icon": "book-open",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "checkoutform-1765051453054-ige4jw"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Return Book",
+              "subtitle": "Process book returns and calculate fees",
+              "icon": "arrow-left-circle",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "returnform-1765051473709-qjnerv"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Active Checkouts Today",
+              "columns": [
+                {
+                  "key": "member",
+                  "label": "Member",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "book",
+                  "label": "Book",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "checkoutDate",
+                  "label": "Checkout Time",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "dueDate",
+                  "label": "Due Date",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                }
+              ],
+              "pageSize": 10,
+              "searchable": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Checkout.list"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "checkout": {
+          "type": "workflow",
+          "target": "BookCheckoutWorkflow"
+        },
+        "return": {
+          "type": "workflow",
+          "target": "BookReturnWorkflow"
+        },
+        "viewMember": {
+          "type": "navigate",
+          "target": "/member-detail"
+        },
+        "viewBook": {
+          "type": "navigate",
+          "target": "/book-detail"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/librarian-dashboard",
+          "icon": "home"
+        },
+        {
+          "label": "Circulation Desk",
+          "route": "/circulation-desk",
+          "icon": "refresh-cw",
+          "active": true
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/book-catalog",
+          "icon": "book"
+        },
+        {
+          "label": "Member Management",
+          "route": "/member-management",
+          "icon": "users"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management",
+          "icon": "alert-circle"
+        },
+        {
+          "label": "Borrowing History",
+          "route": "/borrowing-history",
+          "icon": "clock"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "bar-chart"
+        },
+        {
+          "label": "Settings",
+          "route": "/system-settings",
+          "icon": "settings"
+        }
+      ]
+    },
+    "workflowId": "member-registration-workflow"
+  }
+]

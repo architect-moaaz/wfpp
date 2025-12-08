@@ -99,6 +99,7 @@ const WorkflowTestRunner = ({ workflow, onClose }) => {
   const [inputData, setInputData] = useState({});
   const [startForm, setStartForm] = useState(null);
   const [error, setError] = useState(null);
+  const [currentWizardStep, setCurrentWizardStep] = useState(0);
   const pollInterval = useRef(null);
   const currentTaskId = useRef(null);
 
@@ -207,19 +208,43 @@ const WorkflowTestRunner = ({ workflow, onClose }) => {
           .then(result => {
             if (result.success && result.form) {
               setStartForm(result.form);
+              setCurrentWizardStep(0); // Reset to first step
+
               // Initialize input data with empty values
               const initialInput = {};
-              if (result.form.fields && Array.isArray(result.form.fields)) {
+
+              // Handle wizard forms (with steps)
+              if (result.form.formType === 'wizard' && result.form.steps && Array.isArray(result.form.steps)) {
+                result.form.steps.forEach(step => {
+                  if (step.fields && Array.isArray(step.fields)) {
+                    step.fields.forEach(field => {
+                      const fieldKey = field.name || field.fieldName || field.id;
+                      initialInput[fieldKey] = '';
+                    });
+                  }
+                });
+              }
+              // Handle standard forms (with fields directly)
+              else if (result.form.fields && Array.isArray(result.form.fields)) {
                 result.form.fields.forEach(field => {
                   const fieldKey = field.name || field.fieldName || field.id;
                   initialInput[fieldKey] = '';
                 });
               }
+
               setInputData(initialInput);
+            } else {
+              // Form not found - show error message
+              const errorMsg = `Form not found: ${startNode.data.formId}. The form referenced by this workflow does not exist in the database.`;
+              console.error(errorMsg);
+              setError(errorMsg);
+              setStartForm(null);
             }
           })
           .catch(err => {
             console.error('Error fetching start form:', err);
+            setError(`Failed to fetch start form: ${err.message}`);
+            setStartForm(null);
           });
       }
     }
@@ -494,11 +519,151 @@ const WorkflowTestRunner = ({ workflow, onClose }) => {
           {!instance && startForm && (
             <div className="sidebar-section">
               <h3>{startForm.name || 'Input Data'}</h3>
-              {startForm.description && (
+
+              {/* Standard form description (non-wizard) */}
+              {startForm.formType !== 'wizard' && startForm.description && (
                 <p className="form-description">{startForm.description}</p>
               )}
+
+              {/* Wizard form: step indicator and step title/description */}
+              {startForm.formType === 'wizard' && startForm.steps && startForm.steps.length > 0 && (
+                <>
+                  <div className="wizard-step-indicator">
+                    Step {currentWizardStep + 1} of {startForm.steps.length}
+                  </div>
+                  {startForm.steps[currentWizardStep].title && (
+                    <h4 className="wizard-step-title">{startForm.steps[currentWizardStep].title}</h4>
+                  )}
+                  {startForm.steps[currentWizardStep].description && (
+                    <p className="form-description">{startForm.steps[currentWizardStep].description}</p>
+                  )}
+                </>
+              )}
+
               <div className="form-fields">
-                {startForm.fields && startForm.fields.map((field, index) => (
+                {/* Render wizard form - current step's fields */}
+                {startForm.formType === 'wizard' && startForm.steps && startForm.steps.length > 0 && startForm.steps[currentWizardStep].fields &&
+                  startForm.steps[currentWizardStep].fields.map((field, index) => (
+                    <div key={`start-${field.name || field.fieldName || index}`} className="form-field">
+                      {(() => {
+                        const fieldKey = field.name || field.fieldName || field.id;
+                        return (
+                          <>
+                            <label>
+                              {field.label || fieldKey || 'Field'}
+                              {field.required && <span className="required">*</span>}
+                            </label>
+                            {field.type === 'boolean' ? (
+                              <select
+                                value={inputData[fieldKey] || ''}
+                                onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value === 'true' }))}
+                                required={field.required}
+                              >
+                                <option value="">Select...</option>
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                              </select>
+                            ) : field.type === 'dropdown' || field.type === 'select' ? (
+                              <select
+                                value={inputData[fieldKey] || ''}
+                                onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                                required={field.required}
+                              >
+                                <option value="">Select {field.label || fieldKey}...</option>
+                                {(field.options || []).map((option, idx) => (
+                                  <option key={idx} value={typeof option === 'string' ? option : option.value}>
+                                    {typeof option === 'string' ? option : option.label || option.value}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : field.type === 'radio' ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {(field.options || []).map((option, idx) => {
+                                  const optionValue = typeof option === 'string' ? option : option.value;
+                                  const optionLabel = typeof option === 'string' ? option : option.label || option.value;
+                                  return (
+                                    <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                      <input
+                                        type="radio"
+                                        name={fieldKey}
+                                        value={optionValue}
+                                        checked={inputData[fieldKey] === optionValue}
+                                        onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                                        required={field.required && idx === 0}
+                                      />
+                                      <span>{optionLabel}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            ) : field.type === 'checkbox' ? (
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={inputData[fieldKey] || false}
+                                  onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.checked }))}
+                                  required={field.required}
+                                />
+                                <span>{field.helpText || `Check to enable ${field.label || fieldKey}`}</span>
+                              </label>
+                            ) : field.type === 'textarea' ? (
+                              <textarea
+                                value={inputData[fieldKey] || ''}
+                                onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                                placeholder={`Enter ${(field.label || fieldKey || 'value').toLowerCase()}`}
+                                rows={field.rows || 3}
+                                required={field.required}
+                              />
+                            ) : field.type === 'number' ? (
+                              <input
+                                type="number"
+                                value={inputData[fieldKey] || ''}
+                                onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: parseInt(e.target.value) || 0 }))}
+                                placeholder={`Enter ${(field.label || fieldKey || 'value').toLowerCase()}`}
+                                required={field.required}
+                              />
+                            ) : field.type === 'email' ? (
+                              <input
+                                type="email"
+                                value={inputData[fieldKey] || ''}
+                                onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                                placeholder={`Enter ${(field.label || fieldKey || 'value').toLowerCase()}`}
+                                required={field.required}
+                              />
+                            ) : field.type === 'date' ? (
+                              <input
+                                type="date"
+                                value={inputData[fieldKey] || ''}
+                                onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                                required={field.required}
+                              />
+                            ) : field.type === 'file' ? (
+                              <input
+                                type="file"
+                                onChange={(e) => {
+                                  const file = e.target.files[0];
+                                  setInputData(prev => ({ ...prev, [fieldKey]: file ? file.name : '' }));
+                                }}
+                                required={field.required}
+                              />
+                            ) : (
+                              <input
+                                type={field.type || 'text'}
+                                value={inputData[fieldKey] || ''}
+                                onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                                placeholder={`Enter ${(field.label || fieldKey || 'value').toLowerCase()}`}
+                                required={field.required}
+                              />
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  ))
+                }
+
+                {/* Render standard form - all fields at once */}
+                {startForm.formType !== 'wizard' && startForm.fields && startForm.fields.map((field, index) => (
                   <div key={`start-${field.name || field.fieldName || index}`} className="form-field">
                     {(() => {
                       const fieldKey = field.name || field.fieldName || field.id;
@@ -518,12 +683,56 @@ const WorkflowTestRunner = ({ workflow, onClose }) => {
                               <option value="true">Yes</option>
                               <option value="false">No</option>
                             </select>
-                          ) : field.type === 'text' ? (
+                          ) : field.type === 'dropdown' || field.type === 'select' ? (
+                            <select
+                              value={inputData[fieldKey] || ''}
+                              onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                              required={field.required}
+                            >
+                              <option value="">Select {field.label || fieldKey}...</option>
+                              {(field.options || []).map((option, idx) => (
+                                <option key={idx} value={typeof option === 'string' ? option : option.value}>
+                                  {typeof option === 'string' ? option : option.label || option.value}
+                                </option>
+                              ))}
+                            </select>
+                          ) : field.type === 'radio' ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              {(field.options || []).map((option, idx) => {
+                                const optionValue = typeof option === 'string' ? option : option.value;
+                                const optionLabel = typeof option === 'string' ? option : option.label || option.value;
+                                return (
+                                  <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <input
+                                      type="radio"
+                                      name={fieldKey}
+                                      value={optionValue}
+                                      checked={inputData[fieldKey] === optionValue}
+                                      onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                                      required={field.required && idx === 0}
+                                    />
+                                    <span>{optionLabel}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          ) : field.type === 'checkbox' ? (
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                              <input
+                                type="checkbox"
+                                checked={inputData[fieldKey] || false}
+                                onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.checked }))}
+                                required={field.required}
+                              />
+                              <span>{field.helpText || `Check to enable ${field.label || fieldKey}`}</span>
+                            </label>
+                          ) : field.type === 'textarea' ? (
                             <textarea
                               value={inputData[fieldKey] || ''}
                               onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
                               placeholder={`Enter ${(field.label || fieldKey || 'value').toLowerCase()}`}
-                              rows={3}
+                              rows={field.rows || 3}
+                              required={field.required}
                             />
                           ) : field.type === 'number' ? (
                             <input
@@ -531,6 +740,21 @@ const WorkflowTestRunner = ({ workflow, onClose }) => {
                               value={inputData[fieldKey] || ''}
                               onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: parseInt(e.target.value) || 0 }))}
                               placeholder={`Enter ${(field.label || fieldKey || 'value').toLowerCase()}`}
+                              required={field.required}
+                            />
+                          ) : field.type === 'email' ? (
+                            <input
+                              type="email"
+                              value={inputData[fieldKey] || ''}
+                              onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                              placeholder={`Enter ${(field.label || fieldKey || 'value').toLowerCase()}`}
+                              required={field.required}
+                            />
+                          ) : field.type === 'date' ? (
+                            <input
+                              type="date"
+                              value={inputData[fieldKey] || ''}
+                              onChange={(e) => setInputData(prev => ({ ...prev, [fieldKey]: e.target.value }))}
                               required={field.required}
                             />
                           ) : field.type === 'file' ? (
@@ -557,6 +781,33 @@ const WorkflowTestRunner = ({ workflow, onClose }) => {
                   </div>
                 ))}
               </div>
+
+              {/* Wizard navigation buttons */}
+              {startForm.formType === 'wizard' && startForm.steps && startForm.steps.length > 0 && (
+                <div className="wizard-navigation">
+                  {currentWizardStep > 0 && (
+                    <button
+                      className="secondary-btn"
+                      onClick={() => setCurrentWizardStep(prev => Math.max(0, prev - 1))}
+                    >
+                      Previous
+                    </button>
+                  )}
+                  {currentWizardStep < startForm.steps.length - 1 && (
+                    <button
+                      className="primary-btn"
+                      onClick={() => setCurrentWizardStep(prev => Math.min(startForm.steps.length - 1, prev + 1))}
+                    >
+                      Next
+                    </button>
+                  )}
+                  {currentWizardStep === startForm.steps.length - 1 && (
+                    <button className="primary-btn" onClick={handleStartWorkflow}>
+                      Start Workflow
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

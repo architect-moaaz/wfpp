@@ -1,0 +1,1359 @@
+[
+  {
+    "id": "candidate",
+    "name": "Candidate",
+    "description": "Stores candidate and employee profile information including personal details, contact information, employment status, and skills for technical assessments",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the candidate",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Primary email address for communication and login",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "Complete name of the candidate or employee",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employmentStatus",
+        "type": "string",
+        "description": "Current status: external_candidate, internal_employee, contractor",
+        "required": true,
+        "defaultValue": "external_candidate"
+      },
+      {
+        "name": "skills",
+        "type": "array",
+        "description": "List of technical skills and competencies",
+        "required": false,
+        "defaultValue": []
+      },
+      {
+        "name": "phoneNumber",
+        "type": "string",
+        "description": "Contact phone number",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the candidate profile was created",
+        "required": true,
+        "defaultValue": "now()"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "email",
+      "employmentStatus"
+    ],
+    "constraints": {
+      "unique": [
+        "email"
+      ],
+      "enum": {
+        "employmentStatus": [
+          "external_candidate",
+          "internal_employee",
+          "contractor"
+        ]
+      }
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "skill-category",
+    "name": "SkillCategory",
+    "description": "Defines hierarchical skill categories and competency areas for organizing technical and soft skills into a structured taxonomy",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the skill category",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the skill category (e.g., Programming Languages, Cloud Technologies)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the skill category and its scope",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "parentCategoryId",
+        "type": "string",
+        "description": "Reference to parent category ID for hierarchical taxonomy (null for root categories)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "description": "Hierarchy level in the taxonomy tree (0 for root, 1 for first level, etc.)",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the category is currently active and available for use",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the skill category was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "self-referential",
+        "field": "parentCategoryId",
+        "references": "SkillCategory.id",
+        "description": "Parent-child relationship for hierarchical category structure"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_parent_category",
+        "fields": [
+          "parentCategoryId"
+        ]
+      },
+      {
+        "name": "idx_name",
+        "fields": [
+          "name"
+        ]
+      },
+      {
+        "name": "idx_active",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ],
+      "check": [
+        "level >= 0",
+        "parentCategoryId IS NULL OR parentCategoryId != id"
+      ]
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "user",
+    "name": "User",
+    "description": "Stores user accounts for HR team, recruiters, hiring managers, and administrators with authentication and role-based access control",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address for authentication and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "User's full name for display purposes",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "passwordHash",
+        "type": "string",
+        "description": "Hashed password for secure authentication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "User role (admin, hr_manager, recruiter, hiring_manager)",
+        "required": true,
+        "defaultValue": "recruiter"
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the user account is active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "lastLoginAt",
+        "type": "date",
+        "description": "Timestamp of the user's last login for activity tracking",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the user account was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_user_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_user_role",
+        "fields": [
+          "role"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "email": "Must be valid email format and unique",
+      "role": "Must be one of: admin, hr_manager, recruiter, hiring_manager"
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "question",
+    "name": "Question",
+    "description": "Store assessment questions with metadata and evaluation criteria",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the question",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "questionText",
+        "type": "text",
+        "description": "The actual question content or prompt",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "questionType",
+        "type": "enum",
+        "description": "Type of question: multiple_choice, coding_challenge, essay, practical_task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "skillCategoryId",
+        "type": "string",
+        "description": "Reference to the skill category this question assesses",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "difficultyLevel",
+        "type": "enum",
+        "description": "Difficulty rating: beginner, intermediate, advanced, expert",
+        "required": true,
+        "defaultValue": "intermediate"
+      },
+      {
+        "name": "evaluationCriteria",
+        "type": "json",
+        "description": "Scoring rubric, correct answers, AI evaluation parameters, and grading guidelines",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "maxScore",
+        "type": "number",
+        "description": "Maximum points that can be awarded for this question",
+        "required": true,
+        "defaultValue": 100
+      },
+      {
+        "name": "createdBy",
+        "type": "string",
+        "description": "Reference to User who created the question",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "SkillCategory",
+        "foreignKey": "skillCategoryId"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "createdBy"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "skillCategoryId"
+        ]
+      },
+      {
+        "fields": [
+          "questionType",
+          "difficultyLevel"
+        ]
+      }
+    ],
+    "constraints": {
+      "questionType": [
+        "multiple_choice",
+        "coding_challenge",
+        "essay",
+        "practical_task"
+      ],
+      "difficultyLevel": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "expert"
+      ],
+      "maxScore": "Must be greater than 0"
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "evaluation-criteria",
+    "name": "EvaluationCriteria",
+    "description": "Stores configurable evaluation criteria including scoring algorithms, weighting factors, pass/fail thresholds, and rubric definitions for different question types and assessment categories",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the evaluation criteria",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the evaluation criteria (e.g., 'Code Quality Assessment', 'Technical Knowledge Scoring')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "questionId",
+        "type": "string",
+        "description": "Foreign key reference to the Question this criteria applies to",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "skillCategoryId",
+        "type": "string",
+        "description": "Foreign key reference to the SkillCategory this criteria applies to",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "scoringAlgorithm",
+        "type": "string",
+        "description": "Type of scoring algorithm (e.g., 'weighted', 'binary', 'rubric-based', 'ai-evaluated')",
+        "required": true,
+        "defaultValue": "weighted"
+      },
+      {
+        "name": "weightingFactor",
+        "type": "number",
+        "description": "Weight multiplier for this criteria in overall scoring (0.0 to 1.0)",
+        "required": true,
+        "defaultValue": 1
+      },
+      {
+        "name": "passThreshold",
+        "type": "number",
+        "description": "Minimum score required to pass this criteria (percentage or points)",
+        "required": true,
+        "defaultValue": 70
+      },
+      {
+        "name": "rubricDefinition",
+        "type": "json",
+        "description": "JSON object containing rubric details, scoring levels, AI prompts, and evaluation parameters",
+        "required": true,
+        "defaultValue": {}
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Question",
+        "foreignKey": "questionId",
+        "description": "Links criteria to a specific question"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "SkillCategory",
+        "foreignKey": "skillCategoryId",
+        "description": "Links criteria to a skill category"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_question_id",
+        "fields": [
+          "questionId"
+        ]
+      },
+      {
+        "name": "idx_skill_category_id",
+        "fields": [
+          "skillCategoryId"
+        ]
+      },
+      {
+        "name": "idx_scoring_algorithm",
+        "fields": [
+          "scoringAlgorithm"
+        ]
+      }
+    ],
+    "constraints": {
+      "weightingFactor": "Must be between 0.0 and 1.0",
+      "passThreshold": "Must be between 0 and 100",
+      "questionOrCategory": "Either questionId or skillCategoryId must be provided"
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "audit-log",
+    "name": "AuditLog",
+    "description": "Comprehensive audit trail capturing all user actions, data modifications, and system activities for compliance and security monitoring",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the audit log entry",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user who performed the action",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "action",
+        "type": "string",
+        "description": "Type of action performed (e.g., CREATE, UPDATE, DELETE, VIEW, LOGIN, LOGOUT)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entityType",
+        "type": "string",
+        "description": "Type of entity affected (e.g., Candidate, Question, Assessment, User)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entityId",
+        "type": "string",
+        "description": "Unique identifier of the affected entity",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "changes",
+        "type": "json",
+        "description": "JSON object containing before/after values of modified data",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "ipAddress",
+        "type": "string",
+        "description": "IP address from which the action was performed",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "timestamp",
+        "type": "date",
+        "description": "Date and time when the action occurred",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Links audit log entry to the user who performed the action"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_timestamp",
+        "fields": [
+          "userId",
+          "timestamp"
+        ],
+        "description": "Optimize queries filtering by user and time range"
+      },
+      {
+        "name": "idx_entity_action",
+        "fields": [
+          "entityType",
+          "entityId",
+          "action"
+        ],
+        "description": "Optimize queries tracking specific entity changes"
+      },
+      {
+        "name": "idx_timestamp",
+        "fields": [
+          "timestamp"
+        ],
+        "description": "Optimize time-based queries and log retention policies"
+      }
+    ],
+    "constraints": {
+      "immutable": true,
+      "retentionPolicy": "Retain for minimum 7 years for compliance requirements"
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "assessment",
+    "name": "Assessment",
+    "description": "Stores assessment templates and configurations for candidate evaluations",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the assessment template",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Name of the assessment template",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of assessment purpose and content",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "assessmentType",
+        "type": "string",
+        "description": "Type of assessment (technical, ai_ml, behavioral)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "durationMinutes",
+        "type": "number",
+        "description": "Time limit for completing the assessment in minutes",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "passingScore",
+        "type": "number",
+        "description": "Minimum score percentage required to pass (0-100)",
+        "required": true,
+        "defaultValue": 70
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this assessment template is currently available for use",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdBy",
+        "type": "string",
+        "description": "Reference to User who created this assessment template",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "createdBy",
+        "description": "Assessment creator"
+      },
+      {
+        "type": "oneToMany",
+        "relatedModel": "Question",
+        "description": "Questions included in this assessment"
+      },
+      {
+        "type": "manyToMany",
+        "relatedModel": "SkillCategory",
+        "description": "Skill categories covered by this assessment"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "assessmentType"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "isActive"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "passingScore": "Must be between 0 and 100",
+      "durationMinutes": "Must be greater than 0",
+      "assessmentType": "Must be one of: technical, ai_ml, behavioral"
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "assessment-assignment",
+    "name": "AssessmentAssignment",
+    "description": "Links candidates to specific assessments with scheduling, access control, and completion tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the assessment assignment",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "candidateId",
+        "type": "string",
+        "description": "Reference to the candidate taking the assessment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assessmentId",
+        "type": "string",
+        "description": "Reference to the assessment being assigned",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "accessToken",
+        "type": "string",
+        "description": "Unique token for secure assessment access",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "deadline",
+        "type": "date",
+        "description": "Due date and time for assessment completion",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "attemptsRemaining",
+        "type": "number",
+        "description": "Number of attempts left for the candidate",
+        "required": true,
+        "defaultValue": 1
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status: pending, in_progress, completed, expired",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "completedAt",
+        "type": "date",
+        "description": "Timestamp when the assessment was completed",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Candidate",
+        "foreignKey": "candidateId",
+        "description": "Each assignment belongs to one candidate"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Assessment",
+        "foreignKey": "assessmentId",
+        "description": "Each assignment is for one assessment"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "candidateId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "assessmentId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "accessToken"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "status",
+          "deadline"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "uniqueAssignment": "Unique constraint on (candidateId, assessmentId) to prevent duplicate assignments",
+      "statusValues": "Status must be one of: pending, in_progress, completed, expired",
+      "attemptsValidation": "attemptsRemaining must be >= 0"
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "assessment-response",
+    "name": "AssessmentResponse",
+    "description": "Stores candidate answers and submission data for assessment questions including timestamps, responses, and versioning for multiple attempts",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the assessment response",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assessmentAssignmentId",
+        "type": "string",
+        "description": "Reference to the assessment assignment this response belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "questionId",
+        "type": "string",
+        "description": "Reference to the question being answered",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "responseData",
+        "type": "json",
+        "description": "Candidate's answer data including text, code, multiple choice selections, and any attachments",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "timeSpentSeconds",
+        "type": "number",
+        "description": "Total time spent on this question in seconds",
+        "required": false,
+        "defaultValue": 0
+      },
+      {
+        "name": "version",
+        "type": "number",
+        "description": "Version number for tracking multiple attempts or auto-saves of the same question",
+        "required": true,
+        "defaultValue": 1
+      },
+      {
+        "name": "submittedAt",
+        "type": "date",
+        "description": "Timestamp when the response was submitted or last saved",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isSubmitted",
+        "type": "boolean",
+        "description": "Indicates whether this is a final submission or a partial save",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "AssessmentAssignment",
+        "foreignKey": "assessmentAssignmentId",
+        "description": "Each response belongs to one assessment assignment"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Question",
+        "foreignKey": "questionId",
+        "description": "Each response is for one specific question"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_assessment_assignment",
+        "fields": [
+          "assessmentAssignmentId"
+        ]
+      },
+      {
+        "name": "idx_question_version",
+        "fields": [
+          "questionId",
+          "version"
+        ]
+      },
+      {
+        "name": "idx_submitted_at",
+        "fields": [
+          "submittedAt"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        [
+          "assessmentAssignmentId",
+          "questionId",
+          "version"
+        ]
+      ],
+      "check": [
+        "timeSpentSeconds >= 0",
+        "version > 0"
+      ]
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "assessment-result",
+    "name": "AssessmentResult",
+    "description": "Store scored results and evaluation outcomes for completed assessments",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the assessment result",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assessmentAssignmentId",
+        "type": "string",
+        "description": "Reference to the assessment assignment that was completed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "overallScore",
+        "type": "number",
+        "description": "Final calculated score (0-100)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "skillBreakdown",
+        "type": "json",
+        "description": "Skill-level scores mapped by skill category ID with individual scores",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "aiInsights",
+        "type": "json",
+        "description": "AI-generated analysis including strengths, weaknesses, and recommendations",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "evaluationStatus",
+        "type": "string",
+        "description": "Status of evaluation: pending, completed, reviewed",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "evaluatedAt",
+        "type": "date",
+        "description": "Timestamp when the assessment was evaluated",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "evaluatedBy",
+        "type": "string",
+        "description": "User ID of evaluator or 'system' for automated evaluation",
+        "required": true,
+        "defaultValue": "system"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "model": "AssessmentAssignment",
+        "foreignKey": "assessmentAssignmentId",
+        "description": "Links to the specific assessment assignment"
+      },
+      {
+        "type": "hasMany",
+        "model": "AssessmentResponse",
+        "foreignKey": "assessmentAssignmentId",
+        "description": "Access to detailed response data through assignment"
+      },
+      {
+        "type": "belongsTo",
+        "model": "User",
+        "foreignKey": "evaluatedBy",
+        "description": "Links to the user who performed evaluation (if manual)"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "assessmentAssignmentId"
+        ],
+        "unique": true,
+        "description": "Ensure one result per assignment"
+      },
+      {
+        "fields": [
+          "overallScore"
+        ],
+        "description": "Optimize queries filtering by score"
+      },
+      {
+        "fields": [
+          "evaluationStatus"
+        ],
+        "description": "Optimize queries by evaluation status"
+      },
+      {
+        "fields": [
+          "evaluatedAt"
+        ],
+        "description": "Optimize queries by evaluation date"
+      }
+    ],
+    "constraints": {
+      "overallScore": "Must be between 0 and 100",
+      "evaluationStatus": "Must be one of: pending, completed, reviewed",
+      "skillBreakdown": "JSON object with skill category IDs as keys and score objects as values"
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "report",
+    "name": "Report",
+    "description": "Store generated reports and analytics snapshots with metadata, configurations, and export formats",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the report",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "reportType",
+        "type": "string",
+        "description": "Type of report (individual_assessment, comparative_analysis, team_performance, trend_analytics)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Report title or name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "generatedBy",
+        "type": "string",
+        "description": "Reference to User who generated the report",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "configuration",
+        "type": "json",
+        "description": "Report parameters and filters (date ranges, candidates, assessments, metrics)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "content",
+        "type": "json",
+        "description": "Generated report data including charts, statistics, and analysis results",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "exportFormat",
+        "type": "string",
+        "description": "Available export formats (pdf, excel, csv, json)",
+        "required": false,
+        "defaultValue": "pdf"
+      },
+      {
+        "name": "generatedAt",
+        "type": "date",
+        "description": "Timestamp when the report was generated",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "generatedBy",
+        "description": "User who generated the report"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "reportType"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "generatedBy"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "generatedAt"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "reportType": {
+        "enum": [
+          "individual_assessment",
+          "comparative_analysis",
+          "team_performance",
+          "trend_analytics"
+        ]
+      },
+      "exportFormat": {
+        "enum": [
+          "pdf",
+          "excel",
+          "csv",
+          "json"
+        ]
+      }
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "notification-log",
+    "name": "NotificationLog",
+    "description": "Records all system notifications and communications sent to candidates and users, including delivery status and retry tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification log entry",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientId",
+        "type": "string",
+        "description": "ID of the recipient (Candidate or User)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientType",
+        "type": "string",
+        "description": "Type of recipient (Candidate, User)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "notificationType",
+        "type": "string",
+        "description": "Type of notification (assessment_invitation, reminder, result_ready, deadline_warning, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "channel",
+        "type": "string",
+        "description": "Communication channel used (email, sms, in-app)",
+        "required": true,
+        "defaultValue": "email"
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Delivery status (pending, sent, delivered, failed, bounced)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "retryCount",
+        "type": "number",
+        "description": "Number of delivery retry attempts",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "sentAt",
+        "type": "date",
+        "description": "Timestamp when the notification was sent",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Candidate",
+        "foreignKey": "recipientId",
+        "description": "Links to Candidate when recipientType is Candidate"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "recipientId",
+        "description": "Links to User when recipientType is User"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "recipientId",
+          "recipientType"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "sentAt"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "recipientType": [
+        "Candidate",
+        "User"
+      ],
+      "channel": [
+        "email",
+        "sms",
+        "in-app"
+      ],
+      "status": [
+        "pending",
+        "sent",
+        "delivered",
+        "failed",
+        "bounced"
+      ]
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  },
+  {
+    "id": "skill-gap-analysis",
+    "name": "SkillGapAnalysis",
+    "description": "Stores AI-generated skill gap analysis comparing candidate performance against benchmarks with improvement recommendations",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the skill gap analysis",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assessmentResultId",
+        "type": "string",
+        "description": "Reference to the assessment result being analyzed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "skillCategoryId",
+        "type": "string",
+        "description": "Reference to the skill category with identified gap",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "gapSeverity",
+        "type": "string",
+        "description": "Severity level of the skill gap (critical, high, medium, low)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "currentScore",
+        "type": "number",
+        "description": "Candidate's current performance score in this skill area",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "targetScore",
+        "type": "number",
+        "description": "Expected or benchmark score for this skill area",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recommendations",
+        "type": "text",
+        "description": "AI-generated improvement recommendations and learning path suggestions",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "analyzedAt",
+        "type": "date",
+        "description": "Timestamp when the gap analysis was performed",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "AssessmentResult",
+        "foreignKey": "assessmentResultId",
+        "description": "Links to the assessment result being analyzed"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "SkillCategory",
+        "foreignKey": "skillCategoryId",
+        "description": "Links to the skill category with identified gap"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_assessment_result",
+        "fields": [
+          "assessmentResultId"
+        ]
+      },
+      {
+        "name": "idx_skill_category",
+        "fields": [
+          "skillCategoryId"
+        ]
+      },
+      {
+        "name": "idx_gap_severity",
+        "fields": [
+          "gapSeverity"
+        ]
+      }
+    ],
+    "constraints": {
+      "gapSeverity": {
+        "enum": [
+          "critical",
+          "high",
+          "medium",
+          "low"
+        ]
+      },
+      "currentScore": {
+        "min": 0,
+        "max": 100
+      },
+      "targetScore": {
+        "min": 0,
+        "max": 100
+      }
+    },
+    "workflowId": "workflow_ai_assessment_1703456789"
+  }
+]

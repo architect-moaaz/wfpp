@@ -1,0 +1,362 @@
+[
+  {
+    "id": "rule_ticket_submission_validation",
+    "name": "Ticket Submission Validation Rule",
+    "description": "Validate required fields when user submits a new ticket",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.title",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Ticket.title",
+          "value": null,
+          "message": "Ticket title is required and cannot be empty"
+        }
+      ]
+    },
+    "node_id": "node_start",
+    "workflow_id": "workflow_1734890234567",
+    "workflowId": "workflow_1734890234567",
+    "application_id": "app_1765045482278"
+  },
+  {
+    "id": "rule_validate_ticket_category",
+    "name": "Validate Ticket Category Rule",
+    "description": "Ensure ticket has a valid category assigned",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.category_id",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Ticket.category_id",
+          "value": null,
+          "message": "Valid category must be selected for the ticket"
+        }
+      ]
+    },
+    "node_id": "node_validate",
+    "workflow_id": "workflow_1734890234567",
+    "workflowId": "workflow_1734890234567",
+    "application_id": "app_1765045482278"
+  },
+  {
+    "id": "rule_determine_critical_priority",
+    "name": "Determine Critical Priority Level Rule",
+    "description": "Set ticket priority to critical based on keywords",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.description",
+          "operator": "contains",
+          "value": "urgent|critical|down|outage"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Ticket.priority",
+          "value": "critical",
+          "message": "Priority set to critical based on keywords"
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.recipient",
+          "value": "manager@company.com",
+          "message": "Critical ticket created - immediate attention required"
+        }
+      ]
+    },
+    "node_id": "node_priority_decision",
+    "workflow_id": "workflow_1734890234567",
+    "workflowId": "workflow_1734890234567",
+    "application_id": "app_1765045482278"
+  },
+  {
+    "id": "rule_route_to_technical_queue",
+    "name": "Route to Technical Support Queue Rule",
+    "description": "Route tickets to technical queue based on category",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Category.name",
+          "operator": "in",
+          "value": "Hardware,Software,Network"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Ticket.queue",
+          "value": "technical_support",
+          "message": "Ticket routed to technical support queue"
+        }
+      ]
+    },
+    "node_id": "node_queue_routing",
+    "workflow_id": "workflow_1734890234567",
+    "workflowId": "workflow_1734890234567",
+    "application_id": "app_1765045482278"
+  },
+  {
+    "id": "rule_assign_by_workload",
+    "name": "Assignment Strategy by Workload Rule",
+    "description": "Assign ticket to agent with lowest active ticket count",
+    "type": "decision",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "TicketAssignment.agent_id",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "executeScript",
+          "field": "TicketAssignment.agent_id",
+          "value": "getAgentWithLowestWorkload()",
+          "message": "Auto-assigned to available agent"
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.recipient",
+          "value": "assigned_agent_email",
+          "message": "New ticket has been assigned to you"
+        }
+      ]
+    },
+    "node_id": "node_parallel_assignment",
+    "workflow_id": "workflow_1734890234567",
+    "workflowId": "workflow_1734890234567",
+    "application_id": "app_1765045482278"
+  },
+  {
+    "id": "rule_agent_work_validation",
+    "name": "Agent Work on Ticket Validation Rule",
+    "description": "Validate agent adds comment when updating ticket",
+    "type": "validation",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Comment.content",
+          "operator": "isNull",
+          "value": true
+        },
+        {
+          "field": "Ticket.status",
+          "operator": "equals",
+          "value": "in_progress"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Comment.content",
+          "value": null,
+          "message": "Comment is required when updating ticket status"
+        }
+      ]
+    },
+    "node_id": "node_agent_task",
+    "workflow_id": "workflow_1734890234567",
+    "workflowId": "workflow_1734890234567",
+    "application_id": "app_1765045482278"
+  },
+  {
+    "id": "rule_resolution_status_check",
+    "name": "Resolution Status Decision Rule",
+    "description": "Determine if ticket can be marked as resolved",
+    "type": "decision",
+    "priority": 7,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.resolution_notes",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "Ticket.status",
+          "operator": "equals",
+          "value": "resolved"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Ticket.resolved_at",
+          "value": "currentTimestamp()",
+          "message": "Ticket marked as resolved"
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.recipient",
+          "value": "User.email",
+          "message": "Your ticket has been resolved. Please confirm resolution."
+        }
+      ]
+    },
+    "node_id": "node_resolution_decision",
+    "workflow_id": "workflow_1734890234567",
+    "workflowId": "workflow_1734890234567",
+    "application_id": "app_1765045482278"
+  },
+  {
+    "id": "rule_manager_escalation_validation",
+    "name": "Manager Escalation Validation Rule",
+    "description": "Validate escalation reason is provided by manager",
+    "type": "validation",
+    "priority": 8,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.escalation_reason",
+          "operator": "isNull",
+          "value": true
+        },
+        {
+          "field": "Ticket.is_escalated",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Ticket.escalation_reason",
+          "value": null,
+          "message": "Escalation reason must be provided when escalating ticket"
+        }
+      ]
+    },
+    "node_id": "node_escalate",
+    "workflow_id": "workflow_1734890234567",
+    "workflowId": "workflow_1734890234567",
+    "application_id": "app_1765045482278"
+  },
+  {
+    "id": "rule_user_confirmation_validation",
+    "name": "User Resolution Confirmation Validation Rule",
+    "description": "Validate user provides feedback on resolution",
+    "type": "validation",
+    "priority": 9,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.user_satisfaction",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Ticket.user_satisfaction",
+          "value": null,
+          "message": "Please confirm if the issue was resolved satisfactorily"
+        }
+      ]
+    },
+    "node_id": "node_user_feedback",
+    "workflow_id": "workflow_1734890234567",
+    "workflowId": "workflow_1734890234567",
+    "application_id": "app_1765045482278"
+  },
+  {
+    "id": "rule_check_reopen_request",
+    "name": "Check Reopen Request Decision Rule",
+    "description": "Determine if ticket should be reopened based on user feedback",
+    "type": "decision",
+    "priority": 10,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.user_satisfaction",
+          "operator": "equals",
+          "value": "unsatisfied"
+        },
+        {
+          "field": "Ticket.status",
+          "operator": "equals",
+          "value": "closed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Ticket.status",
+          "value": "reopened",
+          "message": "Ticket reopened due to unsatisfactory resolution"
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.recipient",
+          "value": "TicketAssignment.agent_email",
+          "message": "Ticket has been reopened by user - requires further attention"
+        },
+        {
+          "type": "updateData",
+          "field": "TicketMetrics.reopen_count",
+          "value": "increment",
+          "message": "Reopen count incremented"
+        }
+      ]
+    },
+    "node_id": "node_reopen_check",
+    "workflow_id": "workflow_1734890234567",
+    "workflowId": "workflow_1734890234567",
+    "application_id": "app_1765045482278"
+  }
+]

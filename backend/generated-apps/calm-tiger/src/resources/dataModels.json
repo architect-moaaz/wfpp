@@ -1,0 +1,247 @@
+[
+  {
+    "id": "app_1764399179518_customer",
+    "name": "Customer",
+    "config": {},
+    "fields": [
+      {
+        "name": "customerId",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the customer",
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "required": true,
+        "description": "Customer's email address for communication and login",
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "required": true,
+        "description": "Customer's full name",
+        "defaultValue": null
+      },
+      {
+        "name": "phoneNumber",
+        "type": "string",
+        "required": false,
+        "description": "Primary contact phone number",
+        "defaultValue": null
+      },
+      {
+        "name": "shippingAddress",
+        "type": "string",
+        "required": false,
+        "description": "Default shipping address for order delivery",
+        "defaultValue": null
+      },
+      {
+        "name": "registrationDate",
+        "type": "date",
+        "required": true,
+        "description": "Date when customer account was created",
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "required": true,
+        "description": "Indicates if customer account is active",
+        "defaultValue": true
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "customerId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "email": "Must be valid email format",
+      "customerId": "Must be unique across all customers"
+    },
+    "description": "Stores customer profiles with contact and shipping information for order processing",
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "description": "Customer can have multiple orders",
+        "relatedModel": "Order"
+      }
+    ]
+  },
+  {
+    "id": "app_1764399179518_inventory-item",
+    "name": "InventoryItem",
+    "config": {},
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the inventory item",
+        "defaultValue": null
+      },
+      {
+        "name": "productName",
+        "type": "string",
+        "required": true,
+        "description": "Name of the product",
+        "defaultValue": null
+      },
+      {
+        "name": "sku",
+        "type": "string",
+        "required": true,
+        "description": "Stock Keeping Unit - unique product identifier",
+        "defaultValue": null
+      },
+      {
+        "name": "quantityAvailable",
+        "type": "number",
+        "required": true,
+        "description": "Current available stock quantity for sale",
+        "defaultValue": 0
+      },
+      {
+        "name": "quantityReserved",
+        "type": "number",
+        "required": true,
+        "description": "Quantity reserved for pending orders",
+        "defaultValue": 0
+      },
+      {
+        "name": "unitPrice",
+        "type": "number",
+        "required": true,
+        "description": "Price per unit of the product",
+        "defaultValue": null
+      },
+      {
+        "name": "lastUpdated",
+        "type": "date",
+        "required": true,
+        "description": "Timestamp of last inventory update",
+        "defaultValue": null
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "sku"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "quantityAvailable"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": {
+      "sku": "Must be unique across all inventory items",
+      "unitPrice": "Must be > 0",
+      "quantityReserved": "Must be >= 0",
+      "quantityAvailable": "Must be >= 0"
+    },
+    "description": "Tracks product inventory levels, reservations, and availability for order fulfillment",
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "target": "Order",
+        "description": "An inventory item can be referenced in multiple orders"
+      }
+    ]
+  },
+  {
+    "id": "app_1764399179518_order-data-model",
+    "name": "Order",
+    "config": {},
+    "fields": [
+      {
+        "name": "orderId",
+        "type": "string",
+        "required": true,
+        "description": "Unique identifier for the order",
+        "defaultValue": null
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "required": true,
+        "description": "Reference to the customer who placed the order",
+        "defaultValue": null
+      },
+      {
+        "name": "orderItems",
+        "type": "array",
+        "required": true,
+        "description": "List of line items with product details, quantities, and individual pricing",
+        "defaultValue": []
+      },
+      {
+        "name": "totalAmount",
+        "type": "number",
+        "required": true,
+        "description": "Total order value including all items, taxes, and fees",
+        "defaultValue": 0
+      },
+      {
+        "name": "orderStatus",
+        "type": "string",
+        "required": true,
+        "description": "Current status of the order (pending, confirmed, shipped, delivered, cancelled)",
+        "defaultValue": "pending"
+      },
+      {
+        "name": "paymentStatus",
+        "type": "string",
+        "required": true,
+        "description": "Payment state (unpaid, paid, refunded, failed)",
+        "defaultValue": "unpaid"
+      },
+      {
+        "name": "shippingAddress",
+        "type": "object",
+        "required": true,
+        "description": "Delivery address details including street, city, state, postal code, and country",
+        "defaultValue": null
+      },
+      {
+        "name": "statusHistory",
+        "type": "array",
+        "required": false,
+        "description": "Chronological log of status transitions with timestamps and notes",
+        "defaultValue": []
+      }
+    ],
+    "indexes": [
+      "orderId",
+      "customerId",
+      "orderStatus"
+    ],
+    "metadata": {},
+    "constraints": {
+      "orderId": "unique, non-null",
+      "orderStatus": "enum: pending, confirmed, processing, shipped, delivered, cancelled",
+      "totalAmount": "must be >= 0",
+      "paymentStatus": "enum: unpaid, paid, refunded, failed, partial"
+    },
+    "description": "Central data model capturing order details from submission through delivery, including items, pricing, and status tracking throughout the order lifecycle.",
+    "relationships": []
+  }
+]

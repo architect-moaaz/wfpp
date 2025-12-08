@@ -1,0 +1,97 @@
+{
+  "logs": [
+    {
+      "id": "log_1764304616535_kg18wbxj9",
+      "timestamp": "2025-11-28T04:36:56.535Z",
+      "workflowId": "workflow_1736376245",
+      "instanceId": "instance_1764304595056_r22ful6i7",
+      "nodeId": "node_12",
+      "nodeType": "scriptTask",
+      "taskLabel": "Log Customer Activity",
+      "status": "fixed",
+      "originalScript": "logCustomerInteraction(processData)",
+      "fixedScript": "log(\"Customer Activity Log:\", \n    \"Task:\", getField(processData, \"taskName\"),\n    \"Assigned To:\", getField(processData, \"assignedTo\"), \n    \"Status:\", getField(processData, \"status\"),\n    \"Completed By:\", getField(processData, \"completedBy\"),\n    \"Approved:\", getField(processData.formData, \"approved\"),\n    \"Comments:\", getField(processData.formData, \"comments\"),\n    \"Timestamp:\", getCurrentDate())",
+      "fixMethod": "ai",
+      "executionTime": 4834,
+      "retryCount": 1
+    },
+    {
+      "id": "log_1764505811620_77mhqjkg0",
+      "timestamp": "2025-11-30T12:30:11.620Z",
+      "workflowId": "workflow_1734746875432",
+      "instanceId": "instance_1764505799502_kk15q7wbe",
+      "nodeId": "node_10",
+      "nodeType": "scriptTask",
+      "taskLabel": "Update Leave Balance & Calendar",
+      "status": "fixed",
+      "originalScript": "updateLeaveBalance(); updateTeamCalendar(); logApprovalHistory();",
+      "fixedScript": "updateField(processData, 'leaveBalanceUpdated', true);\nupdateField(processData, 'teamCalendarUpdated', getCurrentDate());\naddToArray(processData, 'approvalHistory', {\n  action: 'approved',\n  timestamp: getCurrentDate(),\n  approvedBy: getField(processData, 'completedBy'),\n  comments: getField(processData, 'formData.comments') || ''\n});\nlog('Leave balance updated, team calendar synchronized, and approval logged');",
+      "fixMethod": "ai",
+      "executionTime": 2689,
+      "retryCount": 1
+    },
+    {
+      "id": "log_1765048250756_ncoc87bxm",
+      "timestamp": "2025-12-06T19:10:50.756Z",
+      "workflowId": "workflow_1735671234567",
+      "instanceId": "instance_1765048245432_w2wghwkmd",
+      "nodeId": "node_5",
+      "nodeType": "scriptTask",
+      "taskLabel": "Fetch Customer Profile",
+      "status": "fixed",
+      "originalScript": "fetchCustomerData(processData.customerId)",
+      "fixedScript": "// Check if customer already exists by email\nconst existingCustomer = getField(processData, 'email');\nif (existingCustomer) {\n  // Create customer profile from processData\n  const customerProfile = {\n    id: formatString('customer_{timestamp}', { timestamp: Date.now() }),\n    firstName: getField(processData, 'firstName'),\n    lastName: getField(processData, 'lastName'),\n    email: getField(processData, 'email'),\n    phone: getField(processData, 'phone'),\n    companyName: getField(processData, 'companyName'),\n    customerCategory: getField(processData, 'customerCategory'),\n    profileCreated: getCurrentDate(),\n    interactionHistory: [\n      {\n        type: 'registration',\n        date: getCurrentDate(),\n        initiator: getField(processData, 'initiator'),\n        message: getField(processData, 'message')\n      }\n    ]\n  };\n  \n  log('Customer profile created:', customerProfile);\n  return customerProfile;\n} else {\n  log('Error: Customer email not found in processData');\n  return null;\n}",
+      "fixMethod": "ai",
+      "executionTime": 5242,
+      "retryCount": 1
+    }
+  ],
+  "fixes": [
+    {
+      "id": "fix_1764304616538_vfztdzy68",
+      "timestamp": "2025-11-28T04:36:56.538Z",
+      "errorType": "ReferenceError",
+      "errorMessage": "logCustomerInteraction is not defined",
+      "errorPattern": "logCustomerInteraction is not defined",
+      "originalScript": "logCustomerInteraction(processData)",
+      "fixedScript": "log(\"Customer Activity Log:\", \n    \"Task:\", getField(processData, \"taskName\"),\n    \"Assigned To:\", getField(processData, \"assignedTo\"), \n    \"Status:\", getField(processData, \"status\"),\n    \"Completed By:\", getField(processData, \"completedBy\"),\n    \"Approved:\", getField(processData.formData, \"approved\"),\n    \"Comments:\", getField(processData.formData, \"comments\"),\n    \"Timestamp:\", getCurrentDate())",
+      "taskContext": {
+        "label": "Log Customer Activity",
+        "description": "Records customer interaction and activity in the system log for tracking purposes"
+      },
+      "successCount": 1,
+      "lastUsed": "2025-11-28T04:36:56.538Z"
+    },
+    {
+      "id": "fix_1764505811624_en9xrpn99",
+      "timestamp": "2025-11-30T12:30:11.624Z",
+      "errorType": "ReferenceError",
+      "errorMessage": "updateLeaveBalance is not defined",
+      "errorPattern": "updateLeaveBalance is not defined",
+      "originalScript": "updateLeaveBalance(); updateTeamCalendar(); logApprovalHistory();",
+      "fixedScript": "updateField(processData, 'leaveBalanceUpdated', true);\nupdateField(processData, 'teamCalendarUpdated', getCurrentDate());\naddToArray(processData, 'approvalHistory', {\n  action: 'approved',\n  timestamp: getCurrentDate(),\n  approvedBy: getField(processData, 'completedBy'),\n  comments: getField(processData, 'formData.comments') || ''\n});\nlog('Leave balance updated, team calendar synchronized, and approval logged');",
+      "taskContext": {
+        "label": "Update Leave Balance & Calendar",
+        "description": "Update system records with approved leave"
+      },
+      "successCount": 1,
+      "lastUsed": "2025-11-30T12:30:11.624Z"
+    },
+    {
+      "id": "fix_1765048250761_9vgp5fywo",
+      "timestamp": "2025-12-06T19:10:50.761Z",
+      "errorType": "ReferenceError",
+      "errorMessage": "fetchCustomerData is not defined",
+      "errorPattern": "fetchCustomerData is not defined",
+      "originalScript": "fetchCustomerData(processData.customerId)",
+      "fixedScript": "// Check if customer already exists by email\nconst existingCustomer = getField(processData, 'email');\nif (existingCustomer) {\n  // Create customer profile from processData\n  const customerProfile = {\n    id: formatString('customer_{timestamp}', { timestamp: Date.now() }),\n    firstName: getField(processData, 'firstName'),\n    lastName: getField(processData, 'lastName'),\n    email: getField(processData, 'email'),\n    phone: getField(processData, 'phone'),\n    companyName: getField(processData, 'companyName'),\n    customerCategory: getField(processData, 'customerCategory'),\n    profileCreated: getCurrentDate(),\n    interactionHistory: [\n      {\n        type: 'registration',\n        date: getCurrentDate(),\n        initiator: getField(processData, 'initiator'),\n        message: getField(processData, 'message')\n      }\n    ]\n  };\n  \n  log('Customer profile created:', customerProfile);\n  return customerProfile;\n} else {\n  log('Error: Customer email not found in processData');\n  return null;\n}",
+      "taskContext": {
+        "label": "Fetch Customer Profile",
+        "description": "Retrieves existing customer profile and interaction history"
+      },
+      "successCount": 1,
+      "lastUsed": "2025-12-06T19:10:50.761Z"
+    }
+  ],
+  "patterns": []
+}

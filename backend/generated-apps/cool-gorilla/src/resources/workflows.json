@@ -1,0 +1,464 @@
+[
+  {
+    "id": "workflow_1737158400",
+    "name": "Comprehensive Library Management System",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Start Library Operation",
+          "formId": "workflow_1737158400_book_form",
+          "trigger": "User initiates library operation",
+          "formName": "Book Management Form",
+          "description": "Entry point for all library management operations including book requests, returns, and registrations"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 50,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Collect Operation Details",
+          "formId": "workflow_1737158400_member_form",
+          "dueDate": "5 minutes",
+          "formName": "Member Registration Form",
+          "priority": "Medium",
+          "taskName": "operation_input",
+          "assignedTo": "library_staff",
+          "instructions": "Enter operation type, user ID, book details, and other relevant information"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 50,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Validate Input Data",
+          "rules": [
+            "User ID format",
+            "Book ISBN format",
+            "Operation type allowed"
+          ],
+          "ruleType": "data_validation",
+          "description": "Validates all input data against library system rules"
+        },
+        "type": "validation",
+        "position": {
+          "x": 50,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Route by Operation Type",
+          "condition": "processData.operationType",
+          "description": "Routes workflow based on type of library operation requested",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Process Book Checkout",
+          "formId": "workflow_1737158400_loan_form",
+          "dueDate": "10 minutes",
+          "formName": "Book Loan Form",
+          "priority": "High",
+          "taskName": "book_checkout",
+          "assignedTo": "librarian",
+          "instructions": "Verify user eligibility, check book availability, and process checkout"
+        },
+        "type": "userTask",
+        "position": {
+          "x": -200,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Process Book Return",
+          "script": "updateBookStatus(bookId, 'available'); calculateLateFees(userId, returnDate);",
+          "scriptType": "JavaScript",
+          "description": "Automatically processes book returns and calculates any late fees"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 50,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "New User Registration",
+          "formId": "workflow_1737158400_return_form",
+          "dueDate": "15 minutes",
+          "formName": "Book Return Form",
+          "priority": "Medium",
+          "taskName": "user_registration",
+          "assignedTo": "registration_staff",
+          "instructions": "Collect user details, verify identity, create library card"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Check User Eligibility",
+          "condition": "processData.userStatus === 'eligible'",
+          "description": "Determines if user can checkout books based on account status",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": -200,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Late Fee Assessment",
+          "condition": "processData.lateFee > 0",
+          "description": "Checks if late fees need to be collected for returned books",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Parallel Processing Gateway",
+          "branches": "Update inventory and send notifications simultaneously",
+          "description": "Splits flow for parallel book processing and notification tasks",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": -200,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Update Book Inventory",
+          "script": "updateInventoryStatus(bookId, 'checked_out'); logTransaction(userId, bookId, 'checkout');",
+          "scriptType": "JavaScript",
+          "description": "Updates book inventory status and logs the transaction"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -350,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Send Checkout Confirmation",
+          "channel": "Email",
+          "template": "Book checkout confirmation with due date",
+          "recipient": "processData.userEmail",
+          "description": "Sends confirmation email to user with checkout details"
+        },
+        "type": "notification",
+        "position": {
+          "x": -50,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Collect Late Fee Payment",
+          "formId": "workflow_1737158400_book_form",
+          "dueDate": "20 minutes",
+          "formName": "Book Management Form",
+          "priority": "High",
+          "taskName": "fee_collection",
+          "assignedTo": "cashier",
+          "instructions": "Process late fee payment and update user account"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 200,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "AI Registration Review",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Review user registration data: ${processData.registrationData}. Check for completeness, flag any potential issues, and recommend approval or additional verification needed.",
+          "maxTokens": 500,
+          "description": "AI-powered review of new user registration for completeness and fraud detection",
+          "temperature": 0.3,
+          "outputVariable": "registrationReview"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 300,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Escalation Timer",
+          "duration": "PT30M",
+          "timerType": "duration",
+          "description": "30-minute timer for escalating unresolved eligibility issues"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": -400,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Manager Override Decision",
+          "formId": "workflow_1737158400_book_form",
+          "dueDate": "15 minutes",
+          "formName": "Book Management Form",
+          "priority": "High",
+          "taskName": "manager_override",
+          "assignedTo": "library_manager",
+          "instructions": "Review ineligible user case and decide on override or rejection"
+        },
+        "type": "userTask",
+        "position": {
+          "x": -400,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "input": "Parallel task outputs",
+          "label": "Merge Processing Results",
+          "output": "Combined transaction record",
+          "operation": "data_merge",
+          "description": "Merges inventory updates and notification confirmations into final record"
+        },
+        "type": "dataProcess",
+        "position": {
+          "x": -200,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Send Payment Confirmation",
+          "channel": "SMS",
+          "template": "Late fee payment received confirmation",
+          "recipient": "processData.userPhone",
+          "description": "Confirms late fee payment via SMS"
+        },
+        "type": "notification",
+        "position": {
+          "x": 100,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Library Operation Complete",
+          "result": "Operation successfully completed",
+          "description": "All library management tasks completed successfully"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 50,
+          "y": 950
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-26T17:56:16.464+05:30",
+    "updated_at": "2025-11-26T17:56:16.464+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_4",
+        "label": "Checkout",
+        "source": "node_4",
+        "target": "node_5",
+        "condition": "processData.operationType === 'checkout'"
+      },
+      {
+        "id": "edge_5",
+        "label": "Return",
+        "source": "node_4",
+        "target": "node_6",
+        "condition": "processData.operationType === 'return'"
+      },
+      {
+        "id": "edge_6",
+        "label": "Registration",
+        "source": "node_4",
+        "target": "node_7",
+        "condition": "processData.operationType === 'registration'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_6",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_7",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_10",
+        "label": "Eligible",
+        "source": "node_8",
+        "target": "node_10",
+        "condition": "processData.userStatus === 'eligible'"
+      },
+      {
+        "id": "edge_11",
+        "label": "Ineligible",
+        "source": "node_8",
+        "target": "node_15",
+        "condition": "processData.userStatus === 'ineligible'"
+      },
+      {
+        "id": "edge_12",
+        "label": "Override",
+        "source": "node_8",
+        "target": "node_16",
+        "isDefault": true
+      },
+      {
+        "id": "edge_13",
+        "label": "Has Late Fee",
+        "source": "node_9",
+        "target": "node_13",
+        "condition": "processData.lateFee > 0"
+      },
+      {
+        "id": "edge_14",
+        "label": "No Fee",
+        "source": "node_9",
+        "target": "node_19",
+        "condition": "processData.lateFee === 0",
+        "isDefault": true
+      },
+      {
+        "id": "edge_15",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_10",
+        "target": "node_11",
+        "isDefault": true
+      },
+      {
+        "id": "edge_16",
+        "source": "node_10",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_11",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_12",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_13",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_14",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_22",
+        "label": "Approved",
+        "source": "node_16",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_23",
+        "label": "Rejected",
+        "source": "node_16",
+        "target": "node_19",
+        "isDefault": true
+      },
+      {
+        "id": "edge_24",
+        "source": "node_17",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_18",
+        "target": "node_19"
+      }
+    ],
+    "description": ""
+  }
+]

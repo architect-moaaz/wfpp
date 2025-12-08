@@ -1,0 +1,482 @@
+[
+  {
+    "id": "dispute-management-form",
+    "name": "DisputeManagementForm",
+    "steps": [],
+    "title": "Parking Ticket Dispute Form",
+    "config": {},
+    "fields": [
+      {
+        "id": "ticket-number",
+        "name": "ticketNumber",
+        "type": "text",
+        "label": "Ticket Number",
+        "required": true,
+        "validation": {
+          "message": "Please enter a valid ticket number format (e.g., PT-2024-001234)",
+          "pattern": "^[A-Z]{2}-\\d{4}-\\d{6}$"
+        },
+        "placeholder": "Enter your parking ticket number (e.g., PT-2024-001234)",
+        "defaultValue": null
+      },
+      {
+        "id": "dispute-reason",
+        "name": "disputeReason",
+        "type": "select",
+        "label": "Reason for Dispute",
+        "options": [
+          "Meter was malfunctioning",
+          "Valid permit was displayed",
+          "Incorrect location recorded",
+          "Medical emergency",
+          "Signage was unclear or missing",
+          "Vehicle was stolen",
+          "Other"
+        ],
+        "required": true,
+        "placeholder": "Select the primary reason for your appeal",
+        "defaultValue": null
+      },
+      {
+        "id": "dispute-details",
+        "name": "disputeDetails",
+        "type": "textarea",
+        "label": "Detailed Explanation",
+        "required": true,
+        "validation": {
+          "max": 2000,
+          "min": 50,
+          "message": "Please provide at least 50 characters explaining your dispute"
+        },
+        "placeholder": "Provide a detailed explanation of why you are disputing this ticket. Include dates, times, and any relevant circumstances.",
+        "defaultValue": null
+      },
+      {
+        "id": "supporting-documents",
+        "name": "supportingDocuments",
+        "type": "file",
+        "label": "Supporting Documentation",
+        "required": false,
+        "validation": {
+          "message": "Accepted formats: PDF, JPG, PNG. Maximum file size: 10MB"
+        },
+        "placeholder": "Upload photos, receipts, or other evidence (PDF, JPG, PNG - Max 10MB)",
+        "defaultValue": null
+      },
+      {
+        "id": "contact-email",
+        "name": "contactEmail",
+        "type": "email",
+        "label": "Contact Email",
+        "required": true,
+        "validation": {
+          "message": "Please enter a valid email address",
+          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+        },
+        "placeholder": "your.email@example.com",
+        "defaultValue": null
+      },
+      {
+        "id": "contact-phone",
+        "name": "contactPhone",
+        "type": "text",
+        "label": "Contact Phone Number",
+        "required": false,
+        "validation": {
+          "message": "Please enter a valid phone number",
+          "pattern": "^\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$"
+        },
+        "placeholder": "(555) 123-4567",
+        "defaultValue": null
+      },
+      {
+        "id": "acknowledgment",
+        "name": "acknowledgment",
+        "type": "checkbox",
+        "label": "I certify that the information provided is true and accurate to the best of my knowledge",
+        "required": true,
+        "validation": {
+          "message": "You must acknowledge the accuracy of your submission"
+        },
+        "placeholder": "",
+        "defaultValue": false
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": [
+        {
+          "id": "ticket-info",
+          "title": "Ticket Information",
+          "fieldIds": [
+            "ticket-number"
+          ]
+        },
+        {
+          "id": "dispute-details-section",
+          "title": "Dispute Details",
+          "fieldIds": [
+            "dispute-reason",
+            "dispute-details",
+            "supporting-documents"
+          ]
+        },
+        {
+          "id": "contact-info",
+          "title": "Contact Information",
+          "fieldIds": [
+            "contact-email",
+            "contact-phone"
+          ]
+        },
+        {
+          "id": "certification",
+          "title": "Certification",
+          "fieldIds": [
+            "acknowledgment"
+          ]
+        }
+      ]
+    },
+    "nodeId": null,
+    "styling": {},
+    "formType": null,
+    "metadata": {},
+    "gridLayout": [],
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "description": "Submit an appeal for your parking ticket with supporting documentation and reasons",
+    "data_model_id": null
+  },
+  {
+    "id": "payment-submission-form",
+    "name": "PaymentSubmissionForm",
+    "steps": [],
+    "title": "Parking Ticket Payment",
+    "config": {},
+    "fields": [
+      {
+        "id": "lookup-method",
+        "name": "lookupMethod",
+        "type": "radio",
+        "label": "Find Ticket By",
+        "options": [
+          "Ticket Number",
+          "License Plate"
+        ],
+        "required": true,
+        "validation": null,
+        "placeholder": null,
+        "defaultValue": "Ticket Number"
+      },
+      {
+        "id": "ticket-number",
+        "name": "ticketNumber",
+        "type": "text",
+        "label": "Ticket Number",
+        "options": null,
+        "required": false,
+        "validation": {
+          "message": "Please enter a valid ticket number format (e.g., TKT-2024-001234)",
+          "pattern": "^[A-Z]{3}-[0-9]{4}-[0-9]{6}$"
+        },
+        "placeholder": "e.g., TKT-2024-001234",
+        "defaultValue": null
+      },
+      {
+        "id": "license-plate",
+        "name": "licensePlate",
+        "type": "text",
+        "label": "License Plate Number",
+        "options": null,
+        "required": false,
+        "validation": {
+          "message": "Please enter a valid license plate number",
+          "pattern": "^[A-Z0-9]{2,8}$"
+        },
+        "placeholder": "e.g., ABC1234",
+        "defaultValue": null
+      },
+      {
+        "id": "outstanding-amount",
+        "name": "outstandingAmount",
+        "type": "number",
+        "label": "Amount Due",
+        "options": null,
+        "required": true,
+        "validation": {
+          "min": 0.01,
+          "message": "Amount must be greater than zero"
+        },
+        "placeholder": "0.00",
+        "defaultValue": null
+      },
+      {
+        "id": "payment-method",
+        "name": "paymentMethod",
+        "type": "select",
+        "label": "Payment Method",
+        "options": [
+          "Credit Card",
+          "Debit Card",
+          "Cash",
+          "Check"
+        ],
+        "required": true,
+        "validation": null,
+        "placeholder": "Select payment method",
+        "defaultValue": null
+      },
+      {
+        "id": "card-number",
+        "name": "cardNumber",
+        "type": "text",
+        "label": "Card Number",
+        "options": null,
+        "required": false,
+        "validation": {
+          "message": "Please enter a valid card number (13-19 digits)",
+          "pattern": "^[0-9]{13,19}$"
+        },
+        "placeholder": "1234 5678 9012 3456",
+        "defaultValue": null
+      },
+      {
+        "id": "check-number",
+        "name": "checkNumber",
+        "type": "text",
+        "label": "Check Number",
+        "options": null,
+        "required": false,
+        "validation": {
+          "message": "Please enter a valid check number",
+          "pattern": "^[0-9]{1,10}$"
+        },
+        "placeholder": "e.g., 1001",
+        "defaultValue": null
+      },
+      {
+        "id": "email-receipt",
+        "name": "emailReceipt",
+        "type": "email",
+        "label": "Email for Receipt (Optional)",
+        "options": null,
+        "required": false,
+        "validation": {
+          "message": "Please enter a valid email address",
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        },
+        "placeholder": "your.email@example.com",
+        "defaultValue": null
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": [
+        {
+          "id": "ticket-lookup-section",
+          "title": "Ticket Lookup",
+          "fieldIds": [
+            "lookup-method",
+            "ticket-number",
+            "license-plate"
+          ]
+        },
+        {
+          "id": "payment-details-section",
+          "title": "Payment Details",
+          "fieldIds": [
+            "outstanding-amount",
+            "payment-method",
+            "card-number",
+            "check-number"
+          ]
+        },
+        {
+          "id": "receipt-section",
+          "title": "Receipt",
+          "fieldIds": [
+            "email-receipt"
+          ]
+        }
+      ]
+    },
+    "nodeId": null,
+    "styling": {},
+    "formType": null,
+    "metadata": {},
+    "gridLayout": [],
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "description": "Submit payment for your parking ticket using ticket number or license plate",
+    "data_model_id": null
+  },
+  {
+    "id": "ticket-issuance-form",
+    "name": "TicketIssuanceForm",
+    "steps": [],
+    "title": "Issue Parking Violation Ticket",
+    "config": {},
+    "fields": [
+      {
+        "id": "license-plate",
+        "name": "licensePlate",
+        "type": "text",
+        "label": "License Plate Number",
+        "required": true,
+        "validation": {
+          "message": "Please enter a valid license plate number (2-8 alphanumeric characters)",
+          "pattern": "^[A-Z0-9]{2,8}$"
+        },
+        "placeholder": "Enter license plate (e.g., ABC1234)"
+      },
+      {
+        "id": "vehicle-make",
+        "name": "vehicleMake",
+        "type": "text",
+        "label": "Vehicle Make/Model",
+        "required": true,
+        "validation": {
+          "max": 50,
+          "min": 2,
+          "message": "Vehicle make/model must be between 2 and 50 characters"
+        },
+        "placeholder": "e.g., Toyota Camry"
+      },
+      {
+        "id": "violation-type",
+        "name": "violationType",
+        "type": "select",
+        "label": "Violation Type",
+        "options": [
+          "Expired Meter",
+          "No Parking Zone",
+          "Fire Hydrant Violation",
+          "Handicap Zone Violation",
+          "Double Parking",
+          "Street Cleaning Violation",
+          "Other"
+        ],
+        "required": true,
+        "placeholder": "Select violation type"
+      },
+      {
+        "id": "location",
+        "name": "location",
+        "type": "text",
+        "label": "Violation Location",
+        "required": true,
+        "validation": {
+          "max": 200,
+          "min": 5,
+          "message": "Location must be between 5 and 200 characters"
+        },
+        "placeholder": "Street address or intersection"
+      },
+      {
+        "id": "photo-evidence",
+        "name": "photoEvidence",
+        "type": "file",
+        "label": "Photo Evidence",
+        "required": true,
+        "validation": {
+          "message": "Please upload at least one photo of the violation"
+        },
+        "placeholder": "Upload violation photo(s)"
+      },
+      {
+        "id": "officer-notes",
+        "name": "officerNotes",
+        "type": "textarea",
+        "label": "Officer Notes",
+        "required": false,
+        "validation": {
+          "max": 500,
+          "message": "Notes cannot exceed 500 characters"
+        },
+        "placeholder": "Additional details or observations about the violation"
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "vehicle-info",
+          "title": "Vehicle Information",
+          "fieldIds": [
+            "license-plate",
+            "vehicle-make"
+          ]
+        },
+        {
+          "id": "violation-details",
+          "title": "Violation Details",
+          "fieldIds": [
+            "violation-type",
+            "location",
+            "photo-evidence",
+            "officer-notes"
+          ]
+        }
+      ]
+    },
+    "nodeId": null,
+    "styling": {
+      "colors": {
+        "text": "#1f2937",
+        "border": "#d1d5db",
+        "primary": "#1f2937",
+        "secondary": "#3b82f6",
+        "background": "#f8f9fa"
+      },
+      "layout": {
+        "maxWidth": "800px"
+      },
+      "buttons": {
+        "primary": {
+          "color": "#ffffff",
+          "padding": "10px 24px",
+          "background": "#1f2937"
+        },
+        "secondary": {
+          "color": "#374151",
+          "border": "1px solid #d1d5db",
+          "background": "#ffffff"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px",
+        "containerPadding": "24px"
+      },
+      "typography": {
+        "baseSize": "14px",
+        "inputSize": "14px",
+        "labelSize": "14px",
+        "fontFamily": "system-ui, -apple-system, sans-serif",
+        "inputWeight": "400",
+        "labelWeight": "500"
+      },
+      "inputFields": {
+        "focus": "2px solid #3b82f6, 0 0 0 3px rgba(59, 130, 246, 0.1)",
+        "height": "42px",
+        "borderWidth": "1px",
+        "borderRadius": "6px"
+      }
+    },
+    "formType": null,
+    "metadata": {},
+    "gridLayout": [],
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "description": "Complete all required fields to issue a parking violation ticket",
+    "data_model_id": null
+  }
+]

@@ -1,0 +1,394 @@
+[
+  {
+    "id": "workflow_1735152847000",
+    "name": "Customer Management System - Complex Workflow",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Customer Management Request",
+          "formId": "customer-registration-form",
+          "trigger": "User initiates customer management process",
+          "formName": "CustomerRegistrationForm",
+          "description": "Starting point for customer onboarding, updates, or insights generation"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Process Type Router",
+          "condition": "Route based on process type",
+          "description": "Determines the type of customer management process",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "New Customer Data Validation",
+          "rules": [
+            "email_format",
+            "phone_format",
+            "required_fields"
+          ],
+          "ruleType": "customer_registration",
+          "description": "Validates new customer registration data"
+        },
+        "type": "validation",
+        "position": {
+          "x": 300,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Create Customer Profile",
+          "script": "createCustomerProfile(processData)",
+          "scriptType": "JavaScript",
+          "description": "Creates new customer profile in database"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 500,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Profile Creation Status",
+          "condition": "Check if profile creation was successful",
+          "description": "Verifies successful customer profile creation",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 700,
+          "y": 100
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Update Customer Information",
+          "formId": "customer-profile-update-form",
+          "dueDate": "2 hours",
+          "formName": "CustomerProfileUpdateForm",
+          "priority": "Medium",
+          "taskName": "customer_profile_update",
+          "assignedTo": "customer_service_rep",
+          "instructions": "Update customer profile with new information"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 200
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Activity Processing Gateway",
+          "branches": "Parallel processing of customer activities",
+          "description": "Splits workflow for parallel activity processing",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 300
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Log Customer Interaction",
+          "script": "logInteraction(processData.interaction)",
+          "scriptType": "JavaScript",
+          "description": "Records customer interaction in activity log"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 200,
+          "y": 400
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Update Customer Status",
+          "script": "updateCustomerStatus(processData.customerId, processData.status)",
+          "scriptType": "JavaScript",
+          "description": "Updates customer status based on activity"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 350,
+          "y": 400
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Generate Customer Insights",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze customer data and interactions to generate insights: Customer ID: ${processData.customerId}, Recent interactions: ${processData.interactions}, Purchase history: ${processData.purchases}",
+          "maxTokens": 1000,
+          "description": "AI-powered analysis of customer behavior and patterns",
+          "temperature": 0.7,
+          "outputVariable": "customerInsights"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 500,
+          "y": 400
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Merge Parallel Activities",
+          "branches": "Merge parallel processing results",
+          "description": "Combines results from parallel activity processing",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 350,
+          "y": 500
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Follow-up Timer",
+          "duration": "P7D",
+          "timerType": "duration",
+          "description": "7-day wait before customer follow-up"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 900,
+          "y": 200
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Customer Welcome Email",
+          "channel": "Email",
+          "template": "welcome_customer_template",
+          "recipient": "processData.customerEmail",
+          "description": "Sends welcome email to new customer"
+        },
+        "type": "notification",
+        "position": {
+          "x": 650,
+          "y": 300
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Error Recovery Handler",
+          "script": "handleCustomerProcessError(processData.error)",
+          "scriptType": "JavaScript",
+          "description": "Handles errors in customer processing and initiates recovery"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 800,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "input": "customer_database",
+          "label": "Generate Customer Report",
+          "output": "customer_insights_report",
+          "operation": "data_aggregation",
+          "description": "Generates comprehensive customer insights report"
+        },
+        "type": "dataProcess",
+        "position": {
+          "x": 550,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Review Customer Insights",
+          "formId": "interaction-logging-form",
+          "dueDate": "1 day",
+          "formName": "InteractionLoggingForm",
+          "priority": "High",
+          "taskName": "insights_review",
+          "assignedTo": "admin_staff",
+          "instructions": "Review generated customer insights and approve actions"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 750,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Customer Process Complete",
+          "result": "Customer management process completed successfully",
+          "description": "All customer management activities have been processed"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 900,
+          "y": 450
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-28T01:02:01.322+05:30",
+    "updated_at": "2025-11-28T01:02:01.322+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "label": "New Customer",
+        "source": "node_2",
+        "target": "node_3",
+        "condition": "processData.processType === 'new_customer'"
+      },
+      {
+        "id": "edge_3",
+        "label": "Update Customer",
+        "source": "node_2",
+        "target": "node_6",
+        "condition": "processData.processType === 'update_customer'"
+      },
+      {
+        "id": "edge_4",
+        "label": "Activity Logging",
+        "source": "node_2",
+        "target": "node_7",
+        "condition": "processData.processType === 'activity_logging'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_3",
+        "target": "node_4"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_7",
+        "label": "Success",
+        "source": "node_5",
+        "target": "node_13",
+        "condition": "processData.profileCreated === true"
+      },
+      {
+        "id": "edge_8",
+        "label": "Error",
+        "source": "node_5",
+        "target": "node_14",
+        "condition": "processData.profileCreated === false",
+        "isDefault": true
+      },
+      {
+        "id": "edge_9",
+        "source": "node_6",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_10",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_7",
+        "target": "node_8",
+        "isDefault": true
+      },
+      {
+        "id": "edge_11",
+        "source": "node_7",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_12",
+        "source": "node_7",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_13",
+        "source": "node_8",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_9",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_10",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_16",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_11",
+        "target": "node_15",
+        "isDefault": true
+      },
+      {
+        "id": "edge_17",
+        "source": "node_13",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_12",
+        "target": "node_17"
+      },
+      {
+        "id": "edge_20",
+        "source": "node_15",
+        "target": "node_16"
+      },
+      {
+        "id": "edge_21",
+        "source": "node_16",
+        "target": "node_17"
+      }
+    ],
+    "description": ""
+  }
+]

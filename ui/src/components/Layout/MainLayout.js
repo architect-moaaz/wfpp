@@ -14,9 +14,11 @@ import PagesPanel from '../Panels/PagesPanel';
 import TestRunPanel from '../Panels/TestRunPanel';
 import AnalyticsPanel from '../Panels/AnalyticsPanel';
 import VersionHistoryPanel from '../Panels/VersionHistoryPanel';
+import WorkflowsPanel from '../Panels/WorkflowsPanel';
 import ApplicationsList from '../Applications/ApplicationsList';
-import ConversationalAssistant from '../AI/ConversationalAssistant';
+import ApplicationsDashboard from '../Applications/ApplicationsDashboard';
 import { useWorkflow } from '../../context/WorkflowContext';
+import { useAres } from '../../context/AresContext';
 
 const MainLayout = () => {
   const {
@@ -26,12 +28,12 @@ const MainLayout = () => {
     currentWorkflow,
     setCurrentWorkflow,
     currentApplication,
-    showAres,
-    setShowAres,
     setConnectedForms,
     setDataModels,
     setConnectedPages
   } = useWorkflow();
+
+  const { isOpen, open, close } = useAres();
 
   const handleVersionRestore = (version) => {
     // Update the workflow with the restored version
@@ -45,6 +47,23 @@ const MainLayout = () => {
 
     // Set the workflow
     setCurrentWorkflow(workflow);
+
+    // Save the workflow itself to the application
+    if (currentApplication && currentApplication.id && workflow.id) {
+      console.log(`Persisting workflow ${workflow.id} to application ${currentApplication.id}`);
+      try {
+        await fetch(`http://localhost:5000/api/applications/${currentApplication.id}/workflows`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(workflow)
+        });
+        console.log('Workflow persisted to application successfully');
+      } catch (error) {
+        console.error('Failed to persist workflow to application:', error);
+      }
+    }
 
     // Extract and set forms, data models, and pages from the generated workflow
     if (workflow.forms && workflow.forms.length > 0) {
@@ -146,16 +165,42 @@ const MainLayout = () => {
         }
       }
     }
+
+    if (workflow.rules && workflow.rules.length > 0) {
+      console.log(`Setting ${workflow.rules.length} rules from generated workflow`);
+
+      // If there's a current application, persist the rules to it
+      if (currentApplication && currentApplication.id) {
+        console.log(`Persisting ${workflow.rules.length} rules to application ${currentApplication.id}`);
+        try {
+          // Add each rule to the application
+          for (const rule of workflow.rules) {
+            await fetch(`http://localhost:5000/api/applications/${currentApplication.id}/rules`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(rule)
+            });
+          }
+          console.log('Rules persisted to application successfully');
+        } catch (error) {
+          console.error('Failed to persist rules to application:', error);
+        }
+      }
+    }
   };
 
   const renderSidebarContent = () => {
     switch (activeSidebar) {
       case 'applications':
-        return <ApplicationsList />;
+        return <ApplicationsDashboard />;
       case 'ai-prompt':
         return <AIPromptPanel />;
       case 'workflow-editor':
         return <WorkflowCanvas />;
+      case 'workflows':
+        return <WorkflowsPanel />;
       case 'forms':
         return <FormsPanel />;
       case 'data-models':
@@ -203,16 +248,6 @@ const MainLayout = () => {
         </div>
         {propertiesPanelOpen && activeSidebar === 'workflow-editor' && <PropertiesPanel />}
       </div>
-      {/* ARES as right-side panel */}
-      {showAres && (
-        <ConversationalAssistant
-          onClose={() => setShowAres(false)}
-          onWorkflowGenerated={handleAIWorkflowGenerated}
-          currentWorkflow={currentWorkflow}
-          currentApplication={currentApplication}
-          mode="sidebar"
-        />
-      )}
     </div>
   );
 };

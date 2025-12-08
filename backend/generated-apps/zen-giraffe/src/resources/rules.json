@@ -1,0 +1,520 @@
+[
+  {
+    "id": "rule_start_onboarding_validation",
+    "name": "Start Onboarding Validation Rule",
+    "description": "Validates required employee data before initiating onboarding process",
+    "type": "validation",
+    "priority": 100,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Employee.firstName",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Employee.firstName",
+          "value": null,
+          "message": "Employee first name is required to start onboarding"
+        },
+        {
+          "type": "logMessage",
+          "field": "AuditLog.message",
+          "value": "Onboarding validation failed - missing first name",
+          "message": "Validation error logged"
+        }
+      ]
+    },
+    "node_id": "node_1",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  },
+  {
+    "id": "rule_collect_employee_info_validation",
+    "name": "Employee Information Completeness Rule",
+    "description": "Ensures all mandatory employee information fields are completed",
+    "type": "validation",
+    "priority": 90,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Employee.email",
+          "operator": "contains",
+          "value": "@"
+        },
+        {
+          "field": "Employee.startDate",
+          "operator": "greaterThan",
+          "value": "currentDate"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "WorkflowStage.status",
+          "value": "information_collected",
+          "message": "Employee information validated successfully"
+        },
+        {
+          "type": "logMessage",
+          "field": "AuditLog.action",
+          "value": "Employee information collection completed",
+          "message": "Information collection logged"
+        }
+      ]
+    },
+    "node_id": "node_2",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  },
+  {
+    "id": "rule_validate_documents",
+    "name": "Document Validation Rule",
+    "description": "Validates uploaded documents for completeness and format",
+    "type": "validation",
+    "priority": 85,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Document.type",
+          "operator": "in",
+          "value": [
+            "I9",
+            "W4",
+            "DirectDeposit"
+          ]
+        },
+        {
+          "field": "Document.fileSize",
+          "operator": "lessThan",
+          "value": 10485760
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "VerificationRecord.status",
+          "value": "verified",
+          "message": "Document validation successful"
+        },
+        {
+          "type": "updateData",
+          "field": "Document.verifiedDate",
+          "value": "currentTimestamp",
+          "message": "Document verification timestamp updated"
+        }
+      ]
+    },
+    "node_id": "node_3",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  },
+  {
+    "id": "rule_documents_complete_decision",
+    "name": "Documents Completeness Decision Rule",
+    "description": "Determines if all required documents are submitted and valid",
+    "type": "decision",
+    "priority": 80,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Document.requiredDocsCount",
+          "operator": "equals",
+          "value": "Document.submittedDocsCount"
+        },
+        {
+          "field": "VerificationRecord.status",
+          "operator": "equals",
+          "value": "verified"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "WorkflowStage.nextStage",
+          "value": "hr_review",
+          "message": "Route to HR Admin Review"
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.recipient",
+          "value": "hr_admin_email",
+          "message": "All documents submitted - ready for HR review"
+        }
+      ]
+    },
+    "node_id": "node_4",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  },
+  {
+    "id": "rule_hr_admin_review_validation",
+    "name": "HR Admin Review Validation Rule",
+    "description": "Validates HR admin review inputs and comments",
+    "type": "validation",
+    "priority": 75,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ApprovalRecord.reviewerRole",
+          "operator": "equals",
+          "value": "HR_ADMIN"
+        },
+        {
+          "field": "ApprovalRecord.comments",
+          "operator": "notEquals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "ApprovalRecord.reviewDate",
+          "value": "currentTimestamp",
+          "message": "HR review timestamp recorded"
+        },
+        {
+          "type": "logMessage",
+          "field": "AuditLog.action",
+          "value": "HR admin review completed",
+          "message": "Review action logged to audit trail"
+        }
+      ]
+    },
+    "node_id": "node_7",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  },
+  {
+    "id": "rule_hr_approval_decision",
+    "name": "HR Approval Decision Rule",
+    "description": "Routes workflow based on HR approval or rejection decision",
+    "type": "decision",
+    "priority": 70,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ApprovalRecord.decision",
+          "operator": "equals",
+          "value": "APPROVED"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "WorkflowStage.nextStage",
+          "value": "parallel_setup",
+          "message": "Proceed to parallel IT and Manager setup"
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.recipient",
+          "value": "Employee.email",
+          "message": "Your onboarding has been approved by HR"
+        },
+        {
+          "type": "updateData",
+          "field": "Employee.status",
+          "value": "approved",
+          "message": "Employee status updated to approved"
+        }
+      ]
+    },
+    "node_id": "node_8",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  },
+  {
+    "id": "rule_parallel_setup_gateway",
+    "name": "Parallel Setup Gateway Rule",
+    "description": "Initiates parallel IT and Manager setup tasks",
+    "type": "decision",
+    "priority": 65,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "WorkflowStage.currentStage",
+          "operator": "equals",
+          "value": "parallel_setup"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "ITSetupTask.status",
+          "value": "pending",
+          "message": "IT setup task initiated"
+        },
+        {
+          "type": "setVariable",
+          "field": "Employee.managerIntroStatus",
+          "value": "pending",
+          "message": "Manager introduction task initiated"
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.recipient",
+          "value": "it_team_email",
+          "message": "New employee IT account setup required"
+        }
+      ]
+    },
+    "node_id": "node_10",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  },
+  {
+    "id": "rule_it_account_setup_validation",
+    "name": "IT Account Setup Validation Rule",
+    "description": "Validates IT account creation and system access provisioning",
+    "type": "validation",
+    "priority": 60,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ITSetupTask.accountCreated",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "ITSetupTask.systemAccessGranted",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "ITSetupTask.status",
+          "value": "completed",
+          "message": "IT setup completed successfully"
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.recipient",
+          "value": "Employee.email",
+          "message": "Your IT accounts have been created. Login credentials sent separately."
+        },
+        {
+          "type": "logMessage",
+          "field": "AuditLog.action",
+          "value": "IT account setup completed",
+          "message": "IT setup completion logged"
+        }
+      ]
+    },
+    "node_id": "node_11",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  },
+  {
+    "id": "rule_manager_introduction_validation",
+    "name": "Manager Introduction Validation Rule",
+    "description": "Validates manager introduction and initial meeting completion",
+    "type": "validation",
+    "priority": 60,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Employee.managerIntroCompleted",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Employee.managerIntroStatus",
+          "value": "completed",
+          "message": "Manager introduction completed"
+        },
+        {
+          "type": "updateData",
+          "field": "Employee.managerIntroDate",
+          "value": "currentTimestamp",
+          "message": "Manager introduction date recorded"
+        }
+      ]
+    },
+    "node_id": "node_12",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  },
+  {
+    "id": "rule_parallel_join_gateway",
+    "name": "Parallel Join Gateway Rule",
+    "description": "Checks if both IT setup and Manager introduction are complete before proceeding",
+    "type": "decision",
+    "priority": 55,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ITSetupTask.status",
+          "operator": "equals",
+          "value": "completed"
+        },
+        {
+          "field": "Employee.managerIntroStatus",
+          "operator": "equals",
+          "value": "completed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "WorkflowStage.nextStage",
+          "value": "thirty_day_review",
+          "message": "Proceed to 30-day review stage"
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.recipient",
+          "value": "Employee.managerId",
+          "message": "Initial onboarding complete. 30-day review scheduled."
+        }
+      ]
+    },
+    "node_id": "node_15",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  },
+  {
+    "id": "rule_thirty_day_review_validation",
+    "name": "30-Day Review Validation Rule",
+    "description": "Validates completion of 30-day review feedback and assessment",
+    "type": "validation",
+    "priority": 50,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ThirtyDayReview.managerFeedback",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "ThirtyDayReview.employeeFeedback",
+          "operator": "notEquals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "ThirtyDayReview.status",
+          "value": "completed",
+          "message": "30-day review completed"
+        },
+        {
+          "type": "updateData",
+          "field": "ThirtyDayReview.completionDate",
+          "value": "currentTimestamp",
+          "message": "Review completion date recorded"
+        },
+        {
+          "type": "logMessage",
+          "field": "AuditLog.action",
+          "value": "30-day review completed",
+          "message": "Review milestone logged"
+        }
+      ]
+    },
+    "node_id": "node_18",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  },
+  {
+    "id": "rule_review_success_decision",
+    "name": "Review Success Decision Rule",
+    "description": "Determines if 30-day review was successful to complete onboarding",
+    "type": "decision",
+    "priority": 45,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ThirtyDayReview.overallRating",
+          "operator": "greaterThan",
+          "value": 3
+        },
+        {
+          "field": "ThirtyDayReview.status",
+          "operator": "equals",
+          "value": "completed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Employee.onboardingStatus",
+          "value": "completed",
+          "message": "Onboarding process completed successfully"
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.recipient",
+          "value": "Employee.email",
+          "message": "Congratulations! Your onboarding process is complete."
+        },
+        {
+          "type": "sendNotification",
+          "field": "NotificationLog.recipient",
+          "value": "hr_admin_email",
+          "message": "Employee onboarding completed successfully"
+        }
+      ]
+    },
+    "node_id": "node_20",
+    "workflow_id": "workflow_1737007652843",
+    "workflowId": "workflow_1737007652843",
+    "application_id": "app_1764942232822"
+  }
+]

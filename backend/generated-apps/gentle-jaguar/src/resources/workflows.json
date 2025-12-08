@@ -1,0 +1,492 @@
+[
+  {
+    "id": "workflow_1735060800000",
+    "name": "Help Desk Ticketing System Workflow",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Customer Submits Ticket",
+          "formId": "ticket-update-form",
+          "trigger": "Customer portal form submission",
+          "formName": "TicketUpdateForm",
+          "description": "Customer initiates support request through portal"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Validate Ticket Submission",
+          "rules": [
+            "title required",
+            "description required",
+            "customer contact required"
+          ],
+          "ruleType": "Required fields and format",
+          "description": "Ensures all required ticket information is provided"
+        },
+        "type": "validation",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Validation Check",
+          "condition": "Check if ticket data is valid",
+          "description": "Route based on validation results",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 100,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "AI Category Classification",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Classify this support ticket into one of these categories (Technical, Billing, Account, General): Title: ${processData.title}, Description: ${processData.description}. Return only the category name.",
+          "maxTokens": 50,
+          "description": "AI categorizes ticket based on title and description",
+          "temperature": 0.3,
+          "outputVariable": "suggestedCategory"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 300,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "AI Priority Assessment",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Assess the priority level (Low, Medium, High) for this support ticket based on urgency and impact: ${processData.description}. Consider keywords like 'urgent', 'critical', 'broken', 'down'. Return only: Low, Medium, or High.",
+          "maxTokens": 20,
+          "description": "AI determines ticket priority based on content analysis",
+          "temperature": 0.2,
+          "outputVariable": "suggestedPriority"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 500,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "Generate Ticket ID",
+          "script": "const ticketId = 'TK-' + Date.now() + '-' + Math.floor(Math.random() * 1000); processData.ticketId = ticketId; processData.status = 'new'; processData.createdAt = new Date().toISOString();",
+          "scriptType": "JavaScript",
+          "description": "Creates unique ticket ID and sets initial status"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 400,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Assignment Strategy",
+          "condition": "Determine auto-assignment vs manual assignment",
+          "description": "Routes to auto-assignment or manual manager assignment",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 400,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Auto-Assign Agent",
+          "script": "const agents = ['agent1@company.com', 'agent2@company.com', 'agent3@company.com']; const assignedAgent = agents[Math.floor(Math.random() * agents.length)]; processData.assignedAgent = assignedAgent; processData.status = 'assigned';",
+          "scriptType": "JavaScript",
+          "description": "Automatically assigns ticket to available agent using round-robin"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 200,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "Manager Manual Assignment",
+          "formId": "ticket-submission-form",
+          "dueDate": "1 hour",
+          "formName": "TicketSubmissionForm",
+          "priority": "High",
+          "taskName": "assign_ticket",
+          "assignedTo": "support_manager",
+          "instructions": "Review ticket details and assign to appropriate agent based on expertise and workload"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 600,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Assignment Merge",
+          "condition": "Merge auto and manual assignment paths",
+          "description": "Continues workflow after assignment is complete",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 400,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "Notify Customer - Ticket Created",
+          "channel": "Email",
+          "template": "Your ticket ${processData.ticketId} has been created and assigned to ${processData.assignedAgent}",
+          "recipient": "processData.customerEmail",
+          "description": "Confirms ticket creation to customer"
+        },
+        "type": "notification",
+        "position": {
+          "x": 100,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Notify Agent - New Assignment",
+          "channel": "Email",
+          "template": "New ticket ${processData.ticketId} assigned to you. Priority: ${processData.suggestedPriority}",
+          "recipient": "processData.assignedAgent",
+          "description": "Alerts assigned agent of new ticket"
+        },
+        "type": "notification",
+        "position": {
+          "x": 300,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Agent Works on Ticket",
+          "formId": "ticket-assignment-form",
+          "dueDate": "Based on priority",
+          "formName": "TicketAssignmentForm",
+          "priority": "processData.suggestedPriority",
+          "taskName": "process_ticket",
+          "assignedTo": "processData.assignedAgent",
+          "instructions": "Investigate and resolve customer issue, update status regularly"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 400,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "SLA Timeout Check",
+          "duration": "PT4H",
+          "timerType": "duration",
+          "description": "4-hour SLA timeout for ticket resolution"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 600,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Resolution Status Check",
+          "condition": "Check if ticket is resolved or needs escalation",
+          "description": "Determines next action based on ticket status",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 400,
+          "y": 1050
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Escalate to Manager",
+          "formId": "ticket-update-form",
+          "dueDate": "1 hour",
+          "formName": "TicketUpdateForm",
+          "priority": "High",
+          "taskName": "escalate_ticket",
+          "assignedTo": "support_manager",
+          "instructions": "Review escalated ticket and provide additional resources or reassign"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 200,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_17",
+        "data": {
+          "label": "Mark Ticket Resolved",
+          "script": "processData.status = 'resolved'; processData.resolvedAt = new Date().toISOString(); processData.resolutionTime = new Date() - new Date(processData.createdAt);",
+          "scriptType": "JavaScript",
+          "description": "Updates ticket status to resolved and calculates resolution time"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 600,
+          "y": 1150
+        }
+      },
+      {
+        "id": "node_18",
+        "data": {
+          "label": "Notify Customer - Resolution",
+          "channel": "Email",
+          "template": "Your ticket ${processData.ticketId} has been resolved. Resolution: ${processData.resolution}",
+          "recipient": "processData.customerEmail",
+          "description": "Informs customer that their issue has been resolved"
+        },
+        "type": "notification",
+        "position": {
+          "x": 600,
+          "y": 1250
+        }
+      },
+      {
+        "id": "node_19",
+        "data": {
+          "label": "Customer Feedback Delay",
+          "duration": "P1D",
+          "timerType": "duration",
+          "description": "24-hour delay before requesting customer feedback"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 600,
+          "y": 1350
+        }
+      },
+      {
+        "id": "node_20",
+        "data": {
+          "label": "Request Customer Feedback",
+          "channel": "Email",
+          "template": "Please rate your support experience for ticket ${processData.ticketId}",
+          "recipient": "processData.customerEmail",
+          "description": "Requests customer satisfaction feedback"
+        },
+        "type": "notification",
+        "position": {
+          "x": 600,
+          "y": 1450
+        }
+      },
+      {
+        "id": "node_21",
+        "data": {
+          "label": "Ticket Process Complete",
+          "result": "Ticket resolved and feedback requested",
+          "description": "Support ticket workflow completed successfully"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 600,
+          "y": 1550
+        }
+      },
+      {
+        "id": "node_error",
+        "data": {
+          "label": "Validation Error Notice",
+          "channel": "Email",
+          "template": "Your ticket submission is missing required information. Please complete all fields.",
+          "recipient": "processData.customerEmail",
+          "description": "Notifies customer of validation errors"
+        },
+        "type": "notification",
+        "position": {
+          "x": -100,
+          "y": 350
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-28T03:44:11.692+05:30",
+    "updated_at": "2025-11-28T03:44:11.692+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "label": "Valid",
+        "source": "node_3",
+        "target": "node_4",
+        "condition": "validation === 'success'"
+      },
+      {
+        "id": "edge_4",
+        "label": "Invalid",
+        "source": "node_3",
+        "target": "node_error",
+        "condition": "validation === 'failed'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_6",
+        "source": "node_5",
+        "target": "node_6"
+      },
+      {
+        "id": "edge_7",
+        "source": "node_6",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_8",
+        "label": "Auto-Assign",
+        "source": "node_7",
+        "target": "node_8",
+        "condition": "processData.suggestedPriority === 'Low' || processData.suggestedPriority === 'Medium'"
+      },
+      {
+        "id": "edge_9",
+        "label": "Manual Assignment",
+        "source": "node_7",
+        "target": "node_9",
+        "condition": "processData.suggestedPriority === 'High'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_10",
+        "source": "node_8",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_9",
+        "target": "node_10"
+      },
+      {
+        "id": "edge_12",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_10",
+        "target": "node_11",
+        "isDefault": true
+      },
+      {
+        "id": "edge_13",
+        "source": "node_10",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_11",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_12",
+        "target": "node_13"
+      },
+      {
+        "id": "edge_16",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_17",
+        "source": "node_13",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_18",
+        "source": "node_14",
+        "target": "node_15"
+      },
+      {
+        "id": "edge_19",
+        "label": "Escalate",
+        "source": "node_15",
+        "target": "node_16",
+        "condition": "processData.status !== 'resolved' && timeout === true"
+      },
+      {
+        "id": "edge_20",
+        "label": "Resolved",
+        "source": "node_15",
+        "target": "node_17",
+        "condition": "processData.status === 'resolved'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_22",
+        "source": "node_17",
+        "target": "node_18"
+      },
+      {
+        "id": "edge_23",
+        "source": "node_18",
+        "target": "node_19"
+      },
+      {
+        "id": "edge_24",
+        "source": "node_19",
+        "target": "node_20"
+      },
+      {
+        "id": "edge_25",
+        "source": "node_20",
+        "target": "node_21"
+      }
+    ],
+    "description": ""
+  }
+]

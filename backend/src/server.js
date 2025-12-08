@@ -16,6 +16,10 @@ const pageRoutes = require('./routes/page.routes');
 const productionRoutes = require('./routes/production.routes');
 const versionRoutes = require('./routes/version.routes');
 const applicationRoutes = require('./routes/applications');
+const publishRoutes = require('./api/routes/publish.routes');
+const executionLogsRoutes = require('./routes/execution-logs');
+const aresRoutes = require('./routes/ares.routes');
+const ruleRoutes = require('./routes/rule.routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -54,10 +58,17 @@ app.use('/api/pages', pageRoutes);
 app.use('/api/production', productionRoutes);
 app.use('/api/versions', versionRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/execution-logs', executionLogsRoutes);
+app.use('/api/ares', aresRoutes);
+app.use('/api/rules', ruleRoutes);
+app.use('/api', publishRoutes);
 
 // Initialize Event Manager for real-time workflow monitoring
 const eventManager = require('./runtime/EventManager');
 eventManager.setSocketIO(io);
+
+// Make Socket.io available to routes
+app.set('io', io);
 
 // WebSocket connection handling
 const aiWorkflowGenerator = require('./services/ai-workflow-generator');

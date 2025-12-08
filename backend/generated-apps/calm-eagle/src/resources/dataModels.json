@@ -1,0 +1,492 @@
+[
+  {
+    "id": "user",
+    "name": "User",
+    "description": "Store user information for customers, agents, and administrators with role-based access",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address for login and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "User's full name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "User role: customer, agent, or administrator",
+        "required": true,
+        "defaultValue": "customer"
+      },
+      {
+        "name": "passwordHash",
+        "type": "string",
+        "description": "Hashed password for authentication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the user account is active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the user account was created",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_user_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_user_role",
+        "fields": [
+          "role"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "email": "Must be valid email format",
+      "role": "Must be one of: customer, agent, administrator"
+    },
+    "workflowId": "workflow_1735141523847"
+  },
+  {
+    "id": "ticket-category",
+    "name": "TicketCategory",
+    "description": "Define and organize ticket types for proper routing and classification in the support ticket management system",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the ticket category",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Display name of the category (e.g., Technical Support, Billing, Bug Report)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of what tickets belong in this category",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates whether this category is currently available for new tickets",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "priority",
+        "type": "number",
+        "description": "Display order priority for category listing (lower numbers appear first)",
+        "required": false,
+        "defaultValue": 0
+      },
+      {
+        "name": "defaultAssigneeId",
+        "type": "string",
+        "description": "Default user or team ID to route tickets in this category",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the category was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "defaultAssigneeId",
+        "description": "Links to the default assignee for tickets in this category"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_category_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_category_active",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ],
+      "check": [
+        "priority >= 0"
+      ]
+    },
+    "workflowId": "workflow_1735141523847"
+  },
+  {
+    "id": "ticket",
+    "name": "Ticket",
+    "description": "Central data model capturing ticket details from submission through resolution with complete lifecycle tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the ticket",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Brief summary of the ticket issue or request",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the ticket issue or request",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the ticket (e.g., open, in_progress, resolved, closed)",
+        "required": true,
+        "defaultValue": "open"
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the ticket (e.g., low, medium, high, urgent)",
+        "required": true,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "categoryId",
+        "type": "string",
+        "description": "Reference to the ticket category",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "submittedBy",
+        "type": "string",
+        "description": "User ID of the person who submitted the ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedTo",
+        "type": "string",
+        "description": "User ID of the support agent assigned to handle the ticket",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "TicketCategory",
+        "foreignKey": "categoryId",
+        "description": "Each ticket belongs to one category"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "submittedBy",
+        "description": "Each ticket is submitted by one user"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "assignedTo",
+        "description": "Each ticket can be assigned to one support agent"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "status"
+        ],
+        "description": "Index on status for filtering tickets by current state"
+      },
+      {
+        "fields": [
+          "submittedBy"
+        ],
+        "description": "Index on submittedBy for retrieving user's tickets"
+      },
+      {
+        "fields": [
+          "assignedTo"
+        ],
+        "description": "Index on assignedTo for retrieving assigned tickets"
+      }
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "open",
+          "in_progress",
+          "resolved",
+          "closed"
+        ]
+      },
+      "priority": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "urgent"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735141523847"
+  },
+  {
+    "id": "comment",
+    "name": "Comment",
+    "description": "Stores all comments, responses, and internal notes associated with tickets, supporting both public customer-facing communications and private internal agent notes",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the comment",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket this comment belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "authorId",
+        "type": "string",
+        "description": "Reference to the user who created the comment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "description": "The actual text content of the comment or note",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isInternal",
+        "type": "boolean",
+        "description": "Flag indicating if this is a private internal note (true) or public customer-facing comment (false)",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the comment was created",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each comment belongs to one ticket"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "authorId",
+        "description": "Each comment is authored by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "ticketId",
+          "createdAt"
+        ],
+        "description": "Optimize retrieval of comments for a ticket in chronological order"
+      },
+      {
+        "fields": [
+          "authorId"
+        ],
+        "description": "Optimize queries for comments by a specific author"
+      }
+    ],
+    "constraints": {
+      "foreignKeys": [
+        {
+          "field": "ticketId",
+          "references": "Ticket.id",
+          "onDelete": "CASCADE"
+        },
+        {
+          "field": "authorId",
+          "references": "User.id",
+          "onDelete": "RESTRICT"
+        }
+      ]
+    },
+    "workflowId": "workflow_1735141523847"
+  },
+  {
+    "id": "attachment",
+    "name": "Attachment",
+    "description": "Manages file uploads associated with tickets and comments in the support system",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the attachment",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileName",
+        "type": "string",
+        "description": "Original name of the uploaded file",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileUrl",
+        "type": "string",
+        "description": "Storage path or URL reference to the uploaded file",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileType",
+        "type": "string",
+        "description": "MIME type of the file (e.g., image/png, application/pdf)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileSize",
+        "type": "number",
+        "description": "Size of the file in bytes",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket this attachment belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "commentId",
+        "type": "string",
+        "description": "Reference to the comment this attachment belongs to (null if attached directly to ticket)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "uploadedAt",
+        "type": "date",
+        "description": "Timestamp when the file was uploaded",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each attachment belongs to one ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Comment",
+        "foreignKey": "commentId",
+        "description": "Each attachment may belong to one comment"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "ticketId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "commentId"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "maxFileSize": "10MB",
+      "allowedFileTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "application/pdf",
+        "text/plain",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ]
+    },
+    "workflowId": "workflow_1735141523847"
+  }
+]

@@ -1,0 +1,886 @@
+[
+  {
+    "id": "workflow_1704123456789_form_001",
+    "name": "member_registration_form",
+    "title": "Library Member Registration",
+    "description": "Complete registration form for new library members with profile and preferences",
+    "nodeId": "node_001",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "personal_info",
+        "title": "Personal Information",
+        "description": "Basic member details and contact information"
+      },
+      {
+        "id": "address_info",
+        "title": "Address & Location",
+        "description": "Residential and mailing address details"
+      },
+      {
+        "id": "preferences",
+        "title": "Library Preferences",
+        "description": "Reading preferences and notification settings"
+      },
+      {
+        "id": "agreement",
+        "title": "Terms & Agreement",
+        "description": "Library policies and member agreement"
+      }
+    ],
+    "fields": [
+      {
+        "fieldName": "member_type",
+        "type": "radio",
+        "label": "Membership Type",
+        "required": true,
+        "section": "personal_info",
+        "options": [
+          "Adult",
+          "Student",
+          "Senior (65+)",
+          "Child (Under 18)"
+        ],
+        "defaultValue": "Adult",
+        "tooltip": "Select your membership category"
+      },
+      {
+        "fieldName": "full_name",
+        "type": "text",
+        "label": "Full Name",
+        "required": true,
+        "section": "personal_info",
+        "placeholder": "Enter your complete name",
+        "minLength": 2,
+        "maxLength": 100
+      },
+      {
+        "fieldName": "date_of_birth",
+        "type": "date",
+        "label": "Date of Birth",
+        "required": true,
+        "section": "personal_info",
+        "maxDate": "today",
+        "tooltip": "Required for age verification and children's programs"
+      },
+      {
+        "fieldName": "contact_email",
+        "type": "email",
+        "label": "Primary Email",
+        "required": true,
+        "section": "personal_info",
+        "placeholder": "your.email@example.com"
+      },
+      {
+        "fieldName": "phone_number",
+        "type": "phoneInput",
+        "label": "Phone Number",
+        "required": true,
+        "section": "personal_info",
+        "defaultCountry": "US"
+      },
+      {
+        "fieldName": "emergency_contact",
+        "type": "text",
+        "label": "Emergency Contact",
+        "required": false,
+        "section": "personal_info",
+        "placeholder": "Name and phone number",
+        "conditional": {
+          "field": "member_type",
+          "condition": "equals",
+          "value": "Child (Under 18)"
+        }
+      },
+      {
+        "fieldName": "residential_address",
+        "type": "textarea",
+        "label": "Residential Address",
+        "required": true,
+        "section": "address_info",
+        "placeholder": "Street address, City, State, ZIP",
+        "rows": 3
+      },
+      {
+        "fieldName": "address_location",
+        "type": "location",
+        "label": "Address Location",
+        "required": false,
+        "section": "address_info",
+        "tooltip": "Optional: Pin your location for branch recommendations"
+      },
+      {
+        "fieldName": "mailing_same",
+        "type": "switch",
+        "label": "Mailing address same as residential",
+        "section": "address_info",
+        "defaultValue": true
+      },
+      {
+        "fieldName": "mailing_address",
+        "type": "textarea",
+        "label": "Mailing Address",
+        "required": false,
+        "section": "address_info",
+        "placeholder": "Street address, City, State, ZIP",
+        "rows": 3,
+        "conditional": {
+          "field": "mailing_same",
+          "condition": "equals",
+          "value": false
+        }
+      },
+      {
+        "fieldName": "preferred_genres",
+        "type": "multiselect",
+        "label": "Preferred Reading Genres",
+        "required": false,
+        "section": "preferences",
+        "options": [
+          "Fiction",
+          "Non-Fiction",
+          "Mystery",
+          "Romance",
+          "Science Fiction",
+          "Biography",
+          "History",
+          "Self-Help",
+          "Children's Books",
+          "Young Adult",
+          "Poetry",
+          "Technical"
+        ],
+        "maxSelections": 6
+      },
+      {
+        "fieldName": "notification_preferences",
+        "type": "checkbox",
+        "label": "Notification Preferences",
+        "required": true,
+        "section": "preferences",
+        "options": [
+          "Due date reminders",
+          "New arrivals",
+          "Event notifications",
+          "Hold notifications",
+          "Newsletter"
+        ],
+        "layout": "vertical"
+      },
+      {
+        "fieldName": "preferred_format",
+        "type": "radio",
+        "label": "Preferred Book Format",
+        "required": true,
+        "section": "preferences",
+        "options": [
+          "Physical Books",
+          "E-books",
+          "Audiobooks",
+          "Mixed"
+        ],
+        "defaultValue": "Mixed"
+      },
+      {
+        "fieldName": "library_card_photo",
+        "type": "avatar",
+        "label": "Library Card Photo",
+        "required": true,
+        "section": "preferences",
+        "size": "small",
+        "shape": "square",
+        "tooltip": "Photo for your library card identification"
+      },
+      {
+        "fieldName": "additional_notes",
+        "type": "richtext",
+        "label": "Additional Information",
+        "required": false,
+        "section": "preferences",
+        "placeholder": "Any special requirements, accessibility needs, or other information"
+      },
+      {
+        "fieldName": "privacy_consent",
+        "type": "consent",
+        "label": "Privacy Policy Agreement",
+        "required": true,
+        "section": "agreement",
+        "text": "I agree to the library's privacy policy and terms of service"
+      },
+      {
+        "fieldName": "digital_signature",
+        "type": "esign",
+        "label": "Digital Signature",
+        "required": true,
+        "section": "agreement",
+        "canvasWidth": 400,
+        "canvasHeight": 150,
+        "tooltip": "Please sign to complete your registration"
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "id": "child_emergency_contact",
+        "condition": {
+          "field": "member_type",
+          "operator": "equals",
+          "value": "Child (Under 18)"
+        },
+        "actions": [
+          {
+            "type": "show",
+            "target": "emergency_contact"
+          },
+          {
+            "type": "require",
+            "target": "emergency_contact"
+          }
+        ]
+      },
+      {
+        "id": "mailing_address_toggle",
+        "condition": {
+          "field": "mailing_same",
+          "operator": "equals",
+          "value": false
+        },
+        "actions": [
+          {
+            "type": "show",
+            "target": "mailing_address"
+          }
+        ]
+      }
+    ],
+    "calculations": [
+      {
+        "field": "membership_fee",
+        "formula": "member_type === 'Student' || member_type === 'Senior (65+)' ? 10 : member_type === 'Child (Under 18)' ? 5 : 25",
+        "dependencies": [
+          "member_type"
+        ]
+      }
+    ],
+    "workflowId": "workflow_1704123456789",
+    "createdAt": "2025-11-27T03:38:46.192Z",
+    "updatedAt": "2025-11-27T03:38:46.192Z"
+  },
+  {
+    "id": "workflow_1704123456789_form_002",
+    "name": "book_acquisition_form",
+    "title": "Book Acquisition Request",
+    "description": "Advanced form for librarians to process new book acquisitions with budget tracking and approval workflow",
+    "nodeId": "node_002",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "book_details",
+        "title": "Book Information",
+        "description": "Detailed information about the book being acquired"
+      },
+      {
+        "id": "acquisition_details",
+        "title": "Acquisition Details",
+        "description": "Purchase information and vendor details"
+      },
+      {
+        "id": "budget_approval",
+        "title": "Budget & Approval",
+        "description": "Cost analysis and approval requirements"
+      },
+      {
+        "id": "processing",
+        "title": "Processing Information",
+        "description": "Cataloging and processing details"
+      }
+    ],
+    "fields": [
+      {
+        "fieldName": "book_isbn",
+        "type": "text",
+        "label": "ISBN",
+        "required": true,
+        "section": "book_details",
+        "placeholder": "978-0-00-000000-0",
+        "pattern": "^(978|979)-\\d{1,5}-\\d{1,7}-\\d{1,6}-\\d$"
+      },
+      {
+        "fieldName": "book_title",
+        "type": "text",
+        "label": "Book Title",
+        "required": true,
+        "section": "book_details",
+        "maxLength": 255
+      },
+      {
+        "fieldName": "author_details",
+        "type": "textarea",
+        "label": "Author(s)",
+        "required": true,
+        "section": "book_details",
+        "placeholder": "Primary author, co-authors, editors",
+        "rows": 2
+      },
+      {
+        "fieldName": "publication_info",
+        "type": "json",
+        "label": "Publication Information",
+        "required": true,
+        "section": "book_details",
+        "schema": {
+          "publisher": "string",
+          "publication_date": "date",
+          "edition": "string",
+          "pages": "number"
+        }
+      },
+      {
+        "fieldName": "book_category",
+        "type": "autocomplete",
+        "label": "Category/Genre",
+        "required": true,
+        "section": "book_details",
+        "options": [
+          "Fiction",
+          "Non-Fiction",
+          "Reference",
+          "Children's",
+          "Young Adult",
+          "Academic",
+          "Technical",
+          "Periodical"
+        ],
+        "minChars": 2
+      },
+      {
+        "fieldName": "dewey_classification",
+        "type": "lookup",
+        "label": "Dewey Decimal Classification",
+        "required": true,
+        "section": "book_details",
+        "source": "dewey_database",
+        "display": "number_description"
+      },
+      {
+        "fieldName": "acquisition_type",
+        "type": "radio",
+        "label": "Acquisition Type",
+        "required": true,
+        "section": "acquisition_details",
+        "options": [
+          "Purchase",
+          "Donation",
+          "Gift",
+          "Exchange",
+          "Subscription"
+        ],
+        "defaultValue": "Purchase"
+      },
+      {
+        "fieldName": "vendor_information",
+        "type": "autocomplete",
+        "label": "Vendor/Supplier",
+        "required": true,
+        "section": "acquisition_details",
+        "options": [
+          "Amazon Books",
+          "Baker & Taylor",
+          "Ingram",
+          "Barnes & Noble",
+          "Local Bookstore",
+          "Publisher Direct"
+        ],
+        "conditional": {
+          "field": "acquisition_type",
+          "condition": "equals",
+          "value": "Purchase"
+        }
+      },
+      {
+        "fieldName": "purchase_cost",
+        "type": "currency",
+        "label": "Purchase Cost",
+        "required": true,
+        "section": "acquisition_details",
+        "currencySymbol": "$",
+        "conditional": {
+          "field": "acquisition_type",
+          "condition": "equals",
+          "value": "Purchase"
+        }
+      },
+      {
+        "fieldName": "quantity_ordered",
+        "type": "number",
+        "label": "Quantity",
+        "required": true,
+        "section": "acquisition_details",
+        "min": 1,
+        "max": 50,
+        "defaultValue": 1
+      },
+      {
+        "fieldName": "total_cost",
+        "type": "calculated",
+        "label": "Total Cost",
+        "section": "acquisition_details",
+        "formula": "purchase_cost * quantity_ordered",
+        "dependencies": [
+          "purchase_cost",
+          "quantity_ordered"
+        ],
+        "readonly": true
+      },
+      {
+        "fieldName": "budget_category",
+        "type": "dropdown",
+        "label": "Budget Category",
+        "required": true,
+        "section": "budget_approval",
+        "options": [
+          "General Collection",
+          "Reference",
+          "Children's",
+          "Digital Resources",
+          "Special Collections",
+          "Periodicals"
+        ]
+      },
+      {
+        "fieldName": "budget_remaining",
+        "type": "currency",
+        "label": "Remaining Budget",
+        "section": "budget_approval",
+        "readonly": true,
+        "currencySymbol": "$"
+      },
+      {
+        "fieldName": "priority_level",
+        "type": "slider",
+        "label": "Acquisition Priority",
+        "required": true,
+        "section": "budget_approval",
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "showValue": true,
+        "defaultValue": 3
+      },
+      {
+        "fieldName": "justification",
+        "type": "richtext",
+        "label": "Acquisition Justification",
+        "required": true,
+        "section": "budget_approval",
+        "placeholder": "Explain why this book should be acquired, including demand, reviews, curriculum support, etc."
+      },
+      {
+        "fieldName": "approval_required",
+        "type": "switch",
+        "label": "Requires Management Approval",
+        "section": "budget_approval",
+        "defaultValue": false
+      },
+      {
+        "fieldName": "supervisor_approval",
+        "type": "esign",
+        "label": "Supervisor Signature",
+        "required": false,
+        "section": "budget_approval",
+        "conditional": {
+          "field": "approval_required",
+          "condition": "equals",
+          "value": true
+        }
+      },
+      {
+        "fieldName": "processing_notes",
+        "type": "textarea",
+        "label": "Processing Instructions",
+        "required": false,
+        "section": "processing",
+        "placeholder": "Special cataloging instructions, shelving notes, etc.",
+        "rows": 4
+      },
+      {
+        "fieldName": "supporting_documents",
+        "type": "filemanager",
+        "label": "Supporting Documents",
+        "required": false,
+        "section": "processing",
+        "allowUpload": true,
+        "allowDelete": true,
+        "maxFiles": 10
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "id": "purchase_fields",
+        "condition": {
+          "field": "acquisition_type",
+          "operator": "equals",
+          "value": "Purchase"
+        },
+        "actions": [
+          {
+            "type": "show",
+            "target": [
+              "vendor_information",
+              "purchase_cost"
+            ]
+          },
+          {
+            "type": "require",
+            "target": [
+              "vendor_information",
+              "purchase_cost"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "approval_signature",
+        "condition": {
+          "field": "approval_required",
+          "operator": "equals",
+          "value": true
+        },
+        "actions": [
+          {
+            "type": "show",
+            "target": "supervisor_approval"
+          },
+          {
+            "type": "require",
+            "target": "supervisor_approval"
+          }
+        ]
+      },
+      {
+        "id": "high_cost_approval",
+        "condition": {
+          "field": "total_cost",
+          "operator": "greater_than",
+          "value": 500
+        },
+        "actions": [
+          {
+            "type": "set_value",
+            "target": "approval_required",
+            "value": true
+          }
+        ]
+      }
+    ],
+    "calculations": [
+      {
+        "field": "total_cost",
+        "formula": "purchase_cost * quantity_ordered",
+        "dependencies": [
+          "purchase_cost",
+          "quantity_ordered"
+        ]
+      },
+      {
+        "field": "budget_remaining",
+        "formula": "getBudgetRemaining(budget_category) - total_cost",
+        "dependencies": [
+          "budget_category",
+          "total_cost"
+        ]
+      }
+    ],
+    "workflowId": "workflow_1704123456789",
+    "createdAt": "2025-11-27T03:38:46.192Z",
+    "updatedAt": "2025-11-27T03:38:46.192Z"
+  },
+  {
+    "id": "workflow_1704123456789_form_003",
+    "name": "book_checkout_system",
+    "title": "Advanced Book Checkout System",
+    "description": "Comprehensive checkout system with member verification, multiple items, and automated processing",
+    "nodeId": "node_003",
+    "complexity": "advanced",
+    "sections": [
+      {
+        "id": "member_verification",
+        "title": "Member Verification",
+        "description": "Verify member identity and account status"
+      },
+      {
+        "id": "checkout_items",
+        "title": "Checkout Items",
+        "description": "Books and materials being checked out"
+      },
+      {
+        "id": "checkout_terms",
+        "title": "Checkout Terms",
+        "description": "Due dates and checkout conditions"
+      },
+      {
+        "id": "confirmation",
+        "title": "Confirmation",
+        "description": "Transaction confirmation and receipt"
+      }
+    ],
+    "fields": [
+      {
+        "fieldName": "member_lookup",
+        "type": "lookup",
+        "label": "Member Search",
+        "required": true,
+        "section": "member_verification",
+        "source": "member_database",
+        "display": "name_id",
+        "placeholder": "Search by name, email, or member ID"
+      },
+      {
+        "fieldName": "member_id",
+        "type": "text",
+        "label": "Member ID",
+        "required": true,
+        "section": "member_verification",
+        "readonly": true
+      },
+      {
+        "fieldName": "member_name",
+        "type": "text",
+        "label": "Member Name",
+        "required": true,
+        "section": "member_verification",
+        "readonly": true
+      },
+      {
+        "fieldName": "member_status",
+        "type": "text",
+        "label": "Account Status",
+        "section": "member_verification",
+        "readonly": true,
+        "tooltip": "Active, Suspended, or Blocked"
+      },
+      {
+        "fieldName": "current_checkouts",
+        "type": "number",
+        "label": "Current Checkouts",
+        "section": "member_verification",
+        "readonly": true
+      },
+      {
+        "fieldName": "overdue_items",
+        "type": "number",
+        "label": "Overdue Items",
+        "section": "member_verification",
+        "readonly": true
+      },
+      {
+        "fieldName": "outstanding_fines",
+        "type": "currency",
+        "label": "Outstanding Fines",
+        "section": "member_verification",
+        "readonly": true,
+        "currencySymbol": "$"
+      },
+      {
+        "fieldName": "checkout_items_grid",
+        "type": "dataGrid",
+        "label": "Items to Checkout",
+        "required": true,
+        "section": "checkout_items",
+        "columns": [
+          {
+            "field": "barcode",
+            "headerName": "Barcode",
+            "type": "barcode",
+            "editable": true,
+            "required": true
+          },
+          {
+            "field": "title",
+            "headerName": "Title",
+            "type": "lookup",
+            "editable": false,
+            "width": 200
+          },
+          {
+            "field": "author",
+            "headerName": "Author",
+            "type": "text",
+            "editable": false,
+            "width": 150
+          },
+          {
+            "field": "item_type",
+            "headerName": "Type",
+            "type": "text",
+            "editable": false,
+            "width": 100
+          },
+          {
+            "field": "loan_period",
+            "headerName": "Loan Period (Days)",
+            "type": "number",
+            "editable": true,
+            "defaultValue": 21
+          },
+          {
+            "field": "due_date",
+            "headerName": "Due Date",
+            "type": "date",
+            "editable": false
+          }
+        ],
+        "minRows": 1,
+        "maxRows": 10
+      },
+      {
+        "fieldName": "checkout_count",
+        "type": "calculated",
+        "label": "Total Items",
+        "section": "checkout_items",
+        "formula": "checkout_items_grid.length",
+        "dependencies": [
+          "checkout_items_grid"
+        ],
+        "readonly": true
+      },
+      {
+        "fieldName": "special_instructions",
+        "type": "textarea",
+        "label": "Special Instructions",
+        "required": false,
+        "section": "checkout_terms",
+        "placeholder": "Any special notes for this checkout",
+        "rows": 3
+      },
+      {
+        "fieldName": "renewal_allowed",
+        "type": "switch",
+        "label": "Allow Renewals",
+        "section": "checkout_terms",
+        "defaultValue": true
+      },
+      {
+        "fieldName": "notification_method",
+        "type": "radio",
+        "label": "Due Date Reminder Method",
+        "required": true,
+        "section": "checkout_terms",
+        "options": [
+          "Email",
+          "SMS",
+          "Phone Call",
+          "No Reminder"
+        ],
+        "defaultValue": "Email"
+      },
+      {
+        "fieldName": "librarian_id",
+        "type": "text",
+        "label": "Librarian ID",
+        "required": true,
+        "section": "confirmation",
+        "defaultValue": "current_user_id",
+        "readonly": true
+      },
+      {
+        "fieldName": "checkout_timestamp",
+        "type": "date",
+        "label": "Checkout Date/Time",
+        "required": true,
+        "section": "confirmation",
+        "includeTime": true,
+        "defaultValue": "now",
+        "readonly": true
+      },
+      {
+        "fieldName": "transaction_id",
+        "type": "text",
+        "label": "Transaction ID",
+        "section": "confirmation",
+        "readonly": true,
+        "tooltip": "Automatically generated transaction identifier"
+      },
+      {
+        "fieldName": "receipt_qr",
+        "type": "qrcode",
+        "label": "Receipt QR Code",
+        "section": "confirmation",
+        "data": "transaction_summary",
+        "size": "medium"
+      },
+      {
+        "fieldName": "member_signature",
+        "type": "esign",
+        "label": "Member Acknowledgment",
+        "required": true,
+        "section": "confirmation",
+        "canvasWidth": 300,
+        "canvasHeight": 100
+      }
+    ],
+    "conditionalLogic": [
+      {
+        "id": "account_restrictions",
+        "condition": {
+          "field": "member_status",
+          "operator": "not_equals",
+          "value": "Active"
+        },
+        "actions": [
+          {
+            "type": "disable_form",
+            "message": "Cannot checkout items - account restricted"
+          }
+        ]
+      },
+      {
+        "id": "fine_restrictions",
+        "condition": {
+          "field": "outstanding_fines",
+          "operator": "greater_than",
+          "value": 25
+        },
+        "actions": [
+          {
+            "type": "show_warning",
+            "message": "Member has outstanding fines over $25"
+          }
+        ]
+      },
+      {
+        "id": "checkout_limit",
+        "condition": {
+          "field": "current_checkouts",
+          "operator": "greater_than",
+          "value": 8
+        },
+        "actions": [
+          {
+            "type": "show_warning",
+            "message": "Member approaching checkout limit"
+          }
+        ]
+      }
+    ],
+    "calculations": [
+      {
+        "field": "checkout_count",
+        "formula": "checkout_items_grid ? checkout_items_grid.length : 0",
+        "dependencies": [
+          "checkout_items_grid"
+        ]
+      },
+      {
+        "field": "new_total_checkouts",
+        "formula": "current_checkouts + checkout_count",
+        "dependencies": [
+          "current_checkouts",
+          "checkout_count"
+        ]
+      }
+    ],
+    "workflowId": "workflow_1704123456789",
+    "createdAt": "2025-11-27T03:38:46.192Z",
+    "updatedAt": "2025-11-27T03:38:46.192Z"
+  }
+]

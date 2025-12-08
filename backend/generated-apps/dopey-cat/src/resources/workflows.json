@@ -1,0 +1,373 @@
+[
+  {
+    "id": "workflow_1734545234567",
+    "name": "Parking Ticket Management System",
+    "edges": [],
+    "nodes": [
+      {
+        "id": "node_1",
+        "data": {
+          "label": "Parking Ticket Issued",
+          "formId": "workflow_1734545234567_form_001",
+          "trigger": "Officer issues parking violation ticket",
+          "formName": "parking_violation_citation",
+          "description": "Initiates the parking ticket management process when a violation is recorded"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 50,
+          "y": 50
+        }
+      },
+      {
+        "id": "node_2",
+        "data": {
+          "label": "Validate Ticket Data",
+          "rules": [
+            "License plate format",
+            "Location code valid",
+            "Violation code exists",
+            "Officer ID valid"
+          ],
+          "ruleType": "Data Quality Check",
+          "description": "Validates all ticket information for completeness and accuracy"
+        },
+        "type": "validation",
+        "position": {
+          "x": 50,
+          "y": 150
+        }
+      },
+      {
+        "id": "node_3",
+        "data": {
+          "label": "Ticket Data Valid?",
+          "condition": "processData.validation_status",
+          "description": "Routes based on ticket data validation results",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 250
+        }
+      },
+      {
+        "id": "node_4",
+        "data": {
+          "label": "Manual Data Correction",
+          "formId": "workflow_1734545234567_form_002",
+          "dueDate": "2 hours",
+          "formName": "parking_permit_application",
+          "priority": "Medium",
+          "taskName": "correct_ticket_data",
+          "assignedTo": "Data Entry Clerk",
+          "instructions": "Review and correct invalid ticket data fields"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 300,
+          "y": 200
+        }
+      },
+      {
+        "id": "node_5",
+        "data": {
+          "label": "Vehicle Registration Check",
+          "branches": "Check DMV database and run automated fine calculation",
+          "description": "Parallel processing of vehicle verification and fine calculation",
+          "gatewayType": "parallel"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 350
+        }
+      },
+      {
+        "id": "node_6",
+        "data": {
+          "label": "DMV Database Lookup",
+          "script": "queryDMVDatabase(processData.license_plate)",
+          "scriptType": "API Call",
+          "description": "Retrieves vehicle registration and owner information from DMV"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": -100,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_7",
+        "data": {
+          "label": "Calculate Fine Amount",
+          "script": "calculateFine(processData.violation_code, processData.location_type)",
+          "scriptType": "Business Logic",
+          "description": "Calculates fine amount based on violation type and location"
+        },
+        "type": "scriptTask",
+        "position": {
+          "x": 200,
+          "y": 450
+        }
+      },
+      {
+        "id": "node_8",
+        "data": {
+          "label": "Vehicle Found in DMV?",
+          "condition": "processData.dmv_result.status",
+          "description": "Determines next steps based on vehicle registration status",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 550
+        }
+      },
+      {
+        "id": "node_9",
+        "data": {
+          "label": "AI Violation Assessment",
+          "model": "claude-sonnet-4-5-20250929",
+          "prompt": "Analyze this parking violation for severity and recommend actions. Violation: ${processData.violation_code}, Location: ${processData.location}, Time: ${processData.timestamp}, Vehicle: ${processData.license_plate}",
+          "maxTokens": 500,
+          "description": "AI analysis of violation severity and recommended enforcement actions",
+          "temperature": 0.3,
+          "outputVariable": "ai_assessment"
+        },
+        "type": "llmTask",
+        "position": {
+          "x": 350,
+          "y": 500
+        }
+      },
+      {
+        "id": "node_10",
+        "data": {
+          "label": "Send Notice to Owner",
+          "channel": "Mail",
+          "template": "parking_violation_notice",
+          "recipient": "processData.owner_address",
+          "description": "Mails parking ticket notice to registered vehicle owner"
+        },
+        "type": "notification",
+        "position": {
+          "x": 50,
+          "y": 650
+        }
+      },
+      {
+        "id": "node_11",
+        "data": {
+          "label": "30-Day Payment Period",
+          "duration": "P30D",
+          "timerType": "duration",
+          "description": "Waiting period for voluntary payment of parking ticket"
+        },
+        "type": "timerEvent",
+        "position": {
+          "x": 50,
+          "y": 750
+        }
+      },
+      {
+        "id": "node_12",
+        "data": {
+          "label": "Payment Received?",
+          "condition": "processData.payment_status",
+          "description": "Checks if payment was received within 30-day period",
+          "gatewayType": "exclusive"
+        },
+        "type": "decision",
+        "position": {
+          "x": 50,
+          "y": 850
+        }
+      },
+      {
+        "id": "node_13",
+        "data": {
+          "label": "Escalation Review",
+          "formId": "workflow_1734545234567_form_003",
+          "dueDate": "3 days",
+          "formName": "parking_violation_appeal",
+          "priority": "High",
+          "taskName": "review_unpaid_ticket",
+          "assignedTo": "Collections Supervisor",
+          "instructions": "Review unpaid ticket for collection or enforcement action"
+        },
+        "type": "userTask",
+        "position": {
+          "x": 250,
+          "y": 800
+        }
+      },
+      {
+        "id": "node_14",
+        "data": {
+          "label": "Final Notice & Late Fee",
+          "channel": "Certified Mail",
+          "template": "final_notice_late_fee",
+          "recipient": "processData.owner_address",
+          "description": "Sends final notice with late fees and collection warning"
+        },
+        "type": "notification",
+        "position": {
+          "x": 450,
+          "y": 800
+        }
+      },
+      {
+        "id": "node_15",
+        "data": {
+          "label": "Ticket Resolved",
+          "result": "Payment received - case closed",
+          "description": "Successful completion when payment is received"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 50,
+          "y": 950
+        }
+      },
+      {
+        "id": "node_16",
+        "data": {
+          "label": "Collection Process",
+          "result": "Transferred to collections department",
+          "description": "Case transferred to collections for further action"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 450,
+          "y": 900
+        }
+      }
+    ],
+    "version": "1.0.0",
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-11-25T15:18:03.477+05:30",
+    "updated_at": "2025-11-25T15:18:03.477+05:30",
+    "connections": [
+      {
+        "id": "edge_1",
+        "source": "node_1",
+        "target": "node_2"
+      },
+      {
+        "id": "edge_2",
+        "source": "node_2",
+        "target": "node_3"
+      },
+      {
+        "id": "edge_3",
+        "label": "Invalid Data",
+        "source": "node_3",
+        "target": "node_4",
+        "condition": "processData.validation_status === 'invalid'"
+      },
+      {
+        "id": "edge_4",
+        "label": "Valid Data",
+        "source": "node_3",
+        "target": "node_5",
+        "condition": "processData.validation_status === 'valid'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_5",
+        "source": "node_4",
+        "target": "node_5"
+      },
+      {
+        "id": "edge_6",
+        "data": {
+          "isDefault": true
+        },
+        "label": "Default",
+        "source": "node_5",
+        "target": "node_6",
+        "isDefault": true
+      },
+      {
+        "id": "edge_7",
+        "source": "node_5",
+        "target": "node_7"
+      },
+      {
+        "id": "edge_8",
+        "source": "node_5",
+        "target": "node_9"
+      },
+      {
+        "id": "edge_9",
+        "source": "node_6",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_10",
+        "source": "node_7",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_11",
+        "source": "node_9",
+        "target": "node_8"
+      },
+      {
+        "id": "edge_12",
+        "label": "Vehicle Found",
+        "source": "node_8",
+        "target": "node_10",
+        "condition": "processData.dmv_result.status === 'found'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_13",
+        "label": "Vehicle Not Found",
+        "source": "node_8",
+        "target": "node_13",
+        "condition": "processData.dmv_result.status === 'not_found'"
+      },
+      {
+        "id": "edge_14",
+        "source": "node_10",
+        "target": "node_11"
+      },
+      {
+        "id": "edge_15",
+        "source": "node_11",
+        "target": "node_12"
+      },
+      {
+        "id": "edge_16",
+        "label": "Payment Received",
+        "source": "node_12",
+        "target": "node_15",
+        "condition": "processData.payment_status === 'paid'"
+      },
+      {
+        "id": "edge_17",
+        "label": "No Payment",
+        "source": "node_12",
+        "target": "node_13",
+        "condition": "processData.payment_status === 'unpaid'",
+        "isDefault": true
+      },
+      {
+        "id": "edge_18",
+        "source": "node_13",
+        "target": "node_14"
+      },
+      {
+        "id": "edge_19",
+        "source": "node_14",
+        "target": "node_16"
+      }
+    ],
+    "description": ""
+  }
+]

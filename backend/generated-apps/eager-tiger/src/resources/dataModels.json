@@ -1,0 +1,1088 @@
+[
+  {
+    "id": "customer",
+    "name": "Customer",
+    "description": "Central data model for customer records including personal contact information, company affiliation, industry classification, and relationship status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the customer",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "Full name of the customer contact person",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Primary email address for customer communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "description": "Primary phone number for customer contact",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "companyName",
+        "type": "string",
+        "description": "Name of the company the customer is affiliated with",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "industry",
+        "type": "string",
+        "description": "Industry classification of the customer's business",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current relationship status (e.g., active, inactive, prospect, churned)",
+        "required": true,
+        "defaultValue": "prospect"
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the customer record was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_customer_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_customer_status",
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "email": {
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      },
+      "status": {
+        "enum": [
+          "prospect",
+          "active",
+          "inactive",
+          "churned"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "company",
+    "name": "Company",
+    "description": "Stores company and organization details associated with customers",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the company",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Legal business name of the company",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "industry",
+        "type": "string",
+        "description": "Industry sector or business category",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "size",
+        "type": "string",
+        "description": "Company size category (e.g., Small, Medium, Enterprise)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "location",
+        "type": "string",
+        "description": "Primary business location or headquarters address",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "contactEmail",
+        "type": "string",
+        "description": "Primary corporate contact email address",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "contactPhone",
+        "type": "string",
+        "description": "Primary corporate contact phone number",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the company record was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "relatedModel": "Customer",
+        "foreignKey": "companyId",
+        "description": "A company can have multiple customers"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "name"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "industry"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "uniqueCompanyName": {
+        "type": "unique",
+        "fields": [
+          "name"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "sales-pipeline-stage",
+    "name": "SalesPipelineStage",
+    "description": "Defines configurable stages in the sales pipeline with ordering, probability weights, and transition rules for managing lead progression",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the pipeline stage",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Display name of the stage (e.g., Prospecting, Qualification, Proposal, Negotiation, Closed Won)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "order",
+        "type": "number",
+        "description": "Sequential order of the stage in the pipeline (lower numbers appear first)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "probability",
+        "type": "number",
+        "description": "Win probability percentage for deals in this stage (0-100)",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "isFinal",
+        "type": "boolean",
+        "description": "Indicates if this is a terminal stage (Closed Won/Lost) with no further progression",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this stage is currently active and available for use",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "allowedTransitions",
+        "type": "array",
+        "description": "Array of stage IDs that deals can transition to from this stage",
+        "required": false,
+        "defaultValue": []
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_stage_order",
+        "fields": [
+          "order"
+        ]
+      },
+      {
+        "name": "idx_stage_active",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name",
+        "order"
+      ],
+      "check": [
+        "probability >= 0 AND probability <= 100",
+        "order >= 0"
+      ]
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "user",
+    "name": "User",
+    "description": "Stores user accounts with role-based access control for sales representatives, managers, and administrators",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address for authentication and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fullName",
+        "type": "string",
+        "description": "User's full name for display purposes",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "passwordHash",
+        "type": "string",
+        "description": "Hashed password for secure authentication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "User role defining access level (sales_rep, manager, admin)",
+        "required": true,
+        "defaultValue": "sales_rep"
+      },
+      {
+        "name": "teamId",
+        "type": "string",
+        "description": "Reference to the team the user belongs to",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the user account is active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "lastLoginAt",
+        "type": "date",
+        "description": "Timestamp of the user's last login",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_user_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_user_role",
+        "fields": [
+          "role"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_user_team",
+        "fields": [
+          "teamId"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "email": {
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+        "message": "Must be a valid email address"
+      },
+      "role": {
+        "enum": [
+          "sales_rep",
+          "manager",
+          "admin"
+        ],
+        "message": "Role must be one of: sales_rep, manager, admin"
+      }
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "activity-log",
+    "name": "ActivityLog",
+    "description": "Maintains comprehensive audit trail of all system activities including data changes, user actions, automated processes, and system events for compliance and troubleshooting",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the activity log entry",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user who performed the action (null for system-generated activities)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "activityType",
+        "type": "string",
+        "description": "Type of activity (e.g., CREATE, UPDATE, DELETE, LOGIN, EXPORT, SYSTEM_EVENT)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entityType",
+        "type": "string",
+        "description": "Type of entity affected (e.g., Customer, Company, SalesPipelineStage, User)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entityId",
+        "type": "string",
+        "description": "Identifier of the specific entity that was affected by the activity",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "details",
+        "type": "string",
+        "description": "JSON string containing detailed information about the activity, changes made, or additional context",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "ipAddress",
+        "type": "string",
+        "description": "IP address from which the activity originated",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "timestamp",
+        "type": "date",
+        "description": "Date and time when the activity occurred",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Links activity log entry to the user who performed the action"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_activity_timestamp",
+        "fields": [
+          "timestamp"
+        ],
+        "description": "Index for efficient time-based queries and log retrieval"
+      },
+      {
+        "name": "idx_activity_user",
+        "fields": [
+          "userId"
+        ],
+        "description": "Index for retrieving all activities by a specific user"
+      },
+      {
+        "name": "idx_activity_entity",
+        "fields": [
+          "entityType",
+          "entityId"
+        ],
+        "description": "Composite index for tracking all activities related to a specific entity"
+      }
+    ],
+    "constraints": {
+      "retention": "Activity logs should be retained according to compliance requirements (typically 7 years)",
+      "immutable": "Activity log entries should never be modified or deleted once created"
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "team",
+    "name": "Team",
+    "description": "Groups users into sales teams with team leaders, territories, and shared customer assignments for collaboration and performance tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the team",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the sales team",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "teamLeaderId",
+        "type": "string",
+        "description": "Reference to the User who leads this team",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "territory",
+        "type": "string",
+        "description": "Geographic or market territory assigned to the team",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates whether the team is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the team was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp when the team was last updated",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "teamLeaderId",
+        "description": "Team leader relationship"
+      },
+      {
+        "type": "oneToMany",
+        "relatedModel": "User",
+        "foreignKey": "teamId",
+        "description": "Team members relationship"
+      },
+      {
+        "type": "manyToMany",
+        "relatedModel": "Customer",
+        "through": "TeamCustomerAssignment",
+        "description": "Shared customer assignments"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "teamLeaderId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "isActive"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "territory"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ],
+      "check": []
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "lead",
+    "name": "Lead",
+    "description": "Track potential customers through the sales pipeline with qualification status and conversion probability",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the lead",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the lead contact or organization",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "source",
+        "type": "string",
+        "description": "Origin of the lead (e.g., website, referral, trade show, cold call)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "qualificationStatus",
+        "type": "string",
+        "description": "Current qualification level (e.g., unqualified, qualified, disqualified)",
+        "required": true,
+        "defaultValue": "unqualified"
+      },
+      {
+        "name": "pipelineStageId",
+        "type": "string",
+        "description": "Reference to current stage in the sales pipeline",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "estimatedValue",
+        "type": "number",
+        "description": "Potential revenue value of the lead in currency units",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "conversionProbability",
+        "type": "number",
+        "description": "Likelihood of conversion to customer as percentage (0-100)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedUserId",
+        "type": "string",
+        "description": "Reference to the user responsible for managing this lead",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "SalesPipelineStage",
+        "foreignKey": "pipelineStageId",
+        "description": "Lead belongs to a specific pipeline stage"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "assignedUserId",
+        "description": "Lead is assigned to a user"
+      },
+      {
+        "type": "one-to-one",
+        "relatedModel": "Customer",
+        "foreignKey": "leadId",
+        "description": "Lead can be converted to a customer"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "ActivityLog",
+        "foreignKey": "leadId",
+        "description": "Lead has multiple activity logs tracking interactions"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "qualificationStatus"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "pipelineStageId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "assignedUserId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "source"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "conversionProbability": "Value must be between 0 and 100",
+      "estimatedValue": "Must be a positive number",
+      "qualificationStatus": "Must be one of: unqualified, qualified, disqualified"
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "communication-log",
+    "name": "CommunicationLog",
+    "description": "Comprehensive log of all customer interactions including emails, calls, meetings, and notes with outcomes tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the communication record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "communicationType",
+        "type": "string",
+        "description": "Type of communication (email, phone_call, meeting, note, chat)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "relatedEntityType",
+        "type": "string",
+        "description": "Type of entity this communication relates to (customer, lead, company)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "relatedEntityId",
+        "type": "string",
+        "description": "ID of the related customer, lead, or company",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "ID of the user who initiated or logged the communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "communicationDate",
+        "type": "date",
+        "description": "Date and time when the communication occurred",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "description": "Brief subject or title of the communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "summary",
+        "type": "text",
+        "description": "Detailed summary of the communication content and outcomes",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Communication logged by user"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Customer",
+        "foreignKey": "relatedEntityId",
+        "description": "Communication related to customer (when relatedEntityType is customer)"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Lead",
+        "foreignKey": "relatedEntityId",
+        "description": "Communication related to lead (when relatedEntityType is lead)"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Company",
+        "foreignKey": "relatedEntityId",
+        "description": "Communication related to company (when relatedEntityType is company)"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "relatedEntityId",
+          "relatedEntityType"
+        ],
+        "unique": false,
+        "description": "Index for querying communications by related entity"
+      },
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": false,
+        "description": "Index for querying communications by user"
+      },
+      {
+        "fields": [
+          "communicationDate"
+        ],
+        "unique": false,
+        "description": "Index for chronological queries"
+      }
+    ],
+    "constraints": {
+      "communicationType": {
+        "enum": [
+          "email",
+          "phone_call",
+          "meeting",
+          "note",
+          "chat"
+        ],
+        "description": "Valid communication types"
+      },
+      "relatedEntityType": {
+        "enum": [
+          "customer",
+          "lead",
+          "company"
+        ],
+        "description": "Valid entity types for communication tracking"
+      }
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Manages system notifications and alerts for users including task reminders, status updates, and assignment changes with delivery channel and read status tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user receiving the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of notification (task_reminder, status_update, assignment_change, system_alert)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "message",
+        "type": "string",
+        "description": "Notification message content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isRead",
+        "type": "boolean",
+        "description": "Indicates whether the notification has been read by the user",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "deliveryChannel",
+        "type": "string",
+        "description": "Channel through which notification is delivered (in_app, email, sms, push)",
+        "required": true,
+        "defaultValue": "in_app"
+      },
+      {
+        "name": "relatedEntityType",
+        "type": "string",
+        "description": "Type of related entity (lead, customer, activity, etc.)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "relatedEntityId",
+        "type": "string",
+        "description": "ID of the related entity that triggered the notification",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the notification was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Each notification belongs to one user"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId",
+          "isRead"
+        ],
+        "description": "Optimize queries for user's unread notifications"
+      },
+      {
+        "fields": [
+          "createdAt"
+        ],
+        "description": "Optimize queries for recent notifications"
+      },
+      {
+        "fields": [
+          "relatedEntityType",
+          "relatedEntityId"
+        ],
+        "description": "Optimize queries for notifications related to specific entities"
+      }
+    ],
+    "constraints": {
+      "type": {
+        "enum": [
+          "task_reminder",
+          "status_update",
+          "assignment_change",
+          "system_alert"
+        ]
+      },
+      "deliveryChannel": {
+        "enum": [
+          "in_app",
+          "email",
+          "sms",
+          "push"
+        ]
+      }
+    },
+    "workflowId": "workflow_1735143891234"
+  },
+  {
+    "id": "task",
+    "name": "Task",
+    "description": "Manages follow-up tasks, reminders, and scheduled activities with due dates, priorities, and completion tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the task",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Brief title or subject of the task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of task (call, meeting, email, reminder, follow-up)",
+        "required": true,
+        "defaultValue": "reminder"
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Date and time when the task is due",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level (low, medium, high, urgent)",
+        "required": true,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status (pending, in-progress, completed, cancelled)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "assignedToUserId",
+        "type": "string",
+        "description": "ID of the user assigned to complete the task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "relatedEntityId",
+        "type": "string",
+        "description": "ID of related entity (Customer, Lead, or Company)",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "assignedToUserId",
+        "description": "User assigned to the task"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Customer",
+        "foreignKey": "relatedEntityId",
+        "description": "Related customer (optional polymorphic relationship)"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Lead",
+        "foreignKey": "relatedEntityId",
+        "description": "Related lead (optional polymorphic relationship)"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "assignedToUserId",
+          "status"
+        ],
+        "description": "Optimize queries for user's active tasks"
+      },
+      {
+        "fields": [
+          "dueDate",
+          "status"
+        ],
+        "description": "Optimize queries for upcoming and overdue tasks"
+      },
+      {
+        "fields": [
+          "relatedEntityId"
+        ],
+        "description": "Optimize queries for entity-related tasks"
+      }
+    ],
+    "constraints": {
+      "type": [
+        "call",
+        "meeting",
+        "email",
+        "reminder",
+        "follow-up"
+      ],
+      "priority": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "status": [
+        "pending",
+        "in-progress",
+        "completed",
+        "cancelled"
+      ]
+    },
+    "workflowId": "workflow_1735143891234"
+  }
+]

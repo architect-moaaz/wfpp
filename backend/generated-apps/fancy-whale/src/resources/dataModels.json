@@ -1,0 +1,939 @@
+[
+  {
+    "id": "app_1763985594806_model_001",
+    "name": "Location",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_001",
+        "name": "id",
+        "type": "integer",
+        "unique": true,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_002",
+        "name": "name",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(255)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_003",
+        "name": "address",
+        "type": "text",
+        "unique": false,
+        "sqlType": "TEXT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_004",
+        "name": "latitude",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(10,8)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_005",
+        "name": "longitude",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(11,8)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_006",
+        "name": "total_spaces",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "INT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": 0
+      },
+      {
+        "id": "field_007",
+        "name": "hourly_rate",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(8,2)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_008",
+        "name": "daily_rate",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(8,2)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_009",
+        "name": "operating_hours_start",
+        "type": "time",
+        "unique": false,
+        "sqlType": "TIME",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "00:00:00"
+      },
+      {
+        "id": "field_010",
+        "name": "operating_hours_end",
+        "type": "time",
+        "unique": false,
+        "sqlType": "TIME",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "23:59:59"
+      },
+      {
+        "id": "field_011",
+        "name": "is_active",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": true
+      },
+      {
+        "id": "field_012",
+        "name": "created_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_013",
+        "name": "updated_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_location_name",
+        "fields": [
+          "name"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_location_coordinates",
+        "fields": [
+          "latitude",
+          "longitude"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "total_spaces >= 0"
+      },
+      {
+        "type": "check",
+        "expression": "hourly_rate >= 0"
+      }
+    ],
+    "description": "Physical parking locations or facilities",
+    "relationships": []
+  },
+  {
+    "id": "app_1763985594806_model_002",
+    "name": "ParkingSpace",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_014",
+        "name": "id",
+        "type": "integer",
+        "unique": true,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_015",
+        "name": "location_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_016",
+        "name": "space_number",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(50)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_017",
+        "name": "space_type",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('regular', 'handicapped', 'electric', 'compact')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "regular"
+      },
+      {
+        "id": "field_018",
+        "name": "is_available",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": true
+      },
+      {
+        "id": "field_019",
+        "name": "is_active",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": true
+      },
+      {
+        "id": "field_020",
+        "name": "created_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_021",
+        "name": "updated_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_space_location",
+        "fields": [
+          "location_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_space_number_location",
+        "fields": [
+          "location_id",
+          "space_number"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_space_availability",
+        "fields": [
+          "is_available",
+          "is_active"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Individual parking spaces within a location",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Location",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "location_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1763985594806_model_003",
+    "name": "Customer",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_022",
+        "name": "id",
+        "type": "integer",
+        "unique": true,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_023",
+        "name": "first_name",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_024",
+        "name": "last_name",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(100)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_025",
+        "name": "email",
+        "type": "varchar",
+        "unique": true,
+        "sqlType": "VARCHAR(255)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_026",
+        "name": "phone",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(20)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_027",
+        "name": "registration_date",
+        "type": "date",
+        "unique": false,
+        "sqlType": "DATE",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_028",
+        "name": "is_active",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": true
+      },
+      {
+        "id": "field_029",
+        "name": "created_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_030",
+        "name": "updated_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_customer_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_customer_name",
+        "fields": [
+          "last_name",
+          "first_name"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Users of the parking system",
+    "relationships": []
+  },
+  {
+    "id": "app_1763985594806_model_004",
+    "name": "Vehicle",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_031",
+        "name": "id",
+        "type": "integer",
+        "unique": true,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_032",
+        "name": "customer_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_033",
+        "name": "license_plate",
+        "type": "varchar",
+        "unique": true,
+        "sqlType": "VARCHAR(20)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_034",
+        "name": "make",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(50)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_035",
+        "name": "model",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(50)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_036",
+        "name": "color",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(30)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_037",
+        "name": "vehicle_type",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('car', 'motorcycle', 'truck', 'van', 'electric')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "car"
+      },
+      {
+        "id": "field_038",
+        "name": "is_active",
+        "type": "boolean",
+        "unique": false,
+        "sqlType": "BOOLEAN",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": true
+      },
+      {
+        "id": "field_039",
+        "name": "created_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_040",
+        "name": "updated_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_vehicle_customer",
+        "fields": [
+          "customer_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_vehicle_license_plate",
+        "fields": [
+          "license_plate"
+        ],
+        "unique": true
+      }
+    ],
+    "metadata": {},
+    "constraints": [],
+    "description": "Customer vehicles",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Customer",
+        "onDelete": "CASCADE",
+        "onUpdate": "CASCADE",
+        "foreignKey": "customer_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1763985594806_model_005",
+    "name": "ParkingSession",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_041",
+        "name": "id",
+        "type": "integer",
+        "unique": true,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_042",
+        "name": "customer_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_043",
+        "name": "vehicle_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_044",
+        "name": "parking_space_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_045",
+        "name": "entry_time",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_046",
+        "name": "exit_time",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_047",
+        "name": "planned_exit_time",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_048",
+        "name": "status",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('active', 'completed', 'cancelled', 'overtime')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "active"
+      },
+      {
+        "id": "field_049",
+        "name": "hourly_rate",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(8,2)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_050",
+        "name": "created_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_051",
+        "name": "updated_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_session_customer",
+        "fields": [
+          "customer_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_session_vehicle",
+        "fields": [
+          "vehicle_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_session_space",
+        "fields": [
+          "parking_space_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_session_status",
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_session_entry_time",
+        "fields": [
+          "entry_time"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "exit_time IS NULL OR exit_time >= entry_time"
+      },
+      {
+        "type": "check",
+        "expression": "hourly_rate >= 0"
+      }
+    ],
+    "description": "Individual parking sessions",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "Customer",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "customer_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "Vehicle",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "vehicle_id"
+      },
+      {
+        "type": "belongsTo",
+        "target": "ParkingSpace",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "parking_space_id"
+      }
+    ]
+  },
+  {
+    "id": "app_1763985594806_model_006",
+    "name": "Payment",
+    "config": {},
+    "fields": [
+      {
+        "id": "field_052",
+        "name": "id",
+        "type": "integer",
+        "unique": true,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": true,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_053",
+        "name": "parking_session_id",
+        "type": "integer",
+        "unique": false,
+        "sqlType": "BIGINT",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_054",
+        "name": "amount",
+        "type": "decimal",
+        "unique": false,
+        "sqlType": "DECIMAL(10,2)",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_055",
+        "name": "payment_method",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('cash', 'credit_card', 'debit_card', 'mobile_payment', 'online')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_056",
+        "name": "payment_status",
+        "type": "enum",
+        "unique": false,
+        "sqlType": "ENUM('pending', 'completed', 'failed', 'refunded')",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "pending"
+      },
+      {
+        "id": "field_057",
+        "name": "transaction_id",
+        "type": "varchar",
+        "unique": false,
+        "sqlType": "VARCHAR(100)",
+        "required": false,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": null
+      },
+      {
+        "id": "field_058",
+        "name": "payment_date",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_059",
+        "name": "created_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "id": "field_060",
+        "name": "updated_at",
+        "type": "datetime",
+        "unique": false,
+        "sqlType": "TIMESTAMP",
+        "required": true,
+        "primaryKey": false,
+        "validation": {},
+        "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_payment_session",
+        "fields": [
+          "parking_session_id"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_payment_status",
+        "fields": [
+          "payment_status"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_payment_date",
+        "fields": [
+          "payment_date"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_payment_transaction",
+        "fields": [
+          "transaction_id"
+        ],
+        "unique": false
+      }
+    ],
+    "metadata": {},
+    "constraints": [
+      {
+        "type": "check",
+        "expression": "amount > 0"
+      }
+    ],
+    "description": "Payment records for parking sessions",
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "target": "ParkingSession",
+        "onDelete": "RESTRICT",
+        "onUpdate": "CASCADE",
+        "foreignKey": "parking_session_id"
+      }
+    ]
+  }
+]

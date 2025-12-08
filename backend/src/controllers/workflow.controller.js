@@ -1,12 +1,75 @@
 const { v4: uuidv4 } = require('uuid');
 const bpmnConverter = require('../utils/bpmn-converter');
 const WorkflowValidator = require('../services/validation/WorkflowValidator');
+const WorkflowCodeGenerator = require('../services/WorkflowCodeGenerator');
+const fs = require('fs').promises;
+const path = require('path');
 
 // In-memory storage (replace with database later)
 let workflows = [];
 
+// Helper function to generate and save workflow app code
+const generateWorkflowApp = async (workflow) => {
+  try {
+    console.log(`[CodeGen] Generating app for workflow: ${workflow.name}`);
+
+    // Transform workflow format from controller to code generator format
+    const workflowForGen = {
+      id: workflow.id,
+      name: workflow.name,
+      definition: {
+        nodes: workflow.nodes || [],
+        edges: workflow.connections || []
+      }
+    };
+
+    // Generate code
+    const codePackage = await WorkflowCodeGenerator.generate(workflowForGen);
+
+    // Create app name from workflow name
+    const appName = (workflow.name || 'workflow-app')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    const baseDir = path.join(__dirname, '../../generated-apps', appName);
+
+    // Create directory structure
+    await fs.mkdir(baseDir, { recursive: true });
+    await fs.mkdir(path.join(baseDir, 'frontend'), { recursive: true });
+    await fs.mkdir(path.join(baseDir, 'backend'), { recursive: true });
+
+    // Save frontend files
+    for (const [filePath, content] of Object.entries(codePackage.frontend)) {
+      const fullPath = path.join(baseDir, 'frontend', filePath);
+      await fs.mkdir(path.dirname(fullPath), { recursive: true });
+      await fs.writeFile(fullPath, content, 'utf8');
+    }
+
+    // Save backend files
+    for (const [filePath, content] of Object.entries(codePackage.backend)) {
+      const fullPath = path.join(baseDir, 'backend', filePath);
+      await fs.mkdir(path.dirname(fullPath), { recursive: true });
+      await fs.writeFile(fullPath, content, 'utf8');
+    }
+
+    // Save config files
+    for (const [filePath, content] of Object.entries(codePackage.config)) {
+      const fullPath = path.join(baseDir, filePath);
+      await fs.mkdir(path.dirname(fullPath), { recursive: true });
+      await fs.writeFile(fullPath, content, 'utf8');
+    }
+
+    console.log(`[CodeGen] App generated and saved to: ${baseDir}`);
+    return baseDir;
+  } catch (error) {
+    console.error(`[CodeGen] Error generating app for workflow ${workflow.id}:`, error);
+    throw error;
+  }
+};
+
 // Create a new workflow
-const createWorkflow = (req, res) => {
+const createWorkflow = async (req, res) => {
   try {
     const { name, nodes, connections, metadata } = req.body;
 
@@ -24,6 +87,16 @@ const createWorkflow = (req, res) => {
     };
 
     workflows.push(workflow);
+
+    // Generate app code automatically
+    try {
+      const localPath = await generateWorkflowApp(workflow);
+      workflow.localPath = localPath;
+      console.log(`[Workflow] Created workflow with generated app at: ${localPath}`);
+    } catch (codeGenError) {
+      console.error('[Workflow] Failed to generate app code:', codeGenError);
+      // Don't fail workflow creation if code generation fails
+    }
 
     res.status(201).json({
       success: true,
@@ -80,7 +153,7 @@ const getWorkflowById = (req, res) => {
 };
 
 // Update workflow
-const updateWorkflow = (req, res) => {
+const updateWorkflow = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, nodes, connections, metadata } = req.body;
@@ -105,6 +178,16 @@ const updateWorkflow = (req, res) => {
         modified: new Date().toISOString()
       }
     };
+
+    // Regenerate app code automatically
+    try {
+      const localPath = await generateWorkflowApp(workflows[workflowIndex]);
+      workflows[workflowIndex].localPath = localPath;
+      console.log(`[Workflow] Updated workflow with regenerated app at: ${localPath}`);
+    } catch (codeGenError) {
+      console.error('[Workflow] Failed to regenerate app code:', codeGenError);
+      // Don't fail workflow update if code generation fails
+    }
 
     res.status(200).json({
       success: true,
@@ -293,5 +376,7 @@ module.exports = {
   exportWorkflow,
   importWorkflow,
   convertToBPMN,
-  validateWorkflow
+  validateWorkflow,
+  // Helper to get workflows array (for PublishService)
+  getWorkflows: () => workflows
 };

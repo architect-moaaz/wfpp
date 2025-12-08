@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import './Header.css';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Workflow, Users, Share2, MoreVertical, Star, Sparkles } from 'lucide-react';
+import { useAres } from '../../context/AresContext';
+import { Workflow, Users, Share2, MoreVertical, Star, Sparkles, MessageCircle } from 'lucide-react';
 
 const Header = () => {
-  const { currentApplication, currentWorkflow, activeTab, setActiveTab, showAres, setShowAres } = useWorkflow();
+  const { currentApplication, currentWorkflow, activeTab, setActiveTab } = useWorkflow();
+  const { open } = useAres();
 
   const tabs = [
     { id: 'designer', label: 'Designer', icon: '' },
@@ -63,23 +65,18 @@ const Header = () => {
             Status: <strong>{currentWorkflow.status || 'Draft'}</strong>
           </div>
         )}
-        <button
-          className="ares-btn"
-          onClick={() => setShowAres(!showAres)}
-          title="Open ARES Assistant"
-        >
-          <Sparkles size={20} />
-          <span>ARES</span>
+        <button className="icon-btn ares-btn" onClick={() => open()} title="AI Assistant (ARES)">
+          <Sparkles size={28} />
         </button>
         <button className="icon-btn">
-          <Users size={20} />
+          <Users size={24} />
         </button>
         <button className="share-btn">
-          <Share2 size={16} />
+          <Share2 size={20} />
           Share
         </button>
         <button className="icon-btn">
-          <MoreVertical size={20} />
+          <MoreVertical size={24} />
         </button>
       </div>
     </div>

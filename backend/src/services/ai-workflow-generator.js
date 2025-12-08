@@ -7,6 +7,7 @@ const pageDatabase = require('../database/PageDatabase');
 const applicationService = require('./ApplicationService');
 const AgentOrchestrator = require('./agents/AgentOrchestrator');
 const MoEOrchestrator = require('./moe/MoEOrchestrator');
+const aiResourceGenerator = require('./AIResourceGenerator');
 
 /**
  * AI Workflow Generator Service
@@ -1754,6 +1755,58 @@ For scriptTask nodes, you MUST include valid, executable JavaScript code in the 
         }
       }
 
+      // Validate and auto-generate stub forms for orphan formIds
+      const existingFormIds = new Set((result.workflow.forms || []).map(f => f.id));
+      const orphanFormIds = new Set();
+
+      // Find all formIds referenced in workflow nodes that don't exist
+      result.workflow.nodes.forEach(node => {
+        if (node.data && node.data.formId && !existingFormIds.has(node.data.formId)) {
+          orphanFormIds.add(node.data.formId);
+        }
+      });
+
+      // Auto-generate forms for orphan formIds using AI
+      if (orphanFormIds.size > 0) {
+        console.log(`[MoE] Found ${orphanFormIds.size} orphan formIds, generating AI forms...`);
+
+        // Prepare orphan form data with node context
+        const orphanFormData = [];
+        orphanFormIds.forEach(formId => {
+          const node = result.workflow.nodes.find(n => n.data?.formId === formId);
+          orphanFormData.push({ formId, node });
+        });
+
+        // Generate forms using AI Resource Generator
+        const generatedForms = await aiResourceGenerator.generateForms(orphanFormData, {
+          workflows: [result.workflow],
+          dataModels: result.workflow.dataModels || [],
+          userRequirements
+        });
+
+        const stubForms = generatedForms;
+        generatedForms.forEach(form => existingFormIds.add(form.id));
+
+        // Save stub forms to database
+        await formDatabase.saveForms(stubForms);
+        console.log(`[MoE] Created ${stubForms.length} stub forms for orphan formIds`);
+
+        // Add stub forms to result for application resources
+        result.workflow.forms = [...(result.workflow.forms || []), ...stubForms];
+
+        // Add to application resources if applicationId is provided
+        if (applicationId) {
+          try {
+            for (const form of stubForms) {
+              await applicationService.addForm(applicationId, form);
+            }
+            console.log(`[MoE] Added ${stubForms.length} stub forms to application ${applicationId} resources`);
+          } catch (error) {
+            console.error(`[MoE] Failed to add stub forms to application resources:`, error);
+          }
+        }
+      }
+
       if (result.workflow.dataModels && result.workflow.dataModels.length > 0) {
         await dataModelDatabase.saveDataModels(result.workflow.dataModels);
         console.log(`[MoE] Saved ${result.workflow.dataModels.length} data models to database`);
@@ -1785,6 +1838,16 @@ For scriptTask nodes, you MUST include valid, executable JavaScript code in the 
           } catch (error) {
             console.error(`[MoE] Failed to add pages to application resources:`, error);
           }
+        }
+      }
+
+      // Also add workflow to application resources if applicationId is provided
+      if (applicationId && result.workflow) {
+        try {
+          await applicationService.addWorkflow(applicationId, result.workflow);
+          console.log(`[MoE] Added workflow to application ${applicationId} resources`);
+        } catch (error) {
+          console.error(`[MoE] Failed to add workflow to application resources:`, error);
         }
       }
 

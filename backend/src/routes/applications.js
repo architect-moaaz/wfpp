@@ -66,10 +66,21 @@ router.post('/', async (req, res) => {
       theme
     });
 
+    // Automatically generate the application scaffold
+    const ApplicationGenerator = require('../generators/ApplicationGenerator');
+    const generator = new ApplicationGenerator(application);
+    const scaffoldResult = await generator.generate();
+
+    console.log(`[Applications API] Auto-generated scaffold for ${application.name} with ${scaffoldResult.files.length} files`);
+
     res.status(201).json({
       success: true,
       application,
-      message: 'Application created successfully'
+      scaffold: {
+        path: scaffoldResult.path,
+        files: scaffoldResult.files
+      },
+      message: 'Application created successfully with complete scaffold.'
     });
   } catch (error) {
     console.error('[Applications API] Failed to create application:', error);
@@ -238,6 +249,47 @@ router.get('/:id/status', async (req, res) => {
     });
   } catch (error) {
     console.error('[Applications API] Failed to get application status:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Open application (get URL)
+router.get('/:id/open', async (req, res) => {
+  try {
+    const application = await applicationService.getApplication(req.params.id);
+
+    // Check if app has deployment info
+    if (application.deployment && application.deployment.url) {
+      return res.json({
+        success: true,
+        url: application.deployment.url,
+        port: application.deployment.port,
+        status: application.status
+      });
+    }
+
+    // If no deployment info, try to construct URL from name
+    // Assume apps run on incrementing ports starting from 4000
+    const sanitizedName = (application.name || 'app')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    // Default URL for generated apps (typically localhost:4000)
+    const defaultUrl = `http://localhost:4000`;
+
+    res.json({
+      success: true,
+      url: defaultUrl,
+      message: 'Application URL (may need to be started first)',
+      status: application.status || 'unknown',
+      name: sanitizedName
+    });
+  } catch (error) {
+    console.error('[Applications API] Failed to get application URL:', error);
     res.status(500).json({
       success: false,
       error: error.message
