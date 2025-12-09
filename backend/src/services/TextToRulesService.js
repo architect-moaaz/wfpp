@@ -22,7 +22,7 @@ class TextToRulesService {
       const prompt = this.buildPrompt(text, context);
 
       const message = await this.anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-sonnet-4-5-20250929',
         max_tokens: 4096,
         messages: [{
           role: 'user',
@@ -228,7 +228,7 @@ Provide:
 Keep suggestions concise and actionable.`;
 
       const message = await this.anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-sonnet-4-5-20250929',
         max_tokens: 1024,
         messages: [{
           role: 'user',

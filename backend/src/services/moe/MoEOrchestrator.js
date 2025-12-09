@@ -739,11 +739,26 @@ class MoEOrchestrator {
       combined.rules = results.rules;
     }
 
-    // Link forms to user task nodes for each workflow
+    // FALLBACK: Link forms to user task nodes for nodes not already linked by ComponentOrchestrator
+    // Plan-based linking in ComponentOrchestrator.linkFormsToWorkflows() runs first (if component plan has formAssociation)
+    // This heuristic linking only applies to nodes that don't have formId already set
     // Track globally used forms to prevent reusing the same form across workflows
     if (combined.workflows.length > 0 && combined.forms && combined.forms.length > 0) {
       const usedFormIds = new Set();
       let globalFormIndex = 0;
+
+      // First, mark forms that are already linked (from plan-based linking) as used
+      combined.workflows.forEach(workflow => {
+        if (workflow.nodes) {
+          workflow.nodes.forEach(node => {
+            if (node.data?.formId) {
+              usedFormIds.add(node.data.formId);
+            }
+          });
+        }
+      });
+
+      console.log(`[MoE] Forms already linked by ComponentOrchestrator: ${usedFormIds.size}`);
 
       combined.workflows.forEach(workflow => {
         globalFormIndex = this.linkFormsToUserTasks(
@@ -875,8 +890,8 @@ class MoEOrchestrator {
       finalizedWorkflows.push(workflow);
     }
 
-    // COMPREHENSIVE APPLICATION VALIDATION (across all workflows)
-    console.log('[MoE] Running comprehensive application validation...');
+    // COMPREHENSIVE APPLICATION VALIDATION AND AUTO-FIX (across all workflows)
+    console.log('[MoE] Running comprehensive application validation and auto-fix...');
     const appValidator = new ApplicationValidator();
 
     const applicationPackage = {
@@ -886,7 +901,12 @@ class MoEOrchestrator {
       dataModels: combined.dataModels || []
     };
 
-    const appValidationReport = await appValidator.validate(applicationPackage);
+    // Use validateAndFix to both fix issues and validate
+    const { validationReport: appValidationReport, fixes, totalFixesApplied } = await appValidator.validateAndFix(applicationPackage);
+
+    if (totalFixesApplied > 0) {
+      console.log(`[MoE] ApplicationValidator auto-fixed ${totalFixesApplied} issues before validation`);
+    }
 
     // Log validation results
     if (appValidationReport.valid) {

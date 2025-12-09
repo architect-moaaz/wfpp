@@ -86,6 +86,12 @@ class DataModelExpert {
     const dataModelText = response.content[0].text;
     const dataModel = this.parseDataModel(dataModelText);
 
+    // Preserve dataModelAssociation metadata for later linking by ComponentOrchestrator
+    if (spec.dataModelAssociation) {
+      dataModel._dataModelAssociation = spec.dataModelAssociation;
+      dataModel._specName = spec.name; // Original spec name for matching
+    }
+
     console.log(`[DataModelExpert] Generated data model: ${dataModel.name}`);
     return dataModel;
   }
@@ -116,16 +122,65 @@ class DataModelExpert {
     const dataModelsText = response.content[0].text;
     const dataModels = this.parseDataModels(dataModelsText);
 
+    // Build spec map for matching back associations
+    const specMap = new Map();
+    specs.forEach(spec => {
+      specMap.set(spec.name.toLowerCase(), spec);
+      // Also add normalized version without spaces/special chars
+      specMap.set(spec.name.toLowerCase().replace(/[^a-z0-9]/g, ''), spec);
+    });
+
+    // Attach _dataModelAssociation metadata to each generated data model
+    dataModels.forEach(dataModel => {
+      const normalizedName = dataModel.name?.toLowerCase() || '';
+      const normalizedNoSpecial = normalizedName.replace(/[^a-z0-9]/g, '');
+
+      // Try to find matching spec
+      let matchingSpec = specMap.get(normalizedName) || specMap.get(normalizedNoSpecial);
+
+      // Fallback: fuzzy match
+      if (!matchingSpec) {
+        for (const [key, spec] of specMap.entries()) {
+          if (normalizedName.includes(key) || key.includes(normalizedName)) {
+            matchingSpec = spec;
+            break;
+          }
+        }
+      }
+
+      if (matchingSpec && matchingSpec.dataModelAssociation) {
+        dataModel._dataModelAssociation = matchingSpec.dataModelAssociation;
+        dataModel._specName = matchingSpec.name;
+      }
+    });
+
     console.log(`[DataModelExpert] Generated ${dataModels.length} data models`);
     return dataModels;
   }
 
   buildSinglePrompt(spec, componentPlan, existingComponents) {
+    // Extract data model association context from spec (for plan-based linking)
+    const dataModelAssociation = spec.dataModelAssociation || {};
+    const associationContext = dataModelAssociation.usedByWorkflows ? `
+**DATA MODEL ASSOCIATION CONTEXT**:
+- Used By Workflows: ${(dataModelAssociation.usedByWorkflows || []).join(', ') || 'N/A'}
+- Used By Forms: ${(dataModelAssociation.usedByForms || []).join(', ') || 'N/A'}
+- Is Primary Entity: ${dataModelAssociation.isPrimary ? 'Yes' : 'No'}
+- Entity Type: ${dataModelAssociation.entityType || 'main'}
+${spec.fieldHints && spec.fieldHints.length > 0 ? `- Suggested Fields: ${spec.fieldHints.join(', ')}` : ''}
+
+IMPORTANT: Design this data model specifically for its role in the application:
+${dataModelAssociation.entityType === 'main' ? '- This is a MAIN entity - it represents the core business object for the application.' : ''}
+${dataModelAssociation.entityType === 'supporting' ? '- This is a SUPPORTING entity - it complements the main entity with additional data.' : ''}
+${dataModelAssociation.entityType === 'lookup' ? '- This is a LOOKUP entity - it provides reference data (statuses, categories, etc.).' : ''}
+${dataModelAssociation.isPrimary ? '- As the PRIMARY data model, ensure it has all fields needed by the associated workflows and forms.' : ''}
+` : '';
+
     return `Generate a data model for: ${spec.name}
 
 Purpose: ${spec.purpose}
 ${spec.description ? `Description: ${spec.description}` : ''}
-
+${associationContext}
 Context:
 - Application: ${componentPlan.overview.name}
 - Domain: ${componentPlan.overview.category || 'General'}
@@ -137,6 +192,7 @@ Requirements:
 - Use appropriate field types (string, number, boolean, date, etc.)
 - Add brief descriptions for each field
 - **IMPORTANT**: The FIRST field MUST be the primary key with "primaryKey": true
+${spec.fieldHints && spec.fieldHints.length > 0 ? `- Include these suggested fields where appropriate: ${spec.fieldHints.join(', ')}` : ''}
 
 Return ONLY valid JSON in this format:
 {
@@ -167,11 +223,28 @@ Return ONLY valid JSON in this format:
   }
 
   buildBatchPrompt(specs, componentPlan) {
-    const specList = specs.map(s => `- ${s.name}: ${s.purpose}`).join('\n');
+    // Build detailed spec list with association context
+    const specList = specs.map(s => {
+      const assoc = s.dataModelAssociation || {};
+      let specInfo = `- ${s.name}: ${s.purpose}`;
+      if (assoc.usedByWorkflows && assoc.usedByWorkflows.length > 0) {
+        specInfo += `\n    Used by workflows: ${assoc.usedByWorkflows.join(', ')}`;
+      }
+      if (assoc.usedByForms && assoc.usedByForms.length > 0) {
+        specInfo += `\n    Used by forms: ${assoc.usedByForms.join(', ')}`;
+      }
+      if (assoc.entityType) {
+        specInfo += `\n    Entity type: ${assoc.entityType}${assoc.isPrimary ? ' (PRIMARY)' : ''}`;
+      }
+      if (s.fieldHints && s.fieldHints.length > 0) {
+        specInfo += `\n    Suggested fields: ${s.fieldHints.join(', ')}`;
+      }
+      return specInfo;
+    }).join('\n');
 
     return `Generate ${specs.length} data models for: ${componentPlan.overview.name}
 
-Data models needed:
+Data models needed (with their workflow/form associations):
 ${specList}
 
 Requirements for EACH model:
@@ -180,6 +253,8 @@ Requirements for EACH model:
 - Use appropriate field types
 - Add brief descriptions
 - **IMPORTANT**: Each model's FIRST field MUST be the primary key with "primaryKey": true
+- Consider the workflow/form associations when designing fields - include fields that the associated forms will need
+- For PRIMARY entities, ensure comprehensive field coverage for all associated workflows
 
 Return ONLY valid JSON array:
 [

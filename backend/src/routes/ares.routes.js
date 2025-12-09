@@ -291,13 +291,102 @@ async function runGenerationInBackground(aresService, requirements, context, emi
       rules: application.resources.rules.length
     });
 
-    // Update application in database
-    try {
-      await appDb.update(context.applicationId, application);
-      console.log('[ARES] Successfully saved application to database!');
-    } catch (dbError) {
-      console.error('[ARES] DATABASE SAVE FAILED:', dbError);
-      throw new Error(`Failed to save application to database: ${dbError.message}`);
+    // Update application in database with intelligent error handling
+    const saveWithRetry = async (app, maxRetries = 3) => {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          await appDb.update(context.applicationId, app);
+          console.log('[ARES] Successfully saved application to database!');
+          return true;
+        } catch (dbError) {
+          console.error(`[ARES] DATABASE SAVE FAILED (attempt ${attempt}/${maxRetries}):`, dbError.message);
+
+          // Check for foreign key constraint violations
+          if (dbError.code === '23503' && dbError.constraint) {
+            console.log('[ARES] Detected foreign key violation, attempting auto-fix...');
+
+            // Handle forms.data_model_id_fkey - invalid data model references
+            if (dbError.constraint === 'forms_data_model_id_fkey') {
+              const invalidId = dbError.detail?.match(/Key \(data_model_id\)=\(([^)]+)\)/)?.[1];
+              console.log(`[ARES] Fixing invalid data_model_id: "${invalidId}"`);
+
+              // Get valid data model IDs
+              const validDataModelIds = new Set(
+                (app.resources.dataModels || []).map(dm => dm.id)
+              );
+
+              // Fix forms with invalid data_model_id
+              let fixedCount = 0;
+              (app.resources.forms || []).forEach(form => {
+                if (form.dataModelId && !validDataModelIds.has(form.dataModelId)) {
+                  // Try to find matching data model by name
+                  const matchingDm = (app.resources.dataModels || []).find(dm =>
+                    dm.name?.toLowerCase() === form.dataModelId?.toLowerCase() ||
+                    dm.name?.toLowerCase().replace(/[^a-z0-9]/g, '') === form.dataModelId?.toLowerCase().replace(/[^a-z0-9]/g, '')
+                  );
+
+                  if (matchingDm) {
+                    console.log(`[ARES] Fixed form "${form.name}": "${form.dataModelId}" -> "${matchingDm.id}"`);
+                    form.dataModelId = matchingDm.id;
+                    form.dataModelName = matchingDm.name;
+                  } else {
+                    console.log(`[ARES] Cleared invalid dataModelId "${form.dataModelId}" from form "${form.name}"`);
+                    delete form.dataModelId;
+                    delete form.dataModelName;
+                    delete form.data_model_id;
+                  }
+                  fixedCount++;
+                }
+              });
+
+              if (fixedCount > 0) {
+                console.log(`[ARES] Fixed ${fixedCount} forms with invalid data model references`);
+                continue; // Retry with fixed data
+              }
+            }
+
+            // Handle workflows.form_id_fkey or similar - invalid form references in workflows
+            if (dbError.constraint.includes('form') && dbError.constraint.includes('fkey')) {
+              const validFormIds = new Set((app.resources.forms || []).map(f => f.id));
+
+              let fixedCount = 0;
+              (app.resources.workflows || []).forEach(workflow => {
+                (workflow.nodes || []).forEach(node => {
+                  if (node.data?.formId && !validFormIds.has(node.data.formId)) {
+                    console.log(`[ARES] Cleared invalid formId "${node.data.formId}" from workflow node "${node.data?.label}"`);
+                    delete node.data.formId;
+                    delete node.data.formName;
+                    fixedCount++;
+                  }
+                });
+              });
+
+              if (fixedCount > 0) {
+                console.log(`[ARES] Fixed ${fixedCount} workflow nodes with invalid form references`);
+                continue; // Retry with fixed data
+              }
+            }
+          }
+
+          // If this is the last attempt or we couldn't fix the error, throw
+          if (attempt >= maxRetries) {
+            console.error('[ARES] All retry attempts failed, proceeding without database save');
+            // Don't throw - allow the process to continue so files are still saved
+            return false;
+          }
+        }
+      }
+      return false;
+    };
+
+    const dbSaveSuccess = await saveWithRetry(application);
+    if (!dbSaveSuccess) {
+      console.warn('[ARES] Database save failed, but continuing with file-based save...');
+      emitProgress({
+        type: 'warning',
+        message: 'Application saved to files but database save had issues. You may need to refresh.',
+        data: { partialSave: true }
+      });
     }
 
     // Update resource files in generated app folder

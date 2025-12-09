@@ -143,6 +143,7 @@ class ComponentOrchestrator {
    * - Phase 1: Data models and workflows (parallel, no dependencies)
    * - Phase 2: Forms (depends on data models)
    * - Phase 3: Pages (depends on forms)
+   * - Phase 4: Link forms to workflow nodes based on formAssociation
    */
   async executeParallel(componentPlan, eventEmitter) {
     console.log('[ComponentOrchestrator] Executing PARALLEL strategy with dependency awareness...');
@@ -173,11 +174,21 @@ class ComponentOrchestrator {
     // Phase 2: Generate forms (can use data models)
     results.forms = await this.generateForms(formSpecs, componentPlan, eventEmitter, results);
 
-    // Phase 3: Generate pages (can use forms and data models)
+    // Phase 3: Link data models to forms
+    this.linkDataModelsToForms(results, dataModelSpecs, eventEmitter);
+
+    // Phase 4: Link forms to workflow nodes based on formAssociation
+    this.linkFormsToWorkflows(results, formSpecs, eventEmitter);
+
+    // Phase 5: Generate pages (can use forms and data models)
     results.pages = await this.generatePages(pageSpecs, componentPlan, eventEmitter, results);
 
-    // Phase 4: Generate rules for workflows
+    // Phase 6: Generate rules for workflows
     results.rules = await this.generateRules(componentPlan, eventEmitter, results);
+
+    // Phase 7: Link rules to workflows and forms
+    const ruleSpecs = componentPlan.componentSpecs.filter(c => c.type === 'rule');
+    this.linkRulesToComponents(results, ruleSpecs, eventEmitter);
 
     console.log('[ComponentOrchestrator] Parallel generation complete:', {
       dataModels: results.dataModels.length,
@@ -275,6 +286,12 @@ class ComponentOrchestrator {
             results.pages.push(component);
             break;
 
+          case 'rule':
+            // Rules are generated in batch after all other components via generateRules()
+            // Skip individual rule specs here - they'll be processed later
+            console.log(`[ComponentOrchestrator] Skipping rule "${spec.name}" - rules generated in batch later`);
+            continue; // Skip checkpoint and event for rules here
+
           default:
             console.warn(`[ComponentOrchestrator] Unknown component type: ${spec.type}`);
         }
@@ -320,8 +337,20 @@ class ComponentOrchestrator {
       }
     }
 
-    // After all components are generated, generate rules for workflows
+    // After all components are generated, link data models to forms
+    const dataModelSpecs = componentPlan.componentSpecs.filter(c => c.type === 'dataModel');
+    this.linkDataModelsToForms(results, dataModelSpecs, eventEmitter);
+
+    // Link forms to workflows
+    const formSpecs = componentPlan.componentSpecs.filter(c => c.type === 'form');
+    this.linkFormsToWorkflows(results, formSpecs, eventEmitter);
+
+    // Generate rules for workflows
     results.rules = await this.generateRules(componentPlan, eventEmitter, results);
+
+    // Link rules to workflows and forms
+    const ruleSpecs = componentPlan.componentSpecs.filter(c => c.type === 'rule');
+    this.linkRulesToComponents(results, ruleSpecs, eventEmitter);
 
     // Clear checkpoint on successful completion
     if (applicationId) {
@@ -421,6 +450,7 @@ class ComponentOrchestrator {
 
   /**
    * Generate rules for workflows
+   * Uses rule specs from PlanningExpert if available, otherwise auto-generates from workflow nodes
    */
   async generateRules(componentPlan, eventEmitter, existingComponents = {}) {
     // Only generate rules if there are workflows
@@ -430,13 +460,48 @@ class ComponentOrchestrator {
     }
 
     try {
+      // Check if there are rule specs from PlanningExpert
+      const ruleSpecs = componentPlan.componentSpecs?.filter(c => c.type === 'rule') || [];
+
+      if (ruleSpecs.length > 0) {
+        // Use planned rule specs with ruleAssociation context
+        console.log(`[ComponentOrchestrator] Using ${ruleSpecs.length} planned rule specs from PlanningExpert`);
+
+        if (eventEmitter) {
+          eventEmitter({
+            type: 'thinking-step',
+            data: {
+              agent: 'Rules Expert',
+              step: 'generating',
+              content: `Generating ${ruleSpecs.length} business rules from plan...`
+            }
+          });
+        }
+
+        const rules = await this.rulesExpert.generateBatch(ruleSpecs, componentPlan, existingComponents);
+
+        if (eventEmitter && rules.length > 0) {
+          eventEmitter({
+            type: 'thinking-step',
+            data: {
+              agent: 'Rules Expert',
+              step: 'complete',
+              content: `Generated ${rules.length} business rule(s) from plan`
+            }
+          });
+        }
+
+        return rules;
+      }
+
+      // Fallback: Auto-generate rules from workflow nodes
       if (eventEmitter) {
         eventEmitter({
           type: 'thinking-step',
           data: {
             agent: 'Rules Expert',
             step: 'generating',
-            content: `Generating business rules for workflow nodes...`
+            content: `Auto-generating business rules for workflow nodes...`
           }
         });
       }
@@ -445,7 +510,7 @@ class ComponentOrchestrator {
       const workflow = existingComponents.workflows[0];
       const dataModels = existingComponents.dataModels || [];
 
-      console.log(`[ComponentOrchestrator] Generating rules for workflow: ${workflow.name || workflow.id}`);
+      console.log(`[ComponentOrchestrator] Auto-generating rules for workflow: ${workflow.name || workflow.id}`);
 
       const rules = await this.rulesExpert.generateForWorkflow(
         workflow,
@@ -459,7 +524,7 @@ class ComponentOrchestrator {
           data: {
             agent: 'Rules Expert',
             step: 'complete',
-            content: `Generated ${rules.length} business rule(s)`
+            content: `Auto-generated ${rules.length} business rule(s)`
           }
         });
       }
@@ -531,6 +596,455 @@ class ComponentOrchestrator {
       complexity: isSimple ? 'simple' : (totalComponents > 15 ? 'complex' : 'moderate'),
       counts
     };
+  }
+
+  /**
+   * Link data models to forms based on dataModelAssociation from plan
+   * Sets dataModelId on forms that should use specific data models
+   *
+   * @param {Object} results - Generated components (dataModels, forms, etc.)
+   * @param {Array} dataModelSpecs - Data model specifications with dataModelAssociation
+   * @param {Function} eventEmitter - Event emitter for progress updates
+   */
+  linkDataModelsToForms(results, dataModelSpecs, eventEmitter) {
+    if (!results.dataModels || results.dataModels.length === 0) {
+      console.log('[ComponentOrchestrator] No data models to link');
+      return;
+    }
+
+    if (!results.forms || results.forms.length === 0) {
+      console.log('[ComponentOrchestrator] No forms to link data models to');
+      return;
+    }
+
+    console.log('[ComponentOrchestrator] Linking data models to forms based on dataModelAssociation...');
+
+    // Build maps for lookup
+    const dataModelsByName = new Map();
+    results.dataModels.forEach(dm => {
+      dataModelsByName.set(dm.name.toLowerCase(), dm);
+      if (dm._specName) {
+        dataModelsByName.set(dm._specName.toLowerCase(), dm);
+      }
+    });
+
+    const formsByName = new Map();
+    results.forms.forEach(form => {
+      formsByName.set(form.name.toLowerCase(), form);
+      if (form._specName) {
+        formsByName.set(form._specName.toLowerCase(), form);
+      }
+    });
+
+    let linkedCount = 0;
+
+    // For each data model with associations
+    results.dataModels.forEach(dataModel => {
+      const assoc = dataModel._dataModelAssociation;
+      if (!assoc || !assoc.usedByForms || assoc.usedByForms.length === 0) {
+        return;
+      }
+
+      // Link to each form that uses this data model
+      assoc.usedByForms.forEach(formName => {
+        const formKey = formName.toLowerCase();
+        let form = formsByName.get(formKey);
+
+        // Fuzzy match if exact match fails
+        if (!form) {
+          for (const [key, f] of formsByName.entries()) {
+            if (key.includes(formKey) || formKey.includes(key)) {
+              form = f;
+              break;
+            }
+          }
+        }
+
+        if (form) {
+          // Ensure we use a valid ID format - if the ID looks like a name, use the normalized ID instead
+          const dmId = dataModel.id;
+          const isValidId = dmId && (dmId.startsWith('dm_') || dmId.includes('-') || /^\d+$/.test(dmId));
+
+          if (isValidId) {
+            form.dataModelId = dmId;
+          } else {
+            // Generate a proper ID if the data model has an invalid ID
+            const normalizedId = `dm_${(dataModel.name || 'model').toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
+            dataModel.id = normalizedId; // Fix the data model ID too
+            form.dataModelId = normalizedId;
+            console.log(`[ComponentOrchestrator] Normalized data model ID from "${dmId}" to "${normalizedId}"`);
+          }
+          form.dataModelName = dataModel.name;
+          linkedCount++;
+          console.log(`[ComponentOrchestrator] Linked data model "${dataModel.name}" (id: ${form.dataModelId}) to form "${form.name}"`);
+        }
+      });
+    });
+
+    // Also check forms that specify which data model they use via _formAssociation
+    results.forms.forEach(form => {
+      if (form.dataModelId) return; // Already linked
+
+      const assoc = form._formAssociation;
+      if (assoc && assoc.usesDataModel) {
+        const dmKey = assoc.usesDataModel.toLowerCase();
+        let dataModel = dataModelsByName.get(dmKey);
+
+        if (!dataModel) {
+          for (const [key, dm] of dataModelsByName.entries()) {
+            if (key.includes(dmKey) || dmKey.includes(key)) {
+              dataModel = dm;
+              break;
+            }
+          }
+        }
+
+        if (dataModel) {
+          // Ensure we use a valid ID format
+          const dmId = dataModel.id;
+          const isValidId = dmId && (dmId.startsWith('dm_') || dmId.includes('-') || /^\d+$/.test(dmId));
+
+          if (isValidId) {
+            form.dataModelId = dmId;
+          } else {
+            // Generate a proper ID if the data model has an invalid ID
+            const normalizedId = `dm_${(dataModel.name || 'model').toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
+            dataModel.id = normalizedId;
+            form.dataModelId = normalizedId;
+            console.log(`[ComponentOrchestrator] Normalized data model ID from "${dmId}" to "${normalizedId}"`);
+          }
+          form.dataModelName = dataModel.name;
+          linkedCount++;
+          console.log(`[ComponentOrchestrator] Linked data model "${dataModel.name}" (id: ${form.dataModelId}) to form "${form.name}" (via formAssociation)`);
+        }
+      }
+    });
+
+    console.log(`[ComponentOrchestrator] Data model linking complete: ${linkedCount} forms linked`);
+
+    // Final validation: ensure all form dataModelIds reference actual data models
+    // This catches forms where AI directly set dataModelId to an invalid value
+    const validDataModelIds = new Set(results.dataModels.map(dm => dm.id));
+    let clearedCount = 0;
+    results.forms.forEach(form => {
+      if (form.dataModelId && !validDataModelIds.has(form.dataModelId)) {
+        // Try to find a matching data model by name
+        const dmByName = results.dataModels.find(dm =>
+          dm.name.toLowerCase() === form.dataModelId.toLowerCase() ||
+          dm.name.toLowerCase().replace(/[^a-z0-9]/g, '') === form.dataModelId.toLowerCase().replace(/[^a-z0-9]/g, '')
+        );
+
+        if (dmByName) {
+          console.log(`[ComponentOrchestrator] Fixed invalid dataModelId "${form.dataModelId}" -> "${dmByName.id}" for form "${form.name}"`);
+          form.dataModelId = dmByName.id;
+          form.dataModelName = dmByName.name;
+        } else {
+          console.log(`[ComponentOrchestrator] Clearing invalid dataModelId "${form.dataModelId}" from form "${form.name}" (no matching data model found)`);
+          delete form.dataModelId;
+          delete form.dataModelName;
+          clearedCount++;
+        }
+      }
+    });
+
+    if (clearedCount > 0) {
+      console.log(`[ComponentOrchestrator] Cleared ${clearedCount} invalid dataModelId references`);
+    }
+
+    if (eventEmitter) {
+      eventEmitter({
+        type: 'thinking-step',
+        data: {
+          agent: 'Component Orchestrator',
+          step: 'datamodel-linking',
+          content: `Linked ${linkedCount} data models to forms based on plan associations`
+        }
+      });
+    }
+  }
+
+  /**
+   * Link rules to workflows and forms based on ruleAssociation from plan
+   * Attaches rules to workflow nodes or forms as specified
+   *
+   * @param {Object} results - Generated components (workflows, forms, rules, etc.)
+   * @param {Array} ruleSpecs - Rule specifications with ruleAssociation
+   * @param {Function} eventEmitter - Event emitter for progress updates
+   */
+  linkRulesToComponents(results, ruleSpecs, eventEmitter) {
+    if (!results.rules || results.rules.length === 0) {
+      console.log('[ComponentOrchestrator] No rules to link');
+      return;
+    }
+
+    console.log('[ComponentOrchestrator] Linking rules to components based on ruleAssociation...');
+
+    // Build maps for lookup
+    const workflowsByName = new Map();
+    if (results.workflows) {
+      results.workflows.forEach(wf => {
+        workflowsByName.set(wf.name.toLowerCase(), wf);
+      });
+    }
+
+    const formsByName = new Map();
+    if (results.forms) {
+      results.forms.forEach(form => {
+        formsByName.set(form.name.toLowerCase(), form);
+        if (form._specName) {
+          formsByName.set(form._specName.toLowerCase(), form);
+        }
+      });
+    }
+
+    let linkedToWorkflows = 0;
+    let linkedToForms = 0;
+
+    results.rules.forEach(rule => {
+      const assoc = rule._ruleAssociation;
+      if (!assoc) return;
+
+      // Link to workflow
+      if (assoc.forWorkflow) {
+        const wfKey = assoc.forWorkflow.toLowerCase();
+        let workflow = workflowsByName.get(wfKey);
+
+        if (!workflow) {
+          for (const [key, wf] of workflowsByName.entries()) {
+            if (key.includes(wfKey) || wfKey.includes(key)) {
+              workflow = wf;
+              break;
+            }
+          }
+        }
+
+        if (workflow) {
+          // Add rule to workflow's rules array
+          if (!workflow.rules) workflow.rules = [];
+          workflow.rules.push({
+            id: rule.id,
+            name: rule.name,
+            ruleType: assoc.ruleType || 'validation',
+            triggerEvent: assoc.triggerEvent || 'onSubmit'
+          });
+          linkedToWorkflows++;
+          console.log(`[ComponentOrchestrator] Linked rule "${rule.name}" to workflow "${workflow.name}"`);
+        }
+      }
+
+      // Link to form
+      if (assoc.forForm) {
+        const formKey = assoc.forForm.toLowerCase();
+        let form = formsByName.get(formKey);
+
+        if (!form) {
+          for (const [key, f] of formsByName.entries()) {
+            if (key.includes(formKey) || formKey.includes(key)) {
+              form = f;
+              break;
+            }
+          }
+        }
+
+        if (form) {
+          // Add rule to form's validation rules
+          if (!form.validationRules) form.validationRules = [];
+          form.validationRules.push({
+            id: rule.id,
+            name: rule.name,
+            ruleType: assoc.ruleType || 'validation',
+            triggerEvent: assoc.triggerEvent || 'onFieldChange',
+            affectedFields: assoc.affectedFields || []
+          });
+          linkedToForms++;
+          console.log(`[ComponentOrchestrator] Linked rule "${rule.name}" to form "${form.name}"`);
+        }
+      }
+    });
+
+    console.log(`[ComponentOrchestrator] Rule linking complete: ${linkedToWorkflows} to workflows, ${linkedToForms} to forms`);
+
+    if (eventEmitter) {
+      eventEmitter({
+        type: 'thinking-step',
+        data: {
+          agent: 'Component Orchestrator',
+          step: 'rule-linking',
+          content: `Linked ${linkedToWorkflows + linkedToForms} rules to components`
+        }
+      });
+    }
+  }
+
+  /**
+   * Link generated forms to workflow nodes based on formAssociation from plan
+   * This replaces the heuristic linkFormsToUserTasks in MoEOrchestrator
+   *
+   * Uses two sources of formAssociation:
+   * 1. _formAssociation attached directly to forms by FormExpert (preferred)
+   * 2. formSpecs from the plan (fallback)
+   *
+   * @param {Object} results - Generated components (workflows, forms, etc.)
+   * @param {Array} formSpecs - Form specifications with formAssociation
+   * @param {Function} eventEmitter - Event emitter for progress updates
+   */
+  linkFormsToWorkflows(results, formSpecs, eventEmitter) {
+    if (!results.workflows || results.workflows.length === 0) {
+      console.log('[ComponentOrchestrator] No workflows to link forms to');
+      return;
+    }
+
+    if (!results.forms || results.forms.length === 0) {
+      console.log('[ComponentOrchestrator] No forms to link');
+      return;
+    }
+
+    console.log('[ComponentOrchestrator] Linking forms to workflow nodes based on formAssociation...');
+
+    // Build a map of form specs by their original names for lookup (fallback)
+    const formSpecsByName = new Map();
+    formSpecs.forEach(spec => {
+      formSpecsByName.set(spec.name.toLowerCase(), spec);
+    });
+
+    // Group forms by their workflow association (using _formAssociation from FormExpert)
+    const formsByWorkflow = new Map();
+    results.forms.forEach(form => {
+      const assoc = form._formAssociation;
+      if (assoc && assoc.forWorkflow) {
+        const wfKey = assoc.forWorkflow.toLowerCase();
+        if (!formsByWorkflow.has(wfKey)) {
+          formsByWorkflow.set(wfKey, []);
+        }
+        formsByWorkflow.get(wfKey).push(form);
+      }
+    });
+
+    // Also build a map by spec name for fallback matching
+    const formsByName = new Map();
+    results.forms.forEach(form => {
+      formsByName.set(form.name.toLowerCase(), form);
+      if (form._specName) {
+        formsByName.set(form._specName.toLowerCase(), form);
+      }
+    });
+
+    let linkedCount = 0;
+    let totalFormNodes = 0;
+
+    // For each workflow, find and link its forms
+    results.workflows.forEach(workflow => {
+      const workflowName = workflow.name;
+      const workflowKey = workflowName.toLowerCase();
+
+      if (!workflow.nodes || !Array.isArray(workflow.nodes)) {
+        console.warn(`[ComponentOrchestrator] Workflow "${workflowName}" has no nodes array`);
+        return;
+      }
+
+      // Get forms associated with this workflow (from _formAssociation)
+      const workflowForms = formsByWorkflow.get(workflowKey) || [];
+      console.log(`[ComponentOrchestrator] Found ${workflowForms.length} forms with direct association to workflow "${workflowName}"`);
+
+      // For each node that needs a form (startProcess, userTask)
+      workflow.nodes.forEach(node => {
+        if (node.type !== 'startProcess' && node.type !== 'userTask') {
+          return;
+        }
+
+        totalFormNodes++;
+        const nodeLabel = node.data?.label || node.id;
+
+        // Strategy 1: Direct match using _formAssociation from forms
+        let matchedForm = workflowForms.find(form => {
+          const assoc = form._formAssociation;
+          if (!assoc) return false;
+
+          // Match by node type
+          if (assoc.forNodeType && assoc.forNodeType !== node.type) {
+            return false;
+          }
+
+          // Match by node label (fuzzy matching)
+          if (assoc.forNodeLabel) {
+            const specLabel = assoc.forNodeLabel.toLowerCase();
+            const actualLabel = nodeLabel.toLowerCase();
+
+            // Exact match or contains match
+            if (specLabel === actualLabel ||
+                actualLabel.includes(specLabel) ||
+                specLabel.includes(actualLabel)) {
+              return true;
+            }
+
+            // Word-based match
+            const specWords = specLabel.split(/\s+|-|_/);
+            const actualWords = actualLabel.split(/\s+|-|_/);
+            const matchingWords = specWords.filter(w => actualWords.some(aw => aw.includes(w) || w.includes(aw)));
+
+            return matchingWords.length >= Math.min(2, specWords.length);
+          }
+
+          // If no label specified, match by node type alone
+          return assoc.forNodeType === node.type;
+        });
+
+        // Strategy 2: Fallback to formSpecs if no direct match
+        if (!matchedForm) {
+          const workflowFormSpecs = formSpecs.filter(spec => {
+            const assoc = spec.formAssociation;
+            if (!assoc || !assoc.forWorkflow) return false;
+            return assoc.forWorkflow.toLowerCase() === workflowKey;
+          });
+
+          const matchingSpec = workflowFormSpecs.find(spec => {
+            const assoc = spec.formAssociation;
+            if (!assoc) return false;
+
+            if (assoc.forNodeType && assoc.forNodeType !== node.type) {
+              return false;
+            }
+
+            if (assoc.forNodeLabel) {
+              const specLabel = assoc.forNodeLabel.toLowerCase();
+              const actualLabel = nodeLabel.toLowerCase();
+              return specLabel === actualLabel ||
+                     actualLabel.includes(specLabel) ||
+                     specLabel.includes(actualLabel);
+            }
+
+            return assoc.forNodeType === node.type;
+          });
+
+          if (matchingSpec) {
+            matchedForm = formsByName.get(matchingSpec.name.toLowerCase());
+          }
+        }
+
+        if (matchedForm) {
+          node.data = node.data || {};
+          node.data.formId = matchedForm.id;
+          node.data.formName = matchedForm.name;
+          linkedCount++;
+          console.log(`[ComponentOrchestrator] Linked form "${matchedForm.name}" to node "${nodeLabel}" in workflow "${workflowName}"`);
+        } else {
+          console.warn(`[ComponentOrchestrator] No form matches node "${nodeLabel}" (${node.type}) in workflow "${workflowName}"`);
+        }
+      });
+    });
+
+    console.log(`[ComponentOrchestrator] Form linking complete: ${linkedCount}/${totalFormNodes} nodes linked`);
+
+    if (eventEmitter) {
+      eventEmitter({
+        type: 'thinking-step',
+        data: {
+          agent: 'Component Orchestrator',
+          step: 'form-linking',
+          content: `Linked ${linkedCount} forms to workflow nodes based on plan associations`
+        }
+      });
+    }
   }
 }
 

@@ -92,6 +92,12 @@ class PageExpert {
     const pageText = response.content[0].text;
     const page = this.parsePage(pageText);
 
+    // Preserve pageAssociation metadata for later linking by ComponentOrchestrator
+    if (spec.pageAssociation) {
+      page._pageAssociation = spec.pageAssociation;
+      page._specName = spec.name; // Original spec name for matching
+    }
+
     console.log(`[PageExpert] Generated page: ${page.name}`);
     return page;
   }
@@ -203,6 +209,37 @@ Return ONLY valid JSON:
     const pagesText = response.content[0].text;
     const pages = this.parsePages(pagesText);
 
+    // Build spec map for matching back associations
+    const specMap = new Map();
+    specs.forEach(spec => {
+      specMap.set(spec.name.toLowerCase(), spec);
+      specMap.set(spec.name.toLowerCase().replace(/[^a-z0-9]/g, ''), spec);
+    });
+
+    // Attach _pageAssociation metadata to each generated page
+    pages.forEach(page => {
+      const normalizedName = page.name?.toLowerCase() || '';
+      const normalizedNoSpecial = normalizedName.replace(/[^a-z0-9]/g, '');
+
+      // Try to find matching spec
+      let matchingSpec = specMap.get(normalizedName) || specMap.get(normalizedNoSpecial);
+
+      // Fallback: fuzzy match
+      if (!matchingSpec) {
+        for (const [key, spec] of specMap.entries()) {
+          if (normalizedName.includes(key) || key.includes(normalizedName)) {
+            matchingSpec = spec;
+            break;
+          }
+        }
+      }
+
+      if (matchingSpec && matchingSpec.pageAssociation) {
+        page._pageAssociation = matchingSpec.pageAssociation;
+        page._specName = matchingSpec.name;
+      }
+    });
+
     console.log(`[PageExpert] Generated ${pages.length} pages`);
     return pages;
   }
@@ -217,11 +254,29 @@ Return ONLY valid JSON:
     const designSystem = componentPlan.designSystem;
     const designGuidelines = designSystem ? this.formatDesignGuidelines(designSystem) : '';
 
+    // Extract page association context from spec (for plan-based linking)
+    const pageAssociation = spec.pageAssociation || {};
+    const associationContext = pageAssociation.forWorkflow || pageAssociation.pageType ? `
+**PAGE ASSOCIATION CONTEXT**:
+- For Workflow: ${pageAssociation.forWorkflow || 'N/A'}
+- Page Type: ${pageAssociation.pageType || 'list'}
+${pageAssociation.displaysForms && pageAssociation.displaysForms.length > 0 ? `- Displays Forms: ${pageAssociation.displaysForms.join(', ')}` : ''}
+${pageAssociation.displaysDataModels && pageAssociation.displaysDataModels.length > 0 ? `- Displays Data Models: ${pageAssociation.displaysDataModels.join(', ')}` : ''}
+${pageAssociation.navigationFlow ? `- Navigation Flow: Previous=${pageAssociation.navigationFlow.previousPage || 'None'}, Next=${pageAssociation.navigationFlow.nextPage || 'None'}` : ''}
+
+IMPORTANT: Design this page specifically for its role in the application:
+${pageAssociation.pageType === 'dashboard' ? '- This is a DASHBOARD page - show summary metrics, charts, and quick actions.' : ''}
+${pageAssociation.pageType === 'list' ? '- This is a LIST page - display a table/list of items with search, filter, and CRUD actions.' : ''}
+${pageAssociation.pageType === 'detail' ? '- This is a DETAIL page - show full details of a single item with edit/delete options.' : ''}
+${pageAssociation.pageType === 'form' ? '- This is a FORM page - embed a form for data entry or editing.' : ''}
+${pageAssociation.pageType === 'report' ? '- This is a REPORT page - display charts, analytics, and data summaries.' : ''}
+` : '';
+
     return `Generate a page for: ${spec.name}
 
 Purpose: ${spec.purpose}
 ${spec.description ? `Description: ${spec.description}` : ''}
-
+${associationContext}
 Context:
 - Application: ${componentPlan.overview.name}
 - Domain: ${componentPlan.overview.category || 'General'}
@@ -300,7 +355,28 @@ Return ONLY valid JSON in this format:
   }
 
   buildBatchPrompt(specs, componentPlan, existingComponents = {}) {
-    const specList = specs.map(s => `- ${s.name}: ${s.purpose}`).join('\n');
+    // Build detailed spec list with association context
+    const specList = specs.map(s => {
+      const assoc = s.pageAssociation || {};
+      let specInfo = `- ${s.name}: ${s.purpose}`;
+      if (assoc.forWorkflow) {
+        specInfo += `\n    For Workflow: ${assoc.forWorkflow}`;
+      }
+      if (assoc.pageType) {
+        specInfo += `\n    Page Type: ${assoc.pageType}`;
+      }
+      if (assoc.displaysForms && assoc.displaysForms.length > 0) {
+        specInfo += `\n    Displays Forms: ${assoc.displaysForms.join(', ')}`;
+      }
+      if (assoc.displaysDataModels && assoc.displaysDataModels.length > 0) {
+        specInfo += `\n    Displays Data Models: ${assoc.displaysDataModels.join(', ')}`;
+      }
+      if (assoc.navigationFlow) {
+        specInfo += `\n    Nav Flow: Prev=${assoc.navigationFlow.previousPage || 'None'}, Next=${assoc.navigationFlow.nextPage || 'None'}`;
+      }
+      return specInfo;
+    }).join('\n');
+
     const allPageNames = specs.map(s => s.name);
 
     // Extract design system if available
@@ -309,7 +385,7 @@ Return ONLY valid JSON in this format:
 
     return `Generate ${specs.length} pages for: ${componentPlan.overview.name}
 
-Pages to generate:
+Pages to generate (with their workflow/form associations):
 ${specList}
 
 ${designGuidelines}

@@ -358,9 +358,9 @@ class ApplicationDatabase {
    * Helper: Insert data model
    */
   async insertDataModel(client, applicationId, model) {
-    // Generate unique ID by appending application ID and timestamp to avoid conflicts
-    const baseId = model.id || `dm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const modelId = `${applicationId}_${baseId}`;
+    // Use the model's existing ID or generate a new one
+    // DO NOT prepend applicationId - it causes mismatch with form.dataModelId references
+    const modelId = model.id || `dm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     await client.query(`
       INSERT INTO k1.data_models (
@@ -399,9 +399,9 @@ class ApplicationDatabase {
    * Helper: Insert page
    */
   async insertPage(client, applicationId, page) {
-    // Generate unique ID by appending application ID to avoid conflicts
-    const baseId = page.id || `page_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const pageId = `${applicationId}_${baseId}`;
+    // Use the page's existing ID or generate a new one
+    // DO NOT prepend applicationId - keep IDs consistent with references
+    const pageId = page.id || `page_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     await client.query(`
       INSERT INTO k1.pages (
@@ -585,41 +585,55 @@ class ApplicationDatabase {
       }
 
       // Handle resources updates
+      // IMPORTANT: Order matters due to FK constraints!
+      // forms.data_model_id -> data_models.id
+      // Delete order: forms first (they reference data_models), then data_models
+      // Insert order: data_models first, then forms (they need data_models to exist)
       if (updates.resources) {
-        // Delete and re-insert resources (simpler than selective updates)
-        if (updates.resources.workflows !== undefined) {
-          await client.query('DELETE FROM k1.workflows WHERE application_id = $1', [id]);
-          for (const workflow of updates.resources.workflows) {
-            await this.insertWorkflow(client, id, workflow);
-          }
-        }
-
+        // Step 1: Delete in reverse dependency order (forms before data_models)
         if (updates.resources.forms !== undefined) {
           await client.query('DELETE FROM k1.forms WHERE application_id = $1', [id]);
-          for (const form of updates.resources.forms) {
-            await this.insertForm(client, id, form);
-          }
         }
-
         if (updates.resources.dataModels !== undefined) {
           await client.query('DELETE FROM k1.data_models WHERE application_id = $1', [id]);
+        }
+        if (updates.resources.workflows !== undefined) {
+          await client.query('DELETE FROM k1.workflows WHERE application_id = $1', [id]);
+        }
+        if (updates.resources.pages !== undefined) {
+          await client.query('DELETE FROM k1.pages WHERE application_id = $1', [id]);
+        }
+        if (updates.resources.mobileUI !== undefined) {
+          await client.query('DELETE FROM k1.mobile_ui WHERE application_id = $1', [id]);
+        }
+
+        // Step 2: Insert in dependency order (data_models before forms)
+        if (updates.resources.dataModels !== undefined) {
           for (const model of updates.resources.dataModels) {
             await this.insertDataModel(client, id, model);
           }
         }
 
+        if (updates.resources.forms !== undefined) {
+          for (const form of updates.resources.forms) {
+            await this.insertForm(client, id, form);
+          }
+        }
+
+        if (updates.resources.workflows !== undefined) {
+          for (const workflow of updates.resources.workflows) {
+            await this.insertWorkflow(client, id, workflow);
+          }
+        }
+
         if (updates.resources.pages !== undefined) {
-          await client.query('DELETE FROM k1.pages WHERE application_id = $1', [id]);
           for (const page of updates.resources.pages) {
             await this.insertPage(client, id, page);
           }
         }
 
-        if (updates.resources.mobileUI !== undefined) {
-          await client.query('DELETE FROM k1.mobile_ui WHERE application_id = $1', [id]);
-          if (updates.resources.mobileUI) {
-            await this.insertMobileUI(client, id, updates.resources.mobileUI);
-          }
+        if (updates.resources.mobileUI !== undefined && updates.resources.mobileUI) {
+          await this.insertMobileUI(client, id, updates.resources.mobileUI);
         }
 
         // Update statistics

@@ -334,11 +334,24 @@ Examples:
         );
 
         // The workflow contains all components embedded
-        components.workflows = [result];
-        components.forms = result.forms || [];
-        components.dataModels = result.dataModels || [];
-        components.pages = result.pages || [];
-        components.mobileUI = result.mobileUI || null;
+        // result = { thinking, workflow, summary }
+        // workflow = { workflows: [...], forms: [...], dataModels: [...], pages: [...], mobileUI: {...} }
+        const workflowResult = result.workflow;
+
+        // Extract workflows - handle both multi-workflow and single workflow cases
+        if (workflowResult.workflows && workflowResult.workflows.length > 0) {
+          components.workflows = workflowResult.workflows;
+        } else {
+          // Single workflow case - wrap in array
+          components.workflows = [workflowResult];
+        }
+
+        // Extract other components from the workflow result
+        components.forms = workflowResult.forms || [];
+        components.dataModels = workflowResult.dataModels || [];
+        components.pages = workflowResult.pages || [];
+        components.mobileUI = workflowResult.mobileUI || null;
+        components.rules = workflowResult.rules || [];
 
         thinking.push({
           step: `Application Components Generated`,

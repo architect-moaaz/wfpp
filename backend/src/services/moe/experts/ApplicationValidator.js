@@ -949,6 +949,199 @@ class ApplicationValidator {
   }
 
   /**
+   * Validate AND fix issues - returns both validation report and fixed application package
+   * This is the main method that should be called to ensure all cross-component references are valid
+   */
+  async validateAndFix(applicationPackage) {
+    console.log('[ApplicationValidator] Starting validate and fix...');
+
+    const fixes = {
+      formsFixed: 0,
+      workflowsFixed: 0,
+      pagesFixed: 0,
+      dataModelsFixed: 0,
+      details: []
+    };
+
+    const { workflows = [], forms = [], pages = [], dataModels = [] } = applicationPackage;
+
+    // 1. Fix data model IDs - ensure all have valid IDs
+    dataModels.forEach(dm => {
+      if (!dm.id || typeof dm.id !== 'string' || dm.id.length < 3) {
+        const newId = `dm_${(dm.name || 'model').toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
+        fixes.details.push(`Fixed data model "${dm.name}": invalid ID "${dm.id}" -> "${newId}"`);
+        dm.id = newId;
+        fixes.dataModelsFixed++;
+      }
+    });
+
+    // Build valid ID sets
+    const validDataModelIds = new Set(dataModels.map(dm => dm.id));
+    const validFormIds = new Set(forms.map(f => f.id));
+    const validPageRoutes = new Set(pages.map(p => p.route));
+
+    // 2. Fix form dataModelId references
+    forms.forEach(form => {
+      if (form.dataModelId && !validDataModelIds.has(form.dataModelId)) {
+        // Try to find by name
+        const matchingDm = dataModels.find(dm =>
+          dm.name?.toLowerCase() === form.dataModelId?.toLowerCase() ||
+          dm.name?.toLowerCase().replace(/[^a-z0-9]/g, '') === form.dataModelId?.toLowerCase().replace(/[^a-z0-9]/g, '')
+        );
+
+        if (matchingDm) {
+          fixes.details.push(`Fixed form "${form.name}": dataModelId "${form.dataModelId}" -> "${matchingDm.id}"`);
+          form.dataModelId = matchingDm.id;
+          form.dataModelName = matchingDm.name;
+        } else {
+          fixes.details.push(`Cleared invalid dataModelId "${form.dataModelId}" from form "${form.name}"`);
+          delete form.dataModelId;
+          delete form.dataModelName;
+        }
+        fixes.formsFixed++;
+      }
+
+      // Ensure form has valid ID
+      if (!form.id || typeof form.id !== 'string' || form.id.length < 3) {
+        const newId = `form_${(form.name || 'form').toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
+        fixes.details.push(`Fixed form "${form.name}": invalid ID "${form.id}" -> "${newId}"`);
+        form.id = newId;
+        fixes.formsFixed++;
+      }
+    });
+
+    // Update valid form IDs after fixing
+    const updatedFormIds = new Set(forms.map(f => f.id));
+
+    // 3. Fix workflow form references
+    workflows.forEach(workflow => {
+      if (workflow.nodes) {
+        workflow.nodes.forEach(node => {
+          if (node.data?.formId && !updatedFormIds.has(node.data.formId)) {
+            // Try to find by name
+            const matchingForm = forms.find(f =>
+              f.name?.toLowerCase() === node.data.formId?.toLowerCase() ||
+              f.name?.toLowerCase().replace(/[^a-z0-9]/g, '') === node.data.formId?.toLowerCase().replace(/[^a-z0-9]/g, '')
+            );
+
+            if (matchingForm) {
+              fixes.details.push(`Fixed workflow "${workflow.name}" node "${node.data?.label}": formId "${node.data.formId}" -> "${matchingForm.id}"`);
+              node.data.formId = matchingForm.id;
+              node.data.formName = matchingForm.name;
+            } else {
+              fixes.details.push(`Cleared invalid formId "${node.data.formId}" from workflow "${workflow.name}" node "${node.data?.label}"`);
+              delete node.data.formId;
+              delete node.data.formName;
+            }
+            fixes.workflowsFixed++;
+          }
+
+          // Also check formRef for legacy format
+          if (node.formRef && !updatedFormIds.has(node.formRef)) {
+            const matchingForm = forms.find(f =>
+              f.name?.toLowerCase() === node.formRef?.toLowerCase()
+            );
+
+            if (matchingForm) {
+              node.formRef = matchingForm.id;
+            } else {
+              delete node.formRef;
+            }
+            fixes.workflowsFixed++;
+          }
+        });
+      }
+
+      // Ensure workflow has valid ID
+      if (!workflow.id || typeof workflow.id !== 'string' || workflow.id.length < 3) {
+        const newId = `wf_${(workflow.name || 'workflow').toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
+        fixes.details.push(`Fixed workflow "${workflow.name}": invalid ID "${workflow.id}" -> "${newId}"`);
+        workflow.id = newId;
+        fixes.workflowsFixed++;
+      }
+    });
+
+    // 4. Fix page references
+    pages.forEach(page => {
+      // Fix form references in page components
+      if (page.sections) {
+        page.sections.forEach(section => {
+          if (section.components) {
+            section.components.forEach(component => {
+              if (component.formRef && !updatedFormIds.has(component.formRef)) {
+                const matchingForm = forms.find(f =>
+                  f.name?.toLowerCase() === component.formRef?.toLowerCase()
+                );
+
+                if (matchingForm) {
+                  component.formRef = matchingForm.id;
+                } else {
+                  delete component.formRef;
+                }
+                fixes.pagesFixed++;
+              }
+
+              // Fix data model references
+              if (component.dataBinding) {
+                const modelName = component.dataBinding.split('.')[0];
+                const matchingDm = dataModels.find(dm =>
+                  dm.name?.toLowerCase() === modelName?.toLowerCase()
+                );
+                if (!matchingDm) {
+                  fixes.details.push(`Cleared invalid dataBinding "${component.dataBinding}" from page "${page.name}"`);
+                  delete component.dataBinding;
+                  fixes.pagesFixed++;
+                }
+              }
+            });
+          }
+        });
+      }
+
+      // Fix navigation references
+      if (page.navigation?.onAction) {
+        Object.entries(page.navigation.onAction).forEach(([action, actionData]) => {
+          if (actionData.type === 'navigate' && actionData.target && !validPageRoutes.has(actionData.target)) {
+            fixes.details.push(`Cleared invalid navigation target "${actionData.target}" from page "${page.name}" action "${action}"`);
+            delete page.navigation.onAction[action];
+            fixes.pagesFixed++;
+          }
+        });
+      }
+
+      // Ensure page has valid ID
+      if (!page.id || typeof page.id !== 'string' || page.id.length < 3) {
+        const newId = `page_${(page.name || 'page').toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
+        fixes.details.push(`Fixed page "${page.name}": invalid ID "${page.id}" -> "${newId}"`);
+        page.id = newId;
+        fixes.pagesFixed++;
+      }
+    });
+
+    const totalFixes = fixes.formsFixed + fixes.workflowsFixed + fixes.pagesFixed + fixes.dataModelsFixed;
+
+    if (totalFixes > 0) {
+      console.log(`[ApplicationValidator] Applied ${totalFixes} fixes:`, {
+        dataModels: fixes.dataModelsFixed,
+        forms: fixes.formsFixed,
+        workflows: fixes.workflowsFixed,
+        pages: fixes.pagesFixed
+      });
+      fixes.details.forEach(d => console.log(`  - ${d}`));
+    }
+
+    // Now run validation on the fixed package
+    const validationReport = await this.validate(applicationPackage);
+
+    return {
+      applicationPackage,
+      validationReport,
+      fixes,
+      totalFixesApplied: totalFixes
+    };
+  }
+
+  /**
    * Format validation report for PlanningExpert
    */
   formatForPlanningExpert(report) {

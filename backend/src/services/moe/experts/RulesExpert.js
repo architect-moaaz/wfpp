@@ -95,6 +95,12 @@ class RulesExpert {
       rule.workflow_id = spec.workflowId;
     }
 
+    // Preserve ruleAssociation metadata for later linking by ComponentOrchestrator
+    if (spec.ruleAssociation) {
+      rule._ruleAssociation = spec.ruleAssociation;
+      rule._specName = spec.name; // Original spec name for matching
+    }
+
     console.log(`[RulesExpert] Generated rule: ${rule.name}`);
     return rule;
   }
@@ -125,14 +131,45 @@ class RulesExpert {
     const rulesText = response.content[0].text;
     const rules = this.parseRules(rulesText);
 
-    // Attach node_id and workflow_id to each rule from specs
+    // Build spec map for matching back associations
+    const specMap = new Map();
+    specs.forEach(spec => {
+      specMap.set(spec.name.toLowerCase(), spec);
+      specMap.set(spec.name.toLowerCase().replace(/[^a-z0-9]/g, ''), spec);
+    });
+
+    // Attach node_id, workflow_id, and ruleAssociation to each rule
     rules.forEach((rule, index) => {
-      if (specs[index]) {
-        if (specs[index].nodeId) {
-          rule.node_id = specs[index].nodeId;
+      // First try to match by name
+      const normalizedName = rule.name?.toLowerCase() || '';
+      const normalizedNoSpecial = normalizedName.replace(/[^a-z0-9]/g, '');
+      let matchingSpec = specMap.get(normalizedName) || specMap.get(normalizedNoSpecial);
+
+      // Fallback: fuzzy match
+      if (!matchingSpec) {
+        for (const [key, spec] of specMap.entries()) {
+          if (normalizedName.includes(key) || key.includes(normalizedName)) {
+            matchingSpec = spec;
+            break;
+          }
         }
-        if (specs[index].workflowId) {
-          rule.workflow_id = specs[index].workflowId;
+      }
+
+      // Fallback to index-based matching
+      if (!matchingSpec && specs[index]) {
+        matchingSpec = specs[index];
+      }
+
+      if (matchingSpec) {
+        if (matchingSpec.nodeId) {
+          rule.node_id = matchingSpec.nodeId;
+        }
+        if (matchingSpec.workflowId) {
+          rule.workflow_id = matchingSpec.workflowId;
+        }
+        if (matchingSpec.ruleAssociation) {
+          rule._ruleAssociation = matchingSpec.ruleAssociation;
+          rule._specName = matchingSpec.name;
         }
       }
     });
@@ -206,13 +243,37 @@ class RulesExpert {
   buildSinglePrompt(spec, componentPlan, existingComponents) {
     const { workflow, dataModels = [] } = existingComponents;
 
+    // Extract rule association context from spec (for plan-based linking)
+    const ruleAssociation = spec.ruleAssociation || {};
+    const associationContext = ruleAssociation.forWorkflow || ruleAssociation.forForm ? `
+**RULE ASSOCIATION CONTEXT**:
+- For Workflow: ${ruleAssociation.forWorkflow || 'N/A'}
+- For Form: ${ruleAssociation.forForm || 'N/A'}
+- For Data Model: ${ruleAssociation.forDataModel || 'N/A'}
+- Rule Type: ${ruleAssociation.ruleType || 'validation'}
+- Trigger Event: ${ruleAssociation.triggerEvent || 'onSubmit'}
+${ruleAssociation.affectedFields && ruleAssociation.affectedFields.length > 0 ? `- Affected Fields: ${ruleAssociation.affectedFields.join(', ')}` : ''}
+${spec.ruleLogicHints && spec.ruleLogicHints.length > 0 ? `- Logic Hints: ${spec.ruleLogicHints.join('; ')}` : ''}
+
+IMPORTANT: Design this rule specifically for its context:
+${ruleAssociation.ruleType === 'validation' ? '- This is a VALIDATION rule - validate input data, check formats, ensure required fields.' : ''}
+${ruleAssociation.ruleType === 'calculation' ? '- This is a CALCULATION rule - compute values, apply formulas, derive fields.' : ''}
+${ruleAssociation.ruleType === 'visibility' ? '- This is a VISIBILITY rule - show/hide fields or sections based on conditions.' : ''}
+${ruleAssociation.ruleType === 'routing' ? '- This is a ROUTING rule - determine workflow path based on data values.' : ''}
+${ruleAssociation.ruleType === 'notification' ? '- This is a NOTIFICATION rule - send alerts or notifications based on conditions.' : ''}
+${ruleAssociation.triggerEvent === 'onSubmit' ? '- Triggered on form SUBMIT - validate before saving.' : ''}
+${ruleAssociation.triggerEvent === 'onChange' ? '- Triggered on field CHANGE - respond immediately to user input.' : ''}
+${ruleAssociation.triggerEvent === 'onLoad' ? '- Triggered on form LOAD - set initial values or visibility.' : ''}
+${ruleAssociation.triggerEvent === 'onTransition' ? '- Triggered on workflow TRANSITION - validate before moving to next step.' : ''}
+` : '';
+
     return `Generate a business rule for: ${spec.name}
 
 Purpose: ${spec.purpose}
 ${spec.description ? `Description: ${spec.description}` : ''}
 ${spec.nodeType ? `Node Type: ${spec.nodeType}` : ''}
 ${spec.nodeLabel ? `Node Label: ${spec.nodeLabel}` : ''}
-
+${associationContext}
 Context:
 - Application: ${componentPlan?.overview?.name || 'Business Application'}
 - Domain: ${componentPlan?.overview?.category || 'General'}
@@ -281,13 +342,35 @@ Return ONLY valid JSON in this format:
 
   buildBatchPrompt(specs, componentPlan, existingComponents) {
     const { workflow, dataModels = [] } = existingComponents;
-    const specList = specs.map(s =>
-      `- ${s.name} (${s.nodeType || 'node'}): ${s.purpose}`
-    ).join('\n');
+
+    // Build detailed spec list with association context
+    const specList = specs.map(s => {
+      const assoc = s.ruleAssociation || {};
+      let specInfo = `- ${s.name} (${s.nodeType || 'node'}): ${s.purpose}`;
+      if (assoc.forWorkflow) {
+        specInfo += `\n    For Workflow: ${assoc.forWorkflow}`;
+      }
+      if (assoc.forForm) {
+        specInfo += `\n    For Form: ${assoc.forForm}`;
+      }
+      if (assoc.ruleType) {
+        specInfo += `\n    Rule Type: ${assoc.ruleType}`;
+      }
+      if (assoc.triggerEvent) {
+        specInfo += `\n    Trigger: ${assoc.triggerEvent}`;
+      }
+      if (assoc.affectedFields && assoc.affectedFields.length > 0) {
+        specInfo += `\n    Affected Fields: ${assoc.affectedFields.join(', ')}`;
+      }
+      if (s.ruleLogicHints && s.ruleLogicHints.length > 0) {
+        specInfo += `\n    Logic Hints: ${s.ruleLogicHints.join('; ')}`;
+      }
+      return specInfo;
+    }).join('\n');
 
     return `Generate ${specs.length} business rules for: ${componentPlan?.overview?.name || 'Business Application'}
 
-Rules needed:
+Rules needed (with their workflow/form associations):
 ${specList}
 
 Context:

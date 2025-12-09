@@ -68,6 +68,9 @@ class FormExpert {
    */
   async generateSingle(spec, componentPlan, existingComponents) {
     console.log(`[FormExpert] Generating form: ${spec.name}...`);
+    if (spec.formAssociation?.forWorkflow) {
+      console.log(`[FormExpert]   -> For workflow: ${spec.formAssociation.forWorkflow}, node: ${spec.formAssociation.forNodeLabel || spec.formAssociation.forNodeType}`);
+    }
 
     const prompt = this.buildSinglePrompt(spec, componentPlan, existingComponents);
 
@@ -92,6 +95,12 @@ class FormExpert {
       form.gridLayout = this.generateGridLayout(form.fields, componentPlan.designSystem);
     }
 
+    // Preserve formAssociation metadata for later linking by ComponentOrchestrator
+    if (spec.formAssociation) {
+      form._formAssociation = spec.formAssociation;
+      form._specName = spec.name; // Original spec name for matching
+    }
+
     console.log(`[FormExpert] Generated form: ${form.name}`);
     return form;
   }
@@ -104,6 +113,11 @@ class FormExpert {
     if (specs.length === 1) return [await this.generateSingle(specs[0], componentPlan, {})];
 
     console.log(`[FormExpert] Generating ${specs.length} forms in batch...`);
+    specs.forEach(spec => {
+      if (spec.formAssociation?.forWorkflow) {
+        console.log(`[FormExpert]   -> ${spec.name}: workflow=${spec.formAssociation.forWorkflow}, node=${spec.formAssociation.forNodeLabel || spec.formAssociation.forNodeType}`);
+      }
+    });
 
     const prompt = this.buildBatchPrompt(specs, componentPlan);
 
@@ -122,12 +136,52 @@ class FormExpert {
     const formsText = response.content[0].text;
     const forms = this.parseForms(formsText);
 
-    // POST-PROCESS: Add gridLayout if missing for each form
-    const processedForms = forms.map(form => {
+    // Build a map of specs by name (case-insensitive) for matching
+    const specsByName = new Map();
+    specs.forEach(spec => {
+      specsByName.set(spec.name.toLowerCase(), spec);
+      // Also map by normalized name (replacing spaces with dashes)
+      const normalizedName = spec.name.toLowerCase().replace(/\s+/g, '-');
+      specsByName.set(normalizedName, spec);
+    });
+
+    // POST-PROCESS: Add gridLayout if missing and attach formAssociation
+    const processedForms = forms.map((form, index) => {
       if (!form.gridLayout && form.fields) {
         console.log(`[FormExpert] Auto-generating gridLayout for form: ${form.name}`);
         form.gridLayout = this.generateGridLayout(form.fields, componentPlan.designSystem);
       }
+
+      // Try to match this form to its original spec to get formAssociation
+      let matchedSpec = null;
+
+      // First try exact name match
+      if (form.name) {
+        matchedSpec = specsByName.get(form.name.toLowerCase());
+      }
+
+      // Try matching by ID prefix (form IDs start with spec name)
+      if (!matchedSpec && form.id) {
+        for (const [specName, spec] of specsByName) {
+          if (form.id.toLowerCase().startsWith(specName)) {
+            matchedSpec = spec;
+            break;
+          }
+        }
+      }
+
+      // Fall back to index-based matching if same count
+      if (!matchedSpec && index < specs.length) {
+        matchedSpec = specs[index];
+      }
+
+      // Attach formAssociation metadata if found
+      if (matchedSpec && matchedSpec.formAssociation) {
+        form._formAssociation = matchedSpec.formAssociation;
+        form._specName = matchedSpec.name;
+        console.log(`[FormExpert] Attached formAssociation to "${form.name}" -> workflow: ${matchedSpec.formAssociation.forWorkflow}`);
+      }
+
       return form;
     });
 
@@ -163,11 +217,26 @@ class FormExpert {
     const standardFieldHeight = 8; // Grid units for standard fields
     const textareaFieldHeight = 12; // Grid units for textarea fields
 
+    // Extract form association context from spec (for plan-based workflow linking)
+    const formAssociation = spec.formAssociation || {};
+    const workflowContext = formAssociation.forWorkflow ? `
+**WORKFLOW CONTEXT (This form will be attached to a specific workflow node)**:
+- Target Workflow: ${formAssociation.forWorkflow}
+- Target Node Type: ${formAssociation.forNodeType || 'user task'}
+- Target Node Label: ${formAssociation.forNodeLabel || 'N/A'}
+- Associated Data Model: ${formAssociation.dataModel || 'N/A'}
+${spec.fieldHints && spec.fieldHints.length > 0 ? `- Suggested Fields: ${spec.fieldHints.join(', ')}` : ''}
+
+IMPORTANT: Design this form specifically for the "${formAssociation.forNodeType || 'user task'}" workflow node.
+${formAssociation.forNodeType === 'startProcess' ? '- This is a START form - collect initial data to kick off the workflow process.' : ''}
+${formAssociation.forNodeType === 'userTask' ? '- This is a USER TASK form - collect data needed for this specific step in the process.' : ''}
+` : '';
+
     return `Generate a form for: ${spec.name}
 
 Purpose: ${spec.purpose}
 ${spec.description ? `Description: ${spec.description}` : ''}
-
+${workflowContext}
 Context:
 - Application: ${componentPlan.overview.name}
 - Domain: ${componentPlan.overview.category || 'General'}
@@ -321,7 +390,22 @@ Return ONLY valid JSON in this format:
       uniqueId: `${s.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
     }));
 
-    const specList = specsWithIds.map(s => `- ${s.name} (ID: ${s.uniqueId}): ${s.purpose}`).join('\n');
+    // Build spec list with workflow association context
+    const specList = specsWithIds.map(s => {
+      let specLine = `- ${s.name} (ID: ${s.uniqueId}): ${s.purpose}`;
+      if (s.formAssociation && s.formAssociation.forWorkflow) {
+        specLine += `\n    - Workflow: ${s.formAssociation.forWorkflow}`;
+        specLine += `\n    - Node Type: ${s.formAssociation.forNodeType || 'user task'}`;
+        specLine += `\n    - Node Label: ${s.formAssociation.forNodeLabel || 'N/A'}`;
+        if (s.formAssociation.dataModel) {
+          specLine += `\n    - Data Model: ${s.formAssociation.dataModel}`;
+        }
+        if (s.fieldHints && s.fieldHints.length > 0) {
+          specLine += `\n    - Suggested Fields: ${s.fieldHints.join(', ')}`;
+        }
+      }
+      return specLine;
+    }).join('\n');
 
     // Extract design system if available
     const designSystem = componentPlan.designSystem;
@@ -342,19 +426,31 @@ Return ONLY valid JSON in this format:
     const standardFieldHeight = 8; // Grid units for standard fields
     const textareaFieldHeight = 12; // Grid units for textarea fields
 
+    // Check if any forms have workflow associations
+    const hasWorkflowContext = specsWithIds.some(s => s.formAssociation?.forWorkflow);
+    const workflowGuidance = hasWorkflowContext ? `
+**WORKFLOW CONTEXT - IMPORTANT**:
+Each form listed above has a target workflow and node. Design each form specifically for its workflow context:
+- START PROCESS forms: Collect initial data to kick off the workflow. Include fields for the primary entity being created/processed.
+- USER TASK forms: Collect data needed for that specific step. May include review fields, approval fields, additional data fields, etc.
+- Forms for the SAME workflow should be coherent and build on each other (e.g., a review form should reference data from the start form).
+- Forms for DIFFERENT workflows should be distinct and appropriate for their specific process.
+` : '';
+
     return `Generate ${specs.length} forms for: ${componentPlan.overview.name}
 
-Forms needed:
+Forms needed (each with its workflow association):
 ${specList}
-
+${workflowGuidance}
 ${designGuidelines}
 
 Requirements for EACH form:
 - Keep it simple (4-8 fields maximum per form)
-- Include only essential fields
+- Include only essential fields relevant to the form's workflow context
 - Use appropriate field types
 - Add validation rules where necessary
 - Use clear labels and helpful placeholders
+- Each form should be UNIQUE and tailored to its specific workflow node
 - CRITICAL: Use the EXACT ID provided above for each form (e.g., first form uses ${specsWithIds[0].uniqueId})
 ${designSystem ? '- CRITICAL: Apply the design system specifications above to ALL styling properties' : ''}
 
