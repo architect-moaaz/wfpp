@@ -1,1 +1,418 @@
-[]
+[
+  {
+    "id": "company",
+    "name": "Company",
+    "description": "Company/organization information for contacts",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the company",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Official company name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "industry",
+        "type": "string",
+        "description": "Industry or sector the company operates in",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "website",
+        "type": "string",
+        "description": "Company website URL",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "description": "Primary contact phone number",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Primary contact email address",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "address",
+        "type": "string",
+        "description": "Physical business address",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the company is currently active",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "validate-contact-information"
+  },
+  {
+    "id": "user",
+    "name": "User",
+    "description": "User account information for team members",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address for login and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "User's first name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "description": "User's last name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "companyId",
+        "type": "string",
+        "description": "Reference to the company the user belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "User's role or position within the organization",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates whether the user account is active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the user account was created",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Company",
+        "foreignKey": "companyId",
+        "description": "User belongs to a Company"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "companyId"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "email"
+      ]
+    },
+    "workflowId": "validate-contact-information"
+  },
+  {
+    "id": "team",
+    "name": "Team",
+    "description": "Team organization structure within a company",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the team",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the team",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "companyId",
+        "type": "string",
+        "description": "Reference to the company this team belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaderId",
+        "type": "string",
+        "description": "Reference to the user who leads this team",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Brief description of the team's purpose and responsibilities",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates whether the team is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the team was created",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Company",
+        "foreignKey": "companyId",
+        "description": "Team belongs to a company"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "leaderId",
+        "description": "Team is led by a user"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "companyId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "leaderId"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {},
+    "workflowId": "validate-contact-information"
+  },
+  {
+    "id": "contact",
+    "name": "Contact",
+    "description": "Core contact record with personal and business information",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the contact",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "Contact's first name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "description": "Contact's last name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Primary email address",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "description": "Primary phone number",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "companyId",
+        "type": "string",
+        "description": "Reference to associated company",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "position",
+        "type": "string",
+        "description": "Job title or position",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when contact was created",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Company",
+        "foreignKey": "companyId",
+        "description": "Contact belongs to a company"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "companyId"
+        ]
+      }
+    ],
+    "constraints": {
+      "email": {
+        "format": "email"
+      }
+    },
+    "workflowId": "validate-contact-information"
+  },
+  {
+    "id": "access-level",
+    "name": "AccessLevel",
+    "description": "Permission levels for users defining access rights and capabilities within the system",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the access level",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the access level (e.g., Admin, Manager, User, Guest)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "description": "Numeric hierarchy level where higher numbers indicate greater access",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of permissions and capabilities",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "permissions",
+        "type": "json",
+        "description": "JSON object containing specific permission flags and settings",
+        "required": true,
+        "defaultValue": {}
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if this access level is currently active and assignable",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the access level was created",
+        "required": true,
+        "defaultValue": "now()"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_access_level_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_access_level_level",
+        "fields": [
+          "level"
+        ],
+        "unique": true
+      }
+    ],
+    "constraints": {
+      "uniqueName": "Access level name must be unique",
+      "uniqueLevel": "Access level numeric value must be unique"
+    },
+    "workflowId": "validate-contact-information"
+  }
+]

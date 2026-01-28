@@ -464,18 +464,85 @@ class StateManager {
   }
 
   /**
-   * Create automatic snapshots
+   * Set reference to runtime engine for accessing active instances
+   */
+  setRuntimeEngine(runtimeEngine) {
+    this.runtimeEngine = runtimeEngine;
+    console.log('[StateManager] Runtime engine connected');
+  }
+
+  /**
+   * Create automatic snapshots for all running instances
    */
   enableAutoSnapshots(interval = 60000) {
     if (this.autoSnapshotInterval) {
       clearInterval(this.autoSnapshotInterval);
     }
 
-    this.autoSnapshotInterval = setInterval(() => {
-      console.log('[StateManager] Auto-snapshot timer fired (implement in runtime engine)');
+    this.autoSnapshotInterval = setInterval(async () => {
+      await this.createAutoSnapshots();
     }, interval);
 
     console.log(`[StateManager] Auto-snapshots enabled (interval: ${interval}ms)`);
+  }
+
+  /**
+   * Create snapshots for all currently running instances
+   */
+  async createAutoSnapshots() {
+    if (!this.runtimeEngine || !this.runtimeEngine.runningInstances) {
+      console.log('[StateManager] No runtime engine connected or no running instances');
+      return { created: 0 };
+    }
+
+    const runningInstances = this.runtimeEngine.runningInstances;
+    let createdCount = 0;
+    const errors = [];
+
+    for (const [instanceId, instance] of runningInstances.entries()) {
+      try {
+        // Skip instances that are already completed or failed
+        if (instance.status === 'COMPLETED' || instance.status === 'FAILED') {
+          continue;
+        }
+
+        // Create snapshot with current instance state
+        const state = {
+          instance: instance.toJSON ? instance.toJSON() : instance,
+          processData: instance.processData,
+          currentNodeId: instance.currentNodeId,
+          status: instance.status
+        };
+
+        await this.createSnapshot(instanceId, state, {
+          reason: 'auto-snapshot',
+          createdBy: 'system',
+          automatic: true
+        });
+
+        createdCount++;
+      } catch (error) {
+        console.error(`[StateManager] Auto-snapshot failed for ${instanceId}:`, error.message);
+        errors.push({ instanceId, error: error.message });
+      }
+    }
+
+    if (createdCount > 0) {
+      console.log(`[StateManager] Auto-snapshots created: ${createdCount} instance(s)`);
+    }
+
+    return { created: createdCount, errors };
+  }
+
+  /**
+   * Get auto-snapshot status
+   */
+  getAutoSnapshotStatus() {
+    return {
+      enabled: !!this.autoSnapshotInterval,
+      runtimeConnected: !!this.runtimeEngine,
+      runningInstances: this.runtimeEngine?.runningInstances?.size || 0
+    };
   }
 
   /**

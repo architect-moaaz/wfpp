@@ -1,0 +1,3742 @@
+[
+  {
+    "id": "checkoutreturnpage-1766492025000-xyz123",
+    "name": "CheckoutReturnPage",
+    "title": "Checkout & Return Processing",
+    "description": "Dedicated page for librarians to quickly process book checkouts and returns with barcode scanning support",
+    "route": "/checkout-return",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "checkoutform-1766491976221-hv2arg",
+      "returnform-1766491991279-x56035"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Checkout & Return Processing",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Scan or enter barcodes to quickly process book transactions",
+              "variant": "body",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Checkout Book",
+              "description": "Process a new book checkout for a member",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "formRef": "checkoutform-1766491976221-hv2arg"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Return Book",
+              "description": "Process a book return and update inventory",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "formRef": "returnform-1766491991279-x56035"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Recent Transactions",
+              "columns": [
+                {
+                  "key": "transactionDate",
+                  "label": "Date/Time",
+                  "sortable": true
+                },
+                {
+                  "key": "type",
+                  "label": "Type",
+                  "sortable": true
+                },
+                {
+                  "key": "book.title",
+                  "label": "Book Title",
+                  "sortable": true
+                },
+                {
+                  "key": "member.name",
+                  "label": "Member",
+                  "sortable": true
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true
+                }
+              ],
+              "pageSize": 10,
+              "sortable": true,
+              "filterable": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Transaction.query",
+            "filters": {
+              "orderBy": "transactionDate",
+              "orderDirection": "desc",
+              "limit": 10
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "checkout_success": {
+          "type": "navigate",
+          "target": "/checkout-return"
+        },
+        "return_success": {
+          "type": "navigate",
+          "target": "/checkout-return"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "home"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/book-catalog",
+          "icon": "book"
+        },
+        {
+          "label": "Members",
+          "route": "/members",
+          "icon": "users"
+        },
+        {
+          "label": "Reservations",
+          "route": "/reservations",
+          "icon": "calendar"
+        },
+        {
+          "label": "Overdue Items",
+          "route": "/overdue-management",
+          "icon": "alert"
+        },
+        {
+          "label": "Inventory",
+          "route": "/inventory-management",
+          "icon": "package"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "chart"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "form",
+      "displaysForms": [
+        "CheckoutForm",
+        "ReturnForm"
+      ],
+      "displaysDataModels": [
+        "Book",
+        "Member",
+        "Transaction"
+      ],
+      "navigationFlow": {
+        "previousPage": "LibraryDashboard",
+        "nextPage": null
+      }
+    },
+    "_specName": "CheckoutReturnPage",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "bookdetailpage-1766492100000-abc123",
+    "name": "BookDetailPage",
+    "title": "Book Details",
+    "description": "Page showing complete book details including bibliographic information, availability status, current borrowers, reservation queue, and borrowing history",
+    "route": "/books/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "checkoutform-1766491976221-hv2arg",
+      "reservationform-1766492008278-ppobzy"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Book.title}}",
+              "variant": "h1",
+              "color": "#1a1a1a",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "by {{Book.author}} | ISBN: {{Book.isbn}}",
+              "variant": "subtitle",
+              "color": "#666666",
+              "fontSize": "16px",
+              "fontWeight": "400"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Book Information",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "fields": [
+                {
+                  "label": "Category",
+                  "value": "{{Book.category.name}}",
+                  "labelColor": "#666666",
+                  "valueColor": "#1a1a1a",
+                  "labelWeight": "600"
+                },
+                {
+                  "label": "Publisher",
+                  "value": "{{Book.publisher}}",
+                  "labelColor": "#666666",
+                  "valueColor": "#1a1a1a",
+                  "labelWeight": "600"
+                },
+                {
+                  "label": "Publication Year",
+                  "value": "{{Book.publicationYear}}",
+                  "labelColor": "#666666",
+                  "valueColor": "#1a1a1a",
+                  "labelWeight": "600"
+                },
+                {
+                  "label": "Total Copies",
+                  "value": "{{Book.totalCopies}}",
+                  "labelColor": "#666666",
+                  "valueColor": "#1a1a1a",
+                  "labelWeight": "600"
+                },
+                {
+                  "label": "Available Copies",
+                  "value": "{{Book.availableCopies}}",
+                  "labelColor": "#666666",
+                  "valueColor": "#28a745",
+                  "labelWeight": "600",
+                  "valueWeight": "700"
+                },
+                {
+                  "label": "Status",
+                  "value": "{{Book.status}}",
+                  "labelColor": "#666666",
+                  "valueColor": "#1a1a1a",
+                  "labelWeight": "600",
+                  "badge": true,
+                  "badgeColor": "{{Book.availableCopies > 0 ? '#28a745' : '#dc3545'}}"
+                }
+              ]
+            },
+            "dataBinding": "Book.findById"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Current Borrowers",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "emptyMessage": "No active checkouts"
+            },
+            "children": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "key": "member.name",
+                      "label": "Member Name",
+                      "sortable": true,
+                      "color": "#1a1a1a",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "key": "member.membershipId",
+                      "label": "Member ID",
+                      "sortable": true,
+                      "color": "#666666"
+                    },
+                    {
+                      "key": "checkoutDate",
+                      "label": "Checkout Date",
+                      "type": "date",
+                      "sortable": true,
+                      "color": "#1a1a1a"
+                    },
+                    {
+                      "key": "dueDate",
+                      "label": "Due Date",
+                      "type": "date",
+                      "sortable": true,
+                      "color": "#1a1a1a"
+                    },
+                    {
+                      "key": "status",
+                      "label": "Status",
+                      "type": "badge",
+                      "sortable": true,
+                      "badgeColors": {
+                        "checked_out": "#007bff",
+                        "overdue": "#dc3545"
+                      }
+                    }
+                  ],
+                  "striped": true,
+                  "hover": true,
+                  "borderColor": "#e0e0e0"
+                },
+                "dataBinding": "Transaction.query",
+                "filters": {
+                  "book": "{{Book.id}}",
+                  "status": [
+                    "checked_out",
+                    "overdue"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Reservation Queue",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "emptyMessage": "No pending reservations"
+            },
+            "children": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "key": "queuePosition",
+                      "label": "Position",
+                      "sortable": true,
+                      "color": "#1a1a1a",
+                      "fontWeight": "700"
+                    },
+                    {
+                      "key": "member.name",
+                      "label": "Member Name",
+                      "sortable": true,
+                      "color": "#1a1a1a",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "key": "member.membershipId",
+                      "label": "Member ID",
+                      "sortable": true,
+                      "color": "#666666"
+                    },
+                    {
+                      "key": "reservationDate",
+                      "label": "Reserved On",
+                      "type": "date",
+                      "sortable": true,
+                      "color": "#1a1a1a"
+                    },
+                    {
+                      "key": "expiryDate",
+                      "label": "Expires On",
+                      "type": "date",
+                      "sortable": true,
+                      "color": "#1a1a1a"
+                    },
+                    {
+                      "key": "status",
+                      "label": "Status",
+                      "type": "badge",
+                      "sortable": true,
+                      "badgeColors": {
+                        "pending": "#ffc107",
+                        "ready": "#28a745",
+                        "expired": "#dc3545"
+                      }
+                    }
+                  ],
+                  "striped": true,
+                  "hover": true,
+                  "borderColor": "#e0e0e0"
+                },
+                "dataBinding": "Reservation.query",
+                "filters": {
+                  "book": "{{Book.id}}",
+                  "status": [
+                    "pending",
+                    "ready"
+                  ]
+                },
+                "sort": {
+                  "field": "queuePosition",
+                  "order": "asc"
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "backgroundColor": "#f8f9fa",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)"
+            },
+            "children": [
+              {
+                "type": "button",
+                "config": {
+                  "label": "Checkout Book",
+                  "variant": "primary",
+                  "backgroundColor": "#007bff",
+                  "color": "#ffffff",
+                  "borderRadius": "4px",
+                  "padding": "12px 24px",
+                  "fontSize": "16px",
+                  "fontWeight": "600",
+                  "marginRight": "12px",
+                  "disabled": "{{Book.availableCopies <= 0}}",
+                  "hoverBackgroundColor": "#0056b3"
+                },
+                "formRef": "checkoutform-1766491976221-hv2arg",
+                "action": "openForm"
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Reserve Book",
+                  "variant": "secondary",
+                  "backgroundColor": "#6c757d",
+                  "color": "#ffffff",
+                  "borderRadius": "4px",
+                  "padding": "12px 24px",
+                  "fontSize": "16px",
+                  "fontWeight": "600",
+                  "marginRight": "12px",
+                  "hoverBackgroundColor": "#545b62"
+                },
+                "formRef": "reservationform-1766492008278-ppobzy",
+                "action": "openForm"
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Edit Book",
+                  "variant": "outline",
+                  "backgroundColor": "transparent",
+                  "color": "#007bff",
+                  "borderColor": "#007bff",
+                  "borderWidth": "2px",
+                  "borderRadius": "4px",
+                  "padding": "12px 24px",
+                  "fontSize": "16px",
+                  "fontWeight": "600",
+                  "hoverBackgroundColor": "#007bff",
+                  "hoverColor": "#ffffff"
+                },
+                "action": "navigate",
+                "target": "/inventory/books/{{Book.id}}/edit"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "checkout": {
+          "type": "navigate",
+          "target": "/checkout-return"
+        },
+        "reserve": {
+          "type": "navigate",
+          "target": "/reservations"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/books/:id",
+          "icon": "library_books"
+        },
+        {
+          "label": "Checkout & Return",
+          "route": "/checkout-return",
+          "icon": "sync_alt"
+        },
+        {
+          "label": "Reservations",
+          "route": "/reservations",
+          "icon": "bookmark"
+        },
+        {
+          "label": "Members",
+          "route": "/members",
+          "icon": "people"
+        },
+        {
+          "label": "Inventory",
+          "route": "/inventory-management",
+          "icon": "inventory"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "detail",
+      "displaysForms": [
+        "CheckoutForm",
+        "ReservationForm"
+      ],
+      "displaysDataModels": [
+        "Book",
+        "Transaction",
+        "Reservation"
+      ],
+      "navigationFlow": {
+        "previousPage": "BookCatalogPage",
+        "nextPage": null
+      }
+    },
+    "_specName": "BookDetailPage",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "memberlistpage-1766492100000-xyz123",
+    "name": "MemberListPage",
+    "title": "Library Members",
+    "description": "Page displaying searchable member list with membership status, borrowing statistics, and quick access to member details and renewal",
+    "route": "/members",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "memberregistrationform-1766491845592-p9mdm8"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Library Members",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage member registrations, view membership status, and track borrowing activity",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Register New Member",
+              "variant": "primary",
+              "icon": "add",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "memberregistrationform-1766491845592-p9mdm8"
+          },
+          {
+            "type": "search",
+            "config": {
+              "placeholder": "Search members by name, email, or membership ID...",
+              "fields": [
+                "name",
+                "email",
+                "membershipId"
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "padding": "12px 16px",
+                "borderRadius": "8px",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px",
+                "width": "100%"
+              }
+            },
+            "dataBinding": "Member.query"
+          },
+          {
+            "type": "filter",
+            "config": {
+              "filters": [
+                {
+                  "field": "membershipType",
+                  "label": "Membership Type",
+                  "type": "select",
+                  "options": "MembershipType.query"
+                },
+                {
+                  "field": "status",
+                  "label": "Status",
+                  "type": "select",
+                  "options": [
+                    {
+                      "label": "Active",
+                      "value": "active"
+                    },
+                    {
+                      "label": "Expired",
+                      "value": "expired"
+                    },
+                    {
+                      "label": "Suspended",
+                      "value": "suspended"
+                    }
+                  ]
+                },
+                {
+                  "field": "registrationDate",
+                  "label": "Registration Date",
+                  "type": "dateRange"
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Member.query"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Member Directory",
+              "columns": [
+                {
+                  "key": "membershipId",
+                  "label": "Member ID",
+                  "sortable": true,
+                  "width": "120px"
+                },
+                {
+                  "key": "name",
+                  "label": "Name",
+                  "sortable": true,
+                  "width": "200px"
+                },
+                {
+                  "key": "email",
+                  "label": "Email",
+                  "sortable": true,
+                  "width": "220px"
+                },
+                {
+                  "key": "membershipType",
+                  "label": "Membership Type",
+                  "sortable": true,
+                  "width": "150px",
+                  "render": "badge"
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "width": "120px",
+                  "render": "statusBadge",
+                  "statusColors": {
+                    "active": "#10b981",
+                    "expired": "#ef4444",
+                    "suspended": "#f59e0b"
+                  }
+                },
+                {
+                  "key": "expiryDate",
+                  "label": "Expiry Date",
+                  "sortable": true,
+                  "width": "130px",
+                  "format": "date"
+                },
+                {
+                  "key": "activeLoans",
+                  "label": "Active Loans",
+                  "sortable": true,
+                  "width": "120px",
+                  "align": "center"
+                },
+                {
+                  "key": "totalBorrowed",
+                  "label": "Total Borrowed",
+                  "sortable": true,
+                  "width": "130px",
+                  "align": "center"
+                },
+                {
+                  "key": "outstandingFines",
+                  "label": "Outstanding Fines",
+                  "sortable": true,
+                  "width": "150px",
+                  "format": "currency",
+                  "align": "right"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "icon": "visibility",
+                  "type": "navigate",
+                  "target": "/member-details"
+                },
+                {
+                  "label": "Renew Membership",
+                  "icon": "refresh",
+                  "type": "form",
+                  "formRef": "membershiprenewalform-1766491863781-viptx5",
+                  "condition": "status === 'expired' || daysUntilExpiry < 30"
+                },
+                {
+                  "label": "Edit",
+                  "icon": "edit",
+                  "type": "form"
+                }
+              ],
+              "pagination": {
+                "pageSize": 25,
+                "pageSizeOptions": [
+                  10,
+                  25,
+                  50,
+                  100
+                ]
+              },
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              },
+              "headerStyle": {
+                "fontWeight": "600",
+                "color": "#374151",
+                "backgroundColor": "#f9fafb",
+                "padding": "16px"
+              },
+              "rowStyle": {
+                "padding": "16px",
+                "borderBottom": "1px solid #f3f4f6"
+              }
+            },
+            "dataBinding": "Member.query"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Member Statistics",
+              "metrics": [
+                {
+                  "label": "Total Members",
+                  "value": "{{Member.count}}",
+                  "icon": "people",
+                  "color": "#2563eb"
+                },
+                {
+                  "label": "Active Members",
+                  "value": "{{Member.count(status='active')}}",
+                  "icon": "check_circle",
+                  "color": "#10b981"
+                },
+                {
+                  "label": "Expiring Soon",
+                  "value": "{{Member.count(daysUntilExpiry<30)}}",
+                  "icon": "warning",
+                  "color": "#f59e0b"
+                },
+                {
+                  "label": "Expired",
+                  "value": "{{Member.count(status='expired')}}",
+                  "icon": "error",
+                  "color": "#ef4444"
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "padding": "24px",
+                "marginTop": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "Member.aggregate"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/member/:id"
+        },
+        "create": {
+          "type": "form",
+          "formRef": "memberregistrationform-1766491845592-p9mdm8"
+        },
+        "renew": {
+          "type": "form",
+          "formRef": "membershiprenewalform-1766491863781-viptx5"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Members",
+          "route": "/members",
+          "icon": "people",
+          "active": true
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/books/:id",
+          "icon": "library_books"
+        },
+        {
+          "label": "Checkout & Return",
+          "route": "/checkout-return",
+          "icon": "sync_alt"
+        },
+        {
+          "label": "Reservations",
+          "route": "/reservations",
+          "icon": "bookmark"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management",
+          "icon": "schedule"
+        },
+        {
+          "label": "Inventory",
+          "route": "/inventory-management",
+          "icon": "inventory"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "assessment"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "list",
+      "displaysForms": [
+        "MemberRegistrationForm"
+      ],
+      "displaysDataModels": [
+        "Member",
+        "MembershipType"
+      ],
+      "navigationFlow": {
+        "previousPage": "LibraryDashboard",
+        "nextPage": "MemberDetailPage"
+      }
+    },
+    "_specName": "MemberListPage",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "reservationmanagementpage-1766492025000-rmpage",
+    "name": "ReservationManagementPage",
+    "title": "Reservation Management",
+    "description": "Page displaying all active reservations with queue management, fulfillment actions, and notification status",
+    "route": "/reservations",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "reservationform-1766492008278-ppobzy",
+      "reservationfulfillmentform-1766491880532-4q39k1"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Reservation Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage active book reservations, queue positions, and fulfillment",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Filter & Actions",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "20px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "components": [
+              {
+                "type": "button",
+                "config": {
+                  "label": "Create New Reservation",
+                  "variant": "primary",
+                  "icon": "add",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                },
+                "formRef": "reservationform-1766492008278-ppobzy",
+                "action": "openForm"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Active Reservations",
+              "searchable": true,
+              "filterable": true,
+              "sortable": true,
+              "pagination": true,
+              "pageSize": 20,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "20px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              },
+              "columns": [
+                {
+                  "field": "id",
+                  "header": "Reservation ID",
+                  "sortable": true,
+                  "width": "120px",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "13px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "member.name",
+                  "header": "Member",
+                  "sortable": true,
+                  "width": "180px",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "13px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "book.title",
+                  "header": "Book Title",
+                  "sortable": true,
+                  "width": "250px",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "13px",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "reservationDate",
+                  "header": "Reserved On",
+                  "sortable": true,
+                  "type": "date",
+                  "width": "130px",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "13px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "field": "queuePosition",
+                  "header": "Queue Position",
+                  "sortable": true,
+                  "width": "120px",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "13px",
+                    "fontWeight": "600",
+                    "color": "#2563eb"
+                  }
+                },
+                {
+                  "field": "status",
+                  "header": "Status",
+                  "sortable": true,
+                  "type": "badge",
+                  "width": "120px",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px"
+                  },
+                  "statusColors": {
+                    "pending": "#f59e0b",
+                    "ready": "#10b981",
+                    "fulfilled": "#6b7280",
+                    "expired": "#ef4444",
+                    "cancelled": "#9ca3af"
+                  }
+                },
+                {
+                  "field": "notificationSent",
+                  "header": "Notified",
+                  "sortable": true,
+                  "type": "boolean",
+                  "width": "100px",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "13px"
+                  }
+                },
+                {
+                  "field": "expiryDate",
+                  "header": "Expires On",
+                  "sortable": true,
+                  "type": "date",
+                  "width": "130px",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "13px",
+                    "color": "#ef4444"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Fulfill",
+                  "icon": "check_circle",
+                  "variant": "success",
+                  "formRef": "reservationfulfillmentform-1766491880532-4q39k1",
+                  "condition": "status === 'ready'",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#10b981",
+                    "color": "#ffffff",
+                    "padding": "6px 12px",
+                    "borderRadius": "6px",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "Notify",
+                  "icon": "notifications",
+                  "variant": "secondary",
+                  "action": "sendNotification",
+                  "condition": "status === 'ready' && !notificationSent",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#f3f4f6",
+                    "color": "#1a1a1a",
+                    "padding": "6px 12px",
+                    "borderRadius": "6px",
+                    "border": "1px solid #e5e7eb"
+                  }
+                },
+                {
+                  "label": "Cancel",
+                  "icon": "cancel",
+                  "variant": "danger",
+                  "action": "cancelReservation",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#fee2e2",
+                    "color": "#ef4444",
+                    "padding": "6px 12px",
+                    "borderRadius": "6px",
+                    "border": "1px solid #fecaca"
+                  }
+                }
+              ],
+              "filters": [
+                {
+                  "field": "status",
+                  "label": "Status",
+                  "type": "select",
+                  "options": [
+                    "pending",
+                    "ready",
+                    "fulfilled",
+                    "expired",
+                    "cancelled"
+                  ]
+                },
+                {
+                  "field": "notificationSent",
+                  "label": "Notification Status",
+                  "type": "select",
+                  "options": [
+                    {
+                      "label": "Sent",
+                      "value": true
+                    },
+                    {
+                      "label": "Not Sent",
+                      "value": false
+                    }
+                  ]
+                },
+                {
+                  "field": "reservationDate",
+                  "label": "Reserved Date",
+                  "type": "dateRange"
+                }
+              ]
+            },
+            "dataBinding": "Reservation.query",
+            "queryConfig": {
+              "include": [
+                "member",
+                "book"
+              ],
+              "orderBy": [
+                {
+                  "field": "queuePosition",
+                  "direction": "asc"
+                },
+                {
+                  "field": "reservationDate",
+                  "direction": "asc"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "viewMember": {
+          "type": "navigate",
+          "target": "/members"
+        },
+        "fulfill": {
+          "type": "openForm",
+          "formId": "reservationfulfillmentform-1766491880532-4q39k1"
+        },
+        "create": {
+          "type": "openForm",
+          "formId": "reservationform-1766492008278-ppobzy"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/books/:id",
+          "icon": "library_books"
+        },
+        {
+          "label": "Checkout & Return",
+          "route": "/checkout-return",
+          "icon": "sync_alt"
+        },
+        {
+          "label": "Members",
+          "route": "/members",
+          "icon": "people"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management",
+          "icon": "warning"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "assessment"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": "BookReservationWorkflow",
+      "pageType": "list",
+      "displaysForms": [
+        "ReservationForm",
+        "ReservationFulfillmentForm"
+      ],
+      "displaysDataModels": [
+        "Reservation",
+        "Book",
+        "Member"
+      ],
+      "navigationFlow": {
+        "previousPage": "LibraryDashboard",
+        "nextPage": null
+      }
+    },
+    "_specName": "ReservationManagementPage",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "librarydashboard-1766492100000-main",
+    "name": "LibraryDashboard",
+    "title": "Library Dashboard",
+    "description": "Central dashboard displaying key metrics including total books, available books, active members, overdue items, pending reservations, and recent transactions",
+    "route": "/dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Library Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Overview of library operations and key metrics",
+              "variant": "body",
+              "style": {
+                "fontSize": "14px",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Key Metrics",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+                "marginBottom": "24px"
+              },
+              "metrics": [
+                {
+                  "label": "Total Books",
+                  "dataBinding": "Book.count",
+                  "icon": "book",
+                  "color": "#2563eb",
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Available Books",
+                  "dataBinding": "Book.count.where(status=available)",
+                  "icon": "check-circle",
+                  "color": "#16a34a",
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Active Members",
+                  "dataBinding": "Member.count.where(status=active)",
+                  "icon": "users",
+                  "color": "#7c3aed",
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Overdue Items",
+                  "dataBinding": "Transaction.count.where(status=overdue)",
+                  "icon": "alert-circle",
+                  "color": "#dc2626",
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Pending Reservations",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Reservation.query.where(status=pending).limit(5)",
+            "children": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "key": "member.name",
+                      "label": "Member",
+                      "sortable": true
+                    },
+                    {
+                      "key": "book.title",
+                      "label": "Book",
+                      "sortable": true
+                    },
+                    {
+                      "key": "reservationDate",
+                      "label": "Reserved On",
+                      "type": "date",
+                      "sortable": true
+                    },
+                    {
+                      "key": "status",
+                      "label": "Status",
+                      "type": "badge"
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "View",
+                      "type": "navigate",
+                      "target": "/reservations"
+                    }
+                  ],
+                  "style": {
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Recent Transactions",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Transaction.query.orderBy(transactionDate.desc).limit(5)",
+            "children": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "key": "member.name",
+                      "label": "Member",
+                      "sortable": true
+                    },
+                    {
+                      "key": "book.title",
+                      "label": "Book",
+                      "sortable": true
+                    },
+                    {
+                      "key": "transactionType",
+                      "label": "Type",
+                      "type": "badge",
+                      "sortable": true
+                    },
+                    {
+                      "key": "transactionDate",
+                      "label": "Date",
+                      "type": "date",
+                      "sortable": true
+                    },
+                    {
+                      "key": "status",
+                      "label": "Status",
+                      "type": "badge"
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "View Details",
+                      "type": "navigate",
+                      "target": "/checkout-return"
+                    }
+                  ],
+                  "style": {
+                    "fontSize": "14px",
+                    "color": "#1a1a1a"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "layout": "horizontal",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"
+              },
+              "actions": [
+                {
+                  "label": "Checkout Book",
+                  "icon": "book-open",
+                  "route": "/checkout-return",
+                  "style": {
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "12px 24px",
+                    "borderRadius": "6px",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "Register Member",
+                  "icon": "user-plus",
+                  "route": "/members",
+                  "style": {
+                    "backgroundColor": "#7c3aed",
+                    "color": "#ffffff",
+                    "padding": "12px 24px",
+                    "borderRadius": "6px",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "Add Book",
+                  "icon": "plus-circle",
+                  "route": "/inventory",
+                  "style": {
+                    "backgroundColor": "#16a34a",
+                    "color": "#ffffff",
+                    "padding": "12px 24px",
+                    "borderRadius": "6px",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "View Reports",
+                  "icon": "bar-chart",
+                  "route": "/reports",
+                  "style": {
+                    "backgroundColor": "#ea580c",
+                    "color": "#ffffff",
+                    "padding": "12px 24px",
+                    "borderRadius": "6px",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "border": "none"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "viewBooks": {
+          "type": "navigate",
+          "target": "/books/:id"
+        },
+        "viewMembers": {
+          "type": "navigate",
+          "target": "/members"
+        },
+        "viewReservations": {
+          "type": "navigate",
+          "target": "/reservations"
+        },
+        "viewTransactions": {
+          "type": "navigate",
+          "target": "/checkout-return"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "home"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/books/:id",
+          "icon": "book"
+        },
+        {
+          "label": "Members",
+          "route": "/members",
+          "icon": "users"
+        },
+        {
+          "label": "Checkout/Return",
+          "route": "/checkout-return",
+          "icon": "refresh-cw"
+        },
+        {
+          "label": "Reservations",
+          "route": "/reservations",
+          "icon": "bookmark"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management",
+          "icon": "alert-circle"
+        },
+        {
+          "label": "Inventory",
+          "route": "/inventory-management",
+          "icon": "package"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "bar-chart"
+        },
+        {
+          "label": "Member Portal",
+          "route": "/member-portal",
+          "icon": "user"
+        },
+        {
+          "label": "BookCatalogPage",
+          "route": "/book-catalog"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "dashboard",
+      "displaysForms": [],
+      "displaysDataModels": [
+        "Book",
+        "Member",
+        "Transaction",
+        "Reservation"
+      ],
+      "navigationFlow": {
+        "previousPage": null,
+        "nextPage": "BookCatalogPage"
+      }
+    },
+    "_specName": "LibraryDashboard",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "bookcatalogpage-1766492100000-abc123",
+    "name": "BookCatalogPage",
+    "title": "Book Catalog",
+    "description": "Browse and search book catalog with availability status, category filters, and quick actions for checkout and reservation",
+    "route": "/book-catalog",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "checkoutform-1766491976221-hv2arg",
+      "reservationform-1766492008278-ppobzy"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Book Catalog",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Browse, search, and manage library book collection",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "filter",
+            "config": {
+              "filters": [
+                {
+                  "field": "title",
+                  "label": "Search by Title",
+                  "type": "text",
+                  "placeholder": "Enter book title..."
+                },
+                {
+                  "field": "author",
+                  "label": "Author",
+                  "type": "text",
+                  "placeholder": "Enter author name..."
+                },
+                {
+                  "field": "categoryId",
+                  "label": "Category",
+                  "type": "select",
+                  "options": "{{Category.all}}"
+                },
+                {
+                  "field": "availabilityStatus",
+                  "label": "Availability",
+                  "type": "select",
+                  "options": [
+                    {
+                      "label": "All",
+                      "value": ""
+                    },
+                    {
+                      "label": "Available",
+                      "value": "available"
+                    },
+                    {
+                      "label": "Checked Out",
+                      "value": "checked_out"
+                    },
+                    {
+                      "label": "Reserved",
+                      "value": "reserved"
+                    },
+                    {
+                      "label": "Maintenance",
+                      "value": "maintenance"
+                    }
+                  ]
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.05)"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Books",
+              "columns": [
+                {
+                  "key": "isbn",
+                  "label": "ISBN",
+                  "sortable": true,
+                  "width": "120px"
+                },
+                {
+                  "key": "title",
+                  "label": "Title",
+                  "sortable": true,
+                  "width": "250px"
+                },
+                {
+                  "key": "author",
+                  "label": "Author",
+                  "sortable": true,
+                  "width": "180px"
+                },
+                {
+                  "key": "categoryId",
+                  "label": "Category",
+                  "sortable": true,
+                  "width": "150px",
+                  "render": "{{Category.find(categoryId).name}}"
+                },
+                {
+                  "key": "availabilityStatus",
+                  "label": "Status",
+                  "sortable": true,
+                  "width": "130px",
+                  "render": "badge"
+                },
+                {
+                  "key": "totalCopies",
+                  "label": "Total",
+                  "sortable": true,
+                  "width": "80px",
+                  "align": "center"
+                },
+                {
+                  "key": "availableCopies",
+                  "label": "Available",
+                  "sortable": true,
+                  "width": "100px",
+                  "align": "center"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "type": "navigate",
+                  "target": "/book-detail/{{id}}",
+                  "icon": "visibility",
+                  "style": {
+                    "backgroundColor": "#f5f5f5",
+                    "color": "#1a1a1a",
+                    "border": "1px solid #e5e5e5",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "label": "Checkout",
+                  "type": "openForm",
+                  "formRef": "checkoutform-1766491976221-hv2arg",
+                  "icon": "shopping_cart",
+                  "condition": "{{availabilityStatus === 'available'}}",
+                  "style": {
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "border": "none",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "label": "Reserve",
+                  "type": "openForm",
+                  "formRef": "reservationform-1766492008278-ppobzy",
+                  "icon": "bookmark",
+                  "condition": "{{availabilityStatus !== 'available'}}",
+                  "style": {
+                    "backgroundColor": "#16a34a",
+                    "color": "#ffffff",
+                    "border": "none",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                }
+              ],
+              "pagination": {
+                "enabled": true,
+                "pageSize": 20,
+                "pageSizeOptions": [
+                  10,
+                  20,
+                  50,
+                  100
+                ]
+              },
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e5e5",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.05)",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Book.all"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Add New Book",
+              "variant": "primary",
+              "icon": "add",
+              "action": {
+                "type": "navigate",
+                "target": "/inventory-management"
+              },
+              "style": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "border": "none",
+                "borderRadius": "8px",
+                "padding": "12px 24px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "500",
+                "marginTop": "24px",
+                "boxShadow": "0 2px 4px rgba(37, 99, 235, 0.2)"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "checkout": {
+          "type": "openForm",
+          "formRef": "checkoutform-1766491976221-hv2arg"
+        },
+        "reserve": {
+          "type": "openForm",
+          "formRef": "reservationform-1766492008278-ppobzy"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/book-catalog",
+          "icon": "library_books",
+          "active": true
+        },
+        {
+          "label": "Checkout & Return",
+          "route": "/checkout-return",
+          "icon": "sync_alt"
+        },
+        {
+          "label": "Reservations",
+          "route": "/reservation-management",
+          "icon": "bookmark"
+        },
+        {
+          "label": "Members",
+          "route": "/member-list",
+          "icon": "people"
+        },
+        {
+          "label": "Inventory",
+          "route": "/inventory-management",
+          "icon": "inventory"
+        },
+        {
+          "label": "Overdue Items",
+          "route": "/overdue-management",
+          "icon": "warning"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "assessment"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "list",
+      "displaysForms": [
+        "CheckoutForm",
+        "ReservationForm"
+      ],
+      "displaysDataModels": [
+        "Book",
+        "Category"
+      ],
+      "navigationFlow": {
+        "previousPage": "LibraryDashboard",
+        "nextPage": "BookDetailPage"
+      }
+    },
+    "_specName": "BookCatalogPage",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "memberdetailpage-1766492100000-abc123",
+    "name": "MemberDetailPage",
+    "title": "Member Profile",
+    "description": "Page showing complete member information including personal details, membership status, current borrowed books, borrowing history, fines, and reservations",
+    "route": "/member/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "membershiprenewalform-1766491863781-viptx5",
+      "checkoutform-1766491976221-hv2arg"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Member.firstName}}, {{Member.lastName}}",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            },
+            "dataBinding": "Member.findById"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Back to Members",
+              "variant": "secondary",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "backgroundColor": "#ffffff",
+                "color": "#2563eb",
+                "border": "1px solid #e5e7eb",
+                "borderRadius": "8px",
+                "padding": "10px 20px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Member Information",
+              "fields": [
+                {
+                  "label": "Member ID",
+                  "value": "{{Member.memberId}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "label": "Email",
+                  "value": "{{Member.email}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "label": "Phone",
+                  "value": "{{Member.phone}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "label": "Membership Type",
+                  "value": "{{Member.membershipType.name}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "label": "Status",
+                  "value": "{{Member.status}}",
+                  "badge": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px",
+                    "backgroundColor": "{{Member.status === 'active' ? '#dcfce7' : '#fee2e2'}}",
+                    "color": "{{Member.status === 'active' ? '#166534' : '#991b1b'}}"
+                  }
+                },
+                {
+                  "label": "Expiry Date",
+                  "value": "{{Member.expiryDate}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Renew Membership",
+                  "formRef": "membershiprenewalform-1766491863781-viptx5",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "10px 20px"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Member.findById"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Current Borrowed Books",
+              "columns": [
+                {
+                  "header": "Book Title",
+                  "field": "book.title",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Checkout Date",
+                  "field": "checkoutDate",
+                  "type": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "header": "Due Date",
+                  "field": "dueDate",
+                  "type": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "header": "Status",
+                  "field": "status",
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Book",
+                  "action": "view",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#2563eb"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Transaction.query",
+            "filters": {
+              "memberId": "{{Member.id}}",
+              "status": "checked_out"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Outstanding Fines",
+              "subtitle": "Total: ${{Fine.sum(amount)}}",
+              "list": true,
+              "fields": [
+                {
+                  "label": "Book",
+                  "value": "{{Fine.transaction.book.title}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "label": "Amount",
+                  "value": "${{Fine.amount}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#dc2626"
+                  }
+                },
+                {
+                  "label": "Status",
+                  "value": "{{Fine.status}}",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "color": "#4b5563"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Pay Fine",
+                  "action": "payment",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#16a34a",
+                    "color": "#ffffff",
+                    "borderRadius": "8px",
+                    "padding": "8px 16px"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Fine.query",
+            "filters": {
+              "memberId": "{{Member.id}}",
+              "status": "unpaid"
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Active Reservations",
+              "columns": [
+                {
+                  "header": "Book Title",
+                  "field": "book.title",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "header": "Reserved Date",
+                  "field": "reservationDate",
+                  "type": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "header": "Expiry Date",
+                  "field": "expiryDate",
+                  "type": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#4b5563"
+                  }
+                },
+                {
+                  "header": "Status",
+                  "field": "status",
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "padding": "4px 12px",
+                    "borderRadius": "12px"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Cancel",
+                  "action": "cancel",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#dc2626"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Reservation.query",
+            "filters": {
+              "memberId": "{{Member.id}}",
+              "status": "active"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "back": {
+          "type": "navigate",
+          "target": "/members"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Members",
+          "route": "/members"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/books/:id"
+        },
+        {
+          "label": "Checkout/Return",
+          "route": "/checkout-return"
+        },
+        {
+          "label": "Reservations",
+          "route": "/reservations"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "detail",
+      "displaysForms": [
+        "MembershipRenewalForm",
+        "CheckoutForm"
+      ],
+      "displaysDataModels": [
+        "Member",
+        "Transaction",
+        "Fine",
+        "Reservation"
+      ],
+      "navigationFlow": {
+        "previousPage": "MemberListPage",
+        "nextPage": null
+      }
+    },
+    "_specName": "MemberDetailPage",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "overduemanagementpage-1766492125843-xk9pqw",
+    "name": "OverdueManagementPage",
+    "title": "Overdue Management",
+    "description": "Page displaying all overdue transactions with fine calculations, payment processing, and notification history",
+    "route": "/overdue-management",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "finepaymentform-1766491941673-tswphp",
+      "finewaiverform-1766491957382-kuux8k"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Overdue Management",
+              "variant": "h1",
+              "style": {
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Track overdue books, manage fines, and process payments",
+              "variant": "body1",
+              "style": {
+                "fontSize": "14px",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Overdue Statistics",
+              "style": {
+                "marginBottom": "24px",
+                "padding": "20px",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"
+              }
+            },
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Total Overdue: {{Transaction.count(status='overdue')}} | Outstanding Fines: ${{Fine.sum(amount, status='unpaid')}} | Paid Today: ${{Fine.sum(amount, paymentDate=today)}}",
+                  "variant": "body1",
+                  "style": {
+                    "fontSize": "14px",
+                    "color": "#333333"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Overdue Transactions",
+              "columns": [
+                {
+                  "field": "member.name",
+                  "header": "Member",
+                  "sortable": true,
+                  "style": {
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "book.title",
+                  "header": "Book",
+                  "sortable": true,
+                  "style": {
+                    "color": "#333333"
+                  }
+                },
+                {
+                  "field": "dueDate",
+                  "header": "Due Date",
+                  "sortable": true,
+                  "format": "date",
+                  "style": {
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "field": "daysOverdue",
+                  "header": "Days Overdue",
+                  "sortable": true,
+                  "style": {
+                    "color": "#d32f2f",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "field": "fine.amount",
+                  "header": "Fine Amount",
+                  "sortable": true,
+                  "format": "currency",
+                  "style": {
+                    "color": "#d32f2f",
+                    "fontWeight": "600"
+                  }
+                },
+                {
+                  "field": "fine.status",
+                  "header": "Status",
+                  "sortable": true,
+                  "style": {
+                    "textTransform": "capitalize"
+                  }
+                },
+                {
+                  "field": "actions",
+                  "header": "Actions",
+                  "type": "actions"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Process Payment",
+                  "type": "form",
+                  "formRef": "finepaymentform-1766491941673-tswphp",
+                  "icon": "payment",
+                  "style": {
+                    "color": "#2196f3"
+                  }
+                },
+                {
+                  "label": "Waive Fine",
+                  "type": "form",
+                  "formRef": "finewaiverform-1766491957382-kuux8k",
+                  "icon": "cancel",
+                  "style": {
+                    "color": "#ff9800"
+                  }
+                },
+                {
+                  "label": "Send Reminder",
+                  "type": "action",
+                  "action": "sendNotification",
+                  "icon": "notification",
+                  "style": {
+                    "color": "#4caf50"
+                  }
+                }
+              ],
+              "filters": [
+                {
+                  "field": "fine.status",
+                  "label": "Fine Status",
+                  "type": "select",
+                  "options": [
+                    "unpaid",
+                    "paid",
+                    "waived",
+                    "partial"
+                  ]
+                },
+                {
+                  "field": "daysOverdue",
+                  "label": "Days Overdue",
+                  "type": "range",
+                  "min": 1,
+                  "max": 365
+                },
+                {
+                  "field": "member.id",
+                  "label": "Member",
+                  "type": "search"
+                }
+              ],
+              "searchable": true,
+              "pagination": true,
+              "pageSize": 20,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+                "padding": "20px"
+              }
+            },
+            "dataBinding": "Transaction.query(status='overdue').join(Fine).join(Member).join(Book).orderBy(dueDate, 'asc')"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Notification History",
+              "collapsible": true,
+              "style": {
+                "marginTop": "24px",
+                "padding": "20px",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"
+              }
+            },
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "items": "{{Notification.query(type='overdue').orderBy(sentDate, 'desc').limit(10)}}",
+                  "displayField": "message",
+                  "secondaryField": "sentDate",
+                  "style": {
+                    "fontSize": "14px",
+                    "color": "#333333"
+                  }
+                },
+                "dataBinding": "Notification.query(type='overdue').orderBy(sentDate, 'desc')"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "processPayment": {
+          "type": "form",
+          "formId": "finepaymentform-1766491941673-tswphp"
+        },
+        "waiveFine": {
+          "type": "form",
+          "formId": "finewaiverform-1766491957382-kuux8k"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Checkout & Return",
+          "route": "/checkout-return"
+        },
+        {
+          "label": "Members",
+          "route": "/members"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/book-catalog"
+        },
+        {
+          "label": "Reservations",
+          "route": "/reservations"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": "OverdueTrackingWorkflow",
+      "pageType": "list",
+      "displaysForms": [
+        "FinePaymentForm",
+        "FineWaiverForm"
+      ],
+      "displaysDataModels": [
+        "Transaction",
+        "Fine",
+        "Member"
+      ],
+      "navigationFlow": {
+        "previousPage": "LibraryDashboard",
+        "nextPage": null
+      }
+    },
+    "_specName": "OverdueManagementPage",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "inventorymanagementpage-1766492100000-inv001",
+    "name": "InventoryManagementPage",
+    "title": "Inventory Management",
+    "description": "Page for librarians to add, update, and manage books in the catalog with bulk operations support",
+    "route": "/inventory-management",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "bookregistrationform-1766491898582-ncvdd2",
+      "inventoryupdateform-1766491920112-clgii1"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Inventory Management",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage library catalog, add new books, and perform bulk operations",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Add New Book",
+              "variant": "primary",
+              "action": "openForm",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "bookregistrationform-1766491898582-ncvdd2"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Book Inventory",
+              "columns": [
+                {
+                  "key": "isbn",
+                  "label": "ISBN",
+                  "sortable": true,
+                  "width": "120px"
+                },
+                {
+                  "key": "title",
+                  "label": "Title",
+                  "sortable": true,
+                  "width": "250px"
+                },
+                {
+                  "key": "author",
+                  "label": "Author",
+                  "sortable": true,
+                  "width": "180px"
+                },
+                {
+                  "key": "category",
+                  "label": "Category",
+                  "sortable": true,
+                  "filterable": true,
+                  "width": "150px"
+                },
+                {
+                  "key": "totalCopies",
+                  "label": "Total Copies",
+                  "sortable": true,
+                  "width": "120px"
+                },
+                {
+                  "key": "availableCopies",
+                  "label": "Available",
+                  "sortable": true,
+                  "width": "100px"
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "filterable": true,
+                  "width": "120px"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Edit",
+                  "type": "edit",
+                  "icon": "edit",
+                  "formRef": "inventoryupdateform-1766491920112-clgii1"
+                },
+                {
+                  "label": "View Details",
+                  "type": "view",
+                  "icon": "visibility"
+                },
+                {
+                  "label": "Delete",
+                  "type": "delete",
+                  "icon": "delete",
+                  "confirmRequired": true
+                }
+              ],
+              "bulkActions": [
+                {
+                  "label": "Update Status",
+                  "type": "bulkUpdate",
+                  "field": "status"
+                },
+                {
+                  "label": "Update Category",
+                  "type": "bulkUpdate",
+                  "field": "category"
+                },
+                {
+                  "label": "Export Selected",
+                  "type": "export"
+                },
+                {
+                  "label": "Delete Selected",
+                  "type": "bulkDelete",
+                  "confirmRequired": true
+                }
+              ],
+              "searchable": true,
+              "searchPlaceholder": "Search by title, author, ISBN...",
+              "filterable": true,
+              "pagination": {
+                "enabled": true,
+                "pageSize": 20,
+                "pageSizeOptions": [
+                  10,
+                  20,
+                  50,
+                  100
+                ]
+              },
+              "selectable": true,
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              },
+              "headerStyle": {
+                "fontWeight": "600",
+                "fontSize": "14px",
+                "color": "#374151",
+                "backgroundColor": "#f9fafb",
+                "padding": "12px 16px"
+              },
+              "rowStyle": {
+                "fontSize": "14px",
+                "color": "#1f2937",
+                "padding": "16px",
+                "borderBottom": "1px solid #f3f4f6"
+              }
+            },
+            "dataBinding": "Book.query"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Inventory Statistics",
+              "content": [
+                {
+                  "label": "Total Books",
+                  "value": "{{Book.count}}",
+                  "icon": "library_books"
+                },
+                {
+                  "label": "Total Copies",
+                  "value": "{{Book.sum('totalCopies')}}",
+                  "icon": "inventory"
+                },
+                {
+                  "label": "Available Copies",
+                  "value": "{{Book.sum('availableCopies')}}",
+                  "icon": "check_circle"
+                },
+                {
+                  "label": "Checked Out",
+                  "value": "{{Book.sum('totalCopies') - Book.sum('availableCopies')}}",
+                  "icon": "book"
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "padding": "24px",
+                "marginTop": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "Book.aggregate"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "add": {
+          "type": "openForm",
+          "formId": "bookregistrationform-1766491898582-ncvdd2"
+        },
+        "edit": {
+          "type": "openForm",
+          "formId": "inventoryupdateform-1766491920112-clgii1"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/book-catalog",
+          "icon": "menu_book"
+        },
+        {
+          "label": "Checkout/Return",
+          "route": "/checkout-return",
+          "icon": "sync_alt"
+        },
+        {
+          "label": "Reservations",
+          "route": "/reservation-management",
+          "icon": "event"
+        },
+        {
+          "label": "Members",
+          "route": "/member-list",
+          "icon": "people"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management",
+          "icon": "warning"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "assessment"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "list",
+      "displaysForms": [
+        "BookRegistrationForm",
+        "InventoryUpdateForm"
+      ],
+      "displaysDataModels": [
+        "Book",
+        "Category"
+      ],
+      "navigationFlow": {
+        "previousPage": "LibraryDashboard",
+        "nextPage": null
+      }
+    },
+    "_specName": "InventoryManagementPage",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "reportspage-1766492100000-rpt001",
+    "name": "ReportsPage",
+    "title": "Library Reports & Analytics",
+    "description": "Page providing various reports including circulation statistics, popular books, member activity, overdue trends, and financial summaries",
+    "route": "/reports",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Library Reports & Analytics",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Comprehensive insights into library operations, circulation, and member engagement",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Circulation Statistics",
+              "subtitle": "Overview of checkouts, returns, and active loans",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Transaction.query",
+            "chartConfig": {
+              "type": "line",
+              "xAxis": "transactionDate",
+              "yAxis": "count",
+              "groupBy": "transactionType"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Popular Books",
+              "subtitle": "Most borrowed books in the collection",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Book.query",
+            "chartConfig": {
+              "type": "bar",
+              "xAxis": "title",
+              "yAxis": "borrowCount",
+              "limit": 10,
+              "sortBy": "borrowCount",
+              "sortOrder": "desc"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Member Activity",
+              "subtitle": "Active members and engagement trends",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Member.query",
+            "chartConfig": {
+              "type": "pie",
+              "groupBy": "membershipStatus",
+              "valueField": "count"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Overdue Trends",
+              "subtitle": "Analysis of overdue items and patterns",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Transaction.query",
+            "filterConfig": {
+              "where": {
+                "status": "overdue"
+              }
+            },
+            "chartConfig": {
+              "type": "line",
+              "xAxis": "dueDate",
+              "yAxis": "count",
+              "groupBy": "month"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Financial Summary",
+              "subtitle": "Fines collected and outstanding amounts",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Fine.query",
+            "summaryConfig": {
+              "metrics": [
+                {
+                  "label": "Total Fines Collected",
+                  "field": "amountPaid",
+                  "aggregation": "sum",
+                  "format": "currency"
+                },
+                {
+                  "label": "Outstanding Fines",
+                  "field": "amountDue",
+                  "aggregation": "sum",
+                  "format": "currency"
+                },
+                {
+                  "label": "Waived Fines",
+                  "field": "amountWaived",
+                  "aggregation": "sum",
+                  "format": "currency"
+                }
+              ]
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Export Reports",
+              "variant": "primary",
+              "action": "export",
+              "style": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "cursor": "pointer",
+                "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "export": {
+          "type": "action",
+          "action": "exportData",
+          "format": "pdf"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Book Catalog",
+          "route": "/books/:id"
+        },
+        {
+          "label": "Members",
+          "route": "/members"
+        },
+        {
+          "label": "Checkout/Return",
+          "route": "/checkout-return"
+        },
+        {
+          "label": "Reservations",
+          "route": "/reservations"
+        },
+        {
+          "label": "Overdue Management",
+          "route": "/overdue-management"
+        },
+        {
+          "label": "Inventory",
+          "route": "/inventory-management"
+        },
+        {
+          "label": "BookCatalogPage",
+          "route": "/book-catalog"
+        },
+        {
+          "label": "MemberPortalPage",
+          "route": "/member-portal"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "report",
+      "displaysForms": [],
+      "displaysDataModels": [
+        "Book",
+        "Member",
+        "Transaction",
+        "Fine"
+      ],
+      "navigationFlow": {
+        "previousPage": "LibraryDashboard",
+        "nextPage": null
+      }
+    },
+    "_specName": "ReportsPage",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "memberportalpage-1766492100000-abc123",
+    "name": "MemberPortalPage",
+    "title": "My Library Portal",
+    "description": "Self-service portal for library members showing borrowed books, due dates, fines, reservation status, and borrowing history with renewal options",
+    "route": "/member-portal",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "reservationform-1766492008278-ppobzy"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "My Library Portal",
+              "variant": "h1",
+              "style": {
+                "fontSize": "28px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Welcome back! Manage your borrowed books, reservations, and account details.",
+              "variant": "body1",
+              "style": {
+                "fontSize": "14px",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Account Summary",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"
+              }
+            },
+            "dataBinding": "Member.currentUser",
+            "content": [
+              {
+                "type": "metric",
+                "label": "Books Borrowed",
+                "value": "{{Transaction.activeBorrowings.count}}",
+                "icon": "book",
+                "color": "#2563eb"
+              },
+              {
+                "type": "metric",
+                "label": "Due This Week",
+                "value": "{{Transaction.dueThisWeek.count}}",
+                "icon": "calendar",
+                "color": "#f59e0b"
+              },
+              {
+                "type": "metric",
+                "label": "Active Reservations",
+                "value": "{{Reservation.active.count}}",
+                "icon": "bookmark",
+                "color": "#10b981"
+              },
+              {
+                "type": "metric",
+                "label": "Outstanding Fines",
+                "value": "${{Fine.unpaid.sum}}",
+                "icon": "alert",
+                "color": "#ef4444"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Currently Borrowed Books",
+              "showSearch": false,
+              "showPagination": true,
+              "pageSize": 5,
+              "actions": [
+                {
+                  "label": "Renew",
+                  "type": "button",
+                  "variant": "primary",
+                  "condition": "{{item.renewalsLeft > 0 && item.daysUntilDue > 0}}",
+                  "style": {
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "borderRadius": "6px",
+                    "padding": "6px 12px",
+                    "fontSize": "13px"
+                  }
+                },
+                {
+                  "label": "Overdue",
+                  "type": "badge",
+                  "variant": "error",
+                  "condition": "{{item.daysUntilDue < 0}}",
+                  "style": {
+                    "backgroundColor": "#fee2e2",
+                    "color": "#dc2626",
+                    "borderRadius": "12px",
+                    "padding": "4px 8px",
+                    "fontSize": "12px"
+                  }
+                }
+              ],
+              "columns": [
+                {
+                  "key": "book.title",
+                  "label": "Book Title",
+                  "sortable": true
+                },
+                {
+                  "key": "book.author",
+                  "label": "Author",
+                  "sortable": true
+                },
+                {
+                  "key": "checkoutDate",
+                  "label": "Borrowed On",
+                  "type": "date",
+                  "sortable": true
+                },
+                {
+                  "key": "dueDate",
+                  "label": "Due Date",
+                  "type": "date",
+                  "sortable": true,
+                  "highlight": "{{item.daysUntilDue <= 3}}"
+                },
+                {
+                  "key": "renewalsLeft",
+                  "label": "Renewals Left",
+                  "sortable": false
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"
+              }
+            },
+            "dataBinding": "Transaction.activeBorrowings"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "My Reservations",
+              "layout": "list",
+              "emptyState": "No active reservations",
+              "actions": [
+                {
+                  "label": "Make New Reservation",
+                  "type": "button",
+                  "variant": "secondary",
+                  "action": "openForm",
+                  "style": {
+                    "backgroundColor": "#f3f4f6",
+                    "color": "#1a1a1a",
+                    "borderRadius": "6px",
+                    "padding": "8px 16px",
+                    "fontSize": "14px"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"
+              }
+            },
+            "dataBinding": "Reservation.activeByMember",
+            "formRef": "reservationform-1766492008278-ppobzy",
+            "content": [
+              {
+                "type": "list-item",
+                "fields": [
+                  {
+                    "key": "book.title",
+                    "label": "Book",
+                    "variant": "title"
+                  },
+                  {
+                    "key": "status",
+                    "label": "Status",
+                    "type": "badge",
+                    "variant": "{{item.status === 'Ready' ? 'success' : 'info'}}"
+                  },
+                  {
+                    "key": "reservationDate",
+                    "label": "Reserved On",
+                    "type": "date"
+                  },
+                  {
+                    "key": "expiryDate",
+                    "label": "Hold Until",
+                    "type": "date",
+                    "condition": "{{item.status === 'Ready'}}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Outstanding Fines",
+              "layout": "list",
+              "emptyState": "No outstanding fines - great job!",
+              "actions": [
+                {
+                  "label": "Pay All Fines",
+                  "type": "button",
+                  "variant": "primary",
+                  "condition": "{{Fine.unpaid.count > 0}}",
+                  "style": {
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "borderRadius": "6px",
+                    "padding": "8px 16px",
+                    "fontSize": "14px"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"
+              }
+            },
+            "dataBinding": "Fine.unpaidByMember",
+            "content": [
+              {
+                "type": "list-item",
+                "fields": [
+                  {
+                    "key": "book.title",
+                    "label": "Book",
+                    "variant": "title"
+                  },
+                  {
+                    "key": "reason",
+                    "label": "Reason",
+                    "variant": "subtitle"
+                  },
+                  {
+                    "key": "amount",
+                    "label": "Amount",
+                    "type": "currency",
+                    "variant": "highlight"
+                  },
+                  {
+                    "key": "issueDate",
+                    "label": "Issued On",
+                    "type": "date"
+                  }
+                ],
+                "actions": [
+                  {
+                    "label": "Pay Now",
+                    "type": "button",
+                    "variant": "primary",
+                    "size": "small"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "renew": {
+          "type": "api",
+          "endpoint": "/transactions/renew",
+          "successMessage": "Book renewed successfully"
+        },
+        "makeReservation": {
+          "type": "navigate",
+          "target": "/book-catalog"
+        },
+        "payFine": {
+          "type": "navigate",
+          "target": "/member-portal"
+        },
+        "viewHistory": {
+          "type": "navigate",
+          "target": "/member-portal"
+        }
+      },
+      "menu": [
+        {
+          "label": "My Portal",
+          "route": "/member-portal",
+          "icon": "home"
+        },
+        {
+          "label": "Browse Books",
+          "route": "/book-catalog",
+          "icon": "search"
+        },
+        {
+          "label": "Borrowing History",
+          "route": "/member-portal",
+          "icon": "history"
+        },
+        {
+          "label": "My Account",
+          "route": "/member-portal",
+          "icon": "user"
+        },
+        {
+          "label": "MemberListPage",
+          "route": "/members"
+        },
+        {
+          "label": "ReservationManagementPage",
+          "route": "/reservations"
+        },
+        {
+          "label": "LibraryDashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "OverdueManagementPage",
+          "route": "/overdue-management"
+        },
+        {
+          "label": "InventoryManagementPage",
+          "route": "/inventory-management"
+        },
+        {
+          "label": "ReportsPage",
+          "route": "/reports"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "dashboard",
+      "displaysForms": [
+        "ReservationForm"
+      ],
+      "displaysDataModels": [
+        "Member",
+        "Transaction",
+        "Reservation",
+        "Fine"
+      ],
+      "navigationFlow": {
+        "previousPage": null,
+        "nextPage": "BookCatalogPage"
+      }
+    },
+    "_specName": "MemberPortalPage",
+    "workflowId": "book-registration-workflow"
+  }
+]

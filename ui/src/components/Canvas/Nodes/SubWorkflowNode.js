@@ -1,6 +1,6 @@
 import React from 'react';
 import { Handle, Position } from 'reactflow';
-import { Boxes, X, Clock, ArrowRight } from 'lucide-react';
+import { Boxes, X, Clock, ArrowRight, AlertTriangle } from 'lucide-react';
 import './NodeStyles.css';
 import { useWorkflow } from '../../../context/WorkflowContext';
 
@@ -18,6 +18,10 @@ const SubWorkflowNode = ({ id, data = {}, selected }) => {
   const targetWorkflowObj = availableWorkflows.find(
     wf => wf.name === data?.targetWorkflow || wf.id === data?.targetWorkflowId
   );
+
+  // Check if target workflow is specified but not found
+  const hasTargetRef = data?.targetWorkflow || data?.targetWorkflowId;
+  const workflowMissing = hasTargetRef && !targetWorkflowObj;
 
   // Check for async mode (supports both async and waitForCompletion)
   const isAsync = data?.async === true || data?.waitForCompletion === false;
@@ -48,9 +52,15 @@ const SubWorkflowNode = ({ id, data = {}, selected }) => {
       <div className="node-content">
         <div className="node-label">{data?.label || 'Sub Workflow'}</div>
         {(targetWorkflowObj || data?.targetWorkflow) && (
-          <div className="node-meta">
+          <div className={`node-meta ${workflowMissing ? 'missing-ref' : ''}`}>
             <ArrowRight size={12} style={{ marginRight: 4, display: 'inline' }} />
             {targetWorkflowObj?.name || data?.targetWorkflow}
+          </div>
+        )}
+        {workflowMissing && (
+          <div className="node-warning" title={`Workflow "${data?.targetWorkflow || data?.targetWorkflowId}" not found in application`}>
+            <AlertTriangle size={12} style={{ marginRight: 4, color: '#f59e0b' }} />
+            <span style={{ color: '#f59e0b', fontSize: '10px' }}>Not found</span>
           </div>
         )}
         {isAsync && (

@@ -1,22 +1,1127 @@
 [
   {
-    "id": "employeeinformationform-1764614807962-md8ng5",
-    "name": "EmployeeInformationForm",
-    "title": "Employee Information Form",
-    "description": "Collect essential personal and employment information from new employees to initiate the onboarding process.",
+    "id": "taskupdateform-1765362540495-wjc8if",
+    "name": "TaskUpdateForm",
+    "title": "Update Task Status",
+    "description": "Update task progress, status, and add completion notes for tracking",
+    "fields": [
+      {
+        "id": "status",
+        "name": "status",
+        "type": "select",
+        "label": "Task Status",
+        "placeholder": "Select current status",
+        "required": true,
+        "options": [
+          "Not Started",
+          "In Progress",
+          "On Hold",
+          "Completed",
+          "Cancelled"
+        ],
+        "defaultValue": null,
+        "validation": {
+          "message": "Please select a task status"
+        }
+      },
+      {
+        "id": "progress",
+        "name": "progress",
+        "type": "number",
+        "label": "Progress (%)",
+        "placeholder": "Enter completion percentage",
+        "required": true,
+        "validation": {
+          "min": 0,
+          "max": 100,
+          "message": "Progress must be between 0 and 100"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "actualHours",
+        "name": "actualHours",
+        "type": "number",
+        "label": "Actual Hours Spent",
+        "placeholder": "Enter hours worked",
+        "required": false,
+        "validation": {
+          "min": 0,
+          "message": "Hours must be a positive number"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "completionNotes",
+        "name": "completionNotes",
+        "type": "textarea",
+        "label": "Completion Notes",
+        "placeholder": "Add notes about progress, blockers, or completion details...",
+        "required": false,
+        "validation": {
+          "max": 1000,
+          "message": "Notes must not exceed 1000 characters"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "status",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "progress",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "actualHours",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "completionNotes",
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "task-status-section",
+          "title": "Task Status Information",
+          "fieldIds": [
+            "status",
+            "progress",
+            "actualHours"
+          ]
+        },
+        {
+          "id": "notes-section",
+          "title": "Additional Notes",
+          "fieldIds": [
+            "completionNotes"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Update Task",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "8px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#3b82f6",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "TaskStatusUpdate",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Update Task Status",
+      "dataModel": "Task"
+    },
+    "_specName": "TaskUpdateForm",
+    "dataModelId": "dm_task_1765363295098",
+    "dataModelName": "Task",
+    "validationRules": [
+      {
+        "id": "rule_task_status_transition_validation",
+        "name": "TaskStatusTransitionValidation",
+        "ruleType": "validation",
+        "triggerEvent": "onChange",
+        "affectedFields": [
+          "status"
+        ]
+      },
+      {
+        "id": "rule_task_completion_requirements",
+        "name": "TaskCompletionRequirements",
+        "ruleType": "validation",
+        "triggerEvent": "onChange",
+        "affectedFields": [
+          "status",
+          "actualHours",
+          "completionNotes"
+        ]
+      }
+    ],
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "commentform-1765362554728-yzy4n4",
+    "name": "CommentForm",
+    "title": "Add Comment",
+    "description": "Add comments to tasks and projects to facilitate team collaboration",
+    "fields": [
+      {
+        "id": "field-entitytype",
+        "name": "entityType",
+        "type": "select",
+        "label": "Comment On",
+        "placeholder": "Select entity type",
+        "required": true,
+        "options": [
+          "Task",
+          "Project",
+          "Milestone"
+        ],
+        "defaultValue": null,
+        "validation": {
+          "message": "Please select what you're commenting on"
+        }
+      },
+      {
+        "id": "field-entityid",
+        "name": "entityId",
+        "type": "select",
+        "label": "Select Item",
+        "placeholder": "Choose task or project",
+        "required": true,
+        "options": [],
+        "defaultValue": null,
+        "validation": {
+          "message": "Please select the specific item"
+        }
+      },
+      {
+        "id": "field-content",
+        "name": "content",
+        "type": "textarea",
+        "label": "Comment",
+        "placeholder": "Write your comment here... Use @ to mention team members",
+        "required": true,
+        "validation": {
+          "min": 1,
+          "max": 2000,
+          "message": "Comment must be between 1 and 2000 characters"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-mentions",
+        "name": "mentions",
+        "type": "select",
+        "label": "Mention Team Members",
+        "placeholder": "Select team members to notify",
+        "required": false,
+        "options": [],
+        "defaultValue": null,
+        "multiple": true
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field-entitytype",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-entityid",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-content",
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      },
+      {
+        "i": "field-mentions",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 12,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "section-target",
+          "title": "Comment Target",
+          "fieldIds": [
+            "field-entitytype",
+            "field-entityid"
+          ]
+        },
+        {
+          "id": "section-content",
+          "title": "Comment Details",
+          "fieldIds": [
+            "field-content",
+            "field-mentions"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Post Comment",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "8px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "textarea": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "minHeight": "100px"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px",
+            "borderRadius": "6px",
+            "fontWeight": "500"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "TeamCollaboration",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Add Comment",
+      "dataModel": "Comment"
+    },
+    "_specName": "CommentForm",
+    "dataModelId": "dm_comment_1765363295098",
+    "dataModelName": "Comment",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "projectupdateform-1765362568791-x12pl4",
+    "name": "ProjectUpdateForm",
+    "title": "Update Project",
+    "description": "Update project details, status, and progress information",
+    "fields": [
+      {
+        "id": "field-name",
+        "name": "name",
+        "type": "text",
+        "label": "Project Name",
+        "placeholder": "Enter project name",
+        "required": true,
+        "validation": {
+          "min": 3,
+          "max": 100,
+          "message": "Project name must be between 3 and 100 characters"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-status",
+        "name": "status",
+        "type": "select",
+        "label": "Project Status",
+        "placeholder": "Select project status",
+        "required": true,
+        "options": [
+          "Planning",
+          "In Progress",
+          "On Hold",
+          "Completed",
+          "Cancelled"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "field-progress",
+        "name": "progress",
+        "type": "number",
+        "label": "Progress (%)",
+        "placeholder": "Enter completion percentage",
+        "required": true,
+        "validation": {
+          "min": 0,
+          "max": 100,
+          "message": "Progress must be between 0 and 100"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-enddate",
+        "name": "endDate",
+        "type": "date",
+        "label": "Target End Date",
+        "placeholder": "Select target end date",
+        "required": true,
+        "validation": {
+          "message": "Please select a valid end date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-budget",
+        "name": "budget",
+        "type": "number",
+        "label": "Budget ($)",
+        "placeholder": "Enter project budget",
+        "required": false,
+        "validation": {
+          "min": 0,
+          "message": "Budget must be a positive number"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-description",
+        "name": "description",
+        "type": "textarea",
+        "label": "Project Description",
+        "placeholder": "Provide updated project description and key changes",
+        "required": false,
+        "validation": {
+          "max": 1000,
+          "message": "Description must not exceed 1000 characters"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field-name",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-status",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-progress",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-enddate",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-budget",
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-description",
+        "x": 0,
+        "y": 24,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "section-basic",
+          "title": "Basic Information",
+          "fieldIds": [
+            "field-name",
+            "field-status"
+          ]
+        },
+        {
+          "id": "section-progress",
+          "title": "Progress & Timeline",
+          "fieldIds": [
+            "field-progress",
+            "field-enddate",
+            "field-budget"
+          ]
+        },
+        {
+          "id": "section-details",
+          "title": "Additional Details",
+          "fieldIds": [
+            "field-description"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Update Project",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#3b82f6",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "ProjectManagement",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Update Project",
+      "dataModel": "Project"
+    },
+    "_specName": "ProjectUpdateForm",
+    "dataModelId": "dm_project_1765363295098",
+    "dataModelName": "Project",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "leaveapprovalform-1765362592729-309dgs",
+    "name": "LeaveApprovalForm",
+    "title": "Leave Request Approval",
+    "description": "Review and approve or reject employee leave requests with comments",
+    "fields": [
+      {
+        "id": "employee-name",
+        "name": "employeeName",
+        "type": "text",
+        "label": "Employee Name",
+        "placeholder": "Employee requesting leave",
+        "required": true,
+        "defaultValue": null,
+        "disabled": true
+      },
+      {
+        "id": "leave-type",
+        "name": "leaveType",
+        "type": "text",
+        "label": "Leave Type",
+        "placeholder": "Type of leave requested",
+        "required": true,
+        "defaultValue": null,
+        "disabled": true
+      },
+      {
+        "id": "start-date",
+        "name": "startDate",
+        "type": "date",
+        "label": "Start Date",
+        "placeholder": "Leave start date",
+        "required": true,
+        "defaultValue": null,
+        "disabled": true
+      },
+      {
+        "id": "end-date",
+        "name": "endDate",
+        "type": "date",
+        "label": "End Date",
+        "placeholder": "Leave end date",
+        "required": true,
+        "defaultValue": null,
+        "disabled": true
+      },
+      {
+        "id": "total-days",
+        "name": "totalDays",
+        "type": "number",
+        "label": "Total Days",
+        "placeholder": "Number of days",
+        "required": true,
+        "defaultValue": null,
+        "disabled": true
+      },
+      {
+        "id": "employee-reason",
+        "name": "employeeReason",
+        "type": "textarea",
+        "label": "Employee Reason",
+        "placeholder": "Reason provided by employee",
+        "required": false,
+        "defaultValue": null,
+        "disabled": true
+      },
+      {
+        "id": "approval-decision",
+        "name": "approvalDecision",
+        "type": "select",
+        "label": "Decision",
+        "placeholder": "Select approval decision",
+        "required": true,
+        "options": [
+          "Approve",
+          "Reject",
+          "Request More Information"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "approver-comments",
+        "name": "approverComments",
+        "type": "textarea",
+        "label": "Manager Comments",
+        "placeholder": "Enter your comments or feedback regarding this leave request",
+        "required": true,
+        "validation": {
+          "min": 10,
+          "max": 500,
+          "message": "Comments must be between 10 and 500 characters"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "employee-name",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "leave-type",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "start-date",
+        "x": 0,
+        "y": 8,
+        "w": 8,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "end-date",
+        "x": 8,
+        "y": 8,
+        "w": 8,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "total-days",
+        "x": 16,
+        "y": 8,
+        "w": 8,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "employee-reason",
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
+      },
+      {
+        "i": "approval-decision",
+        "x": 0,
+        "y": 28,
+        "w": 24,
+        "h": 8,
+        "minW": 12,
+        "minH": 6
+      },
+      {
+        "i": "approver-comments",
+        "x": 0,
+        "y": 36,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "leave-details-section",
+          "title": "Leave Request Details",
+          "fieldIds": [
+            "employee-name",
+            "leave-type",
+            "start-date",
+            "end-date",
+            "total-days",
+            "employee-reason"
+          ]
+        },
+        {
+          "id": "approval-section",
+          "title": "Manager Approval",
+          "fieldIds": [
+            "approval-decision",
+            "approver-comments"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Submit Decision",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "LeaveManagement",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Approve Leave Request",
+      "dataModel": "LeaveRequest"
+    },
+    "_specName": "LeaveApprovalForm",
+    "dataModelId": "leave-request",
+    "dataModelName": "LeaveRequest",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "selfassessmentform-1765362610758-yoqg1f",
+    "name": "SelfAssessmentForm",
+    "title": "Employee Self-Assessment",
+    "description": "Complete your self-assessment as part of the performance review process",
+    "fields": [
+      {
+        "id": "accomplishments",
+        "name": "accomplishments",
+        "type": "textarea",
+        "label": "Key Accomplishments",
+        "placeholder": "Describe your major achievements and contributions during this review period...",
+        "required": true,
+        "validation": {
+          "min": 50,
+          "max": 2000,
+          "message": "Please provide at least 50 characters describing your accomplishments"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "challenges",
+        "name": "challenges",
+        "type": "textarea",
+        "label": "Challenges Faced",
+        "placeholder": "Describe any challenges you encountered and how you addressed them...",
+        "required": true,
+        "validation": {
+          "min": 30,
+          "max": 2000,
+          "message": "Please provide at least 30 characters describing challenges"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "selfRating",
+        "name": "selfRating",
+        "type": "select",
+        "label": "Overall Self-Rating",
+        "placeholder": "Select your performance rating",
+        "required": true,
+        "options": [
+          "Exceeds Expectations",
+          "Meets Expectations",
+          "Needs Improvement",
+          "Unsatisfactory"
+        ],
+        "validation": {
+          "message": "Please select a performance rating"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "skillsDevelopment",
+        "name": "skillsDevelopment",
+        "type": "textarea",
+        "label": "Skills Development",
+        "placeholder": "What new skills have you developed or improved during this period?",
+        "required": false,
+        "validation": {
+          "max": 1000,
+          "message": "Maximum 1000 characters allowed"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "careerGoals",
+        "name": "careerGoals",
+        "type": "textarea",
+        "label": "Career Goals & Development",
+        "placeholder": "Describe your career goals and areas where you'd like to grow...",
+        "required": true,
+        "validation": {
+          "min": 30,
+          "max": 1500,
+          "message": "Please provide at least 30 characters describing your career goals"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "employeeComments",
+        "name": "employeeComments",
+        "type": "textarea",
+        "label": "Additional Comments",
+        "placeholder": "Any additional feedback or comments you'd like to share...",
+        "required": false,
+        "validation": {
+          "max": 1500,
+          "message": "Maximum 1500 characters allowed"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "accomplishments",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      },
+      {
+        "i": "challenges",
+        "x": 0,
+        "y": 12,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      },
+      {
+        "i": "selfRating",
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "skillsDevelopment",
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      },
+      {
+        "i": "careerGoals",
+        "x": 0,
+        "y": 36,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      },
+      {
+        "i": "employeeComments",
+        "x": 0,
+        "y": 48,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "performance-section",
+          "title": "Performance Evaluation",
+          "fieldIds": [
+            "accomplishments",
+            "challenges",
+            "selfRating"
+          ]
+        },
+        {
+          "id": "development-section",
+          "title": "Professional Development",
+          "fieldIds": [
+            "skillsDevelopment",
+            "careerGoals",
+            "employeeComments"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Submit Self-Assessment",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#3b82f6",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "PerformanceReview",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Complete Self-Assessment",
+      "dataModel": "PerformanceReview"
+    },
+    "_specName": "SelfAssessmentForm",
+    "dataModelId": "performance-review",
+    "dataModelName": "PerformanceReview",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "teammemberregistrationform-1765362629041-z7pmqv",
+    "name": "TeamMemberRegistrationForm",
+    "title": "Register New Team Member",
+    "description": "Add a new team member to the system with their personal information, role, and department assignment",
     "fields": [
       {
         "id": "field-firstname",
         "name": "firstName",
         "type": "text",
         "label": "First Name",
-        "placeholder": "Enter your first name",
+        "placeholder": "Enter first name",
         "required": true,
         "validation": {
           "min": 2,
           "max": 50,
           "pattern": "^[a-zA-Z\\s'-]+$",
-          "message": "Please enter a valid first name"
+          "message": "First name must be 2-50 characters and contain only letters"
         },
         "defaultValue": null
       },
@@ -25,13 +1130,13 @@
         "name": "lastName",
         "type": "text",
         "label": "Last Name",
-        "placeholder": "Enter your last name",
+        "placeholder": "Enter last name",
         "required": true,
         "validation": {
           "min": 2,
           "max": 50,
           "pattern": "^[a-zA-Z\\s'-]+$",
-          "message": "Please enter a valid last name"
+          "message": "Last name must be 2-50 characters and contain only letters"
         },
         "defaultValue": null
       },
@@ -39,11 +1144,11 @@
         "id": "field-email",
         "name": "email",
         "type": "email",
-        "label": "Work Email Address",
-        "placeholder": "employee@company.com",
+        "label": "Email Address",
+        "placeholder": "name@company.com",
         "required": true,
         "validation": {
-          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2}$",
           "message": "Please enter a valid email address"
         },
         "defaultValue": null
@@ -53,70 +1158,82 @@
         "name": "phone",
         "type": "text",
         "label": "Phone Number",
-        "placeholder": "(555) 123-4567",
-        "required": true,
+        "placeholder": "+1 (555) 123-4567",
+        "required": false,
         "validation": {
-          "pattern": "^[\\d\\s()+-]+$",
+          "pattern": "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,9}$",
           "message": "Please enter a valid phone number"
         },
         "defaultValue": null
       },
       {
-        "id": "field-department",
-        "name": "department",
+        "id": "field-role",
+        "name": "role",
+        "type": "select",
+        "label": "Role",
+        "placeholder": "Select role",
+        "required": true,
+        "options": [
+          "Software Engineer",
+          "Senior Software Engineer",
+          "Team Lead",
+          "Project Manager",
+          "Product Manager",
+          "Designer",
+          "QA Engineer",
+          "DevOps Engineer",
+          "Business Analyst",
+          "HR Manager"
+        ],
+        "validation": {
+          "message": "Please select a role"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-departmentid",
+        "name": "departmentId",
         "type": "select",
         "label": "Department",
         "placeholder": "Select department",
         "required": true,
         "options": [
           "Engineering",
+          "Product",
+          "Design",
           "Human Resources",
           "Marketing",
           "Sales",
-          "Finance",
           "Operations",
-          "Customer Support",
-          "Product Management"
+          "Finance"
         ],
-        "defaultValue": null
-      },
-      {
-        "id": "field-jobtitle",
-        "name": "jobTitle",
-        "type": "text",
-        "label": "Job Title",
-        "placeholder": "Enter your job title",
-        "required": true,
         "validation": {
-          "min": 2,
-          "max": 100,
-          "message": "Please enter a valid job title"
+          "message": "Please select a department"
         },
         "defaultValue": null
       },
       {
-        "id": "field-startdate",
-        "name": "startDate",
+        "id": "field-hiredate",
+        "name": "hireDate",
         "type": "date",
-        "label": "Start Date",
-        "placeholder": "Select your start date",
+        "label": "Hire Date",
+        "placeholder": "Select hire date",
         "required": true,
         "validation": {
-          "message": "Please select a valid start date"
+          "message": "Please select a hire date"
         },
         "defaultValue": null
       },
       {
-        "id": "field-emergencycontact",
-        "name": "emergencyContact",
-        "type": "text",
-        "label": "Emergency Contact Name & Phone",
-        "placeholder": "Name: (555) 123-4567",
-        "required": true,
+        "id": "field-skills",
+        "name": "skills",
+        "type": "textarea",
+        "label": "Skills & Expertise",
+        "placeholder": "Enter skills separated by commas (e.g., JavaScript, React, Node.js, Project Management)",
+        "required": false,
         "validation": {
-          "min": 5,
-          "max": 150,
-          "message": "Please provide emergency contact information"
+          "max": 500,
+          "message": "Skills description must not exceed 500 characters"
         },
         "defaultValue": null
       }
@@ -159,7 +1276,7 @@
         "minH": 6
       },
       {
-        "i": "field-department",
+        "i": "field-role",
         "x": 0,
         "y": 16,
         "w": 12,
@@ -168,7 +1285,7 @@
         "minH": 6
       },
       {
-        "i": "field-jobtitle",
+        "i": "field-departmentid",
         "x": 12,
         "y": 16,
         "w": 12,
@@ -177,7 +1294,7 @@
         "minH": 6
       },
       {
-        "i": "field-startdate",
+        "i": "field-hiredate",
         "x": 0,
         "y": 24,
         "w": 12,
@@ -186,13 +1303,13 @@
         "minH": 6
       },
       {
-        "i": "field-emergencycontact",
-        "x": 12,
-        "y": 24,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
+        "i": "field-skills",
+        "x": 0,
+        "y": 32,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
       }
     ],
     "layout": {
@@ -212,16 +1329,16 @@
           "id": "section-employment",
           "title": "Employment Details",
           "fieldIds": [
-            "field-department",
-            "field-jobtitle",
-            "field-startdate",
-            "field-emergencycontact"
+            "field-role",
+            "field-departmentid",
+            "field-hiredate",
+            "field-skills"
           ]
         }
       ]
     },
     "submitButton": {
-      "label": "Submit Employee Information",
+      "label": "Register Team Member",
       "position": "right"
     },
     "validation": {
@@ -230,253 +1347,10 @@
     },
     "styling": {
       "colors": {
-        "primary": "#2563eb",
+        "primary": "#3b82f6",
         "secondary": "#64748b",
         "background": "#ffffff",
         "text": "#1e293b",
-        "border": "#e2e8f0"
-      },
-      "typography": {
-        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        "fontSize": {
-          "label": "14px",
-          "input": "14px"
-        },
-        "fontWeight": {
-          "label": "500",
-          "input": "400"
-        }
-      },
-      "spacing": {
-        "fieldGap": "16px",
-        "sectionGap": "32px",
-        "inputPadding": "10px 12px"
-      },
-      "components": {
-        "input": {
-          "borderRadius": "6px",
-          "borderWidth": "1px",
-          "height": "40px"
-        },
-        "button": {
-          "primary": {
-            "background": "#2563eb",
-            "color": "#ffffff",
-            "padding": "10px 24px"
-          }
-        }
-      }
-    },
-    "workflowId": "workflow_1735176234567"
-  },
-  {
-    "id": "directdepositform-1764614827656-0gyqgy",
-    "name": "DirectDepositForm",
-    "title": "Direct Deposit Setup",
-    "description": "Securely provide your banking information for payroll direct deposit. Your information is encrypted and protected.",
-    "fields": [
-      {
-        "id": "bank-name",
-        "name": "bankName",
-        "type": "text",
-        "label": "Bank Name",
-        "placeholder": "Enter your bank name",
-        "required": true,
-        "validation": {
-          "min": 2,
-          "max": 100,
-          "message": "Bank name must be between 2 and 100 characters"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "routing-number",
-        "name": "routingNumber",
-        "type": "text",
-        "label": "Routing Number",
-        "placeholder": "9-digit routing number",
-        "required": true,
-        "validation": {
-          "pattern": "^[0-9]{9}$",
-          "message": "Routing number must be exactly 9 digits"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "account-number",
-        "name": "accountNumber",
-        "type": "text",
-        "label": "Account Number",
-        "placeholder": "Enter your account number",
-        "required": true,
-        "validation": {
-          "pattern": "^[0-9]{4,17}$",
-          "message": "Account number must be between 4 and 17 digits"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "confirm-account-number",
-        "name": "confirmAccountNumber",
-        "type": "text",
-        "label": "Confirm Account Number",
-        "placeholder": "Re-enter your account number",
-        "required": true,
-        "validation": {
-          "pattern": "^[0-9]{4,17}$",
-          "message": "Account numbers must match"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "account-type",
-        "name": "accountType",
-        "type": "select",
-        "label": "Account Type",
-        "placeholder": "Select account type",
-        "required": true,
-        "options": [
-          "Checking",
-          "Savings"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "allocation-percentage",
-        "name": "allocationPercentage",
-        "type": "number",
-        "label": "Deposit Allocation (%)",
-        "placeholder": "Enter percentage (1-100)",
-        "required": true,
-        "validation": {
-          "min": 1,
-          "max": 100,
-          "message": "Allocation must be between 1 and 100 percent"
-        },
-        "defaultValue": 100
-      },
-      {
-        "id": "authorization-consent",
-        "name": "authorizationConsent",
-        "type": "checkbox",
-        "label": "I authorize my employer to deposit my pay into the account specified above and to make adjustments for any overpayments",
-        "placeholder": "",
-        "required": true,
-        "validation": {
-          "message": "You must authorize direct deposit to proceed"
-        },
-        "defaultValue": false
-      }
-    ],
-    "gridLayout": [
-      {
-        "i": "bank-name",
-        "x": 0,
-        "y": 0,
-        "w": 24,
-        "h": 8,
-        "minW": 12,
-        "minH": 8
-      },
-      {
-        "i": "routing-number",
-        "x": 0,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "account-number",
-        "x": 12,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "confirm-account-number",
-        "x": 0,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "account-type",
-        "x": 12,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "allocation-percentage",
-        "x": 0,
-        "y": 24,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "authorization-consent",
-        "x": 0,
-        "y": 32,
-        "w": 24,
-        "h": 8,
-        "minW": 12,
-        "minH": 8
-      }
-    ],
-    "layout": {
-      "type": "two-column",
-      "sections": [
-        {
-          "id": "bank-information",
-          "title": "Bank Information",
-          "fieldIds": [
-            "bank-name",
-            "routing-number"
-          ]
-        },
-        {
-          "id": "account-details",
-          "title": "Account Details",
-          "fieldIds": [
-            "account-number",
-            "confirm-account-number",
-            "account-type",
-            "allocation-percentage"
-          ]
-        },
-        {
-          "id": "authorization",
-          "title": "Authorization",
-          "fieldIds": [
-            "authorization-consent"
-          ]
-        }
-      ]
-    },
-    "submitButton": {
-      "label": "Setup Direct Deposit",
-      "position": "right"
-    },
-    "validation": {
-      "mode": "onSubmit",
-      "showErrors": true
-    },
-    "styling": {
-      "colors": {
-        "primary": "#2563eb",
-        "secondary": "#64748b",
-        "background": "#ffffff",
-        "text": "#0f172a",
         "border": "#e2e8f0"
       },
       "typography": {
@@ -503,78 +1377,57 @@
         },
         "button": {
           "primary": {
-            "background": "#2563eb",
+            "background": "#3b82f6",
             "color": "#ffffff",
             "padding": "10px 24px"
           }
         }
       }
     },
-    "workflowId": "workflow_1735176234567"
+    "_formAssociation": {
+      "forWorkflow": "TeamMemberManagement",
+      "forNodeType": "startProcess",
+      "forNodeLabel": "Start - Register Team Member",
+      "dataModel": "TeamMember"
+    },
+    "_specName": "TeamMemberRegistrationForm",
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "workflowId": "team-member-management-wf"
   },
   {
-    "id": "emergencycontactform-1764614847234-fsz4tc",
-    "name": "EmergencyContactForm",
-    "title": "Emergency Contact Information",
-    "description": "Provide emergency contact details for your employee record. Please list at least one primary contact who can be reached in case of an emergency.",
+    "id": "teammembereditform-1765362650791-wpzntt",
+    "name": "TeamMemberEditForm",
+    "title": "Update Team Member Profile",
+    "description": "Edit team member information including role changes and department transfers",
     "fields": [
       {
-        "id": "contact-name",
-        "name": "contactName",
+        "id": "firstName",
+        "name": "firstName",
         "type": "text",
-        "label": "Contact Full Name",
-        "placeholder": "Enter full name",
+        "label": "First Name",
+        "placeholder": "Enter first name",
         "required": true,
         "validation": {
           "min": 2,
-          "max": 100,
+          "max": 50,
           "pattern": "^[a-zA-Z\\s'-]+$",
-          "message": "Please enter a valid name"
+          "message": "First name must be 2-50 characters and contain only letters"
         },
         "defaultValue": null
       },
       {
-        "id": "relationship",
-        "name": "relationship",
-        "type": "select",
-        "label": "Relationship",
-        "placeholder": "Select relationship",
-        "required": true,
-        "options": [
-          "Spouse",
-          "Parent",
-          "Sibling",
-          "Child",
-          "Partner",
-          "Friend",
-          "Other Relative",
-          "Other"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "primary-phone",
-        "name": "primaryPhone",
+        "id": "lastName",
+        "name": "lastName",
         "type": "text",
-        "label": "Primary Phone Number",
-        "placeholder": "(555) 123-4567",
+        "label": "Last Name",
+        "placeholder": "Enter last name",
         "required": true,
         "validation": {
-          "pattern": "^[\\d\\s()+-]+$",
-          "message": "Please enter a valid phone number"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "alternate-phone",
-        "name": "alternatePhone",
-        "type": "text",
-        "label": "Alternate Phone Number",
-        "placeholder": "(555) 987-6543",
-        "required": false,
-        "validation": {
-          "pattern": "^[\\d\\s()+-]+$",
-          "message": "Please enter a valid phone number"
+          "min": 2,
+          "max": 50,
+          "pattern": "^[a-zA-Z\\s'-]+$",
+          "message": "Last name must be 2-50 characters and contain only letters"
         },
         "defaultValue": null
       },
@@ -583,45 +1436,106 @@
         "name": "email",
         "type": "email",
         "label": "Email Address",
-        "placeholder": "contact@example.com",
-        "required": false,
+        "placeholder": "name@company.com",
+        "required": true,
         "validation": {
-          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2}$",
           "message": "Please enter a valid email address"
         },
         "defaultValue": null
       },
       {
-        "id": "priority",
-        "name": "priority",
-        "type": "select",
-        "label": "Contact Priority",
-        "placeholder": "Select priority level",
-        "required": true,
-        "options": [
-          "Primary Contact",
-          "Secondary Contact",
-          "Tertiary Contact"
-        ],
-        "defaultValue": "Primary Contact"
-      },
-      {
-        "id": "address",
-        "name": "address",
-        "type": "textarea",
-        "label": "Full Address",
-        "placeholder": "Enter street address, city, state, and ZIP code",
+        "id": "phone",
+        "name": "phone",
+        "type": "text",
+        "label": "Phone Number",
+        "placeholder": "+1 (555) 000-0000",
         "required": false,
         "validation": {
-          "max": 300,
-          "message": "Address must not exceed 300 characters"
+          "pattern": "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,9}$",
+          "message": "Please enter a valid phone number"
         },
         "defaultValue": null
+      },
+      {
+        "id": "role",
+        "name": "role",
+        "type": "select",
+        "label": "Role",
+        "placeholder": "Select role",
+        "required": true,
+        "options": [
+          "Software Engineer",
+          "Senior Software Engineer",
+          "Team Lead",
+          "Engineering Manager",
+          "Product Manager",
+          "Designer",
+          "QA Engineer",
+          "DevOps Engineer",
+          "Data Analyst",
+          "HR Specialist"
+        ],
+        "validation": {
+          "message": "Please select a role"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "departmentId",
+        "name": "departmentId",
+        "type": "select",
+        "label": "Department",
+        "placeholder": "Select department",
+        "required": true,
+        "options": [
+          "Engineering",
+          "Product",
+          "Design",
+          "Human Resources",
+          "Marketing",
+          "Sales",
+          "Operations",
+          "Finance"
+        ],
+        "validation": {
+          "message": "Please select a department"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "managerId",
+        "name": "managerId",
+        "type": "select",
+        "label": "Manager",
+        "placeholder": "Select reporting manager",
+        "required": false,
+        "options": [],
+        "defaultValue": null
+      },
+      {
+        "id": "status",
+        "name": "status",
+        "type": "select",
+        "label": "Employment Status",
+        "placeholder": "Select status",
+        "required": true,
+        "options": [
+          "Active",
+          "On Leave",
+          "Probation",
+          "Notice Period",
+          "Inactive"
+        ],
+        "validation": {
+          "message": "Please select employment status"
+        },
+        "defaultValue": "Active"
       }
     ],
     "gridLayout": [
       {
-        "i": "contact-name",
+        "i": "firstName",
         "x": 0,
         "y": 0,
         "w": 12,
@@ -630,27 +1544,9 @@
         "minH": 6
       },
       {
-        "i": "relationship",
+        "i": "lastName",
         "x": 12,
         "y": 0,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "primary-phone",
-        "x": 0,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "alternate-phone",
-        "x": 12,
-        "y": 8,
         "w": 12,
         "h": 8,
         "minW": 6,
@@ -659,6 +1555,24 @@
       {
         "i": "email",
         "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "phone",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "role",
+        "x": 0,
         "y": 16,
         "w": 12,
         "h": 8,
@@ -666,7 +1580,7 @@
         "minH": 6
       },
       {
-        "i": "priority",
+        "i": "departmentId",
         "x": 12,
         "y": 16,
         "w": 12,
@@ -675,333 +1589,67 @@
         "minH": 6
       },
       {
-        "i": "address",
+        "i": "managerId",
         "x": 0,
         "y": 24,
-        "w": 24,
-        "h": 12,
-        "minW": 12,
-        "minH": 8
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "status",
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
       }
     ],
     "layout": {
       "type": "two-column",
       "sections": [
         {
-          "id": "contact-details",
-          "title": "Contact Details",
+          "id": "personal-info",
+          "title": "Personal Information",
           "fieldIds": [
-            "contact-name",
-            "relationship",
-            "primary-phone",
-            "alternate-phone",
+            "firstName",
+            "lastName",
             "email",
-            "priority"
+            "phone"
           ]
         },
         {
-          "id": "address-section",
-          "title": "Address Information",
+          "id": "employment-info",
+          "title": "Employment Details",
           "fieldIds": [
-            "address"
+            "role",
+            "departmentId",
+            "managerId",
+            "status"
           ]
         }
       ]
     },
     "submitButton": {
-      "label": "Save Emergency Contact",
+      "label": "Update Team Member",
       "position": "right"
     },
     "validation": {
-      "mode": "onSubmit",
+      "mode": "onBlur",
       "showErrors": true
     },
     "styling": {
       "colors": {
-        "primary": "#2563eb",
+        "primary": "#3b82f6",
         "secondary": "#64748b",
         "background": "#ffffff",
         "text": "#1e293b",
         "border": "#e2e8f0"
       },
       "typography": {
-        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
-        "fontSize": {
-          "label": "14px",
-          "input": "14px"
-        },
-        "fontWeight": {
-          "label": "500",
-          "input": "400"
-        }
-      },
-      "spacing": {
-        "fieldGap": "16px",
-        "sectionGap": "32px",
-        "inputPadding": "10px 12px"
-      },
-      "components": {
-        "input": {
-          "borderRadius": "6px",
-          "borderWidth": "1px",
-          "height": "40px"
-        },
-        "button": {
-          "primary": {
-            "background": "#2563eb",
-            "color": "#ffffff",
-            "padding": "10px 24px"
-          }
-        }
-      }
-    },
-    "workflowId": "workflow_1735176234567"
-  },
-  {
-    "id": "i9employmenteligibilityform-1764614866275-ys12ut",
-    "name": "I9EmploymentEligibilityForm",
-    "title": "I-9 Employment Eligibility Verification",
-    "description": "Federal form to verify identity and employment authorization as required by U.S. law",
-    "fields": [
-      {
-        "id": "full-name",
-        "name": "fullName",
-        "type": "text",
-        "label": "Full Legal Name",
-        "placeholder": "Enter your full legal name",
-        "required": true,
-        "validation": {
-          "min": 2,
-          "max": 100,
-          "message": "Full legal name is required"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "citizenship-status",
-        "name": "citizenshipStatus",
-        "type": "select",
-        "label": "Citizenship/Immigration Status",
-        "placeholder": "Select your status",
-        "required": true,
-        "options": [
-          "U.S. Citizen",
-          "U.S. Non-Citizen National",
-          "Lawful Permanent Resident",
-          "Alien Authorized to Work"
-        ],
-        "validation": {
-          "message": "Please select your citizenship or immigration status"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "alien-number",
-        "name": "alienNumber",
-        "type": "text",
-        "label": "USCIS/Alien Registration Number (if applicable)",
-        "placeholder": "Enter A-Number or USCIS Number",
-        "required": false,
-        "validation": {
-          "pattern": "^[A-Z]?[0-9]{7,9}$",
-          "message": "Enter valid USCIS or Alien Registration Number"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "work-authorization-expiration",
-        "name": "workAuthorizationExpiration",
-        "type": "date",
-        "label": "Work Authorization Expiration Date (if applicable)",
-        "placeholder": "MM/DD/YYYY",
-        "required": false,
-        "validation": {
-          "message": "Enter valid expiration date"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "document-type",
-        "name": "documentType",
-        "type": "select",
-        "label": "Primary Identity Document Type",
-        "placeholder": "Select document type",
-        "required": true,
-        "options": [
-          "U.S. Passport",
-          "Driver's License",
-          "State ID Card",
-          "Permanent Resident Card",
-          "Employment Authorization Document",
-          "Foreign Passport with I-94"
-        ],
-        "validation": {
-          "message": "Please select the document type you will provide"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "document-number",
-        "name": "documentNumber",
-        "type": "text",
-        "label": "Document Number",
-        "placeholder": "Enter document number",
-        "required": true,
-        "validation": {
-          "min": 3,
-          "max": 50,
-          "message": "Document number is required"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "document-upload",
-        "name": "documentUpload",
-        "type": "file",
-        "label": "Upload Identity Document(s)",
-        "placeholder": "Upload clear copies of your identity documents",
-        "required": true,
-        "validation": {
-          "message": "Please upload required identity documents"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "attestation",
-        "name": "attestation",
-        "type": "checkbox",
-        "label": "I attest, under penalty of perjury, that I am authorized to work in the United States and that the information provided is true and correct",
-        "placeholder": "",
-        "required": true,
-        "validation": {
-          "message": "You must attest to the accuracy of this information"
-        },
-        "defaultValue": false
-      }
-    ],
-    "gridLayout": [
-      {
-        "i": "full-name",
-        "x": 0,
-        "y": 0,
-        "w": 24,
-        "h": 8,
-        "minW": 12,
-        "minH": 8
-      },
-      {
-        "i": "citizenship-status",
-        "x": 0,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "alien-number",
-        "x": 12,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "work-authorization-expiration",
-        "x": 0,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "document-type",
-        "x": 12,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "document-number",
-        "x": 0,
-        "y": 24,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "document-upload",
-        "x": 0,
-        "y": 32,
-        "w": 24,
-        "h": 8,
-        "minW": 12,
-        "minH": 8
-      },
-      {
-        "i": "attestation",
-        "x": 0,
-        "y": 40,
-        "w": 24,
-        "h": 8,
-        "minW": 12,
-        "minH": 8
-      }
-    ],
-    "layout": {
-      "type": "two-column",
-      "sections": [
-        {
-          "id": "employee-info",
-          "title": "Employee Information & Attestation",
-          "fieldIds": [
-            "full-name",
-            "citizenship-status",
-            "alien-number",
-            "work-authorization-expiration"
-          ]
-        },
-        {
-          "id": "document-verification",
-          "title": "Identity Document Verification",
-          "fieldIds": [
-            "document-type",
-            "document-number",
-            "document-upload"
-          ]
-        },
-        {
-          "id": "attestation-section",
-          "title": "Employee Attestation",
-          "fieldIds": [
-            "attestation"
-          ]
-        }
-      ]
-    },
-    "submitButton": {
-      "label": "Submit I-9 Form",
-      "position": "right"
-    },
-    "validation": {
-      "mode": "onSubmit",
-      "showErrors": true
-    },
-    "styling": {
-      "colors": {
-        "primary": "#2563eb",
-        "secondary": "#64748b",
-        "background": "#ffffff",
-        "text": "#1e293b",
-        "border": "#e2e8f0"
-      },
-      "typography": {
-        "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
         "fontSize": {
           "label": "14px",
           "input": "14px"
@@ -1024,405 +1672,115 @@
         },
         "button": {
           "primary": {
-            "background": "#2563eb",
+            "background": "#3b82f6",
             "color": "#ffffff",
             "padding": "10px 24px"
           }
         }
       }
     },
-    "workflowId": "workflow_1735176234567"
+    "_formAssociation": {
+      "forWorkflow": "TeamMemberManagement",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Update Team Member Profile",
+      "dataModel": "TeamMember"
+    },
+    "_specName": "TeamMemberEditForm",
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "workflowId": "team-member-management-wf"
   },
   {
-    "id": "taxwithholdingform-1764614889980-29mu1b",
-    "name": "TaxWithholdingForm",
-    "title": "Tax Withholding Form",
-    "description": "Complete your federal and state tax withholding elections including filing status, dependents, and additional withholding amounts.",
+    "id": "departmentcreationform-1765362671815-co2bbp",
+    "name": "DepartmentCreationForm",
+    "title": "Create New Department",
+    "description": "Form for creating organizational departments with head assignment",
     "fields": [
       {
-        "id": "filing-status",
-        "name": "filingStatus",
-        "type": "select",
-        "label": "Filing Status",
-        "placeholder": "Select your filing status",
-        "required": true,
-        "options": [
-          "Single or Married filing separately",
-          "Married filing jointly",
-          "Head of household"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "multiple-jobs",
-        "name": "multipleJobs",
-        "type": "checkbox",
-        "label": "Multiple Jobs or Spouse Works",
-        "placeholder": "",
-        "required": false,
-        "defaultValue": false
-      },
-      {
-        "id": "dependents-amount",
-        "name": "dependentsAmount",
-        "type": "number",
-        "label": "Dependents Credit Amount",
-        "placeholder": "Enter total dependent credit amount",
-        "required": false,
-        "validation": {
-          "min": 0,
-          "max": 999999,
-          "message": "Please enter a valid amount"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "other-income",
-        "name": "otherIncome",
-        "type": "number",
-        "label": "Other Income (not from jobs)",
-        "placeholder": "Enter other annual income",
-        "required": false,
-        "validation": {
-          "min": 0,
-          "max": 999999,
-          "message": "Please enter a valid amount"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "deductions",
-        "name": "deductions",
-        "type": "number",
-        "label": "Deductions (other than standard)",
-        "placeholder": "Enter annual deduction amount",
-        "required": false,
-        "validation": {
-          "min": 0,
-          "max": 999999,
-          "message": "Please enter a valid amount"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "extra-withholding",
-        "name": "extraWithholding",
-        "type": "number",
-        "label": "Extra Withholding Per Pay Period",
-        "placeholder": "Enter additional amount to withhold",
-        "required": false,
-        "validation": {
-          "min": 0,
-          "max": 9999,
-          "message": "Please enter a valid amount"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "state-withholding",
-        "name": "stateWithholding",
-        "type": "select",
-        "label": "State Tax Withholding",
-        "placeholder": "Select state withholding option",
-        "required": true,
-        "options": [
-          "Use state default",
-          "Claim exempt",
-          "Additional withholding"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "signature-date",
-        "name": "signatureDate",
-        "type": "date",
-        "label": "Signature Date",
-        "placeholder": "Select date",
-        "required": true,
-        "validation": {
-          "message": "Please select today's date"
-        },
-        "defaultValue": null
-      }
-    ],
-    "gridLayout": [
-      {
-        "i": "filing-status",
-        "x": 0,
-        "y": 0,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "multiple-jobs",
-        "x": 12,
-        "y": 0,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "dependents-amount",
-        "x": 0,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "other-income",
-        "x": 12,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "deductions",
-        "x": 0,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "extra-withholding",
-        "x": 12,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "state-withholding",
-        "x": 0,
-        "y": 24,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "signature-date",
-        "x": 12,
-        "y": 24,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      }
-    ],
-    "layout": {
-      "type": "two-column",
-      "sections": [
-        {
-          "id": "federal-section",
-          "title": "Federal Tax Withholding (W-4)",
-          "fieldIds": [
-            "filing-status",
-            "multiple-jobs",
-            "dependents-amount",
-            "other-income",
-            "deductions",
-            "extra-withholding"
-          ]
-        },
-        {
-          "id": "state-section",
-          "title": "State Tax Withholding",
-          "fieldIds": [
-            "state-withholding",
-            "signature-date"
-          ]
-        }
-      ]
-    },
-    "submitButton": {
-      "label": "Submit Tax Withholding",
-      "position": "right"
-    },
-    "validation": {
-      "mode": "onSubmit",
-      "showErrors": true
-    },
-    "styling": {
-      "colors": {
-        "primary": "#2563eb",
-        "secondary": "#64748b",
-        "background": "#ffffff",
-        "text": "#0f172a",
-        "border": "#e2e8f0"
-      },
-      "typography": {
-        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        "fontSize": {
-          "label": "14px",
-          "input": "14px"
-        },
-        "fontWeight": {
-          "label": "500",
-          "input": "400"
-        }
-      },
-      "spacing": {
-        "fieldGap": "16px",
-        "sectionGap": "32px",
-        "inputPadding": "8px 12px"
-      },
-      "components": {
-        "input": {
-          "borderRadius": "6px",
-          "borderWidth": "1px",
-          "height": "40px"
-        },
-        "button": {
-          "primary": {
-            "background": "#2563eb",
-            "color": "#ffffff",
-            "padding": "10px 24px"
-          }
-        }
-      }
-    },
-    "workflowId": "workflow_1735176234567"
-  },
-  {
-    "id": "equipmentacknowledgmentform-1764614910288-2v37vw",
-    "name": "EquipmentAcknowledgmentForm",
-    "title": "Equipment Acknowledgment Form",
-    "description": "Document employee acknowledgment of equipment received and responsibilities for care and return.",
-    "fields": [
-      {
-        "id": "employee-name",
-        "name": "employeeName",
+        "id": "department-name",
+        "name": "name",
         "type": "text",
-        "label": "Employee Name",
-        "placeholder": "Enter full name",
+        "label": "Department Name",
+        "placeholder": "Enter department name",
         "required": true,
         "validation": {
           "min": 2,
           "max": 100,
-          "message": "Please enter a valid employee name"
+          "pattern": "^[a-zA-Z0-9\\s&-]+$",
+          "message": "Department name must be 2-100 characters and contain only letters, numbers, spaces, &, and hyphens"
         },
         "defaultValue": null
       },
       {
-        "id": "employee-id",
-        "name": "employeeId",
+        "id": "department-code",
+        "name": "departmentCode",
         "type": "text",
-        "label": "Employee ID",
-        "placeholder": "Enter employee ID",
+        "label": "Department Code",
+        "placeholder": "e.g., ENG, HR, FIN",
         "required": true,
         "validation": {
-          "pattern": "^[A-Z0-9]{4,10}$",
-          "message": "Employee ID must be 4-10 alphanumeric characters"
+          "min": 2,
+          "max": 10,
+          "pattern": "^[A-Z0-9]+$",
+          "message": "Department code must be 2-10 uppercase letters or numbers"
         },
         "defaultValue": null
       },
       {
-        "id": "department",
-        "name": "department",
-        "type": "select",
-        "label": "Department",
-        "placeholder": "Select department",
-        "required": true,
-        "options": [
-          "Engineering",
-          "Sales",
-          "Marketing",
-          "Human Resources",
-          "Finance",
-          "Operations",
-          "Customer Support",
-          "IT"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "issue-date",
-        "name": "issueDate",
-        "type": "date",
-        "label": "Issue Date",
-        "placeholder": "Select date",
-        "required": true,
-        "validation": {
-          "message": "Please select a valid issue date"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "equipment-list",
-        "name": "equipmentList",
+        "id": "department-description",
+        "name": "description",
         "type": "textarea",
-        "label": "Equipment Received",
-        "placeholder": "List all equipment items received (e.g., Laptop - Dell XPS 15, Serial: ABC123; Monitor - 27\" Dell, Serial: XYZ789)",
+        "label": "Description",
+        "placeholder": "Describe the department's purpose and responsibilities",
         "required": true,
         "validation": {
           "min": 10,
-          "max": 1000,
-          "message": "Please provide detailed equipment information"
+          "max": 500,
+          "message": "Description must be between 10 and 500 characters"
         },
         "defaultValue": null
       },
       {
-        "id": "equipment-condition",
-        "name": "equipmentCondition",
+        "id": "department-head",
+        "name": "departmentHeadId",
         "type": "select",
-        "label": "Equipment Condition",
-        "placeholder": "Select condition",
+        "label": "Department Head",
+        "placeholder": "Select department head",
         "required": true,
-        "options": [
-          "New",
-          "Excellent",
-          "Good",
-          "Fair",
-          "Refurbished"
-        ],
+        "options": [],
         "defaultValue": null
       },
       {
-        "id": "acknowledgment",
-        "name": "acknowledgment",
-        "type": "checkbox",
-        "label": "I acknowledge receipt of the equipment listed above and agree to:",
+        "id": "department-budget",
+        "name": "budget",
+        "type": "number",
+        "label": "Annual Budget",
+        "placeholder": "Enter budget amount",
         "required": true,
-        "options": [
-          "Use equipment for business purposes only",
-          "Maintain equipment in good working condition",
-          "Report any damage or loss immediately",
-          "Return all equipment upon termination or request",
-          "Accept responsibility for loss or damage due to negligence"
-        ],
         "validation": {
-          "message": "You must acknowledge all responsibilities"
+          "min": 0,
+          "max": 100000000,
+          "message": "Budget must be a positive number up to 100,000,000"
         },
         "defaultValue": null
       },
       {
-        "id": "electronic-signature",
-        "name": "electronicSignature",
+        "id": "department-location",
+        "name": "location",
         "type": "text",
-        "label": "Electronic Signature",
-        "placeholder": "Type your full name to sign",
-        "required": true,
+        "label": "Location",
+        "placeholder": "Office location or building",
+        "required": false,
         "validation": {
-          "min": 2,
           "max": 100,
-          "message": "Please enter your full name as electronic signature"
+          "message": "Location must not exceed 100 characters"
         },
         "defaultValue": null
       }
     ],
     "gridLayout": [
       {
-        "i": "employee-name",
+        "i": "department-name",
         "x": 0,
         "y": 0,
         "w": 12,
@@ -1431,7 +1789,7 @@
         "minH": 6
       },
       {
-        "i": "employee-id",
+        "i": "department-code",
         "x": 12,
         "y": 0,
         "w": 12,
@@ -1440,54 +1798,36 @@
         "minH": 6
       },
       {
-        "i": "department",
+        "i": "department-description",
         "x": 0,
         "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "issue-date",
-        "x": 12,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "equipment-list",
-        "x": 0,
-        "y": 16,
         "w": 24,
         "h": 12,
         "minW": 12,
         "minH": 8
       },
       {
-        "i": "equipment-condition",
+        "i": "department-head",
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "department-budget",
+        "x": 12,
+        "y": 20,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "department-location",
         "x": 0,
         "y": 28,
-        "w": 24,
-        "h": 8,
-        "minW": 12,
-        "minH": 6
-      },
-      {
-        "i": "acknowledgment",
-        "x": 0,
-        "y": 36,
-        "w": 24,
-        "h": 12,
-        "minW": 12,
-        "minH": 8
-      },
-      {
-        "i": "electronic-signature",
-        "x": 0,
-        "y": 48,
         "w": 24,
         "h": 8,
         "minW": 12,
@@ -1498,35 +1838,27 @@
       "type": "two-column",
       "sections": [
         {
-          "id": "employee-info",
-          "title": "Employee Information",
+          "id": "basic-info",
+          "title": "Basic Information",
           "fieldIds": [
-            "employee-name",
-            "employee-id",
-            "department",
-            "issue-date"
+            "department-name",
+            "department-code",
+            "department-description"
           ]
         },
         {
-          "id": "equipment-details",
-          "title": "Equipment Details",
+          "id": "management-info",
+          "title": "Management & Resources",
           "fieldIds": [
-            "equipment-list",
-            "equipment-condition"
-          ]
-        },
-        {
-          "id": "acknowledgment-section",
-          "title": "Acknowledgment & Signature",
-          "fieldIds": [
-            "acknowledgment",
-            "electronic-signature"
+            "department-head",
+            "department-budget",
+            "department-location"
           ]
         }
       ]
     },
     "submitButton": {
-      "label": "Submit Acknowledgment",
+      "label": "Create Department",
       "position": "right"
     },
     "validation": {
@@ -1572,109 +1904,97 @@
         }
       }
     },
-    "workflowId": "workflow_1735176234567"
+    "_formAssociation": {
+      "forWorkflow": "TeamMemberManagement",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Create Department",
+      "dataModel": "Department"
+    },
+    "_specName": "DepartmentCreationForm",
+    "dataModelId": "dm_department_1765363295097",
+    "dataModelName": "Department",
+    "workflowId": "team-member-management-wf"
   },
   {
-    "id": "policyacknowledgmentform-1764614932605-hnjrag",
-    "name": "PolicyAcknowledgmentForm",
-    "title": "Company Policy Acknowledgment",
-    "description": "Please review and acknowledge your understanding of all company policies and handbook requirements.",
+    "id": "departmenteditform-1765362692594-uphw3q",
+    "name": "DepartmentEditForm",
+    "title": "Update Department",
+    "description": "Edit department details and reassign department heads",
     "fields": [
       {
-        "id": "employee-name",
-        "name": "employeeName",
+        "id": "name",
+        "name": "name",
         "type": "text",
-        "label": "Employee Name",
-        "placeholder": "Enter your full name",
+        "label": "Department Name",
+        "placeholder": "Enter department name",
         "required": true,
         "validation": {
           "min": 2,
           "max": 100,
-          "message": "Please enter your full name"
+          "message": "Department name must be between 2 and 100 characters"
         },
         "defaultValue": null
       },
       {
-        "id": "employee-id",
-        "name": "employeeId",
-        "type": "text",
-        "label": "Employee ID",
-        "placeholder": "Enter your employee ID",
-        "required": true,
-        "validation": {
-          "pattern": "^[A-Z0-9]{4,10}$",
-          "message": "Please enter a valid employee ID"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "department",
-        "name": "department",
+        "id": "departmentHeadId",
+        "name": "departmentHeadId",
         "type": "select",
-        "label": "Department",
-        "placeholder": "Select your department",
+        "label": "Department Head",
+        "placeholder": "Select department head",
         "required": true,
-        "options": [
-          "Engineering",
-          "Human Resources",
-          "Sales",
-          "Marketing",
-          "Finance",
-          "Operations",
-          "Customer Support",
-          "Legal"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "policies-acknowledged",
-        "name": "policiesAcknowledged",
-        "type": "checkbox",
-        "label": "Policy Acknowledgments",
-        "required": true,
-        "options": [
-          "Code of Conduct",
-          "Confidentiality & Data Protection Policy",
-          "Acceptable Use Policy (IT & Equipment)",
-          "Workplace Safety & Security Policy",
-          "Anti-Harassment & Non-Discrimination Policy",
-          "Employee Handbook"
-        ],
+        "options": [],
         "validation": {
-          "message": "You must acknowledge all company policies to proceed"
+          "message": "Please select a department head"
         },
         "defaultValue": null
       },
       {
-        "id": "electronic-signature",
-        "name": "electronicSignature",
-        "type": "text",
-        "label": "Electronic Signature",
-        "placeholder": "Type your full name as electronic signature",
-        "required": true,
+        "id": "budget",
+        "name": "budget",
+        "type": "number",
+        "label": "Annual Budget",
+        "placeholder": "Enter budget amount",
+        "required": false,
         "validation": {
-          "min": 2,
-          "max": 100,
-          "message": "Please provide your electronic signature by typing your full name"
+          "min": 0,
+          "message": "Budget must be a positive number"
         },
         "defaultValue": null
       },
       {
-        "id": "acknowledgment-date",
-        "name": "acknowledgmentDate",
-        "type": "date",
-        "label": "Acknowledgment Date",
-        "placeholder": "Select date",
+        "id": "status",
+        "name": "status",
+        "type": "select",
+        "label": "Status",
+        "placeholder": "Select department status",
         "required": true,
+        "options": [
+          "Active",
+          "Inactive",
+          "Restructuring"
+        ],
         "validation": {
-          "message": "Please select the acknowledgment date"
+          "message": "Please select a status"
+        },
+        "defaultValue": "Active"
+      },
+      {
+        "id": "description",
+        "name": "description",
+        "type": "textarea",
+        "label": "Description",
+        "placeholder": "Enter department description and responsibilities",
+        "required": false,
+        "validation": {
+          "max": 500,
+          "message": "Description cannot exceed 500 characters"
         },
         "defaultValue": null
       }
     ],
     "gridLayout": [
       {
-        "i": "employee-name",
+        "i": "name",
         "x": 0,
         "y": 0,
         "w": 12,
@@ -1683,7 +2003,7 @@
         "minH": 6
       },
       {
-        "i": "employee-id",
+        "i": "departmentHeadId",
         "x": 12,
         "y": 0,
         "w": 12,
@@ -1692,25 +2012,265 @@
         "minH": 6
       },
       {
-        "i": "department",
+        "i": "budget",
         "x": 0,
         "y": 8,
-        "w": 24,
+        "w": 12,
         "h": 8,
         "minW": 6,
         "minH": 6
       },
       {
-        "i": "policies-acknowledged",
-        "x": 0,
-        "y": 16,
-        "w": 24,
-        "h": 12,
+        "i": "status",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
         "minW": 6,
         "minH": 6
       },
       {
-        "i": "electronic-signature",
+        "i": "description",
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "basic-info",
+          "title": "Basic Information",
+          "fieldIds": [
+            "name",
+            "departmentHeadId"
+          ]
+        },
+        {
+          "id": "financial-status",
+          "title": "Financial & Status",
+          "fieldIds": [
+            "budget",
+            "status"
+          ]
+        },
+        {
+          "id": "details",
+          "title": "Additional Details",
+          "fieldIds": [
+            "description"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Update Department",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onBlur",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "8px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "TeamMemberManagement",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Update Department",
+      "dataModel": "Department"
+    },
+    "_specName": "DepartmentEditForm",
+    "dataModelId": "dm_department_1765363295097",
+    "dataModelName": "Department",
+    "validationRules": [
+      {
+        "id": "rule_department_head_authorization",
+        "name": "DepartmentHeadAuthorization",
+        "ruleType": "validation",
+        "triggerEvent": "onSubmit",
+        "affectedFields": [
+          "departmentHeadId"
+        ]
+      }
+    ],
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "taskreassignmentform-1765362707111-7zxsqv",
+    "name": "TaskReassignmentForm",
+    "title": "Reassign Task",
+    "description": "Change task assignee with reason and notification preferences",
+    "fields": [
+      {
+        "id": "field-current-assignee",
+        "name": "currentAssignee",
+        "type": "text",
+        "label": "Current Assignee",
+        "placeholder": "Current task owner",
+        "required": false,
+        "disabled": true,
+        "defaultValue": null
+      },
+      {
+        "id": "field-assignee-id",
+        "name": "assigneeId",
+        "type": "select",
+        "label": "New Assignee",
+        "placeholder": "Select team member",
+        "required": true,
+        "validation": {
+          "message": "Please select a new assignee"
+        },
+        "options": [
+          "John Smith",
+          "Sarah Johnson",
+          "Michael Chen",
+          "Emily Davis",
+          "Robert Wilson",
+          "Lisa Anderson"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "field-reassignment-reason",
+        "name": "reassignmentReason",
+        "type": "textarea",
+        "label": "Reason for Reassignment",
+        "placeholder": "Explain why this task is being reassigned...",
+        "required": true,
+        "validation": {
+          "min": 10,
+          "max": 500,
+          "message": "Please provide a reason (10-500 characters)"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-notify-previous-assignee",
+        "name": "notifyPreviousAssignee",
+        "type": "checkbox",
+        "label": "Notification Options",
+        "placeholder": "",
+        "required": false,
+        "options": [
+          "Notify previous assignee",
+          "Notify new assignee",
+          "Send email notification"
+        ],
+        "defaultValue": [
+          "Notify previous assignee",
+          "Notify new assignee"
+        ]
+      },
+      {
+        "id": "field-priority-change",
+        "name": "priorityChange",
+        "type": "select",
+        "label": "Update Priority (Optional)",
+        "placeholder": "Keep current priority",
+        "required": false,
+        "options": [
+          "Keep current",
+          "Low",
+          "Medium",
+          "High",
+          "Urgent"
+        ],
+        "defaultValue": "Keep current"
+      },
+      {
+        "id": "field-due-date-adjustment",
+        "name": "dueDateAdjustment",
+        "type": "date",
+        "label": "Adjust Due Date (Optional)",
+        "placeholder": "Select new due date",
+        "required": false,
+        "validation": {
+          "message": "Due date must be in the future"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field-current-assignee",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-assignee-id",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-reassignment-reason",
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      },
+      {
+        "i": "field-notify-previous-assignee",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 12,
+        "minH": 6
+      },
+      {
+        "i": "field-priority-change",
         "x": 0,
         "y": 28,
         "w": 12,
@@ -1719,7 +2279,7 @@
         "minH": 6
       },
       {
-        "i": "acknowledgment-date",
+        "i": "field-due-date-adjustment",
         "x": 12,
         "y": 28,
         "w": 12,
@@ -1732,33 +2292,223 @@
       "type": "two-column",
       "sections": [
         {
-          "id": "employee-info",
-          "title": "Employee Information",
+          "id": "section-assignee",
+          "title": "Assignee Information",
           "fieldIds": [
-            "employee-name",
-            "employee-id",
-            "department"
+            "field-current-assignee",
+            "field-assignee-id"
           ]
         },
         {
-          "id": "policy-acknowledgment",
-          "title": "Policy Acknowledgment",
+          "id": "section-details",
+          "title": "Reassignment Details",
           "fieldIds": [
-            "policies-acknowledged"
+            "field-reassignment-reason",
+            "field-notify-previous-assignee"
           ]
         },
         {
-          "id": "signature-section",
-          "title": "Signature & Confirmation",
+          "id": "section-optional",
+          "title": "Optional Adjustments",
           "fieldIds": [
-            "electronic-signature",
-            "acknowledgment-date"
+            "field-priority-change",
+            "field-due-date-adjustment"
           ]
         }
       ]
     },
     "submitButton": {
-      "label": "Submit Acknowledgment",
+      "label": "Reassign Task",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "TaskAssignment",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Reassign Task",
+      "dataModel": "Task"
+    },
+    "_specName": "TaskReassignmentForm",
+    "dataModelId": "dm_task_1765363295098",
+    "dataModelName": "Task",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "timelogentryform-1765362727491-ky85eu",
+    "name": "TimeLogEntryForm",
+    "title": "Log Time Entry",
+    "description": "Record time spent on task with date and hours worked",
+    "fields": [
+      {
+        "id": "taskId",
+        "name": "taskId",
+        "type": "select",
+        "label": "Task",
+        "placeholder": "Select task",
+        "required": true,
+        "validation": {
+          "message": "Please select a task"
+        },
+        "options": [],
+        "defaultValue": null
+      },
+      {
+        "id": "date",
+        "name": "date",
+        "type": "date",
+        "label": "Date",
+        "placeholder": "Select date",
+        "required": true,
+        "validation": {
+          "message": "Please select a date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "hoursWorked",
+        "name": "hoursWorked",
+        "type": "number",
+        "label": "Hours Worked",
+        "placeholder": "Enter hours (e.g., 2.5)",
+        "required": true,
+        "validation": {
+          "min": 0.25,
+          "max": 24,
+          "message": "Hours must be between 0.25 and 24"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "billable",
+        "name": "billable",
+        "type": "checkbox",
+        "label": "Billable",
+        "placeholder": "",
+        "required": false,
+        "defaultValue": false
+      },
+      {
+        "id": "description",
+        "name": "description",
+        "type": "textarea",
+        "label": "Description",
+        "placeholder": "Describe the work performed...",
+        "required": true,
+        "validation": {
+          "min": 10,
+          "max": 500,
+          "message": "Description must be between 10 and 500 characters"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "taskId",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "date",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "hoursWorked",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "billable",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "description",
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "time-details",
+          "title": "Time Entry Details",
+          "fieldIds": [
+            "taskId",
+            "date",
+            "hoursWorked",
+            "billable",
+            "description"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Log Time",
       "position": "right"
     },
     "validation": {
@@ -1804,20 +2554,507 @@
         }
       }
     },
-    "workflowId": "workflow_1735176234567"
+    "_formAssociation": {
+      "forWorkflow": "TaskStatusUpdate",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Log Time",
+      "dataModel": "TimeLog"
+    },
+    "_specName": "TimeLogEntryForm",
+    "dataModelId": "dm_timelog_1765363295098",
+    "dataModelName": "TimeLog",
+    "workflowId": "team-member-management-wf"
   },
   {
-    "id": "equipmentprovisioningform-1764614951179-c6la7j",
-    "name": "EquipmentProvisioningForm",
-    "title": "Equipment Provisioning Form",
-    "description": "Record equipment assignments and provisioning details for new employees",
+    "id": "milestonetrackingform-1765362741638-vojqrb",
+    "name": "MilestoneTrackingForm",
+    "title": "Track Project Milestone",
+    "description": "Add and update project milestones with completion status",
     "fields": [
       {
-        "id": "employee-id",
+        "id": "field-projectid",
+        "name": "projectId",
+        "type": "select",
+        "label": "Project",
+        "placeholder": "Select project",
+        "required": true,
+        "validation": {
+          "message": "Please select a project"
+        },
+        "options": [],
+        "defaultValue": null
+      },
+      {
+        "id": "field-name",
+        "name": "name",
+        "type": "text",
+        "label": "Milestone Name",
+        "placeholder": "Enter milestone name",
+        "required": true,
+        "validation": {
+          "min": 3,
+          "max": 100,
+          "message": "Milestone name must be between 3 and 100 characters"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-duedate",
+        "name": "dueDate",
+        "type": "date",
+        "label": "Due Date",
+        "placeholder": "Select due date",
+        "required": true,
+        "validation": {
+          "message": "Please select a due date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-status",
+        "name": "status",
+        "type": "select",
+        "label": "Status",
+        "placeholder": "Select status",
+        "required": true,
+        "validation": {
+          "message": "Please select a status"
+        },
+        "options": [
+          "Not Started",
+          "In Progress",
+          "Completed",
+          "On Hold",
+          "Cancelled"
+        ],
+        "defaultValue": "Not Started"
+      },
+      {
+        "id": "field-completeddate",
+        "name": "completedDate",
+        "type": "date",
+        "label": "Completed Date",
+        "placeholder": "Select completion date",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "id": "field-description",
+        "name": "description",
+        "type": "textarea",
+        "label": "Description",
+        "placeholder": "Enter milestone description and details",
+        "required": false,
+        "validation": {
+          "max": 500,
+          "message": "Description must not exceed 500 characters"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field-projectid",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-name",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-duedate",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-status",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-completeddate",
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-description",
+        "x": 0,
+        "y": 24,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "section-milestone-info",
+          "title": "Milestone Information",
+          "fieldIds": [
+            "field-projectid",
+            "field-name",
+            "field-duedate",
+            "field-status",
+            "field-completeddate"
+          ]
+        },
+        {
+          "id": "section-milestone-details",
+          "title": "Details",
+          "fieldIds": [
+            "field-description"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Save Milestone",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "8px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "ProjectManagement",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Track Milestone",
+      "dataModel": "Milestone"
+    },
+    "_specName": "MilestoneTrackingForm",
+    "dataModelId": "dm_milestone_1765363295098",
+    "dataModelName": "Milestone",
+    "validationRules": [
+      {
+        "id": "rule_milestone_completion_validation",
+        "name": "MilestoneCompletionValidation",
+        "ruleType": "validation",
+        "triggerEvent": "onChange",
+        "affectedFields": [
+          "status"
+        ]
+      }
+    ],
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "leaverequestform-1765362757607-lbqn7t",
+    "name": "LeaveRequestForm",
+    "title": "Submit Leave Request",
+    "description": "Request time off by selecting leave type, dates, and providing a reason. Your available balance will be displayed.",
+    "fields": [
+      {
+        "id": "field-leavetype",
+        "name": "leaveType",
+        "type": "select",
+        "label": "Leave Type",
+        "placeholder": "Select leave type",
+        "required": true,
+        "options": [
+          "Annual Leave",
+          "Sick Leave",
+          "Personal Leave",
+          "Parental Leave",
+          "Unpaid Leave",
+          "Compassionate Leave"
+        ],
+        "defaultValue": null,
+        "validation": {
+          "message": "Please select a leave type"
+        }
+      },
+      {
+        "id": "field-availablebalance",
+        "name": "availableBalance",
+        "type": "number",
+        "label": "Available Balance (Days)",
+        "placeholder": "0",
+        "required": false,
+        "disabled": true,
+        "defaultValue": null
+      },
+      {
+        "id": "field-startdate",
+        "name": "startDate",
+        "type": "date",
+        "label": "Start Date",
+        "placeholder": "Select start date",
+        "required": true,
+        "validation": {
+          "message": "Start date is required"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-enddate",
+        "name": "endDate",
+        "type": "date",
+        "label": "End Date",
+        "placeholder": "Select end date",
+        "required": true,
+        "validation": {
+          "message": "End date must be after or equal to start date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-reason",
+        "name": "reason",
+        "type": "textarea",
+        "label": "Reason for Leave",
+        "placeholder": "Please provide details about your leave request...",
+        "required": true,
+        "validation": {
+          "min": 10,
+          "max": 500,
+          "message": "Reason must be between 10 and 500 characters"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field-leavetype",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-availablebalance",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-startdate",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-enddate",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-reason",
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "section-leave-details",
+          "title": "Leave Details",
+          "fieldIds": [
+            "field-leavetype",
+            "field-availablebalance",
+            "field-startdate",
+            "field-enddate"
+          ]
+        },
+        {
+          "id": "section-additional-info",
+          "title": "Additional Information",
+          "fieldIds": [
+            "field-reason"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Submit Leave Request",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "textarea": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "minHeight": "100px"
+        },
+        "button": {
+          "primary": {
+            "background": "#3b82f6",
+            "color": "#ffffff",
+            "padding": "10px 24px",
+            "borderRadius": "6px",
+            "height": "40px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "LeaveManagement",
+      "forNodeType": "startProcess",
+      "forNodeLabel": "Start - Submit Leave Request",
+      "dataModel": "LeaveRequest"
+    },
+    "_specName": "LeaveRequestForm",
+    "dataModelId": "leave-balance",
+    "dataModelName": "LeaveBalance",
+    "validationRules": [
+      {
+        "id": "rule_leave_balance_validation",
+        "name": "LeaveBalanceValidation",
+        "ruleType": "validation",
+        "triggerEvent": "onSubmit",
+        "affectedFields": [
+          "startDate",
+          "endDate",
+          "leaveType"
+        ]
+      },
+      {
+        "id": "rule_leave_conflict_check",
+        "name": "LeaveConflictCheck",
+        "ruleType": "validation",
+        "triggerEvent": "onSubmit",
+        "affectedFields": [
+          "startDate",
+          "endDate"
+        ]
+      },
+      {
+        "id": "rule_auto_assign_approver",
+        "name": "AutoAssignApprover",
+        "ruleType": "calculation",
+        "triggerEvent": "onSubmit",
+        "affectedFields": [
+          "approverId",
+          "leaveType",
+          "totalDays"
+        ]
+      }
+    ],
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "performancereviewform-1765362774220-1lmd9p",
+    "name": "PerformanceReviewForm",
+    "title": "Performance Review",
+    "description": "Complete employee performance review with ratings and feedback",
+    "fields": [
+      {
+        "id": "field-employeeid",
         "name": "employeeId",
         "type": "select",
         "label": "Employee",
-        "placeholder": "Select employee",
+        "placeholder": "Select employee to review",
         "required": true,
         "validation": {
           "message": "Please select an employee"
@@ -1826,102 +3063,123 @@
         "defaultValue": null
       },
       {
-        "id": "equipment-type",
-        "name": "equipmentType",
-        "type": "select",
-        "label": "Equipment Type",
-        "placeholder": "Select equipment type",
+        "id": "field-reviewperiod",
+        "name": "reviewPeriod",
+        "type": "text",
+        "label": "Review Period",
+        "placeholder": "e.g., Q1 2024, Jan-Jun 2024",
         "required": true,
         "validation": {
-          "message": "Please select equipment type"
+          "message": "Please specify the review period"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-overallrating",
+        "name": "overallRating",
+        "type": "select",
+        "label": "Overall Rating",
+        "placeholder": "Select overall performance rating",
+        "required": true,
+        "validation": {
+          "message": "Please provide an overall rating"
         },
         "options": [
-          "Laptop",
-          "Desktop",
-          "Monitor",
-          "Keyboard",
-          "Mouse",
-          "Headset",
-          "Mobile Phone",
-          "Tablet",
-          "Docking Station",
-          "Other"
+          "5 - Exceptional",
+          "4 - Exceeds Expectations",
+          "3 - Meets Expectations",
+          "2 - Needs Improvement",
+          "1 - Unsatisfactory"
         ],
         "defaultValue": null
       },
       {
-        "id": "equipment-model",
-        "name": "equipmentModel",
-        "type": "text",
-        "label": "Equipment Model",
-        "placeholder": "e.g., Dell Latitude 5520",
-        "required": true,
-        "validation": {
-          "message": "Please enter equipment model"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "serial-number",
-        "name": "serialNumber",
-        "type": "text",
-        "label": "Serial Number",
-        "placeholder": "Enter serial number",
-        "required": true,
-        "validation": {
-          "pattern": "^[A-Z0-9-]+$",
-          "message": "Please enter a valid serial number (alphanumeric and hyphens only)"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "condition",
-        "name": "condition",
+        "id": "field-technicalskills",
+        "name": "technicalSkillsRating",
         "type": "select",
-        "label": "Equipment Condition",
-        "placeholder": "Select condition",
+        "label": "Technical Skills",
+        "placeholder": "Rate technical competency",
         "required": true,
         "validation": {
-          "message": "Please select equipment condition"
+          "message": "Please rate technical skills"
         },
         "options": [
-          "New",
-          "Excellent",
-          "Good",
-          "Fair",
-          "Refurbished"
+          "5 - Exceptional",
+          "4 - Exceeds Expectations",
+          "3 - Meets Expectations",
+          "2 - Needs Improvement",
+          "1 - Unsatisfactory"
         ],
-        "defaultValue": "New"
-      },
-      {
-        "id": "assignment-date",
-        "name": "assignmentDate",
-        "type": "date",
-        "label": "Assignment Date",
-        "placeholder": "Select assignment date",
-        "required": true,
-        "validation": {
-          "message": "Please select assignment date"
-        },
         "defaultValue": null
       },
       {
-        "id": "notes",
-        "name": "notes",
+        "id": "field-communication",
+        "name": "communicationRating",
+        "type": "select",
+        "label": "Communication",
+        "placeholder": "Rate communication skills",
+        "required": true,
+        "validation": {
+          "message": "Please rate communication skills"
+        },
+        "options": [
+          "5 - Exceptional",
+          "4 - Exceeds Expectations",
+          "3 - Meets Expectations",
+          "2 - Needs Improvement",
+          "1 - Unsatisfactory"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "field-teamwork",
+        "name": "teamworkRating",
+        "type": "select",
+        "label": "Teamwork & Collaboration",
+        "placeholder": "Rate teamwork abilities",
+        "required": true,
+        "validation": {
+          "message": "Please rate teamwork"
+        },
+        "options": [
+          "5 - Exceptional",
+          "4 - Exceeds Expectations",
+          "3 - Meets Expectations",
+          "2 - Needs Improvement",
+          "1 - Unsatisfactory"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "field-strengths",
+        "name": "strengths",
         "type": "textarea",
-        "label": "Additional Notes",
-        "placeholder": "Enter any additional notes about the equipment or assignment",
-        "required": false,
+        "label": "Key Strengths",
+        "placeholder": "Describe the employee's key strengths and accomplishments during this period...",
+        "required": true,
         "validation": {
-          "max": 500,
-          "message": "Notes must not exceed 500 characters"
+          "min": 20,
+          "message": "Please provide detailed feedback on strengths (minimum 20 characters)"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-improvements",
+        "name": "areasForImprovement",
+        "type": "textarea",
+        "label": "Areas for Improvement",
+        "placeholder": "Identify areas where the employee can develop and improve...",
+        "required": true,
+        "validation": {
+          "min": 20,
+          "message": "Please provide constructive feedback on areas for improvement (minimum 20 characters)"
         },
         "defaultValue": null
       }
     ],
     "gridLayout": [
       {
-        "i": "employee-id",
+        "i": "field-employeeid",
         "x": 0,
         "y": 0,
         "w": 12,
@@ -1930,7 +3188,7 @@
         "minH": 6
       },
       {
-        "i": "equipment-type",
+        "i": "field-reviewperiod",
         "x": 12,
         "y": 0,
         "w": 12,
@@ -1939,7 +3197,7 @@
         "minH": 6
       },
       {
-        "i": "equipment-model",
+        "i": "field-overallrating",
         "x": 0,
         "y": 8,
         "w": 12,
@@ -1948,7 +3206,7 @@
         "minH": 6
       },
       {
-        "i": "serial-number",
+        "i": "field-technicalskills",
         "x": 12,
         "y": 8,
         "w": 12,
@@ -1957,7 +3215,7 @@
         "minH": 6
       },
       {
-        "i": "condition",
+        "i": "field-communication",
         "x": 0,
         "y": 16,
         "w": 12,
@@ -1966,7 +3224,7 @@
         "minH": 6
       },
       {
-        "i": "assignment-date",
+        "i": "field-teamwork",
         "x": 12,
         "y": 16,
         "w": 12,
@@ -1975,9 +3233,18 @@
         "minH": 6
       },
       {
-        "i": "notes",
+        "i": "field-strengths",
         "x": 0,
         "y": 24,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
+      },
+      {
+        "i": "field-improvements",
+        "x": 0,
+        "y": 36,
         "w": 24,
         "h": 12,
         "minW": 12,
@@ -1988,28 +3255,35 @@
       "type": "two-column",
       "sections": [
         {
-          "id": "section-assignment",
-          "title": "Assignment Details",
+          "id": "section-basic",
+          "title": "Review Information",
           "fieldIds": [
-            "employee-id",
-            "equipment-type",
-            "equipment-model",
-            "serial-number",
-            "condition",
-            "assignment-date"
+            "field-employeeid",
+            "field-reviewperiod"
           ]
         },
         {
-          "id": "section-notes",
-          "title": "Additional Information",
+          "id": "section-ratings",
+          "title": "Performance Ratings",
           "fieldIds": [
-            "notes"
+            "field-overallrating",
+            "field-technicalskills",
+            "field-communication",
+            "field-teamwork"
+          ]
+        },
+        {
+          "id": "section-feedback",
+          "title": "Detailed Feedback",
+          "fieldIds": [
+            "field-strengths",
+            "field-improvements"
           ]
         }
       ]
     },
     "submitButton": {
-      "label": "Provision Equipment",
+      "label": "Submit Review",
       "position": "right"
     },
     "validation": {
@@ -2019,10 +3293,10 @@
     "styling": {
       "colors": {
         "primary": "#4F46E5",
-        "secondary": "#6B7280",
+        "secondary": "#10B981",
         "background": "#FFFFFF",
         "text": "#1F2937",
-        "border": "#D1D5DB"
+        "border": "#E5E7EB"
       },
       "typography": {
         "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
@@ -2055,849 +3329,41 @@
         }
       }
     },
-    "workflowId": "workflow_1735176234567"
+    "_formAssociation": {
+      "forWorkflow": "PerformanceReview",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Complete Performance Review",
+      "dataModel": "PerformanceReview"
+    },
+    "_specName": "PerformanceReviewForm",
+    "dataModelId": "performance-review",
+    "dataModelName": "PerformanceReview",
+    "validationRules": [
+      {
+        "id": "rule_performance_rating_calculation",
+        "name": "PerformanceRatingCalculation",
+        "ruleType": "calculation",
+        "triggerEvent": "onChange",
+        "affectedFields": [
+          "overallRating",
+          "technicalSkillsRating",
+          "communicationRating",
+          "teamworkRating",
+          "leadershipRating"
+        ]
+      }
+    ],
+    "workflowId": "team-member-management-wf"
   },
   {
-    "id": "systemaccessprovisioningform-1764614969000-6xh6l5",
-    "name": "SystemAccessProvisioningForm",
-    "title": "System Access Provisioning",
-    "description": "Record system access provisioning for new employees including account creation and access level assignment",
+    "id": "taskcreationform-1765362796295-9xe35s",
+    "name": "TaskCreationForm",
+    "title": "Create New Task",
+    "description": "Create a new task with assignment, priority, due date, and project association",
     "fields": [
       {
-        "id": "employee-id",
-        "name": "employeeId",
-        "type": "select",
-        "label": "Employee",
-        "placeholder": "Select employee",
-        "required": true,
-        "validation": {
-          "message": "Please select an employee"
-        },
-        "options": [],
-        "defaultValue": null
-      },
-      {
-        "id": "department-id",
-        "name": "departmentId",
-        "type": "select",
-        "label": "Department",
-        "placeholder": "Select department",
-        "required": true,
-        "validation": {
-          "message": "Please select a department"
-        },
-        "options": [],
-        "defaultValue": null
-      },
-      {
-        "id": "system-name",
-        "name": "systemName",
-        "type": "select",
-        "label": "System/Application",
-        "placeholder": "Select system to provision",
-        "required": true,
-        "validation": {
-          "message": "Please select a system"
-        },
-        "options": [
-          "Active Directory",
-          "Email (Office 365)",
-          "VPN Access",
-          "CRM System",
-          "ERP System",
-          "Project Management Tool",
-          "HR Management System",
-          "Document Management System",
-          "Time Tracking System",
-          "Collaboration Platform"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "username",
-        "name": "username",
-        "type": "text",
-        "label": "Username",
-        "placeholder": "Enter username (e.g., john.doe)",
-        "required": true,
-        "validation": {
-          "pattern": "^[a-z0-9._-]{3,20}$",
-          "message": "Username must be 3-20 characters, lowercase letters, numbers, dots, hyphens, or underscores only"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "access-level",
-        "name": "accessLevel",
-        "type": "select",
-        "label": "Access Level",
-        "placeholder": "Select access level",
-        "required": true,
-        "validation": {
-          "message": "Please select an access level"
-        },
-        "options": [
-          "Read Only",
-          "Standard User",
-          "Power User",
-          "Administrator",
-          "Super Administrator"
-        ],
-        "defaultValue": "Standard User"
-      },
-      {
-        "id": "provisioning-date",
-        "name": "provisioningDate",
-        "type": "date",
-        "label": "Provisioning Date",
-        "placeholder": "Select date",
-        "required": true,
-        "validation": {
-          "message": "Please select the provisioning date"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "provisioning-status",
-        "name": "provisioningStatus",
-        "type": "select",
-        "label": "Status",
-        "placeholder": "Select status",
-        "required": true,
-        "validation": {
-          "message": "Please select provisioning status"
-        },
-        "options": [
-          "Pending",
-          "In Progress",
-          "Completed",
-          "Failed",
-          "Requires Approval"
-        ],
-        "defaultValue": "Completed"
-      },
-      {
-        "id": "notes",
-        "name": "notes",
-        "type": "textarea",
-        "label": "Notes",
-        "placeholder": "Add any additional notes about access provisioning, special permissions, or configuration details",
-        "required": false,
-        "validation": {
-          "max": 500,
-          "message": "Notes must not exceed 500 characters"
-        },
-        "defaultValue": null
-      }
-    ],
-    "gridLayout": [
-      {
-        "i": "employee-id",
-        "x": 0,
-        "y": 0,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "department-id",
-        "x": 12,
-        "y": 0,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "system-name",
-        "x": 0,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "username",
-        "x": 12,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "access-level",
-        "x": 0,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "provisioning-date",
-        "x": 12,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "provisioning-status",
-        "x": 0,
-        "y": 24,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "notes",
-        "x": 0,
-        "y": 32,
-        "w": 24,
-        "h": 12,
-        "minW": 12,
-        "minH": 8
-      }
-    ],
-    "layout": {
-      "type": "two-column",
-      "sections": [
-        {
-          "id": "employee-info",
-          "title": "Employee Information",
-          "fieldIds": [
-            "employee-id",
-            "department-id"
-          ]
-        },
-        {
-          "id": "system-access",
-          "title": "System Access Details",
-          "fieldIds": [
-            "system-name",
-            "username",
-            "access-level"
-          ]
-        },
-        {
-          "id": "provisioning-details",
-          "title": "Provisioning Details",
-          "fieldIds": [
-            "provisioning-date",
-            "provisioning-status",
-            "notes"
-          ]
-        }
-      ]
-    },
-    "submitButton": {
-      "label": "Provision Access",
-      "position": "right"
-    },
-    "validation": {
-      "mode": "onSubmit",
-      "showErrors": true
-    },
-    "styling": {
-      "colors": {
-        "primary": "#2563eb",
-        "secondary": "#64748b",
-        "background": "#ffffff",
-        "text": "#1e293b",
-        "border": "#e2e8f0"
-      },
-      "typography": {
-        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
-        "fontSize": {
-          "label": "14px",
-          "input": "14px"
-        },
-        "fontWeight": {
-          "label": "500",
-          "input": "400"
-        }
-      },
-      "spacing": {
-        "fieldGap": "16px",
-        "sectionGap": "32px",
-        "inputPadding": "8px 12px"
-      },
-      "components": {
-        "input": {
-          "borderRadius": "6px",
-          "borderWidth": "1px",
-          "height": "40px"
-        },
-        "button": {
-          "primary": {
-            "background": "#2563eb",
-            "color": "#ffffff",
-            "padding": "10px 24px"
-          }
-        }
-      }
-    },
-    "workflowId": "workflow_1735176234567"
-  },
-  {
-    "id": "orientationschedulingform-1764614990308-ek2ksn",
-    "name": "OrientationSchedulingForm",
-    "title": "Schedule Orientation Session",
-    "description": "Schedule orientation sessions for new employees including date, time, location, and attendee selection.",
-    "fields": [
-      {
-        "id": "session-type",
-        "name": "sessionType",
-        "type": "select",
-        "label": "Session Type",
-        "placeholder": "Select session type",
-        "required": true,
-        "options": [
-          "Individual Session",
-          "Group Session"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "session-date",
-        "name": "sessionDate",
-        "type": "date",
-        "label": "Session Date",
-        "placeholder": "Select date",
-        "required": true,
-        "validation": {
-          "message": "Session date must be in the future"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "session-time",
-        "name": "sessionTime",
-        "type": "select",
-        "label": "Session Time",
-        "placeholder": "Select time slot",
-        "required": true,
-        "options": [
-          "09:00 AM",
-          "10:00 AM",
-          "11:00 AM",
-          "01:00 PM",
-          "02:00 PM",
-          "03:00 PM",
-          "04:00 PM"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "location",
-        "name": "location",
-        "type": "select",
-        "label": "Location",
-        "placeholder": "Select location",
-        "required": true,
-        "options": [
-          "Conference Room A",
-          "Conference Room B",
-          "Training Center",
-          "Virtual (Zoom)",
-          "Virtual (Teams)"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "facilitator",
-        "name": "facilitator",
-        "type": "select",
-        "label": "Facilitator",
-        "placeholder": "Assign facilitator",
-        "required": true,
-        "options": [
-          "HR Manager - Sarah Johnson",
-          "HR Specialist - Michael Chen",
-          "Training Coordinator - Emily Davis",
-          "Department Head"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "attendees",
-        "name": "attendees",
-        "type": "select",
-        "label": "Attendees",
-        "placeholder": "Select new employees",
-        "required": true,
-        "options": [
-          "John Smith - Engineering",
-          "Jane Doe - Marketing",
-          "Robert Brown - Sales",
-          "Lisa White - Finance",
-          "David Lee - Operations"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "additional-notes",
-        "name": "additionalNotes",
-        "type": "textarea",
-        "label": "Additional Notes",
-        "placeholder": "Enter any special instructions, materials needed, or agenda items...",
-        "required": false,
-        "validation": {
-          "max": 500,
-          "message": "Notes must not exceed 500 characters"
-        },
-        "defaultValue": null
-      }
-    ],
-    "gridLayout": [
-      {
-        "i": "session-type",
-        "x": 0,
-        "y": 0,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "session-date",
-        "x": 12,
-        "y": 0,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "session-time",
-        "x": 0,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "location",
-        "x": 12,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "facilitator",
-        "x": 0,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "attendees",
-        "x": 12,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "additional-notes",
-        "x": 0,
-        "y": 24,
-        "w": 24,
-        "h": 12,
-        "minW": 12,
-        "minH": 8
-      }
-    ],
-    "layout": {
-      "type": "two-column",
-      "sections": [
-        {
-          "id": "session-details",
-          "title": "Session Details",
-          "fieldIds": [
-            "session-type",
-            "session-date",
-            "session-time",
-            "location"
-          ]
-        },
-        {
-          "id": "participants",
-          "title": "Participants",
-          "fieldIds": [
-            "facilitator",
-            "attendees"
-          ]
-        },
-        {
-          "id": "notes",
-          "title": "Additional Information",
-          "fieldIds": [
-            "additional-notes"
-          ]
-        }
-      ]
-    },
-    "submitButton": {
-      "label": "Schedule Orientation",
-      "position": "right"
-    },
-    "validation": {
-      "mode": "onSubmit",
-      "showErrors": true
-    },
-    "styling": {
-      "colors": {
-        "primary": "#2563eb",
-        "secondary": "#64748b",
-        "background": "#ffffff",
-        "text": "#1e293b",
-        "border": "#e2e8f0"
-      },
-      "typography": {
-        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
-        "fontSize": {
-          "label": "14px",
-          "input": "14px"
-        },
-        "fontWeight": {
-          "label": "500",
-          "input": "400"
-        }
-      },
-      "spacing": {
-        "fieldGap": "16px",
-        "sectionGap": "32px",
-        "inputPadding": "8px 12px"
-      },
-      "components": {
-        "input": {
-          "borderRadius": "6px",
-          "borderWidth": "1px",
-          "height": "40px"
-        },
-        "button": {
-          "primary": {
-            "background": "#2563eb",
-            "color": "#ffffff",
-            "padding": "10px 24px"
-          }
-        }
-      }
-    },
-    "workflowId": "workflow_1735176234567"
-  },
-  {
-    "id": "documentverificationform-1764615009677-d57t9g",
-    "name": "DocumentVerificationForm",
-    "title": "Document Verification",
-    "description": "Review and verify employee onboarding documents with approval status and comments",
-    "fields": [
-      {
-        "id": "employee-id",
-        "name": "employeeId",
-        "type": "select",
-        "label": "Employee",
-        "placeholder": "Select employee",
-        "required": true,
-        "validation": {
-          "message": "Please select an employee"
-        },
-        "options": [],
-        "defaultValue": null
-      },
-      {
-        "id": "document-type",
-        "name": "documentType",
-        "type": "select",
-        "label": "Document Type",
-        "placeholder": "Select document type",
-        "required": true,
-        "validation": {
-          "message": "Please select a document type"
-        },
-        "options": [
-          "ID Proof",
-          "Address Proof",
-          "Educational Certificate",
-          "Experience Letter",
-          "Background Check",
-          "Tax Forms",
-          "Bank Details",
-          "Emergency Contact"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "verification-status",
-        "name": "verificationStatus",
-        "type": "select",
-        "label": "Verification Status",
-        "placeholder": "Select status",
-        "required": true,
-        "validation": {
-          "message": "Please select a verification status"
-        },
-        "options": [
-          "Approved",
-          "Rejected",
-          "Pending Review",
-          "Resubmission Required"
-        ],
-        "defaultValue": "Pending Review"
-      },
-      {
-        "id": "document-preview",
-        "name": "documentPreview",
-        "type": "file",
-        "label": "Document Preview",
-        "placeholder": "View or upload document",
-        "required": false,
-        "validation": {
-          "message": "Please upload a valid document"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "verification-comments",
-        "name": "verificationComments",
-        "type": "textarea",
-        "label": "Verification Comments",
-        "placeholder": "Add comments about document verification, issues found, or required corrections...",
-        "required": false,
-        "validation": {
-          "max": 1000,
-          "message": "Comments must not exceed 1000 characters"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "verified-by",
-        "name": "verifiedBy",
-        "type": "text",
-        "label": "Verified By",
-        "placeholder": "HR Administrator name",
-        "required": true,
-        "validation": {
-          "min": 2,
-          "max": 100,
-          "message": "Please enter verifier name (2-100 characters)"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "verification-date",
-        "name": "verificationDate",
-        "type": "date",
-        "label": "Verification Date",
-        "placeholder": "Select verification date",
-        "required": true,
-        "validation": {
-          "message": "Please select a verification date"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "notify-employee",
-        "name": "notifyEmployee",
-        "type": "checkbox",
-        "label": "Notify Employee",
-        "placeholder": "",
-        "required": false,
-        "options": [
-          "Send notification to employee about verification status"
-        ],
-        "defaultValue": true
-      }
-    ],
-    "gridLayout": [
-      {
-        "i": "employee-id",
-        "x": 0,
-        "y": 0,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "document-type",
-        "x": 12,
-        "y": 0,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "verification-status",
-        "x": 0,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "document-preview",
-        "x": 12,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "verification-comments",
-        "x": 0,
-        "y": 16,
-        "w": 24,
-        "h": 12,
-        "minW": 12,
-        "minH": 12
-      },
-      {
-        "i": "verified-by",
-        "x": 0,
-        "y": 28,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "verification-date",
-        "x": 12,
-        "y": 28,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "notify-employee",
-        "x": 0,
-        "y": 36,
-        "w": 24,
-        "h": 8,
-        "minW": 12,
-        "minH": 8
-      }
-    ],
-    "layout": {
-      "type": "two-column",
-      "sections": [
-        {
-          "id": "section-document-info",
-          "title": "Document Information",
-          "fieldIds": [
-            "employee-id",
-            "document-type",
-            "verification-status",
-            "document-preview"
-          ]
-        },
-        {
-          "id": "section-verification-details",
-          "title": "Verification Details",
-          "fieldIds": [
-            "verification-comments",
-            "verified-by",
-            "verification-date",
-            "notify-employee"
-          ]
-        }
-      ]
-    },
-    "submitButton": {
-      "label": "Submit Verification",
-      "position": "right"
-    },
-    "validation": {
-      "mode": "onSubmit",
-      "showErrors": true
-    },
-    "styling": {
-      "colors": {
-        "primary": "#2563eb",
-        "secondary": "#64748b",
-        "background": "#ffffff",
-        "text": "#0f172a",
-        "border": "#e2e8f0"
-      },
-      "typography": {
-        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
-        "fontSize": {
-          "label": "14px",
-          "input": "14px"
-        },
-        "fontWeight": {
-          "label": "500",
-          "input": "400"
-        }
-      },
-      "spacing": {
-        "fieldGap": "16px",
-        "sectionGap": "32px",
-        "inputPadding": "8px 12px"
-      },
-      "components": {
-        "input": {
-          "borderRadius": "6px",
-          "borderWidth": "1px",
-          "height": "40px"
-        },
-        "button": {
-          "primary": {
-            "background": "#2563eb",
-            "color": "#ffffff",
-            "padding": "10px 24px"
-          }
-        }
-      }
-    },
-    "workflowId": "workflow_1735176234567"
-  },
-  {
-    "id": "taskassignmentform-1764615030811-zqbn3i",
-    "name": "TaskAssignmentForm",
-    "title": "Assign Onboarding Task",
-    "description": "Create and assign onboarding tasks to employees with priority and dependencies",
-    "fields": [
-      {
-        "id": "task-template",
-        "name": "taskTemplate",
-        "type": "select",
-        "label": "Task Template",
-        "placeholder": "Select a template or create custom task",
-        "required": false,
-        "options": [
-          "Custom Task",
-          "IT Setup - Laptop & Email",
-          "HR Paperwork Completion",
-          "Department Orientation",
-          "Security Badge Setup",
-          "Benefits Enrollment",
-          "Manager Introduction Meeting",
-          "Workspace Setup",
-          "System Access Request"
-        ],
-        "defaultValue": "Custom Task"
-      },
-      {
-        "id": "task-title",
-        "name": "taskTitle",
+        "id": "field-title",
+        "name": "title",
         "type": "text",
         "label": "Task Title",
         "placeholder": "Enter task title",
@@ -2906,199 +3372,207 @@
           "min": 3,
           "max": 100,
           "message": "Task title must be between 3 and 100 characters"
-        }
+        },
+        "defaultValue": null
       },
       {
-        "id": "assignee",
-        "name": "assignee",
+        "id": "field-projectId",
+        "name": "projectId",
+        "type": "select",
+        "label": "Project",
+        "placeholder": "Select project",
+        "required": true,
+        "options": [],
+        "validation": {
+          "message": "Please select a project"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-description",
+        "name": "description",
+        "type": "textarea",
+        "label": "Description",
+        "placeholder": "Provide detailed task description",
+        "required": false,
+        "validation": {
+          "max": 1000,
+          "message": "Description must not exceed 1000 characters"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-assigneeId",
+        "name": "assigneeId",
         "type": "select",
         "label": "Assign To",
-        "placeholder": "Select employee",
+        "placeholder": "Select team member",
         "required": true,
-        "options": [
-          "New Employee",
-          "IT Department",
-          "HR Department",
-          "Direct Manager",
-          "Facilities Team",
-          "Security Team"
-        ]
-      },
-      {
-        "id": "due-date",
-        "name": "dueDate",
-        "type": "date",
-        "label": "Due Date",
-        "placeholder": "Select due date",
-        "required": true,
+        "options": [],
         "validation": {
-          "message": "Due date must be in the future"
-        }
+          "message": "Please assign the task to a team member"
+        },
+        "defaultValue": null
       },
       {
-        "id": "priority",
+        "id": "field-priority",
         "name": "priority",
         "type": "select",
         "label": "Priority",
         "placeholder": "Select priority level",
         "required": true,
         "options": [
-          "High",
+          "Low",
           "Medium",
-          "Low"
+          "High",
+          "Urgent"
         ],
+        "validation": {
+          "message": "Please select a priority level"
+        },
         "defaultValue": "Medium"
       },
       {
-        "id": "department",
-        "name": "department",
-        "type": "select",
-        "label": "Department",
-        "placeholder": "Select department",
-        "required": true,
-        "options": [
-          "Engineering",
-          "Sales",
-          "Marketing",
-          "Human Resources",
-          "Finance",
-          "Operations",
-          "Customer Support",
-          "IT"
-        ]
-      },
-      {
-        "id": "dependencies",
-        "name": "dependencies",
-        "type": "select",
-        "label": "Depends On",
-        "placeholder": "Select prerequisite tasks (optional)",
-        "required": false,
-        "options": [
-          "None",
-          "HR Paperwork Completion",
-          "IT Setup Complete",
-          "Security Clearance",
-          "Manager Approval",
-          "System Access Granted"
-        ],
-        "defaultValue": "None"
-      },
-      {
-        "id": "task-description",
-        "name": "taskDescription",
-        "type": "textarea",
-        "label": "Task Description",
-        "placeholder": "Enter detailed task instructions and requirements",
+        "id": "field-dueDate",
+        "name": "dueDate",
+        "type": "date",
+        "label": "Due Date",
+        "placeholder": "Select due date",
         "required": true,
         "validation": {
-          "min": 10,
-          "max": 500,
-          "message": "Description must be between 10 and 500 characters"
-        }
+          "message": "Please select a due date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-estimatedHours",
+        "name": "estimatedHours",
+        "type": "number",
+        "label": "Estimated Hours",
+        "placeholder": "Enter estimated hours",
+        "required": false,
+        "validation": {
+          "min": 0,
+          "max": 1000,
+          "message": "Estimated hours must be between 0 and 1000"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-tags",
+        "name": "tags",
+        "type": "text",
+        "label": "Tags",
+        "placeholder": "Enter tags (comma-separated)",
+        "required": false,
+        "validation": {
+          "max": 200,
+          "message": "Tags must not exceed 200 characters"
+        },
+        "defaultValue": null
       }
     ],
     "gridLayout": [
       {
-        "i": "task-template",
+        "i": "field-title",
         "x": 0,
         "y": 0,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "task-title",
-        "x": 12,
-        "y": 0,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "assignee",
-        "x": 0,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "due-date",
-        "x": 12,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "priority",
-        "x": 0,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "department",
-        "x": 12,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 8
-      },
-      {
-        "i": "dependencies",
-        "x": 0,
-        "y": 24,
         "w": 24,
         "h": 8,
         "minW": 12,
         "minH": 8
       },
       {
-        "i": "task-description",
+        "i": "field-projectId",
         "x": 0,
-        "y": 32,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "field-assigneeId",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "field-description",
+        "x": 0,
+        "y": 16,
         "w": 24,
         "h": 12,
         "minW": 12,
         "minH": 12
+      },
+      {
+        "i": "field-priority",
+        "x": 0,
+        "y": 28,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "field-dueDate",
+        "x": 12,
+        "y": 28,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "field-estimatedHours",
+        "x": 0,
+        "y": 36,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "field-tags",
+        "x": 12,
+        "y": 36,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
       }
     ],
     "layout": {
       "type": "two-column",
       "sections": [
         {
-          "id": "task-details",
-          "title": "Task Details",
+          "id": "section-basic",
+          "title": "Task Information",
           "fieldIds": [
-            "task-template",
-            "task-title",
-            "assignee",
-            "due-date"
+            "field-title",
+            "field-projectId",
+            "field-assigneeId",
+            "field-description"
           ]
         },
         {
-          "id": "task-configuration",
-          "title": "Configuration",
+          "id": "section-details",
+          "title": "Task Details",
           "fieldIds": [
-            "priority",
-            "department",
-            "dependencies",
-            "task-description"
+            "field-priority",
+            "field-dueDate",
+            "field-estimatedHours",
+            "field-tags"
           ]
         }
       ]
     },
     "submitButton": {
-      "label": "Assign Task",
+      "label": "Create Task",
       "position": "right"
     },
     "validation": {
@@ -3107,14 +3581,14 @@
     },
     "styling": {
       "colors": {
-        "primary": "#2563eb",
+        "primary": "#3b82f6",
         "secondary": "#64748b",
         "background": "#ffffff",
         "text": "#1e293b",
         "border": "#e2e8f0"
       },
       "typography": {
-        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         "fontSize": {
           "label": "14px",
           "input": "14px"
@@ -3137,131 +3611,183 @@
         },
         "button": {
           "primary": {
-            "background": "#2563eb",
+            "background": "#3b82f6",
             "color": "#ffffff",
             "padding": "10px 24px"
           }
         }
       }
     },
-    "workflowId": "workflow_1735176234567"
+    "_formAssociation": {
+      "forWorkflow": "TaskAssignment",
+      "forNodeType": "startProcess",
+      "forNodeLabel": "Start - Create Task",
+      "dataModel": "Task"
+    },
+    "_specName": "TaskCreationForm",
+    "dataModelId": "dm_task_1765363295098",
+    "dataModelName": "Task",
+    "validationRules": [
+      {
+        "id": "rule_task_assignee_validation",
+        "name": "TaskAssigneeValidation",
+        "ruleType": "validation",
+        "triggerEvent": "onSubmit",
+        "affectedFields": [
+          "assigneeId"
+        ]
+      },
+      {
+        "id": "rule_task_due_date_validation",
+        "name": "TaskDueDateValidation",
+        "ruleType": "validation",
+        "triggerEvent": "onChange",
+        "affectedFields": [
+          "dueDate",
+          "projectId"
+        ]
+      },
+      {
+        "id": "rule_workload_balance_warning",
+        "name": "WorkloadBalanceWarning",
+        "ruleType": "validation",
+        "triggerEvent": "onChange",
+        "affectedFields": [
+          "assigneeId"
+        ]
+      },
+      {
+        "id": "rule_priority_based_due_date_suggestion",
+        "name": "PriorityBasedDueDateSuggestion",
+        "ruleType": "calculation",
+        "triggerEvent": "onChange",
+        "affectedFields": [
+          "dueDate",
+          "priority"
+        ]
+      }
+    ],
+    "workflowId": "team-member-management-wf"
   },
   {
-    "id": "onboardinginitiationform-1764615052213-2jqcn5",
-    "name": "OnboardingInitiationForm",
-    "title": "Initiate New Hire Onboarding",
-    "description": "Start the onboarding process for a new employee by providing essential information and selecting the appropriate workflow template.",
+    "id": "projectcreationform-1765362818211-yqyos7",
+    "name": "ProjectCreationForm",
+    "title": "Create New Project",
+    "description": "Initialize a new project with timeline, budget, and manager assignment",
     "fields": [
       {
-        "id": "employee-select",
-        "name": "employeeId",
-        "type": "select",
-        "label": "New Hire Employee",
-        "placeholder": "Select employee from system",
+        "id": "field-name",
+        "name": "name",
+        "type": "text",
+        "label": "Project Name",
+        "placeholder": "Enter project name",
         "required": true,
         "validation": {
-          "message": "Please select an employee to onboard"
-        },
-        "options": [],
-        "defaultValue": null
-      },
-      {
-        "id": "start-date",
-        "name": "startDate",
-        "type": "date",
-        "label": "Start Date",
-        "placeholder": "Select first day of work",
-        "required": true,
-        "validation": {
-          "message": "Start date is required and must be a future date"
+          "min": 3,
+          "max": 100,
+          "message": "Project name must be between 3 and 100 characters"
         },
         "defaultValue": null
       },
       {
-        "id": "department-select",
+        "id": "field-departmentid",
         "name": "departmentId",
         "type": "select",
         "label": "Department",
         "placeholder": "Select department",
         "required": true,
+        "options": [],
         "validation": {
           "message": "Please select a department"
         },
-        "options": [],
         "defaultValue": null
       },
       {
-        "id": "position-input",
-        "name": "position",
-        "type": "text",
-        "label": "Position/Job Title",
-        "placeholder": "Enter job title",
-        "required": true,
-        "validation": {
-          "min": 2,
-          "max": 100,
-          "message": "Position must be between 2 and 100 characters"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "manager-select",
-        "name": "managerId",
-        "type": "select",
-        "label": "Reporting Manager",
-        "placeholder": "Select direct manager",
-        "required": true,
-        "validation": {
-          "message": "Please assign a reporting manager"
-        },
-        "options": [],
-        "defaultValue": null
-      },
-      {
-        "id": "workflow-template",
-        "name": "workflowTemplateId",
-        "type": "select",
-        "label": "Onboarding Workflow Template",
-        "placeholder": "Select workflow template",
-        "required": true,
-        "validation": {
-          "message": "Please select an onboarding workflow template"
-        },
-        "options": [
-          "Standard Employee Onboarding",
-          "Executive Onboarding",
-          "Remote Employee Onboarding",
-          "Contractor Onboarding",
-          "Intern Onboarding"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "special-notes",
-        "name": "specialNotes",
+        "id": "field-description",
+        "name": "description",
         "type": "textarea",
-        "label": "Special Instructions (Optional)",
-        "placeholder": "Add any special requirements, accommodations, or notes for this onboarding...",
-        "required": false,
+        "label": "Project Description",
+        "placeholder": "Provide a detailed description of the project objectives and scope",
+        "required": true,
         "validation": {
-          "max": 500,
-          "message": "Notes must not exceed 500 characters"
+          "min": 10,
+          "max": 1000,
+          "message": "Description must be between 10 and 1000 characters"
         },
         "defaultValue": null
       },
       {
-        "id": "send-welcome-email",
-        "name": "sendWelcomeEmail",
-        "type": "checkbox",
-        "label": "Send Welcome Email",
-        "placeholder": "",
-        "required": false,
-        "defaultValue": true
+        "id": "field-projectmanagerid",
+        "name": "projectManagerId",
+        "type": "select",
+        "label": "Project Manager",
+        "placeholder": "Assign project manager",
+        "required": true,
+        "options": [],
+        "validation": {
+          "message": "Please assign a project manager"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-priority",
+        "name": "priority",
+        "type": "select",
+        "label": "Priority",
+        "placeholder": "Select priority level",
+        "required": true,
+        "options": [
+          "Low",
+          "Medium",
+          "High",
+          "Critical"
+        ],
+        "validation": {
+          "message": "Please select a priority level"
+        },
+        "defaultValue": "Medium"
+      },
+      {
+        "id": "field-startdate",
+        "name": "startDate",
+        "type": "date",
+        "label": "Start Date",
+        "placeholder": "Select start date",
+        "required": true,
+        "validation": {
+          "message": "Please select a valid start date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-enddate",
+        "name": "endDate",
+        "type": "date",
+        "label": "End Date",
+        "placeholder": "Select end date",
+        "required": true,
+        "validation": {
+          "message": "End date must be after start date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "field-budget",
+        "name": "budget",
+        "type": "number",
+        "label": "Budget",
+        "placeholder": "Enter project budget",
+        "required": true,
+        "validation": {
+          "min": 0,
+          "message": "Budget must be a positive number"
+        },
+        "defaultValue": null
       }
     ],
     "gridLayout": [
       {
-        "i": "employee-select",
+        "i": "field-name",
         "x": 0,
         "y": 0,
         "w": 12,
@@ -3270,7 +3796,7 @@
         "minH": 6
       },
       {
-        "i": "start-date",
+        "i": "field-departmentid",
         "x": 12,
         "y": 0,
         "w": 12,
@@ -3279,57 +3805,57 @@
         "minH": 6
       },
       {
-        "i": "department-select",
+        "i": "field-description",
         "x": 0,
         "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "position-input",
-        "x": 12,
-        "y": 8,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "manager-select",
-        "x": 0,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "workflow-template",
-        "x": 12,
-        "y": 16,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "special-notes",
-        "x": 0,
-        "y": 24,
         "w": 24,
         "h": 12,
         "minW": 12,
         "minH": 8
       },
       {
-        "i": "send-welcome-email",
+        "i": "field-projectmanagerid",
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-priority",
+        "x": 12,
+        "y": 20,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-startdate",
+        "x": 0,
+        "y": 28,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-enddate",
+        "x": 12,
+        "y": 28,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-budget",
         "x": 0,
         "y": 36,
-        "w": 24,
+        "w": 12,
         "h": 8,
-        "minW": 12,
+        "minW": 6,
         "minH": 6
       }
     ],
@@ -3337,29 +3863,35 @@
       "type": "two-column",
       "sections": [
         {
-          "id": "employee-info",
-          "title": "Employee Information",
+          "id": "section-basic",
+          "title": "Basic Information",
           "fieldIds": [
-            "employee-select",
-            "start-date",
-            "department-select",
-            "position-input"
+            "field-name",
+            "field-departmentid",
+            "field-description"
           ]
         },
         {
-          "id": "workflow-config",
-          "title": "Workflow Configuration",
+          "id": "section-assignment",
+          "title": "Assignment & Priority",
           "fieldIds": [
-            "manager-select",
-            "workflow-template",
-            "special-notes",
-            "send-welcome-email"
+            "field-projectmanagerid",
+            "field-priority"
+          ]
+        },
+        {
+          "id": "section-timeline",
+          "title": "Timeline & Budget",
+          "fieldIds": [
+            "field-startdate",
+            "field-enddate",
+            "field-budget"
           ]
         }
       ]
     },
     "submitButton": {
-      "label": "Initiate Onboarding",
+      "label": "Create Project",
       "position": "right"
     },
     "validation": {
@@ -3405,6 +3937,1078 @@
         }
       }
     },
-    "workflowId": "workflow_1735176234567"
+    "_formAssociation": {
+      "forWorkflow": "ProjectManagement",
+      "forNodeType": "startProcess",
+      "forNodeLabel": "Start - Create Project",
+      "dataModel": "Project"
+    },
+    "_specName": "ProjectCreationForm",
+    "dataModelId": "dm_project_1765363295098",
+    "dataModelName": "Project",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "reportgenerationform-1765362837681-anhti0",
+    "name": "ReportGenerationForm",
+    "title": "Generate Report",
+    "description": "Configure report parameters including type, date range, filters, and output format",
+    "fields": [
+      {
+        "id": "reportType",
+        "name": "reportType",
+        "type": "select",
+        "label": "Report Type",
+        "placeholder": "Select report type",
+        "required": true,
+        "options": [
+          "Team Performance Summary",
+          "Project Status Report",
+          "Time Tracking Analysis",
+          "Leave Request Summary",
+          "Department Overview",
+          "Individual Performance Review",
+          "Milestone Progress Report"
+        ],
+        "defaultValue": null,
+        "validation": {
+          "message": "Please select a report type"
+        }
+      },
+      {
+        "id": "outputFormat",
+        "name": "outputFormat",
+        "type": "select",
+        "label": "Output Format",
+        "placeholder": "Select format",
+        "required": true,
+        "options": [
+          "PDF",
+          "Excel (XLSX)",
+          "CSV",
+          "HTML"
+        ],
+        "defaultValue": "PDF",
+        "validation": {
+          "message": "Please select an output format"
+        }
+      },
+      {
+        "id": "startDate",
+        "name": "startDate",
+        "type": "date",
+        "label": "Start Date",
+        "placeholder": "Select start date",
+        "required": true,
+        "validation": {
+          "message": "Start date is required"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "endDate",
+        "name": "endDate",
+        "type": "date",
+        "label": "End Date",
+        "placeholder": "Select end date",
+        "required": true,
+        "validation": {
+          "message": "End date is required and must be after start date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "departmentId",
+        "name": "departmentId",
+        "type": "select",
+        "label": "Department (Optional)",
+        "placeholder": "Filter by department",
+        "required": false,
+        "options": [
+          "All Departments",
+          "Engineering",
+          "Marketing",
+          "Sales",
+          "Human Resources",
+          "Finance",
+          "Operations"
+        ],
+        "defaultValue": "All Departments"
+      },
+      {
+        "id": "projectId",
+        "name": "projectId",
+        "type": "select",
+        "label": "Project (Optional)",
+        "placeholder": "Filter by project",
+        "required": false,
+        "options": [
+          "All Projects",
+          "Project Alpha",
+          "Project Beta",
+          "Project Gamma",
+          "Project Delta"
+        ],
+        "defaultValue": "All Projects"
+      },
+      {
+        "id": "teamMemberId",
+        "name": "teamMemberId",
+        "type": "select",
+        "label": "Team Member (Optional)",
+        "placeholder": "Filter by team member",
+        "required": false,
+        "options": [
+          "All Team Members"
+        ],
+        "defaultValue": "All Team Members"
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "reportType",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "outputFormat",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "startDate",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "endDate",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "departmentId",
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "projectId",
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "teamMemberId",
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "report-config",
+          "title": "Report Configuration",
+          "fieldIds": [
+            "reportType",
+            "outputFormat"
+          ]
+        },
+        {
+          "id": "date-range",
+          "title": "Date Range",
+          "fieldIds": [
+            "startDate",
+            "endDate"
+          ]
+        },
+        {
+          "id": "filters",
+          "title": "Filters",
+          "fieldIds": [
+            "departmentId",
+            "projectId",
+            "teamMemberId"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Generate Report",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#4F46E5",
+        "secondary": "#6B7280",
+        "background": "#FFFFFF",
+        "text": "#1F2937",
+        "border": "#D1D5DB"
+      },
+      "typography": {
+        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#4F46E5",
+            "color": "#FFFFFF",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "ReportingAnalytics",
+      "forNodeType": "startProcess",
+      "forNodeLabel": "Start - Generate Report",
+      "dataModel": "Project"
+    },
+    "_specName": "ReportGenerationForm",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_submit_member_information_1765363295112",
+    "name": "Submit Member Information Form",
+    "description": "Auto-generated form for Submit Member Information",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Submit Member Information",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "TeamMemberManagement",
+    "_forNode": "userTask-1",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_manager_approval_1765363295112",
+    "name": "Manager Approval Form",
+    "description": "Auto-generated form for Manager Approval",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Manager Approval",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "TeamMemberManagement",
+    "_forNode": "userTask-2",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_start_review_cycle_1765363295112",
+    "name": "Start Review Cycle Form",
+    "description": "Auto-generated form for Start Review Cycle",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Start Review Cycle",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1765363295112_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "PerformanceReview",
+    "_forNode": "start-1",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_manager_review_1765363295112",
+    "name": "Manager Review Form",
+    "description": "Auto-generated form for Manager Review",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Manager Review",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "PerformanceReview",
+    "_forNode": "userTask-2",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_goal_setting_1765363295112",
+    "name": "Goal Setting Form",
+    "description": "Auto-generated form for Goal Setting",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Goal Setting",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "PerformanceReview",
+    "_forNode": "userTask-3",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_collect_feedback_1765363295112",
+    "name": "Collect Feedback Form",
+    "description": "Auto-generated form for Collect Feedback",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Collect Feedback",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "PerformanceReview",
+    "_forNode": "userTask-4",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_start_availability_check_1765363295112",
+    "name": "Start Availability Check Form",
+    "description": "Auto-generated form for Start Availability Check",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Start Availability Check",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1765363295112_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "TeamAvailabilityCalendar",
+    "_forNode": "start-1",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_create_task_details_1765363295112",
+    "name": "Create Task Details Form",
+    "description": "Auto-generated form for Create Task Details",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Create Task Details",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "TaskAssignment",
+    "_forNode": "userTask-1",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_select_assignee_1765363295112",
+    "name": "Select Assignee Form",
+    "description": "Auto-generated form for Select Assignee",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Select Assignee",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "TaskAssignment",
+    "_forNode": "userTask-2",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_assign_team_members_1765363295112",
+    "name": "Assign Team Members Form",
+    "description": "Auto-generated form for Assign Team Members",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Assign Team Members",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "ProjectManagement",
+    "_forNode": "userTask-2",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_project_closure_review_1765363295112",
+    "name": "Project Closure Review Form",
+    "description": "Auto-generated form for Project Closure Review",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Project Closure Review",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "ProjectManagement",
+    "_forNode": "userTask-3",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_manager_approval_1765363295112",
+    "name": "Manager Approval Form",
+    "description": "Auto-generated form for Manager Approval",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Manager Approval",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "LeaveManagement",
+    "_forNode": "userTask-2",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_hr_final_approval_1765363295112",
+    "name": "HR Final Approval Form",
+    "description": "Auto-generated form for HR Final Approval",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "HR Final Approval",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "LeaveManagement",
+    "_forNode": "userTask-3",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_start_task_update_1765363295112",
+    "name": "Start Task Update Form",
+    "description": "Auto-generated form for Start Task Update",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Start Task Update",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1765363295112_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "TaskStatusUpdate",
+    "_forNode": "start-1",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_start_collaboration_action_1765363295112",
+    "name": "Start Collaboration Action Form",
+    "description": "Auto-generated form for Start Collaboration Action",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Start Collaboration Action",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1765363295112_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "TeamCollaboration",
+    "_forNode": "start-1",
+    "workflowId": "team-member-management-wf"
+  },
+  {
+    "id": "form_auto_configure_report_parameters_1765363295112",
+    "name": "Configure Report Parameters Form",
+    "description": "Auto-generated form for Configure Report Parameters",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1765363295112",
+        "title": "Configure Report Parameters",
+        "fields": [
+          {
+            "id": "field_1765363295112_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1765363295112_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "team-member",
+    "dataModelName": "TeamMember",
+    "_autoGenerated": true,
+    "_forWorkflow": "ReportingAnalytics",
+    "_forNode": "userTask-1",
+    "workflowId": "team-member-management-wf"
   }
 ]

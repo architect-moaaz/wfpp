@@ -1,0 +1,3455 @@
+[
+  {
+    "id": "task-list-view-1768641032910-fsgbg1",
+    "name": "Task List View",
+    "title": "Tasks",
+    "description": "Main page displaying all tasks with filtering and action options",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "create-task-form-1768640993071-o1ho1x"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "Tasks",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Manage and track all your tasks in one place",
+                    "variant": "subtitle"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "stats-section",
+        "type": "stats-row",
+        "layout": "grid-4",
+        "components": [
+          {
+            "type": "stat-card",
+            "config": {
+              "title": "Total Tasks",
+              "value": "{{totalTasks}}",
+              "icon": "clipboard-list",
+              "iconColor": "primary",
+              "trend": "+8",
+              "trendDirection": "up"
+            }
+          },
+          {
+            "type": "stat-card",
+            "config": {
+              "title": "In Progress",
+              "value": "{{inProgressCount}}",
+              "icon": "clock",
+              "iconColor": "warning"
+            }
+          },
+          {
+            "type": "stat-card",
+            "config": {
+              "title": "Completed",
+              "value": "{{completedCount}}",
+              "icon": "check-circle",
+              "iconColor": "success",
+              "trend": "+12%",
+              "trendDirection": "up"
+            }
+          },
+          {
+            "type": "stat-card",
+            "config": {
+              "title": "Overdue",
+              "value": "{{overdueCount}}",
+              "icon": "alert-circle",
+              "iconColor": "error"
+            }
+          }
+        ]
+      },
+      {
+        "id": "filters-section",
+        "type": "filters",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "shadow": "sm",
+              "borderRadius": "md",
+              "children": [
+                {
+                  "type": "container",
+                  "config": {
+                    "padding": "16px",
+                    "children": [
+                      {
+                        "type": "heading",
+                        "config": {
+                          "text": "Filters",
+                          "variant": "h3"
+                        }
+                      },
+                      {
+                        "type": "search",
+                        "config": {
+                          "placeholder": "Search tasks..."
+                        }
+                      },
+                      {
+                        "type": "select",
+                        "config": {
+                          "label": "Status",
+                          "options": [
+                            "All",
+                            "Pending",
+                            "In Progress",
+                            "Completed",
+                            "Overdue"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "select",
+                        "config": {
+                          "label": "Assigned To",
+                          "options": [
+                            "All Users",
+                            "{{user.name}}"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "select",
+                        "config": {
+                          "label": "Due Date",
+                          "options": [
+                            "All",
+                            "Today",
+                            "This Week",
+                            "This Month",
+                            "Overdue"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "buttonGroup",
+                        "config": {
+                          "buttons": [
+                            {
+                              "label": "Apply Filters",
+                              "variant": "primary",
+                              "icon": "filter"
+                            },
+                            {
+                              "label": "Clear",
+                              "variant": "secondary"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "actions-section",
+        "type": "actions",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "16px 24px",
+              "children": [
+                {
+                  "type": "buttonGroup",
+                  "config": {
+                    "buttons": [
+                      {
+                        "label": "Create Task",
+                        "variant": "primary",
+                        "icon": "plus"
+                      },
+                      {
+                        "label": "Export",
+                        "variant": "secondary",
+                        "icon": "download"
+                      },
+                      {
+                        "label": "Bulk Actions",
+                        "variant": "secondary",
+                        "icon": "more-horizontal"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "tabs-section",
+        "type": "tabs",
+        "components": [
+          {
+            "type": "tabs",
+            "config": {
+              "variant": "underline",
+              "tabs": [
+                {
+                  "id": "grid-view",
+                  "label": "Grid View",
+                  "icon": "grid",
+                  "content": [
+                    {
+                      "type": "container",
+                      "config": {
+                        "padding": "24px",
+                        "children": [
+                          {
+                            "type": "grid",
+                            "config": {
+                              "columns": 3,
+                              "gap": "24px"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "{{task.title}}",
+                        "description": "{{task.description}}",
+                        "shadow": "md",
+                        "hoverElevation": true,
+                        "borderRadius": "lg",
+                        "children": [
+                          {
+                            "type": "badge",
+                            "config": {
+                              "text": "{{task.status}}",
+                              "variant": "{{task.statusVariant}}"
+                            }
+                          },
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "Due: {{task.dueDate}}",
+                              "variant": "caption"
+                            }
+                          },
+                          {
+                            "type": "container",
+                            "config": {
+                              "padding": "8px 0",
+                              "children": [
+                                {
+                                  "type": "avatar",
+                                  "config": {
+                                    "src": "{{task.assignedUser.avatar}}",
+                                    "initials": "{{task.assignedUser.initials}}",
+                                    "size": "small"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "{{task.assignedUser.name}}",
+                                    "variant": "caption"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ],
+                        "actions": [
+                          {
+                            "label": "View",
+                            "icon": "eye",
+                            "action": "view"
+                          },
+                          {
+                            "label": "Edit",
+                            "icon": "edit",
+                            "action": "edit"
+                          },
+                          {
+                            "label": "Complete",
+                            "icon": "check",
+                            "action": "complete"
+                          }
+                        ]
+                      },
+                      "dataBinding": "Task.all"
+                    }
+                  ]
+                },
+                {
+                  "id": "table-view",
+                  "label": "Table View",
+                  "icon": "list",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "shadow": "sm",
+                        "borderRadius": "md",
+                        "children": [
+                          {
+                            "type": "table",
+                            "config": {
+                              "columns": [
+                                {
+                                  "key": "title",
+                                  "label": "Task Title",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "status",
+                                  "label": "Status",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "assignedUser",
+                                  "label": "Assigned To",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "dueDate",
+                                  "label": "Due Date",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "priority",
+                                  "label": "Priority",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "actions",
+                                  "label": "Actions"
+                                }
+                              ],
+                              "dataBinding": "Task.all"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "kanban-view",
+                  "label": "Kanban",
+                  "icon": "columns",
+                  "content": [
+                    {
+                      "type": "alert",
+                      "config": {
+                        "variant": "info",
+                        "title": "Drag & Drop",
+                        "message": "Drag tasks between columns to update their status",
+                        "dismissible": true
+                      }
+                    },
+                    {
+                      "type": "container",
+                      "config": {
+                        "padding": "24px",
+                        "children": [
+                          {
+                            "type": "grid",
+                            "config": {
+                              "columns": 4,
+                              "gap": "16px"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Pending",
+                        "shadow": "sm",
+                        "borderRadius": "md",
+                        "children": [
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "{{task.title}}",
+                              "description": "{{task.description}}",
+                              "shadow": "sm",
+                              "hoverElevation": true,
+                              "children": [
+                                {
+                                  "type": "badge",
+                                  "config": {
+                                    "text": "{{task.priority}}",
+                                    "variant": "warning"
+                                  }
+                                }
+                              ]
+                            },
+                            "dataBinding": "Task.pending"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "loading-state",
+        "type": "conditional",
+        "showWhen": "isLoading",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "48px",
+              "children": [
+                {
+                  "type": "spinner",
+                  "config": {
+                    "size": "large",
+                    "label": "Loading tasks..."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "empty-state",
+        "type": "conditional",
+        "showWhen": "tasks.length === 0",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "shadow": "md",
+              "borderRadius": "lg",
+              "children": [
+                {
+                  "type": "container",
+                  "config": {
+                    "padding": "48px",
+                    "children": [
+                      {
+                        "type": "heading",
+                        "config": {
+                          "text": "No Tasks Found",
+                          "variant": "h2"
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "config": {
+                          "text": "Get started by creating your first task",
+                          "variant": "body"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "config": {
+                          "label": "Create Your First Task",
+                          "variant": "primary",
+                          "icon": "plus"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "pagination-section",
+        "type": "footer",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "children": [
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Showing {{startIndex}} to {{endIndex}} of {{totalTasks}} tasks",
+                    "variant": "caption"
+                  }
+                },
+                {
+                  "type": "buttonGroup",
+                  "config": {
+                    "buttons": [
+                      {
+                        "label": "Previous",
+                        "variant": "secondary",
+                        "icon": "chevron-left"
+                      },
+                      {
+                        "label": "Next",
+                        "variant": "secondary",
+                        "icon": "chevron-right"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/tasks/:id"
+        },
+        "complete": {
+          "type": "workflow",
+          "workflow": "Mark Task as Complete"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "home"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks",
+          "icon": "clipboard-list"
+        },
+        {
+          "label": "Task Detail",
+          "route": "/task-detail",
+          "icon": "file-text"
+        },
+        {
+          "label": "Profile",
+          "route": "/profile",
+          "icon": "user"
+        },
+        {
+          "label": "Logout",
+          "route": "/login",
+          "icon": "log-out"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-user-registration"
+  },
+  {
+    "id": "task-detail-view-1768641050000-abc123",
+    "name": "Task Detail View",
+    "title": "Task Details",
+    "description": "Detailed view of individual task with full information and actions",
+    "route": "/tasks/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "edit-task-form-1768641014070-tqvu4j"
+    ],
+    "sections": [
+      {
+        "id": "breadcrumb-section",
+        "type": "navigation",
+        "components": [
+          {
+            "type": "breadcrumb",
+            "config": {
+              "items": [
+                {
+                  "label": "Tasks",
+                  "href": "/tasks"
+                },
+                {
+                  "label": "{{task.title}}",
+                  "href": ""
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "status-alerts",
+        "type": "alerts",
+        "components": [
+          {
+            "type": "alert",
+            "config": {
+              "variant": "success",
+              "title": "Task Updated",
+              "message": "Your changes have been saved successfully",
+              "dismissible": true
+            },
+            "showWhen": "taskUpdated"
+          },
+          {
+            "type": "alert",
+            "config": {
+              "variant": "info",
+              "title": "Task Completed",
+              "message": "This task has been marked as complete",
+              "dismissible": false
+            },
+            "showWhen": "task.status === 'completed'"
+          }
+        ]
+      },
+      {
+        "id": "loading-state",
+        "type": "conditional",
+        "showWhen": "isLoading",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "48px",
+              "children": [
+                {
+                  "type": "spinner",
+                  "config": {
+                    "size": "large",
+                    "label": "Loading task details..."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "{{task.title}}",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "container",
+                  "config": {
+                    "padding": "8px 0",
+                    "children": [
+                      {
+                        "type": "badge",
+                        "config": {
+                          "text": "{{task.status}}",
+                          "variant": "{{task.status === 'completed' ? 'success' : task.status === 'in_progress' ? 'warning' : 'default'}}"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "config": {
+                          "text": "{{task.priority}}",
+                          "variant": "{{task.priority === 'high' ? 'error' : task.priority === 'medium' ? 'warning' : 'default'}}"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "buttonGroup",
+                  "config": {
+                    "buttons": [
+                      {
+                        "label": "Edit Task",
+                        "variant": "primary",
+                        "icon": "edit",
+                        "action": "edit"
+                      },
+                      {
+                        "label": "Mark Complete",
+                        "variant": "secondary",
+                        "icon": "check-circle",
+                        "action": "complete"
+                      },
+                      {
+                        "label": "Delete",
+                        "variant": "danger",
+                        "icon": "trash",
+                        "action": "delete"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "main-content",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "grid",
+                  "config": {
+                    "columns": 3,
+                    "gap": "24px"
+                  },
+                  "components": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Task Information",
+                        "shadow": "md",
+                        "children": [
+                          {
+                            "type": "container",
+                            "config": {
+                              "padding": "16px 0",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "Description",
+                                    "variant": "label"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "{{task.description}}",
+                                    "variant": "body"
+                                  }
+                                },
+                                {
+                                  "type": "divider",
+                                  "config": {}
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "Due Date",
+                                    "variant": "label"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "{{task.dueDate | date}}",
+                                    "variant": "body"
+                                  }
+                                },
+                                {
+                                  "type": "divider",
+                                  "config": {}
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "Created",
+                                    "variant": "label"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "{{task.createdAt | date}}",
+                                    "variant": "caption"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "Last Updated",
+                                    "variant": "label"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "{{task.updatedAt | date}}",
+                                    "variant": "caption"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Assignment",
+                        "shadow": "md",
+                        "children": [
+                          {
+                            "type": "container",
+                            "config": {
+                              "padding": "16px 0",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "Assigned To",
+                                    "variant": "label"
+                                  }
+                                },
+                                {
+                                  "type": "container",
+                                  "config": {
+                                    "padding": "8px 0",
+                                    "children": [
+                                      {
+                                        "type": "avatar",
+                                        "config": {
+                                          "src": "{{task.assignedUser.avatar}}",
+                                          "initials": "{{task.assignedUser.initials}}",
+                                          "size": "medium"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{task.assignedUser.name}}",
+                                          "variant": "body"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{task.assignedUser.email}}",
+                                          "variant": "caption"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "type": "divider",
+                                  "config": {}
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "Created By",
+                                    "variant": "label"
+                                  }
+                                },
+                                {
+                                  "type": "container",
+                                  "config": {
+                                    "padding": "8px 0",
+                                    "children": [
+                                      {
+                                        "type": "avatar",
+                                        "config": {
+                                          "src": "{{task.createdBy.avatar}}",
+                                          "initials": "{{task.createdBy.initials}}",
+                                          "size": "small"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{task.createdBy.name}}",
+                                          "variant": "body"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "type": "spacer",
+                                  "config": {
+                                    "height": "16px"
+                                  }
+                                },
+                                {
+                                  "type": "button",
+                                  "config": {
+                                    "label": "Reassign Task",
+                                    "variant": "secondary",
+                                    "icon": "user-plus"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Progress",
+                        "shadow": "md",
+                        "children": [
+                          {
+                            "type": "container",
+                            "config": {
+                              "padding": "16px 0",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "Completion Status",
+                                    "variant": "label"
+                                  }
+                                },
+                                {
+                                  "type": "progress",
+                                  "config": {
+                                    "variant": "bar",
+                                    "value": "{{task.completionPercentage}}",
+                                    "label": "Progress",
+                                    "showPercent": true
+                                  }
+                                },
+                                {
+                                  "type": "divider",
+                                  "config": {}
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "Time Tracking",
+                                    "variant": "label"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "Estimated: {{task.estimatedHours}} hours",
+                                    "variant": "body"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "Logged: {{task.loggedHours}} hours",
+                                    "variant": "body"
+                                  }
+                                },
+                                {
+                                  "type": "spacer",
+                                  "config": {
+                                    "height": "16px"
+                                  }
+                                },
+                                {
+                                  "type": "button",
+                                  "config": {
+                                    "label": "Log Time",
+                                    "variant": "secondary",
+                                    "icon": "clock"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "tabs-section",
+        "type": "tabs",
+        "components": [
+          {
+            "type": "tabs",
+            "config": {
+              "variant": "underline",
+              "tabs": [
+                {
+                  "id": "comments",
+                  "label": "Comments",
+                  "icon": "message-square",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Activity & Comments",
+                        "shadow": "sm",
+                        "children": [
+                          {
+                            "type": "container",
+                            "config": {
+                              "padding": "16px",
+                              "children": [
+                                {
+                                  "type": "textarea",
+                                  "config": {
+                                    "label": "Add a comment",
+                                    "placeholder": "Write your comment here...",
+                                    "rows": 3
+                                  }
+                                },
+                                {
+                                  "type": "button",
+                                  "config": {
+                                    "label": "Post Comment",
+                                    "variant": "primary",
+                                    "icon": "send"
+                                  }
+                                },
+                                {
+                                  "type": "divider",
+                                  "config": {}
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "Recent Comments",
+                                    "variant": "h3"
+                                  }
+                                },
+                                {
+                                  "type": "container",
+                                  "config": {
+                                    "padding": "12px 0",
+                                    "children": [
+                                      {
+                                        "type": "avatar",
+                                        "config": {
+                                          "initials": "JD",
+                                          "size": "small"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{comment.user.name}} • {{comment.createdAt | timeAgo}}",
+                                          "variant": "caption"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{comment.text}}",
+                                          "variant": "body"
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  "dataBinding": "task.comments"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "attachments",
+                  "label": "Attachments",
+                  "icon": "paperclip",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Files & Documents",
+                        "shadow": "sm",
+                        "children": [
+                          {
+                            "type": "container",
+                            "config": {
+                              "padding": "16px",
+                              "children": [
+                                {
+                                  "type": "button",
+                                  "config": {
+                                    "label": "Upload File",
+                                    "variant": "primary",
+                                    "icon": "upload"
+                                  }
+                                },
+                                {
+                                  "type": "spacer",
+                                  "config": {
+                                    "height": "16px"
+                                  }
+                                },
+                                {
+                                  "type": "table",
+                                  "config": {
+                                    "columns": [
+                                      {
+                                        "key": "name",
+                                        "label": "File Name"
+                                      },
+                                      {
+                                        "key": "size",
+                                        "label": "Size"
+                                      },
+                                      {
+                                        "key": "uploadedAt",
+                                        "label": "Uploaded"
+                                      },
+                                      {
+                                        "key": "actions",
+                                        "label": "Actions"
+                                      }
+                                    ],
+                                    "dataBinding": "task.attachments"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "history",
+                  "label": "History",
+                  "icon": "clock",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Task History",
+                        "shadow": "sm",
+                        "children": [
+                          {
+                            "type": "container",
+                            "config": {
+                              "padding": "16px",
+                              "children": [
+                                {
+                                  "type": "accordion",
+                                  "config": {
+                                    "items": [
+                                      {
+                                        "id": "history-1",
+                                        "title": "Status changed to In Progress",
+                                        "content": "Changed by {{user.name}} on {{date}}"
+                                      },
+                                      {
+                                        "id": "history-2",
+                                        "title": "Task assigned to {{assignee.name}}",
+                                        "content": "Assigned by {{user.name}} on {{date}}"
+                                      },
+                                      {
+                                        "id": "history-3",
+                                        "title": "Task created",
+                                        "content": "Created by {{creator.name}} on {{date}}"
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "edit",
+                  "label": "Edit Task",
+                  "icon": "edit",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Edit Task Details",
+                        "shadow": "sm",
+                        "children": [
+                          {
+                            "type": "form",
+                            "formRef": "edit-task-form-1768641014070-tqvu4j",
+                            "config": {
+                              "title": "Update Task Information"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "related-tasks",
+        "type": "section",
+        "components": [
+          {
+            "type": "section",
+            "config": {
+              "title": "Related Tasks",
+              "subtitle": "Tasks in the same project or category",
+              "padding": "32px 24px",
+              "children": [
+                {
+                  "type": "grid",
+                  "config": {
+                    "columns": 3,
+                    "gap": "16px"
+                  },
+                  "components": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "{{relatedTask.title}}",
+                        "description": "{{relatedTask.description}}",
+                        "shadow": "sm",
+                        "hoverElevation": true,
+                        "children": [
+                          {
+                            "type": "badge",
+                            "config": {
+                              "text": "{{relatedTask.status}}",
+                              "variant": "default"
+                            }
+                          }
+                        ],
+                        "actions": [
+                          {
+                            "label": "View",
+                            "icon": "eye",
+                            "action": "view"
+                          }
+                        ]
+                      },
+                      "dataBinding": "relatedTasks"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "edit": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "complete": {
+          "type": "workflow",
+          "workflow": "Mark Task as Complete"
+        },
+        "delete": {
+          "type": "dialog",
+          "confirm": true,
+          "message": "Are you sure you want to delete this task?"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/tasks"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks"
+        },
+        {
+          "label": "Create Task",
+          "route": "/tasks"
+        },
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "My Profile",
+          "route": "/profile"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-user-registration"
+  },
+  {
+    "id": "login-page-1768641100000-auth",
+    "name": "Login Page",
+    "title": "Sign In",
+    "description": "User authentication screen with login form and registration link",
+    "route": "/login",
+    "type": "auth",
+    "platform": "both",
+    "forms": [
+      "login-form-1768640921800-8xuyz9"
+    ],
+    "sections": [
+      {
+        "id": "auth-container",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0",
+              "maxWidth": "440px",
+              "children": [
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "64px"
+                  }
+                },
+                {
+                  "type": "container",
+                  "config": {
+                    "padding": "0 24px",
+                    "children": [
+                      {
+                        "type": "heading",
+                        "config": {
+                          "text": "Welcome Back",
+                          "variant": "h1"
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "8px"
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "config": {
+                          "text": "Sign in to your account to continue",
+                          "variant": "subtitle"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "32px"
+                  }
+                },
+                {
+                  "type": "card",
+                  "config": {
+                    "shadow": "lg",
+                    "children": [
+                      {
+                        "type": "form",
+                        "formRef": "login-form-1768640921800-8xuyz9",
+                        "config": {
+                          "title": ""
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "container",
+                  "config": {
+                    "padding": "0 24px",
+                    "children": [
+                      {
+                        "type": "divider",
+                        "config": {}
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "24px"
+                        }
+                      },
+                      {
+                        "type": "container",
+                        "config": {
+                          "padding": "0",
+                          "children": [
+                            {
+                              "type": "text",
+                              "config": {
+                                "text": "Don't have an account?",
+                                "variant": "body"
+                              }
+                            },
+                            {
+                              "type": "spacer",
+                              "config": {
+                                "height": "8px"
+                              }
+                            },
+                            {
+                              "type": "link",
+                              "config": {
+                                "text": "Create an account",
+                                "href": "/registration"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "16px"
+                        }
+                      },
+                      {
+                        "type": "link",
+                        "config": {
+                          "text": "Forgot your password?",
+                          "href": "/password-reset"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "64px"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "forgotPassword": {
+          "type": "navigate",
+          "target": "/password-reset"
+        }
+      },
+      "menu": [
+        {
+          "label": "Home",
+          "route": "/tasks"
+        },
+        {
+          "label": "Register",
+          "route": "/registration"
+        },
+        {
+          "label": "Reset Password",
+          "route": "/password-reset"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": false
+    },
+    "workflowId": "workflow-user-registration"
+  },
+  {
+    "id": "registration-page-1768641100000-abc123",
+    "name": "Registration Page",
+    "title": "Create Your Account",
+    "description": "New user registration screen with form and benefits",
+    "route": "/register",
+    "type": "auth",
+    "platform": "both",
+    "forms": [
+      "registration-form-1768640900900-x9amyj"
+    ],
+    "sections": [
+      {
+        "id": "hero-section",
+        "type": "hero",
+        "components": [
+          {
+            "type": "hero",
+            "config": {
+              "title": "Join Our Platform",
+              "subtitle": "Create an account to start managing your tasks efficiently",
+              "buttons": []
+            }
+          }
+        ]
+      },
+      {
+        "id": "main-content",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "32px",
+              "maxWidth": "480px",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Create Account",
+                    "description": "Fill in your details to get started",
+                    "shadow": "lg",
+                    "children": [
+                      {
+                        "type": "form",
+                        "formRef": "registration-form-1768640900900-x9amyj",
+                        "config": {
+                          "title": ""
+                        }
+                      },
+                      {
+                        "type": "divider",
+                        "config": {}
+                      },
+                      {
+                        "type": "text",
+                        "config": {
+                          "text": "Already have an account?",
+                          "variant": "body"
+                        }
+                      },
+                      {
+                        "type": "link",
+                        "config": {
+                          "text": "Sign in here",
+                          "href": "/login"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "benefits-section",
+        "type": "section",
+        "components": [
+          {
+            "type": "section",
+            "config": {
+              "title": "Why Join Us?",
+              "subtitle": "Discover the benefits of our platform",
+              "padding": "48px",
+              "children": [
+                {
+                  "type": "grid",
+                  "config": {
+                    "columns": 3,
+                    "gap": "24px"
+                  },
+                  "children": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Task Management",
+                        "description": "Organize and track your tasks with ease",
+                        "shadow": "md",
+                        "hoverElevation": true,
+                        "children": [
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "📋",
+                              "variant": "h2"
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "Create, assign, and complete tasks efficiently with our intuitive interface.",
+                              "variant": "body"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Team Collaboration",
+                        "description": "Work together seamlessly",
+                        "shadow": "md",
+                        "hoverElevation": true,
+                        "children": [
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "👥",
+                              "variant": "h2"
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "Assign tasks to team members and track progress in real-time.",
+                              "variant": "body"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Stay Organized",
+                        "description": "Never miss a deadline",
+                        "shadow": "md",
+                        "hoverElevation": true,
+                        "children": [
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "⏰",
+                              "variant": "h2"
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "Filter by status, user, and due date to stay on top of everything.",
+                              "variant": "body"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "trust-section",
+        "type": "section",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "32px",
+              "maxWidth": "800px",
+              "children": [
+                {
+                  "type": "alert",
+                  "config": {
+                    "variant": "info",
+                    "title": "Secure & Private",
+                    "message": "Your data is encrypted and protected. We never share your information with third parties.",
+                    "dismissible": false
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "grid",
+                  "config": {
+                    "columns": 3,
+                    "gap": "16px"
+                  },
+                  "children": [
+                    {
+                      "type": "stat-card",
+                      "config": {
+                        "title": "Active Users",
+                        "value": "10,000+",
+                        "icon": "users",
+                        "iconColor": "primary"
+                      }
+                    },
+                    {
+                      "type": "stat-card",
+                      "config": {
+                        "title": "Tasks Completed",
+                        "value": "500K+",
+                        "icon": "check-circle",
+                        "iconColor": "success"
+                      }
+                    },
+                    {
+                      "type": "stat-card",
+                      "config": {
+                        "title": "Uptime",
+                        "value": "99.9%",
+                        "icon": "shield",
+                        "iconColor": "success"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "footer-section",
+        "type": "footer",
+        "components": [
+          {
+            "type": "footer",
+            "config": {
+              "text": "© 2024 Generated Application. All rights reserved."
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "login": {
+          "type": "navigate",
+          "target": "/login"
+        }
+      },
+      "menu": [
+        {
+          "label": "Login",
+          "route": "/login"
+        },
+        {
+          "label": "Task List",
+          "route": "/task-list"
+        },
+        {
+          "label": "Password Reset",
+          "route": "/password-reset"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": false
+    },
+    "workflowId": "workflow-user-registration"
+  },
+  {
+    "id": "user-profile-page-1768641100000-abc123",
+    "name": "User Profile Page",
+    "title": "My Profile",
+    "description": "View and edit user profile information with tabbed sections for personal details, security settings, and preferences",
+    "route": "/profile",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "profile-edit-form-1768640935190-4bpj0o",
+      "new-password-form-1768640978089-yrwkgm"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "32px 24px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "My Profile",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Manage your account settings and preferences",
+                    "variant": "subtitle"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "profile-header-section",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "shadow": "md",
+              "borderRadius": "lg",
+              "children": [
+                {
+                  "type": "container",
+                  "config": {
+                    "padding": "24px",
+                    "children": [
+                      {
+                        "type": "avatar",
+                        "config": {
+                          "src": "{{user.avatarUrl}}",
+                          "initials": "{{user.initials}}",
+                          "size": "xl"
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "16px"
+                        }
+                      },
+                      {
+                        "type": "heading",
+                        "config": {
+                          "text": "{{user.fullName}}",
+                          "variant": "h2"
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "config": {
+                          "text": "{{user.email}}",
+                          "variant": "body"
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "8px"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "config": {
+                          "text": "{{user.role}}",
+                          "variant": "primary"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "spacer-section",
+        "type": "main",
+        "components": [
+          {
+            "type": "spacer",
+            "config": {
+              "height": "32px"
+            }
+          }
+        ]
+      },
+      {
+        "id": "tabs-section",
+        "type": "main",
+        "components": [
+          {
+            "type": "tabs",
+            "config": {
+              "variant": "underline",
+              "tabs": [
+                {
+                  "id": "personal-info",
+                  "label": "Personal Information",
+                  "icon": "user",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Profile Details",
+                        "shadow": "md",
+                        "borderRadius": "lg",
+                        "children": [
+                          {
+                            "type": "alert",
+                            "config": {
+                              "variant": "info",
+                              "title": "Profile Visibility",
+                              "message": "Your profile information is visible to other users in your organization",
+                              "dismissible": false
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "24px"
+                            }
+                          },
+                          {
+                            "type": "form",
+                            "formRef": "profile-edit-form-1768640935190-4bpj0o",
+                            "config": {
+                              "title": "Edit Profile"
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "24px"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "config": {
+                              "label": "Save Changes",
+                              "variant": "primary",
+                              "icon": "check"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "security",
+                  "label": "Security",
+                  "icon": "shield",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Password & Security",
+                        "shadow": "md",
+                        "borderRadius": "lg",
+                        "children": [
+                          {
+                            "type": "alert",
+                            "config": {
+                              "variant": "warning",
+                              "title": "Password Security",
+                              "message": "Use a strong password with at least 8 characters, including uppercase, lowercase, numbers, and symbols",
+                              "dismissible": false
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "24px"
+                            }
+                          },
+                          {
+                            "type": "form",
+                            "formRef": "new-password-form-1768640978089-yrwkgm",
+                            "config": {
+                              "title": "Change Password"
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "24px"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "config": {
+                              "label": "Update Password",
+                              "variant": "primary",
+                              "icon": "lock"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "spacer",
+                      "config": {
+                        "height": "24px"
+                      }
+                    },
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Session Management",
+                        "shadow": "md",
+                        "borderRadius": "lg",
+                        "children": [
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "Last login: {{user.lastLogin}}",
+                              "variant": "body"
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "config": {
+                              "label": "Sign Out All Devices",
+                              "variant": "secondary",
+                              "icon": "log-out"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "preferences",
+                  "label": "Preferences",
+                  "icon": "settings",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Application Settings",
+                        "shadow": "md",
+                        "borderRadius": "lg",
+                        "children": [
+                          {
+                            "type": "toggle",
+                            "config": {
+                              "label": "Email Notifications",
+                              "name": "emailNotifications",
+                              "defaultValue": true
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "toggle",
+                            "config": {
+                              "label": "Task Reminders",
+                              "name": "taskReminders",
+                              "defaultValue": true
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "toggle",
+                            "config": {
+                              "label": "Weekly Summary",
+                              "name": "weeklySummary",
+                              "defaultValue": false
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "24px"
+                            }
+                          },
+                          {
+                            "type": "divider",
+                            "config": {}
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "24px"
+                            }
+                          },
+                          {
+                            "type": "select",
+                            "config": {
+                              "label": "Language",
+                              "options": [
+                                "English",
+                                "Spanish",
+                                "French",
+                                "German",
+                                "Chinese"
+                              ]
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "select",
+                            "config": {
+                              "label": "Timezone",
+                              "options": [
+                                "UTC",
+                                "EST",
+                                "PST",
+                                "GMT",
+                                "CET"
+                              ]
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "24px"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "config": {
+                              "label": "Save Preferences",
+                              "variant": "primary",
+                              "icon": "check"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "activity",
+                  "label": "Activity",
+                  "icon": "activity",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Recent Activity",
+                        "shadow": "md",
+                        "borderRadius": "lg",
+                        "children": [
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "Your recent actions and updates",
+                              "variant": "body"
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "24px"
+                            }
+                          },
+                          {
+                            "type": "table",
+                            "config": {
+                              "columns": [
+                                {
+                                  "key": "action",
+                                  "label": "Action"
+                                },
+                                {
+                                  "key": "timestamp",
+                                  "label": "Date & Time"
+                                },
+                                {
+                                  "key": "status",
+                                  "label": "Status"
+                                }
+                              ],
+                              "dataBinding": "user.activityLog"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "spacer",
+                      "config": {
+                        "height": "24px"
+                      }
+                    },
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Account Statistics",
+                        "shadow": "md",
+                        "borderRadius": "lg",
+                        "children": [
+                          {
+                            "type": "grid",
+                            "config": {
+                              "columns": 3,
+                              "gap": "16px"
+                            }
+                          },
+                          {
+                            "type": "stat-card",
+                            "config": {
+                              "title": "Tasks Created",
+                              "value": "{{user.tasksCreated}}",
+                              "icon": "plus-circle",
+                              "iconColor": "primary"
+                            }
+                          },
+                          {
+                            "type": "stat-card",
+                            "config": {
+                              "title": "Tasks Completed",
+                              "value": "{{user.tasksCompleted}}",
+                              "icon": "check-circle",
+                              "iconColor": "success"
+                            }
+                          },
+                          {
+                            "type": "stat-card",
+                            "config": {
+                              "title": "Days Active",
+                              "value": "{{user.daysActive}}",
+                              "icon": "calendar",
+                              "iconColor": "primary"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "danger-zone",
+        "type": "main",
+        "components": [
+          {
+            "type": "spacer",
+            "config": {
+              "height": "48px"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Danger Zone",
+              "shadow": "md",
+              "borderRadius": "lg",
+              "children": [
+                {
+                  "type": "alert",
+                  "config": {
+                    "variant": "error",
+                    "title": "Delete Account",
+                    "message": "Once you delete your account, there is no going back. Please be certain.",
+                    "dismissible": false
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "16px"
+                  }
+                },
+                {
+                  "type": "button",
+                  "config": {
+                    "label": "Delete My Account",
+                    "variant": "danger",
+                    "icon": "trash"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "save": {
+          "type": "submit",
+          "target": "/api/user/profile"
+        },
+        "delete": {
+          "type": "dialog",
+          "target": "confirm-delete"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "label": "Task List",
+          "route": "/tasks"
+        },
+        {
+          "label": "My Profile",
+          "route": "/profile"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings"
+        },
+        {
+          "label": "Logout",
+          "route": "/logout"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-user-registration"
+  },
+  {
+    "id": "password-reset-page-1768641100000-abc123",
+    "name": "Password Reset Page",
+    "title": "Reset Your Password",
+    "description": "Password reset request and confirmation page with secure token-based authentication",
+    "route": "/password-reset",
+    "type": "auth",
+    "platform": "both",
+    "forms": [
+      "password-reset-request-form-1768640958130-2v1z9l",
+      "new-password-form-1768640978089-yrwkgm"
+    ],
+    "sections": [
+      {
+        "id": "header-section",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "480px",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "Reset Your Password",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Enter your email address and we'll send you instructions to reset your password.",
+                    "variant": "subtitle"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "tabs-section",
+        "type": "tabs",
+        "components": [
+          {
+            "type": "tabs",
+            "config": {
+              "variant": "underline",
+              "tabs": [
+                {
+                  "id": "request-reset",
+                  "label": "Request Reset",
+                  "icon": "mail",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Password Reset Request",
+                        "description": "We'll send a secure link to your email",
+                        "shadow": "lg",
+                        "children": [
+                          {
+                            "type": "form",
+                            "formRef": "password-reset-request-form-1768640958130-2v1z9l",
+                            "config": {
+                              "title": ""
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "alert",
+                            "config": {
+                              "variant": "info",
+                              "title": "Check your email",
+                              "message": "If an account exists with this email, you'll receive password reset instructions within a few minutes.",
+                              "dismissible": false
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "spacer",
+                      "config": {
+                        "height": "24px"
+                      }
+                    },
+                    {
+                      "type": "container",
+                      "config": {
+                        "padding": "16px",
+                        "children": [
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "Remember your password?",
+                              "variant": "body"
+                            }
+                          },
+                          {
+                            "type": "link",
+                            "config": {
+                              "text": "Back to Login",
+                              "href": "/login"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "set-new-password",
+                  "label": "Set New Password",
+                  "icon": "lock",
+                  "content": [
+                    {
+                      "type": "alert",
+                      "config": {
+                        "variant": "warning",
+                        "title": "Secure Link Required",
+                        "message": "This page requires a valid reset token from your email. Please click the link in your password reset email.",
+                        "dismissible": false
+                      }
+                    },
+                    {
+                      "type": "spacer",
+                      "config": {
+                        "height": "24px"
+                      }
+                    },
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Create New Password",
+                        "description": "Choose a strong password to secure your account",
+                        "shadow": "lg",
+                        "children": [
+                          {
+                            "type": "form",
+                            "formRef": "new-password-form-1768640978089-yrwkgm",
+                            "config": {
+                              "title": ""
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "alert",
+                            "config": {
+                              "variant": "info",
+                              "title": "Password Requirements",
+                              "message": "Your password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.",
+                              "dismissible": false
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "success-section",
+        "type": "conditional",
+        "showWhen": "resetSuccess",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "32px",
+              "maxWidth": "480px",
+              "children": [
+                {
+                  "type": "alert",
+                  "config": {
+                    "variant": "success",
+                    "title": "Password Reset Successful!",
+                    "message": "Your password has been updated. You can now log in with your new password.",
+                    "dismissible": false
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "button",
+                  "config": {
+                    "label": "Go to Login",
+                    "variant": "primary",
+                    "icon": "arrow-right"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "loading-section",
+        "type": "conditional",
+        "showWhen": "isLoading",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "48px",
+              "children": [
+                {
+                  "type": "spinner",
+                  "config": {
+                    "size": "large",
+                    "label": "Processing your request..."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "help-section",
+        "type": "section",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "32px",
+              "maxWidth": "600px",
+              "children": [
+                {
+                  "type": "divider",
+                  "config": {}
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "Need Help?",
+                    "variant": "h3"
+                  }
+                },
+                {
+                  "type": "accordion",
+                  "config": {
+                    "items": [
+                      {
+                        "id": "faq-1",
+                        "title": "I didn't receive the reset email",
+                        "content": "Check your spam folder. If you still don't see it, try requesting another reset link. Make sure you're using the email address associated with your account."
+                      },
+                      {
+                        "id": "faq-2",
+                        "title": "The reset link expired",
+                        "content": "Password reset links are valid for 1 hour for security reasons. Please request a new reset link from the Request Reset tab."
+                      },
+                      {
+                        "id": "faq-3",
+                        "title": "I don't remember my email address",
+                        "content": "Please contact our support team for assistance in recovering your account. Have your account information ready for verification."
+                      },
+                      {
+                        "id": "faq-4",
+                        "title": "How do I create a strong password?",
+                        "content": "Use at least 8 characters with a mix of uppercase letters, lowercase letters, numbers, and special characters. Avoid common words or personal information."
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "footer-section",
+        "type": "footer",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "children": [
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Still having trouble? Contact our support team",
+                    "variant": "caption"
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "8px"
+                  }
+                },
+                {
+                  "type": "buttonGroup",
+                  "config": {
+                    "buttons": [
+                      {
+                        "label": "Contact Support",
+                        "variant": "secondary",
+                        "icon": "help-circle"
+                      },
+                      {
+                        "label": "Back to Home",
+                        "variant": "ghost",
+                        "icon": "home"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/login"
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/login"
+        }
+      },
+      "menu": [
+        {
+          "label": "Login",
+          "route": "/login"
+        },
+        {
+          "label": "Registration",
+          "route": "/registration"
+        },
+        {
+          "label": "Task List",
+          "route": "/task-list"
+        },
+        {
+          "label": "User Profile",
+          "route": "/profile"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": false
+    },
+    "workflowId": "workflow-user-registration"
+  },
+  {
+    "id": "task-list-page-1768641100000-main",
+    "name": "Task List Page",
+    "title": "Tasks",
+    "description": "Main page for viewing and filtering tasks with comprehensive task management capabilities",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "create-task-form-1768640993071-o1ho1x",
+      "edit-task-form-1768641014070-tqvu4j"
+    ],
+    "sections": [
+      {
+        "id": "header-section",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "Task Management",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Organize, track, and manage your tasks efficiently",
+                    "variant": "subtitle"
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "16px"
+                  }
+                },
+                {
+                  "type": "buttonGroup",
+                  "config": {
+                    "buttons": [
+                      {
+                        "label": "Create Task",
+                        "variant": "primary",
+                        "icon": "plus"
+                      },
+                      {
+                        "label": "Export",
+                        "variant": "secondary",
+                        "icon": "download"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "stats-overview",
+        "type": "stats-row",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 24px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "grid",
+                  "config": {
+                    "columns": 4,
+                    "gap": "16px",
+                    "children": [
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Total Tasks",
+                          "value": "{{totalTasks}}",
+                          "icon": "clipboard-list",
+                          "iconColor": "primary",
+                          "trend": "+8",
+                          "trendDirection": "up"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "In Progress",
+                          "value": "{{inProgressTasks}}",
+                          "icon": "clock",
+                          "iconColor": "warning"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Completed",
+                          "value": "{{completedTasks}}",
+                          "icon": "check-circle",
+                          "iconColor": "success",
+                          "trend": "+12%",
+                          "trendDirection": "up"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Overdue",
+                          "value": "{{overdueTasks}}",
+                          "icon": "alert-circle",
+                          "iconColor": "error"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "filters-section",
+        "type": "filters",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Filters",
+                    "shadow": "sm",
+                    "children": [
+                      {
+                        "type": "grid",
+                        "config": {
+                          "columns": 4,
+                          "gap": "16px",
+                          "children": [
+                            {
+                              "type": "search",
+                              "config": {
+                                "placeholder": "Search tasks..."
+                              }
+                            },
+                            {
+                              "type": "select",
+                              "config": {
+                                "label": "Status",
+                                "options": [
+                                  "All Statuses",
+                                  "Not Started",
+                                  "In Progress",
+                                  "Completed",
+                                  "On Hold"
+                                ]
+                              }
+                            },
+                            {
+                              "type": "select",
+                              "config": {
+                                "label": "Assigned To",
+                                "options": [
+                                  "All Users",
+                                  "Me",
+                                  "Unassigned",
+                                  "{{users}}"
+                                ]
+                              }
+                            },
+                            {
+                              "type": "select",
+                              "config": {
+                                "label": "Due Date",
+                                "options": [
+                                  "All Dates",
+                                  "Today",
+                                  "This Week",
+                                  "This Month",
+                                  "Overdue"
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "12px"
+                        }
+                      },
+                      {
+                        "type": "buttonGroup",
+                        "config": {
+                          "buttons": [
+                            {
+                              "label": "Apply Filters",
+                              "variant": "primary",
+                              "icon": "filter"
+                            },
+                            {
+                              "label": "Clear",
+                              "variant": "secondary"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "tabs-section",
+        "type": "tabs",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 24px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "tabs",
+                  "config": {
+                    "variant": "underline",
+                    "tabs": [
+                      {
+                        "id": "grid-view",
+                        "label": "Grid View",
+                        "icon": "grid",
+                        "content": [
+                          {
+                            "type": "grid",
+                            "config": {
+                              "columns": 3,
+                              "gap": "20px",
+                              "children": [
+                                {
+                                  "type": "card",
+                                  "config": {
+                                    "title": "{{task.title}}",
+                                    "description": "{{task.description}}",
+                                    "shadow": "md",
+                                    "hoverElevation": true,
+                                    "children": [
+                                      {
+                                        "type": "badge",
+                                        "config": {
+                                          "text": "{{task.status}}",
+                                          "variant": "{{task.statusVariant}}"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "12px"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "Due: {{task.dueDate}}",
+                                          "variant": "caption"
+                                        }
+                                      },
+                                      {
+                                        "type": "divider",
+                                        "config": {}
+                                      },
+                                      {
+                                        "type": "container",
+                                        "config": {
+                                          "children": [
+                                            {
+                                              "type": "avatar",
+                                              "config": {
+                                                "src": "{{task.assignedUser.avatar}}",
+                                                "initials": "{{task.assignedUser.initials}}",
+                                                "size": "small"
+                                              }
+                                            },
+                                            {
+                                              "type": "text",
+                                              "config": {
+                                                "text": "{{task.assignedUser.name}}",
+                                                "variant": "caption"
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    ],
+                                    "actions": [
+                                      {
+                                        "label": "View",
+                                        "icon": "eye"
+                                      },
+                                      {
+                                        "label": "Edit",
+                                        "icon": "edit"
+                                      },
+                                      {
+                                        "label": "Complete",
+                                        "icon": "check"
+                                      }
+                                    ]
+                                  },
+                                  "dataBinding": "tasks"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "list-view",
+                        "label": "List View",
+                        "icon": "list",
+                        "content": [
+                          {
+                            "type": "card",
+                            "config": {
+                              "shadow": "sm",
+                              "children": [
+                                {
+                                  "type": "table",
+                                  "config": {
+                                    "columns": [
+                                      {
+                                        "key": "title",
+                                        "label": "Task",
+                                        "sortable": true
+                                      },
+                                      {
+                                        "key": "status",
+                                        "label": "Status",
+                                        "sortable": true
+                                      },
+                                      {
+                                        "key": "assignedTo",
+                                        "label": "Assigned To",
+                                        "sortable": true
+                                      },
+                                      {
+                                        "key": "dueDate",
+                                        "label": "Due Date",
+                                        "sortable": true
+                                      },
+                                      {
+                                        "key": "priority",
+                                        "label": "Priority",
+                                        "sortable": true
+                                      },
+                                      {
+                                        "key": "actions",
+                                        "label": "Actions"
+                                      }
+                                    ],
+                                    "dataBinding": "tasks"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "kanban-view",
+                        "label": "Kanban",
+                        "icon": "columns",
+                        "content": [
+                          {
+                            "type": "grid",
+                            "config": {
+                              "columns": 4,
+                              "gap": "16px",
+                              "children": [
+                                {
+                                  "type": "card",
+                                  "config": {
+                                    "title": "Not Started",
+                                    "shadow": "sm",
+                                    "children": [
+                                      {
+                                        "type": "badge",
+                                        "config": {
+                                          "text": "{{notStartedCount}} tasks",
+                                          "variant": "default"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "12px"
+                                        }
+                                      },
+                                      {
+                                        "type": "card",
+                                        "config": {
+                                          "title": "{{task.title}}",
+                                          "description": "{{task.description}}",
+                                          "shadow": "sm",
+                                          "hoverElevation": true
+                                        },
+                                        "dataBinding": "tasks.notStarted"
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "type": "card",
+                                  "config": {
+                                    "title": "In Progress",
+                                    "shadow": "sm",
+                                    "children": [
+                                      {
+                                        "type": "badge",
+                                        "config": {
+                                          "text": "{{inProgressCount}} tasks",
+                                          "variant": "warning"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "12px"
+                                        }
+                                      },
+                                      {
+                                        "type": "card",
+                                        "config": {
+                                          "title": "{{task.title}}",
+                                          "description": "{{task.description}}",
+                                          "shadow": "sm",
+                                          "hoverElevation": true
+                                        },
+                                        "dataBinding": "tasks.inProgress"
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "type": "card",
+                                  "config": {
+                                    "title": "Review",
+                                    "shadow": "sm",
+                                    "children": [
+                                      {
+                                        "type": "badge",
+                                        "config": {
+                                          "text": "{{reviewCount}} tasks",
+                                          "variant": "info"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "12px"
+                                        }
+                                      },
+                                      {
+                                        "type": "card",
+                                        "config": {
+                                          "title": "{{task.title}}",
+                                          "description": "{{task.description}}",
+                                          "shadow": "sm",
+                                          "hoverElevation": true
+                                        },
+                                        "dataBinding": "tasks.review"
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "type": "card",
+                                  "config": {
+                                    "title": "Completed",
+                                    "shadow": "sm",
+                                    "children": [
+                                      {
+                                        "type": "badge",
+                                        "config": {
+                                          "text": "{{completedCount}} tasks",
+                                          "variant": "success"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "12px"
+                                        }
+                                      },
+                                      {
+                                        "type": "card",
+                                        "config": {
+                                          "title": "{{task.title}}",
+                                          "description": "{{task.description}}",
+                                          "shadow": "sm",
+                                          "hoverElevation": true
+                                        },
+                                        "dataBinding": "tasks.completed"
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "calendar-view",
+                        "label": "Calendar",
+                        "icon": "calendar",
+                        "content": [
+                          {
+                            "type": "alert",
+                            "config": {
+                              "variant": "info",
+                              "title": "Calendar View",
+                              "message": "View tasks organized by due date in calendar format",
+                              "dismissible": false
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "Task Timeline",
+                              "shadow": "sm",
+                              "children": [
+                                {
+                                  "type": "chart",
+                                  "config": {
+                                    "chartType": "timeline",
+                                    "title": "Tasks by Due Date",
+                                    "height": 400
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "loading-state",
+        "type": "conditional",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "48px 24px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "spinner",
+                  "config": {
+                    "size": "large",
+                    "label": "Loading tasks..."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "empty-state",
+        "type": "conditional",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "48px 24px",
+              "maxWidth": "600px",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "shadow": "md",
+                    "children": [
+                      {
+                        "type": "heading",
+                        "config": {
+                          "text": "No Tasks Found",
+                          "variant": "h3"
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "config": {
+                          "text": "Get started by creating your first task or adjust your filters to see more results.",
+                          "variant": "body"
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "24px"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "config": {
+                          "label": "Create Your First Task",
+                          "variant": "primary",
+                          "icon": "plus"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/tasks/:id"
+        },
+        "edit": {
+          "type": "navigate",
+          "target": "/tasks"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "home"
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks",
+          "icon": "clipboard-list"
+        },
+        {
+          "label": "Task Detail",
+          "route": "/task-detail",
+          "icon": "file-text"
+        },
+        {
+          "label": "Profile",
+          "route": "/profile",
+          "icon": "user"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-user-registration"
+  }
+]

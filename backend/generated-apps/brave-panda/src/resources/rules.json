@@ -1,0 +1,203 @@
+[
+  {
+    "id": "rule_start_registration_validation",
+    "name": "Start Registration Rule",
+    "description": "Validate user input at registration start to ensure required fields are present and email format is correct",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Employee.email",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "Employee.email",
+          "operator": "contains",
+          "value": "@"
+        },
+        {
+          "field": "Employee.firstName",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Employee.email",
+          "value": "valid",
+          "message": "Email format validated successfully"
+        },
+        {
+          "type": "setVariable",
+          "field": "registrationStatus",
+          "value": "initiated",
+          "message": "Registration process started"
+        },
+        {
+          "type": "logMessage",
+          "field": "systemLog",
+          "value": "User registration initiated",
+          "message": "Registration validation passed for new employee"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1766944768908"
+  },
+  {
+    "id": "rule_fill_registration_form_validation",
+    "name": "Fill Registration Form Rule",
+    "description": "Validate user role selection and employee ID uniqueness during form completion",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Employee.employeeId",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "UserRole.roleId",
+          "operator": "in",
+          "value": [
+            "employee",
+            "manager",
+            "hr_user"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Employee.employeeId",
+          "value": "unique",
+          "message": "Employee ID must be unique in the system"
+        },
+        {
+          "type": "setVariable",
+          "field": "formCompletionStatus",
+          "value": "completed",
+          "message": "Registration form filled successfully"
+        },
+        {
+          "type": "updateData",
+          "field": "Employee.registrationDate",
+          "value": "currentTimestamp",
+          "message": "Set registration timestamp"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1766944768908"
+  },
+  {
+    "id": "rule_validate_user_data",
+    "name": "Validate User Data Rule",
+    "description": "Validate complete user data against business rules including role permissions and department assignment",
+    "type": "validation",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Employee.department",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "Employee.hireDate",
+          "operator": "lessThan",
+          "value": "currentDate"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Employee.department",
+          "value": "valid",
+          "message": "Department assignment validated"
+        },
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "passed",
+          "message": "All user data validation checks passed"
+        },
+        {
+          "type": "executeScript",
+          "field": "LeaveBalance.initialize",
+          "value": "createInitialBalance",
+          "message": "Initialize leave balance for new employee"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1766944768908"
+  },
+  {
+    "id": "rule_validation_passed_decision",
+    "name": "Validation Passed? Rule",
+    "description": "Evaluate validation results to determine if user registration should proceed or require corrections",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validationStatus",
+          "operator": "equals",
+          "value": "passed"
+        },
+        {
+          "field": "Employee.isActive",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "approved",
+          "message": "Route to registration completion"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Notification.welcomeEmail",
+          "value": "Employee.email",
+          "message": "Welcome to the Leave Management System! Your registration is complete."
+        },
+        {
+          "type": "logMessage",
+          "field": "systemLog",
+          "value": "registration_completed",
+          "message": "User registration completed successfully"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1766944768908"
+  }
+]

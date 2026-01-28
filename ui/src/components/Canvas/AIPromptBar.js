@@ -1,25 +1,49 @@
 import React, { useState } from 'react';
 import './AIPromptBar.css';
-import { Sparkles, Send, X } from 'lucide-react';
+import { Sparkles, Send, X, AlertCircle } from 'lucide-react';
+
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const AIPromptBar = ({ onClose, onGenerate }) => {
   const [prompt, setPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!prompt.trim() || isProcessing) return;
 
     setIsProcessing(true);
+    setError(null);
 
-    // Simulate AI processing
-    setTimeout(() => {
-      if (onGenerate) {
-        onGenerate(prompt);
+    try {
+      const response = await fetch(`${API_BASE}/api/ai/generate-workflow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requirements: prompt })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Failed to generate workflow');
       }
+
+      if (data.success && onGenerate) {
+        // Pass the generated workflow to the canvas
+        const workflow = data.data?.workflow || data.workflow;
+        onGenerate(workflow);
+        setPrompt('');
+        if (onClose) onClose();
+      } else {
+        throw new Error(data.message || 'No workflow generated');
+      }
+    } catch (err) {
+      console.error('[AIPromptBar] Generation failed:', err);
+      setError(err.message || 'Failed to generate workflow. Please try again.');
+    } finally {
       setIsProcessing(false);
-      setPrompt('');
-    }, 1500);
+    }
   };
 
   const suggestedPrompts = [
@@ -68,6 +92,13 @@ const AIPromptBar = ({ onClose, onGenerate }) => {
             </button>
           </div>
         </form>
+
+        {error && (
+          <div className="prompt-error">
+            <AlertCircle size={14} />
+            <span>{error}</span>
+          </div>
+        )}
 
         <div className="suggested-prompts-bar">
           <span className="prompts-label-small">Try:</span>

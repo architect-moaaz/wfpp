@@ -1,0 +1,283 @@
+[
+  {
+    "id": "rule_start_registration",
+    "name": "Start Registration Rule",
+    "description": "Validate required fields when user registration process starts",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.email",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "User.email",
+          "message": "Email address is required to start registration"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1768502705866"
+  },
+  {
+    "id": "rule_submit_registration",
+    "name": "Submit Registration Rule",
+    "description": "Validate email format and username length on registration submission",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.email",
+          "operator": "contains",
+          "value": "@"
+        },
+        {
+          "field": "User.username",
+          "operator": "greaterThan",
+          "value": 2
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "registrationStatus",
+          "value": "submitted"
+        },
+        {
+          "type": "logMessage",
+          "message": "Registration submitted successfully for validation"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1768502705866"
+  },
+  {
+    "id": "rule_validate_registration_data",
+    "name": "Validate Registration Data Rule",
+    "description": "Check if user email is unique and not already registered",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.emailExists",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "validationResult",
+          "value": "failed"
+        },
+        {
+          "type": "validateField",
+          "field": "User.email",
+          "message": "Email address is already registered"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1768502705866"
+  },
+  {
+    "id": "rule_validation_passed",
+    "name": "Validation Passed? Rule",
+    "description": "Determine if registration data passed all validation checks",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validationResult",
+          "operator": "equals",
+          "value": "passed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "proceedToApproval"
+        },
+        {
+          "type": "logMessage",
+          "message": "Validation passed, proceeding to approval check"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1768502705866"
+  },
+  {
+    "id": "rule_fix_registration_errors",
+    "name": "Fix Registration Errors Rule",
+    "description": "Validate corrected registration data after user fixes errors",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.errorsCorrected",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "validationResult",
+          "value": "revalidating"
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.email",
+          "message": "Your registration has been resubmitted for validation"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1768502705866"
+  },
+  {
+    "id": "rule_requires_approval",
+    "name": "Requires Approval? Rule",
+    "description": "Determine if registration requires admin approval based on user role",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.requestedRole",
+          "operator": "in",
+          "value": [
+            "admin",
+            "manager"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "requiresApproval",
+          "value": true
+        },
+        {
+          "type": "sendNotification",
+          "field": "adminEmail",
+          "message": "New registration requires approval for elevated role"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1768502705866"
+  },
+  {
+    "id": "rule_admin_approval",
+    "name": "Admin Approval Rule",
+    "description": "Validate admin decision and comments on registration approval",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approvalDecision",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "approvalDecision",
+          "message": "Admin must provide an approval decision"
+        }
+      ]
+    },
+    "node_id": "userTask-3",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1768502705866"
+  },
+  {
+    "id": "rule_approved",
+    "name": "Approved? Rule",
+    "description": "Route workflow based on admin approval decision",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approvalDecision",
+          "operator": "equals",
+          "value": "approved"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "updateData",
+          "field": "User.status",
+          "value": "active"
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.email",
+          "message": "Congratulations! Your registration has been approved"
+        },
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "complete"
+        }
+      ]
+    },
+    "node_id": "decision-3",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1768502705866"
+  }
+]

@@ -1,0 +1,252 @@
+[
+  {
+    "id": "rule_start_process",
+    "name": "Start Process Validation",
+    "description": "Validate initial task creation request has required user authentication",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "currentUser.id",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "authentication",
+          "value": "error",
+          "message": "User must be authenticated to create tasks"
+        },
+        {
+          "type": "stopWorkflow",
+          "field": "workflowStatus",
+          "value": "terminated",
+          "message": "Workflow stopped due to authentication failure"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "workflow-create-new-task",
+    "workflowId": "workflow-create-new-task",
+    "application_id": "app_1768497995234"
+  },
+  {
+    "id": "rule_enter_task_details",
+    "name": "Task Details Input Validation",
+    "description": "Ensure task title and description meet minimum requirements",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.title",
+          "operator": "equals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "task.title",
+          "value": "invalid",
+          "message": "Task title is required and cannot be empty"
+        },
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "failed",
+          "message": "Task details validation failed"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "workflow-create-new-task",
+    "workflowId": "workflow-create-new-task",
+    "application_id": "app_1768497995234"
+  },
+  {
+    "id": "rule_validate_task_data",
+    "name": "Task Data Business Rules",
+    "description": "Validate task due date is not in the past and priority is set",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.dueDate",
+          "operator": "lessThan",
+          "value": "{{currentDate}}"
+        },
+        {
+          "field": "task.priority",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "task.dueDate",
+          "value": "invalid",
+          "message": "Due date cannot be in the past"
+        },
+        {
+          "type": "setVariable",
+          "field": "hasValidationErrors",
+          "value": true,
+          "message": "Task validation failed"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "error",
+          "message": "Task failed validation: past due date or missing priority"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "workflow-create-new-task",
+    "workflowId": "workflow-create-new-task",
+    "application_id": "app_1768497995234"
+  },
+  {
+    "id": "rule_validation_passed_decision",
+    "name": "Validation Status Decision",
+    "description": "Route workflow based on validation results",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "hasValidationErrors",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "nextStep",
+          "value": "fixValidationErrors",
+          "message": "Routing to error correction step"
+        },
+        {
+          "type": "sendNotification",
+          "field": "currentUser.email",
+          "value": "validation_failed",
+          "message": "Please correct the validation errors in your task"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "workflow-create-new-task",
+    "workflowId": "workflow-create-new-task",
+    "application_id": "app_1768497995234"
+  },
+  {
+    "id": "rule_fix_validation_errors",
+    "name": "Error Correction Validation",
+    "description": "Validate corrected task data before resubmission",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.title",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "task.dueDate",
+          "operator": "greaterThan",
+          "value": "{{currentDate}}"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "hasValidationErrors",
+          "value": false,
+          "message": "All validation errors corrected"
+        },
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "passed",
+          "message": "Task data is now valid"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "info",
+          "message": "Task validation errors successfully corrected"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "workflow-create-new-task",
+    "workflowId": "workflow-create-new-task",
+    "application_id": "app_1768497995234"
+  },
+  {
+    "id": "rule_assign_to_user_decision",
+    "name": "Task Assignment Decision",
+    "description": "Determine if task should be assigned to specific user or remain unassigned",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.assignedUserId",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "task.status",
+          "value": "assigned",
+          "message": "Task assigned to user"
+        },
+        {
+          "type": "sendNotification",
+          "field": "task.assignedUser.email",
+          "value": "task_assigned",
+          "message": "A new task has been assigned to you"
+        },
+        {
+          "type": "updateData",
+          "field": "task.assignedDate",
+          "value": "{{currentDate}}",
+          "message": "Set task assignment date"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "workflow-create-new-task",
+    "workflowId": "workflow-create-new-task",
+    "application_id": "app_1768497995234"
+  }
+]

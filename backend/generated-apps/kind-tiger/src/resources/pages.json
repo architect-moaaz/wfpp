@@ -1,0 +1,2664 @@
+[
+  {
+    "id": "contact-list-page-1768575100000",
+    "name": "Contact List Page",
+    "title": "Contacts",
+    "description": "Main page displaying all contacts with search and filter capabilities",
+    "route": "/contacts",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "contact-submission-form-1768575003648-9xpt6h",
+      "contact-search-form-1768575045415-3wxbys",
+      "company-filter-form-1768575063446-l7zwdo"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "Contacts",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Manage and organize your business contacts",
+                    "variant": "subtitle"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "stats-section",
+        "type": "stats-row",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "grid",
+                  "config": {
+                    "columns": 4,
+                    "gap": "24px",
+                    "children": [
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Total Contacts",
+                          "value": "{{totalContacts}}",
+                          "icon": "users",
+                          "iconColor": "primary",
+                          "trend": "+12%",
+                          "trendDirection": "up"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Active",
+                          "value": "{{activeContacts}}",
+                          "icon": "check-circle",
+                          "iconColor": "success"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Companies",
+                          "value": "{{uniqueCompanies}}",
+                          "icon": "briefcase",
+                          "iconColor": "primary"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "New This Month",
+                          "value": "{{newContactsMonth}}",
+                          "icon": "user-plus",
+                          "iconColor": "warning",
+                          "trend": "+8",
+                          "trendDirection": "up"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "search-filter-section",
+        "type": "search-filter",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "shadow": "sm",
+                    "borderRadius": "lg",
+                    "children": [
+                      {
+                        "type": "grid",
+                        "config": {
+                          "columns": 3,
+                          "gap": "16px",
+                          "children": [
+                            {
+                              "type": "search",
+                              "config": {
+                                "placeholder": "Search contacts by name, email, or phone..."
+                              }
+                            },
+                            {
+                              "type": "select",
+                              "config": {
+                                "label": "Filter by Company",
+                                "options": [
+                                  "All Companies",
+                                  "{{companies}}"
+                                ]
+                              }
+                            },
+                            {
+                              "type": "buttonGroup",
+                              "config": {
+                                "buttons": [
+                                  {
+                                    "label": "Search",
+                                    "variant": "primary",
+                                    "icon": "search"
+                                  },
+                                  {
+                                    "label": "Reset",
+                                    "variant": "secondary",
+                                    "icon": "refresh"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "actions-section",
+        "type": "actions",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 32px 24px 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "buttonGroup",
+                  "config": {
+                    "buttons": [
+                      {
+                        "label": "Add New Contact",
+                        "variant": "primary",
+                        "icon": "plus"
+                      },
+                      {
+                        "label": "Import Contacts",
+                        "variant": "secondary",
+                        "icon": "upload"
+                      },
+                      {
+                        "label": "Export",
+                        "variant": "secondary",
+                        "icon": "download"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "loading-state",
+        "type": "conditional",
+        "showWhen": "isLoading",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "64px 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "spinner",
+                  "config": {
+                    "size": "large",
+                    "label": "Loading contacts..."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "main-content",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 32px 32px 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "tabs",
+                  "config": {
+                    "variant": "underline",
+                    "tabs": [
+                      {
+                        "id": "grid-view",
+                        "label": "Grid View",
+                        "icon": "grid",
+                        "content": [
+                          {
+                            "type": "grid",
+                            "config": {
+                              "columns": 3,
+                              "gap": "24px",
+                              "children": [
+                                {
+                                  "type": "card",
+                                  "config": {
+                                    "shadow": "md",
+                                    "hoverElevation": true,
+                                    "borderRadius": "lg",
+                                    "children": [
+                                      {
+                                        "type": "container",
+                                        "config": {
+                                          "padding": "24px",
+                                          "children": [
+                                            {
+                                              "type": "avatar",
+                                              "config": {
+                                                "initials": "{{contact.initials}}",
+                                                "size": "large"
+                                              }
+                                            },
+                                            {
+                                              "type": "spacer",
+                                              "config": {
+                                                "height": "16px"
+                                              }
+                                            },
+                                            {
+                                              "type": "heading",
+                                              "config": {
+                                                "text": "{{contact.firstName}}, {{contact.lastName}}",
+                                                "variant": "h3"
+                                              }
+                                            },
+                                            {
+                                              "type": "text",
+                                              "config": {
+                                                "text": "{{contact.title}}",
+                                                "variant": "caption"
+                                              }
+                                            },
+                                            {
+                                              "type": "spacer",
+                                              "config": {
+                                                "height": "8px"
+                                              }
+                                            },
+                                            {
+                                              "type": "badge",
+                                              "config": {
+                                                "text": "{{contact.company}}",
+                                                "variant": "primary"
+                                              }
+                                            },
+                                            {
+                                              "type": "spacer",
+                                              "config": {
+                                                "height": "16px"
+                                              }
+                                            },
+                                            {
+                                              "type": "divider",
+                                              "config": {}
+                                            },
+                                            {
+                                              "type": "spacer",
+                                              "config": {
+                                                "height": "16px"
+                                              }
+                                            },
+                                            {
+                                              "type": "text",
+                                              "config": {
+                                                "text": "{{contact.email}}",
+                                                "variant": "body"
+                                              }
+                                            },
+                                            {
+                                              "type": "text",
+                                              "config": {
+                                                "text": "{{contact.phone}}",
+                                                "variant": "body"
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    ],
+                                    "actions": [
+                                      {
+                                        "label": "View",
+                                        "icon": "eye",
+                                        "action": "view"
+                                      },
+                                      {
+                                        "label": "Edit",
+                                        "icon": "edit",
+                                        "action": "edit"
+                                      },
+                                      {
+                                        "label": "Delete",
+                                        "icon": "trash",
+                                        "action": "delete"
+                                      }
+                                    ]
+                                  },
+                                  "dataBinding": "Contact.all"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "table-view",
+                        "label": "Table View",
+                        "icon": "list",
+                        "content": [
+                          {
+                            "type": "card",
+                            "config": {
+                              "shadow": "md",
+                              "borderRadius": "lg",
+                              "children": [
+                                {
+                                  "type": "table",
+                                  "config": {
+                                    "columns": [
+                                      {
+                                        "key": "name",
+                                        "label": "Name",
+                                        "sortable": true
+                                      },
+                                      {
+                                        "key": "email",
+                                        "label": "Email",
+                                        "sortable": true
+                                      },
+                                      {
+                                        "key": "phone",
+                                        "label": "Phone",
+                                        "sortable": false
+                                      },
+                                      {
+                                        "key": "company",
+                                        "label": "Company",
+                                        "sortable": true
+                                      },
+                                      {
+                                        "key": "title",
+                                        "label": "Title",
+                                        "sortable": false
+                                      },
+                                      {
+                                        "key": "actions",
+                                        "label": "Actions",
+                                        "sortable": false
+                                      }
+                                    ],
+                                    "dataBinding": "Contact.all"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "compact-view",
+                        "label": "Compact View",
+                        "icon": "menu",
+                        "content": [
+                          {
+                            "type": "card",
+                            "config": {
+                              "shadow": "md",
+                              "borderRadius": "lg",
+                              "children": [
+                                {
+                                  "type": "container",
+                                  "config": {
+                                    "padding": "16px",
+                                    "children": [
+                                      {
+                                        "type": "grid",
+                                        "config": {
+                                          "columns": 1,
+                                          "gap": "12px",
+                                          "children": [
+                                            {
+                                              "type": "card",
+                                              "config": {
+                                                "shadow": "sm",
+                                                "hoverElevation": true,
+                                                "children": [
+                                                  {
+                                                    "type": "container",
+                                                    "config": {
+                                                      "padding": "16px",
+                                                      "children": [
+                                                        {
+                                                          "type": "grid",
+                                                          "config": {
+                                                            "columns": 4,
+                                                            "gap": "16px",
+                                                            "children": [
+                                                              {
+                                                                "type": "avatar",
+                                                                "config": {
+                                                                  "initials": "{{contact.initials}}",
+                                                                  "size": "medium"
+                                                                }
+                                                              },
+                                                              {
+                                                                "type": "container",
+                                                                "config": {
+                                                                  "children": [
+                                                                    {
+                                                                      "type": "text",
+                                                                      "config": {
+                                                                        "text": "{{contact.firstName}}, {{contact.lastName}}",
+                                                                        "variant": "body-bold"
+                                                                      }
+                                                                    },
+                                                                    {
+                                                                      "type": "text",
+                                                                      "config": {
+                                                                        "text": "{{contact.email}}",
+                                                                        "variant": "caption"
+                                                                      }
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              },
+                                                              {
+                                                                "type": "container",
+                                                                "config": {
+                                                                  "children": [
+                                                                    {
+                                                                      "type": "badge",
+                                                                      "config": {
+                                                                        "text": "{{contact.company}}",
+                                                                        "variant": "primary"
+                                                                      }
+                                                                    },
+                                                                    {
+                                                                      "type": "text",
+                                                                      "config": {
+                                                                        "text": "{{contact.phone}}",
+                                                                        "variant": "caption"
+                                                                      }
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              },
+                                                              {
+                                                                "type": "buttonGroup",
+                                                                "config": {
+                                                                  "buttons": [
+                                                                    {
+                                                                      "label": "View",
+                                                                      "variant": "secondary",
+                                                                      "icon": "eye"
+                                                                    },
+                                                                    {
+                                                                      "label": "Edit",
+                                                                      "variant": "secondary",
+                                                                      "icon": "edit"
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                ]
+                                              },
+                                              "dataBinding": "Contact.all"
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "empty-state",
+        "type": "conditional",
+        "showWhen": "contacts.length === 0",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "64px 32px",
+              "maxWidth": "600px",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "shadow": "md",
+                    "borderRadius": "lg",
+                    "children": [
+                      {
+                        "type": "container",
+                        "config": {
+                          "padding": "48px",
+                          "children": [
+                            {
+                              "type": "heading",
+                              "config": {
+                                "text": "No Contacts Found",
+                                "variant": "h2"
+                              }
+                            },
+                            {
+                              "type": "spacer",
+                              "config": {
+                                "height": "16px"
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "config": {
+                                "text": "Get started by adding your first contact or importing from a file.",
+                                "variant": "body"
+                              }
+                            },
+                            {
+                              "type": "spacer",
+                              "config": {
+                                "height": "24px"
+                              }
+                            },
+                            {
+                              "type": "buttonGroup",
+                              "config": {
+                                "buttons": [
+                                  {
+                                    "label": "Add First Contact",
+                                    "variant": "primary",
+                                    "icon": "plus"
+                                  },
+                                  {
+                                    "label": "Import Contacts",
+                                    "variant": "secondary",
+                                    "icon": "upload"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Showing {{displayedCount}} of {{totalContacts}} contacts",
+                    "variant": "caption"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "delete": {
+          "type": "workflow",
+          "workflow": "Delete Contact"
+        }
+      },
+      "menu": [
+        {
+          "label": "Contact Directory",
+          "route": "/contact-directory"
+        },
+        {
+          "label": "Add Contact",
+          "route": "/add-contact"
+        },
+        {
+          "label": "Contact Details",
+          "route": "/contact-details"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-add-new-contact"
+  },
+  {
+    "id": "contact-details-page-1768575100000-xyz123",
+    "name": "Contact Details Page",
+    "title": "Contact Details",
+    "description": "Page showing full details of a single contact with edit and delete capabilities",
+    "route": "/contact/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "contact-edit-form-1768575024444-n96i3p"
+    ],
+    "sections": [
+      {
+        "id": "breadcrumb-section",
+        "type": "navigation",
+        "components": [
+          {
+            "type": "breadcrumb",
+            "config": {
+              "items": [
+                {
+                  "label": "Home",
+                  "route": "/"
+                },
+                {
+                  "label": "Contacts",
+                  "route": "/contact-directory"
+                },
+                {
+                  "label": "{{contact.name}}",
+                  "route": "/contact/:id"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "loading-state",
+        "type": "conditional",
+        "showWhen": "isLoading",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "48px",
+              "children": [
+                {
+                  "type": "spinner",
+                  "config": {
+                    "size": "large",
+                    "label": "Loading contact details..."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px 0",
+              "children": [
+                {
+                  "type": "container",
+                  "config": {
+                    "padding": "0",
+                    "children": [
+                      {
+                        "type": "avatar",
+                        "config": {
+                          "initials": "{{contact.initials}}",
+                          "size": "large"
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "16px"
+                        }
+                      },
+                      {
+                        "type": "heading",
+                        "config": {
+                          "text": "{{contact.name}}",
+                          "variant": "h1"
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "config": {
+                          "text": "{{contact.title}} at {{contact.company}}",
+                          "variant": "subtitle"
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "16px"
+                        }
+                      },
+                      {
+                        "type": "badge",
+                        "config": {
+                          "text": "{{contact.status}}",
+                          "variant": "success"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "buttonGroup",
+                  "config": {
+                    "buttons": [
+                      {
+                        "label": "Edit Contact",
+                        "variant": "primary",
+                        "icon": "edit",
+                        "action": "edit"
+                      },
+                      {
+                        "label": "Delete",
+                        "variant": "secondary",
+                        "icon": "trash",
+                        "action": "delete"
+                      },
+                      {
+                        "label": "Back to List",
+                        "variant": "secondary",
+                        "icon": "arrow-left",
+                        "action": "back"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "alert-section",
+        "type": "alerts",
+        "components": [
+          {
+            "type": "alert",
+            "config": {
+              "variant": "success",
+              "title": "Contact Updated",
+              "message": "Contact information has been successfully updated",
+              "dismissible": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "main-content",
+        "type": "main",
+        "components": [
+          {
+            "type": "tabs",
+            "config": {
+              "variant": "underline",
+              "tabs": [
+                {
+                  "id": "overview",
+                  "label": "Overview",
+                  "icon": "user",
+                  "content": [
+                    {
+                      "type": "container",
+                      "config": {
+                        "padding": "24px 0",
+                        "children": [
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "Contact Information",
+                              "shadow": "md",
+                              "children": [
+                                {
+                                  "type": "container",
+                                  "config": {
+                                    "padding": "16px",
+                                    "children": [
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "Full Name",
+                                          "variant": "caption"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{contact.name}}",
+                                          "variant": "body"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "divider",
+                                        "config": {}
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "Email Address",
+                                          "variant": "caption"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{contact.email}}",
+                                          "variant": "body"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "divider",
+                                        "config": {}
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "Phone Number",
+                                          "variant": "caption"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{contact.phone}}",
+                                          "variant": "body"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "divider",
+                                        "config": {}
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "Company",
+                                          "variant": "caption"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{contact.company}}",
+                                          "variant": "body"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "divider",
+                                        "config": {}
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "Job Title",
+                                          "variant": "caption"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{contact.title}}",
+                                          "variant": "body"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "24px"
+                            }
+                          },
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "Additional Details",
+                              "shadow": "md",
+                              "children": [
+                                {
+                                  "type": "container",
+                                  "config": {
+                                    "padding": "16px",
+                                    "children": [
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "Address",
+                                          "variant": "caption"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{contact.address}}",
+                                          "variant": "body"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "divider",
+                                        "config": {}
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "Notes",
+                                          "variant": "caption"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{contact.notes}}",
+                                          "variant": "body"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "divider",
+                                        "config": {}
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "Created Date",
+                                          "variant": "caption"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{contact.createdAt}}",
+                                          "variant": "body"
+                                        }
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "divider",
+                                        "config": {}
+                                      },
+                                      {
+                                        "type": "spacer",
+                                        "config": {
+                                          "height": "16px"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "Last Updated",
+                                          "variant": "caption"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "config": {
+                                          "text": "{{contact.updatedAt}}",
+                                          "variant": "body"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "edit",
+                  "label": "Edit",
+                  "icon": "edit",
+                  "content": [
+                    {
+                      "type": "container",
+                      "config": {
+                        "padding": "24px 0",
+                        "children": [
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "Edit Contact Information",
+                              "shadow": "md",
+                              "children": [
+                                {
+                                  "type": "form",
+                                  "config": {
+                                    "formId": "contact-edit-form-1768575024444-n96i3p",
+                                    "title": ""
+                                  }
+                                },
+                                {
+                                  "type": "spacer",
+                                  "config": {
+                                    "height": "24px"
+                                  }
+                                },
+                                {
+                                  "type": "buttonGroup",
+                                  "config": {
+                                    "buttons": [
+                                      {
+                                        "label": "Save Changes",
+                                        "variant": "primary",
+                                        "icon": "check",
+                                        "action": "save"
+                                      },
+                                      {
+                                        "label": "Cancel",
+                                        "variant": "secondary",
+                                        "action": "cancel"
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "activity",
+                  "label": "Activity",
+                  "icon": "clock",
+                  "content": [
+                    {
+                      "type": "container",
+                      "config": {
+                        "padding": "24px 0",
+                        "children": [
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "Recent Activity",
+                              "shadow": "md",
+                              "children": [
+                                {
+                                  "type": "table",
+                                  "config": {
+                                    "columns": [
+                                      {
+                                        "key": "action",
+                                        "label": "Action"
+                                      },
+                                      {
+                                        "key": "user",
+                                        "label": "User"
+                                      },
+                                      {
+                                        "key": "timestamp",
+                                        "label": "Date & Time"
+                                      }
+                                    ],
+                                    "dataBinding": "contact.activityLog"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "24px"
+                            }
+                          },
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "Communication History",
+                              "shadow": "md",
+                              "children": [
+                                {
+                                  "type": "accordion",
+                                  "config": {
+                                    "items": [
+                                      {
+                                        "title": "Email: Project Update - {{date}}",
+                                        "content": "Email content preview..."
+                                      },
+                                      {
+                                        "title": "Phone Call: Follow-up - {{date}}",
+                                        "content": "Call notes and summary..."
+                                      },
+                                      {
+                                        "title": "Meeting: Quarterly Review - {{date}}",
+                                        "content": "Meeting notes and action items..."
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "related-contacts",
+        "type": "section",
+        "components": [
+          {
+            "type": "section",
+            "config": {
+              "title": "Related Contacts",
+              "subtitle": "Other contacts from {{contact.company}}",
+              "padding": "32px 0",
+              "children": [
+                {
+                  "type": "grid",
+                  "config": {
+                    "columns": 3,
+                    "gap": "24px"
+                  },
+                  "children": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "{{relatedContact.name}}",
+                        "description": "{{relatedContact.title}}",
+                        "shadow": "md",
+                        "hoverElevation": true,
+                        "children": [
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "{{relatedContact.email}}",
+                              "variant": "caption"
+                            }
+                          },
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "{{relatedContact.phone}}",
+                              "variant": "caption"
+                            }
+                          }
+                        ],
+                        "actions": [
+                          {
+                            "label": "View",
+                            "icon": "eye",
+                            "action": "view"
+                          }
+                        ]
+                      },
+                      "dataBinding": "relatedContacts"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "quick-actions",
+        "type": "footer",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "32px 0",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Quick Actions",
+                    "shadow": "md",
+                    "children": [
+                      {
+                        "type": "buttonGroup",
+                        "config": {
+                          "buttons": [
+                            {
+                              "label": "Send Email",
+                              "variant": "secondary",
+                              "icon": "mail",
+                              "action": "email"
+                            },
+                            {
+                              "label": "Schedule Meeting",
+                              "variant": "secondary",
+                              "icon": "calendar",
+                              "action": "schedule"
+                            },
+                            {
+                              "label": "Export vCard",
+                              "variant": "secondary",
+                              "icon": "download",
+                              "action": "export"
+                            },
+                            {
+                              "label": "Share Contact",
+                              "variant": "secondary",
+                              "icon": "share",
+                              "action": "share"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "delete": {
+          "type": "workflow",
+          "workflow": "Delete Contact",
+          "confirm": true,
+          "confirmMessage": "Are you sure you want to delete this contact?"
+        },
+        "save": {
+          "type": "workflow",
+          "workflow": "Edit Existing Contact",
+          "onSuccess": {
+            "type": "navigate",
+            "target": "/contact/:id"
+          }
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/contact/:id"
+        },
+        "email": {
+          "type": "external",
+          "target": "mailto:{{contact.email}}"
+        }
+      },
+      "menu": [
+        {
+          "label": "Contact Directory",
+          "route": "/contact-directory",
+          "icon": "users"
+        },
+        {
+          "label": "Add New Contact",
+          "route": "/add-contact",
+          "icon": "plus"
+        },
+        {
+          "label": "Contact List",
+          "route": "/contact-list",
+          "icon": "list"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-add-new-contact"
+  },
+  {
+    "id": "add-contact-page-1768575100000",
+    "name": "Add Contact Page",
+    "title": "Add New Contact",
+    "description": "Create a new contact with comprehensive information and validation",
+    "route": "/contacts/add",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "contact-submission-form-1768575003648-9xpt6h"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px 32px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "breadcrumb",
+                  "config": {
+                    "items": [
+                      {
+                        "label": "Contacts",
+                        "route": "/contacts"
+                      },
+                      {
+                        "label": "Add New Contact",
+                        "route": "/contacts/add"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "16px"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "Add New Contact",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Create a new contact entry in your directory. All fields marked with * are required.",
+                    "variant": "subtitle"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "alert-section",
+        "type": "alerts",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 32px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "alert",
+                  "config": {
+                    "variant": "info",
+                    "title": "Contact Information",
+                    "message": "Please ensure all contact details are accurate. Email addresses will be validated automatically.",
+                    "dismissible": true
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "32px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Contact Details",
+                    "description": "Enter the contact's personal and professional information",
+                    "shadow": "md",
+                    "children": [
+                      {
+                        "type": "form",
+                        "config": {
+                          "formId": "contact-submission-form-1768575003648-9xpt6h",
+                          "title": ""
+                        },
+                        "formRef": "contact-submission-form-1768575003648-9xpt6h"
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "24px"
+                        }
+                      },
+                      {
+                        "type": "divider",
+                        "config": {}
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "24px"
+                        }
+                      },
+                      {
+                        "type": "container",
+                        "config": {
+                          "padding": "0",
+                          "children": [
+                            {
+                              "type": "text",
+                              "config": {
+                                "text": "Additional Options",
+                                "variant": "h3"
+                              }
+                            },
+                            {
+                              "type": "spacer",
+                              "config": {
+                                "height": "16px"
+                              }
+                            },
+                            {
+                              "type": "checkbox",
+                              "config": {
+                                "label": "Add to favorites"
+                              }
+                            },
+                            {
+                              "type": "checkbox",
+                              "config": {
+                                "label": "Send welcome email"
+                              }
+                            },
+                            {
+                              "type": "checkbox",
+                              "config": {
+                                "label": "Subscribe to newsletter"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Quick Tips",
+                    "shadow": "sm",
+                    "children": [
+                      {
+                        "type": "accordion",
+                        "config": {
+                          "items": [
+                            {
+                              "id": "tip-1",
+                              "title": "Email Validation",
+                              "content": "Email addresses are automatically validated. Make sure to enter a valid format (e.g., name@company.com)."
+                            },
+                            {
+                              "id": "tip-2",
+                              "title": "Required Fields",
+                              "content": "Fields marked with an asterisk (*) are mandatory. The form cannot be submitted without completing these fields."
+                            },
+                            {
+                              "id": "tip-3",
+                              "title": "Company Association",
+                              "content": "You can associate contacts with existing companies in your directory for better organization."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "actions-section",
+        "type": "footer",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px 32px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "divider",
+                  "config": {}
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "buttonGroup",
+                  "config": {
+                    "buttons": [
+                      {
+                        "label": "Cancel",
+                        "variant": "secondary",
+                        "icon": "x"
+                      },
+                      {
+                        "label": "Save as Draft",
+                        "variant": "outline",
+                        "icon": "save"
+                      },
+                      {
+                        "label": "Create Contact",
+                        "variant": "primary",
+                        "icon": "check"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "16px"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "By creating this contact, you agree to our data privacy policy.",
+                    "variant": "caption"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/contacts"
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/contacts"
+        },
+        "save-draft": {
+          "type": "navigate",
+          "target": "/contacts"
+        }
+      },
+      "menu": [
+        {
+          "label": "Contact Directory",
+          "route": "/contacts",
+          "icon": "book-open"
+        },
+        {
+          "label": "All Contacts",
+          "route": "/contacts",
+          "icon": "users"
+        },
+        {
+          "label": "Add Contact",
+          "route": "/contacts/add",
+          "icon": "user-plus"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-add-new-contact"
+  },
+  {
+    "id": "edit-contact-page-1768575024444",
+    "name": "Edit Contact Page",
+    "title": "Edit Contact",
+    "description": "Page with form for editing an existing contact with validation and status feedback",
+    "route": "/contacts/:id/edit",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "contact-edit-form-1768575024444-n96i3p"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "breadcrumb",
+            "config": {
+              "items": [
+                {
+                  "label": "Contacts",
+                  "route": "/contacts"
+                },
+                {
+                  "label": "{{contact.name}}",
+                  "route": "/contacts/{{contact.id}}"
+                },
+                {
+                  "label": "Edit",
+                  "route": "/contacts/{{contact.id}}/edit"
+                }
+              ]
+            }
+          },
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px 0",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "Edit Contact",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Update contact information and details",
+                    "variant": "subtitle"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "status-alerts",
+        "type": "alerts",
+        "components": [
+          {
+            "type": "alert",
+            "config": {
+              "variant": "success",
+              "title": "Contact Updated",
+              "message": "Changes have been saved successfully",
+              "dismissible": true
+            },
+            "showWhen": "updateSuccess"
+          },
+          {
+            "type": "alert",
+            "config": {
+              "variant": "error",
+              "title": "Update Failed",
+              "message": "{{errorMessage}}",
+              "dismissible": true
+            },
+            "showWhen": "updateError"
+          }
+        ]
+      },
+      {
+        "id": "loading-state",
+        "type": "conditional",
+        "showWhen": "isLoading",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "shadow": "md",
+              "children": [
+                {
+                  "type": "spinner",
+                  "config": {
+                    "size": "large",
+                    "label": "Loading contact details..."
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "skeleton",
+                  "config": {
+                    "width": "100%",
+                    "height": "400px"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "maxWidth": "800px",
+              "padding": "0",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Contact Information",
+                    "description": "Edit the details below to update this contact",
+                    "shadow": "lg",
+                    "children": [
+                      {
+                        "type": "form",
+                        "formRef": "contact-edit-form-1768575024444-n96i3p",
+                        "config": {
+                          "title": ""
+                        }
+                      },
+                      {
+                        "type": "divider",
+                        "config": {}
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "24px"
+                        }
+                      },
+                      {
+                        "type": "container",
+                        "config": {
+                          "padding": "0",
+                          "children": [
+                            {
+                              "type": "text",
+                              "config": {
+                                "text": "Last updated: {{contact.updatedAt}}",
+                                "variant": "caption"
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "config": {
+                                "text": "Created: {{contact.createdAt}}",
+                                "variant": "caption"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Danger Zone",
+                    "shadow": "md",
+                    "children": [
+                      {
+                        "type": "alert",
+                        "config": {
+                          "variant": "warning",
+                          "title": "Delete Contact",
+                          "message": "Once you delete a contact, there is no going back. Please be certain.",
+                          "dismissible": false
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "16px"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "config": {
+                          "label": "Delete Contact",
+                          "variant": "danger",
+                          "icon": "trash"
+                        },
+                        "action": "deleteContact"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "actions-footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "maxWidth": "800px",
+              "padding": "24px 0",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "shadow": "md",
+                    "children": [
+                      {
+                        "type": "buttonGroup",
+                        "config": {
+                          "buttons": [
+                            {
+                              "label": "Cancel",
+                              "variant": "secondary",
+                              "icon": "x",
+                              "action": "cancel"
+                            },
+                            {
+                              "label": "Save Changes",
+                              "variant": "primary",
+                              "icon": "check",
+                              "action": "submit"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/contacts"
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/contacts"
+        },
+        "deleteContact": {
+          "type": "navigate",
+          "target": "/contacts"
+        }
+      },
+      "menu": [
+        {
+          "label": "Contact Directory",
+          "route": "/contacts",
+          "icon": "users"
+        },
+        {
+          "label": "Contact Details",
+          "route": "/contacts",
+          "icon": "user"
+        },
+        {
+          "label": "Add Contact",
+          "route": "/contacts",
+          "icon": "plus"
+        },
+        {
+          "label": "Contact List",
+          "route": "/contact-list",
+          "icon": "list"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-add-new-contact"
+  },
+  {
+    "id": "contact-directory-page-1768575100000",
+    "name": "Contact Directory Page",
+    "title": "Contact Directory",
+    "description": "Main page displaying search, filter controls and contact list with advanced filtering capabilities",
+    "route": "/contacts",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "contact-search-form-1768575045415-3wxbys",
+      "company-filter-form-1768575063446-l7zwdo",
+      "contact-submission-form-1768575003648-9xpt6h"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "Contact Directory",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Manage and search your business contacts",
+                    "variant": "subtitle"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "stats-section",
+        "type": "stats-row",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "grid",
+                  "config": {
+                    "columns": 4,
+                    "gap": "24px",
+                    "children": [
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Total Contacts",
+                          "value": "{{totalContacts}}",
+                          "icon": "users",
+                          "iconColor": "primary",
+                          "trend": "+12%",
+                          "trendDirection": "up"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Active Companies",
+                          "value": "{{activeCompanies}}",
+                          "icon": "building",
+                          "iconColor": "success"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "New This Month",
+                          "value": "{{newContacts}}",
+                          "icon": "user-plus",
+                          "iconColor": "warning",
+                          "trend": "+8",
+                          "trendDirection": "up"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Verified Emails",
+                          "value": "{{verifiedEmails}}",
+                          "icon": "check-circle",
+                          "iconColor": "primary"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "search-filter-section",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Search & Filter",
+                    "shadow": "md",
+                    "borderRadius": "lg",
+                    "children": [
+                      {
+                        "type": "grid",
+                        "config": {
+                          "columns": 2,
+                          "gap": "24px",
+                          "children": [
+                            {
+                              "type": "container",
+                              "config": {
+                                "children": [
+                                  {
+                                    "type": "text",
+                                    "config": {
+                                      "text": "Search Contacts",
+                                      "variant": "h3"
+                                    }
+                                  },
+                                  {
+                                    "type": "spacer",
+                                    "config": {
+                                      "height": "16px"
+                                    }
+                                  },
+                                  {
+                                    "type": "form",
+                                    "config": {
+                                      "formId": "contact-search-form-1768575045415-3wxbys"
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "container",
+                              "config": {
+                                "children": [
+                                  {
+                                    "type": "text",
+                                    "config": {
+                                      "text": "Filter by Company",
+                                      "variant": "h3"
+                                    }
+                                  },
+                                  {
+                                    "type": "spacer",
+                                    "config": {
+                                      "height": "16px"
+                                    }
+                                  },
+                                  {
+                                    "type": "form",
+                                    "config": {
+                                      "formId": "company-filter-form-1768575063446-l7zwdo"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "24px"
+                        }
+                      },
+                      {
+                        "type": "buttonGroup",
+                        "config": {
+                          "buttons": [
+                            {
+                              "label": "Apply Filters",
+                              "variant": "primary",
+                              "icon": "filter"
+                            },
+                            {
+                              "label": "Clear All",
+                              "variant": "secondary",
+                              "icon": "x"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "actions-section",
+        "type": "quick-actions",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 32px 24px 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "container",
+                  "config": {
+                    "children": [
+                      {
+                        "type": "button",
+                        "config": {
+                          "label": "Add New Contact",
+                          "variant": "primary",
+                          "icon": "plus"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "config": {
+                          "label": "Export to CSV",
+                          "variant": "secondary",
+                          "icon": "download"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "config": {
+                          "label": "View All",
+                          "variant": "secondary",
+                          "icon": "eye"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "contacts-list-section",
+        "type": "card-grid",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 32px 32px 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "container",
+                  "config": {
+                    "children": [
+                      {
+                        "type": "heading",
+                        "config": {
+                          "text": "All Contacts",
+                          "variant": "h2"
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "config": {
+                          "text": "{{filteredCount}} contacts found",
+                          "variant": "caption"
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "24px"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "grid",
+                  "config": {
+                    "columns": 3,
+                    "gap": "24px",
+                    "children": [
+                      {
+                        "type": "card",
+                        "config": {
+                          "shadow": "md",
+                          "hoverElevation": true,
+                          "borderRadius": "lg",
+                          "children": [
+                            {
+                              "type": "container",
+                              "config": {
+                                "children": [
+                                  {
+                                    "type": "avatar",
+                                    "config": {
+                                      "initials": "{{contact.firstName.0}},{{contact.lastName.0}}",
+                                      "size": "large"
+                                    }
+                                  },
+                                  {
+                                    "type": "spacer",
+                                    "config": {
+                                      "height": "16px"
+                                    }
+                                  },
+                                  {
+                                    "type": "heading",
+                                    "config": {
+                                      "text": "{{contact.firstName}}, {{contact.lastName}}",
+                                      "variant": "h3"
+                                    }
+                                  },
+                                  {
+                                    "type": "text",
+                                    "config": {
+                                      "text": "{{contact.jobTitle}}",
+                                      "variant": "body"
+                                    }
+                                  },
+                                  {
+                                    "type": "text",
+                                    "config": {
+                                      "text": "{{contact.company}}",
+                                      "variant": "caption"
+                                    }
+                                  },
+                                  {
+                                    "type": "spacer",
+                                    "config": {
+                                      "height": "12px"
+                                    }
+                                  },
+                                  {
+                                    "type": "divider",
+                                    "config": {}
+                                  },
+                                  {
+                                    "type": "spacer",
+                                    "config": {
+                                      "height": "12px"
+                                    }
+                                  },
+                                  {
+                                    "type": "text",
+                                    "config": {
+                                      "text": "{{contact.email}}",
+                                      "variant": "caption"
+                                    }
+                                  },
+                                  {
+                                    "type": "text",
+                                    "config": {
+                                      "text": "{{contact.phone}}",
+                                      "variant": "caption"
+                                    }
+                                  },
+                                  {
+                                    "type": "spacer",
+                                    "config": {
+                                      "height": "16px"
+                                    }
+                                  },
+                                  {
+                                    "type": "badge",
+                                    "config": {
+                                      "text": "{{contact.status}}",
+                                      "variant": "success"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ],
+                          "actions": [
+                            {
+                              "label": "View Details",
+                              "icon": "eye",
+                              "action": "view"
+                            },
+                            {
+                              "label": "Edit",
+                              "icon": "edit",
+                              "action": "edit"
+                            },
+                            {
+                              "label": "Delete",
+                              "icon": "trash",
+                              "action": "delete"
+                            }
+                          ]
+                        },
+                        "dataBinding": "contacts"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "table-view-section",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 32px 32px 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Contact List View",
+                    "shadow": "md",
+                    "borderRadius": "lg",
+                    "children": [
+                      {
+                        "type": "table",
+                        "config": {
+                          "columns": [
+                            {
+                              "key": "name",
+                              "label": "Name",
+                              "sortable": true
+                            },
+                            {
+                              "key": "email",
+                              "label": "Email",
+                              "sortable": true
+                            },
+                            {
+                              "key": "phone",
+                              "label": "Phone",
+                              "sortable": false
+                            },
+                            {
+                              "key": "company",
+                              "label": "Company",
+                              "sortable": true
+                            },
+                            {
+                              "key": "jobTitle",
+                              "label": "Job Title",
+                              "sortable": true
+                            },
+                            {
+                              "key": "status",
+                              "label": "Status",
+                              "sortable": true
+                            },
+                            {
+                              "key": "actions",
+                              "label": "Actions",
+                              "sortable": false
+                            }
+                          ],
+                          "dataBinding": "contacts"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "loading-state",
+        "type": "conditional",
+        "showWhen": "isLoading",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "64px 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "spinner",
+                  "config": {
+                    "size": "large",
+                    "label": "Loading contacts..."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "empty-state",
+        "type": "conditional",
+        "showWhen": "contacts.length === 0",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "64px 32px",
+              "maxWidth": "1400px",
+              "children": [
+                {
+                  "type": "alert",
+                  "config": {
+                    "variant": "info",
+                    "title": "No Contacts Found",
+                    "message": "Try adjusting your search criteria or add a new contact to get started.",
+                    "dismissible": false
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "button",
+                  "config": {
+                    "label": "Add Your First Contact",
+                    "variant": "primary",
+                    "icon": "plus"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "delete": {
+          "type": "workflow",
+          "workflow": "Delete Contact"
+        }
+      },
+      "menu": [
+        {
+          "label": "Contact List",
+          "route": "/contact-list",
+          "icon": "list"
+        },
+        {
+          "label": "Add Contact",
+          "route": "/add-contact",
+          "icon": "plus"
+        },
+        {
+          "label": "Contact Details",
+          "route": "/contact-details",
+          "icon": "eye"
+        },
+        {
+          "label": "Edit Contact",
+          "route": "/edit-contact",
+          "icon": "edit"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-add-new-contact"
+  }
+]

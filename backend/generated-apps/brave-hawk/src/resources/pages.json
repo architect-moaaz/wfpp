@@ -1,288 +1,1421 @@
 [
   {
-    "id": "app_1764272517526_admin-dashboard-page",
-    "name": "AdminDashboardPage",
-    "forms": [],
-    "route": "/admin/dashboard",
-    "title": "Administrative Dashboard",
-    "config": {},
-    "layout": {
-      "type": "dashboard",
-      "spacing": "normal",
-      "responsive": true
-    },
-    "styling": {},
-    "metadata": {},
-    "workflows": [],
-    "components": [
+    "id": "task-list-page-1768498263604",
+    "name": "Task List Page",
+    "title": "My Tasks",
+    "description": "Main page displaying all tasks with status indicators and action buttons",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "create-task-form-1768498263604-e9q672"
+    ],
+    "sections": [
       {
-        "id": "dashboard-stats",
-        "type": "card",
-        "label": "Ticket Statistics",
-        "config": {
-          "variant": "stats-grid",
-          "position": "top"
-        },
-        "dataBinding": "ParkingTicketDataModel.aggregateStats"
+        "id": "header-section",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px"
+            },
+            "components": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 2,
+                  "gap": "16px"
+                },
+                "components": [
+                  {
+                    "type": "heading",
+                    "config": {
+                      "text": "My Tasks",
+                      "variant": "h1"
+                    },
+                    "style": {
+                      "fontSize": "32px",
+                      "fontWeight": "700",
+                      "color": "#1a1a1a",
+                      "marginBottom": "8px"
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "label": "Create New Task",
+                      "variant": "primary",
+                      "icon": "plus"
+                    },
+                    "style": {
+                      "backgroundColor": "#1976d2",
+                      "color": "#ffffff",
+                      "padding": "12px 24px",
+                      "borderRadius": "8px",
+                      "fontWeight": "600",
+                      "fontSize": "15px",
+                      "boxShadow": "0 2px 8px rgba(25, 118, 210, 0.25)",
+                      "transition": "all 0.2s ease",
+                      "minHeight": "44px",
+                      "justifySelf": "end"
+                    },
+                    "action": {
+                      "type": "navigate",
+                      "target": "/create-task"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Manage and track all your tasks in one place",
+                  "variant": "subtitle"
+                },
+                "style": {
+                  "fontSize": "16px",
+                  "color": "#666666",
+                  "marginTop": "4px"
+                }
+              }
+            ]
+          }
+        ]
       },
       {
-        "id": "pending-reviews-queue",
-        "type": "table",
-        "label": "Pending Reviews Queue",
-        "config": {
-          "actions": [
-            "review",
-            "escalate",
-            "assign"
-          ],
-          "variant": "interactive",
-          "pagination": true
-        },
-        "dataBinding": "ParkingTicketDataModel.query.status:pending_review"
+        "id": "stats-section",
+        "type": "stats-row",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 24px",
+              "maxWidth": "1200px"
+            },
+            "components": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 4,
+                  "gap": "20px"
+                },
+                "components": [
+                  {
+                    "type": "stat-card",
+                    "config": {
+                      "title": "Total Tasks",
+                      "value": "{{totalTasks}}",
+                      "icon": "clipboard-list",
+                      "trend": "+5 this week",
+                      "trendDirection": "up"
+                    },
+                    "style": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "24px",
+                      "borderRadius": "12px",
+                      "boxShadow": "0 2px 12px rgba(0, 0, 0, 0.08)",
+                      "border": "1px solid #f0f0f0",
+                      "transition": "all 0.2s ease"
+                    },
+                    "dataBinding": "Task.count"
+                  },
+                  {
+                    "type": "stat-card",
+                    "config": {
+                      "title": "In Progress",
+                      "value": "{{inProgressTasks}}",
+                      "icon": "clock",
+                      "iconColor": "#ff9800"
+                    },
+                    "style": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "24px",
+                      "borderRadius": "12px",
+                      "boxShadow": "0 2px 12px rgba(0, 0, 0, 0.08)",
+                      "border": "1px solid #f0f0f0",
+                      "transition": "all 0.2s ease"
+                    },
+                    "dataBinding": "Task.countByStatus.inProgress"
+                  },
+                  {
+                    "type": "stat-card",
+                    "config": {
+                      "title": "Completed",
+                      "value": "{{completedTasks}}",
+                      "icon": "check-circle",
+                      "iconColor": "#4caf50"
+                    },
+                    "style": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "24px",
+                      "borderRadius": "12px",
+                      "boxShadow": "0 2px 12px rgba(0, 0, 0, 0.08)",
+                      "border": "1px solid #f0f0f0",
+                      "transition": "all 0.2s ease"
+                    },
+                    "dataBinding": "Task.countByStatus.completed"
+                  },
+                  {
+                    "type": "stat-card",
+                    "config": {
+                      "title": "Pending",
+                      "value": "{{pendingTasks}}",
+                      "icon": "alert-circle",
+                      "iconColor": "#f44336"
+                    },
+                    "style": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "24px",
+                      "borderRadius": "12px",
+                      "boxShadow": "0 2px 12px rgba(0, 0, 0, 0.08)",
+                      "border": "1px solid #f0f0f0",
+                      "transition": "all 0.2s ease"
+                    },
+                    "dataBinding": "Task.countByStatus.pending"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
       {
-        "id": "quick-actions",
-        "type": "card",
-        "label": "Quick Actions",
-        "config": {
-          "variant": "action-grid",
-          "position": "center"
-        }
+        "id": "spacer-1",
+        "type": "spacer",
+        "components": [
+          {
+            "type": "spacer",
+            "config": {
+              "height": "32px"
+            }
+          }
+        ]
       },
       {
-        "id": "recent-escalations",
-        "type": "table",
-        "label": "Recent Escalations",
-        "config": {
-          "limit": 10,
-          "variant": "compact"
-        },
-        "dataBinding": "ParkingTicketDataModel.query.escalated:true"
+        "id": "filters-section",
+        "type": "filters",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 24px",
+              "maxWidth": "1200px"
+            },
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "shadow": "sm"
+                },
+                "style": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "20px 24px",
+                  "borderRadius": "12px",
+                  "border": "1px solid #e0e0e0",
+                  "marginBottom": "24px"
+                },
+                "components": [
+                  {
+                    "type": "grid",
+                    "config": {
+                      "columns": 3,
+                      "gap": "16px"
+                    },
+                    "components": [
+                      {
+                        "type": "search",
+                        "config": {
+                          "placeholder": "Search tasks..."
+                        },
+                        "style": {
+                          "width": "100%",
+                          "padding": "10px 16px",
+                          "borderRadius": "8px",
+                          "border": "1px solid #d0d0d0",
+                          "fontSize": "15px",
+                          "minHeight": "44px"
+                        }
+                      },
+                      {
+                        "type": "select",
+                        "config": {
+                          "label": "Status",
+                          "options": [
+                            "All",
+                            "Pending",
+                            "In Progress",
+                            "Completed"
+                          ]
+                        },
+                        "style": {
+                          "width": "100%",
+                          "padding": "10px 16px",
+                          "borderRadius": "8px",
+                          "border": "1px solid #d0d0d0",
+                          "fontSize": "15px",
+                          "minHeight": "44px"
+                        }
+                      },
+                      {
+                        "type": "select",
+                        "config": {
+                          "label": "Priority",
+                          "options": [
+                            "All",
+                            "High",
+                            "Medium",
+                            "Low"
+                          ]
+                        },
+                        "style": {
+                          "width": "100%",
+                          "padding": "10px 16px",
+                          "borderRadius": "8px",
+                          "border": "1px solid #d0d0d0",
+                          "fontSize": "15px",
+                          "minHeight": "44px"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "main-content",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 24px 32px",
+              "maxWidth": "1200px"
+            },
+            "components": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 1,
+                  "gap": "16px"
+                },
+                "components": [
+                  {
+                    "type": "card",
+                    "config": {
+                      "title": "{{task.title}}",
+                      "description": "{{task.description}}",
+                      "shadow": "md",
+                      "hoverElevation": true
+                    },
+                    "style": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "24px",
+                      "borderRadius": "12px",
+                      "border": "1px solid #e8e8e8",
+                      "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      "cursor": "pointer"
+                    },
+                    "dataBinding": "Task.all",
+                    "components": [
+                      {
+                        "type": "grid",
+                        "config": {
+                          "columns": 2,
+                          "gap": "16px"
+                        },
+                        "components": [
+                          {
+                            "type": "heading",
+                            "config": {
+                              "text": "{{task.title}}",
+                              "variant": "h3"
+                            },
+                            "style": {
+                              "fontSize": "20px",
+                              "fontWeight": "600",
+                              "color": "#1a1a1a",
+                              "marginBottom": "8px"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "config": {
+                              "text": "{{task.status}}",
+                              "variant": "{{task.statusVariant}}"
+                            },
+                            "style": {
+                              "padding": "6px 16px",
+                              "borderRadius": "20px",
+                              "fontSize": "13px",
+                              "fontWeight": "600",
+                              "justifySelf": "end",
+                              "alignSelf": "start"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "config": {
+                          "text": "{{task.description}}",
+                          "variant": "body"
+                        },
+                        "style": {
+                          "fontSize": "15px",
+                          "color": "#666666",
+                          "lineHeight": "1.6",
+                          "marginBottom": "16px"
+                        }
+                      },
+                      {
+                        "type": "divider",
+                        "config": {},
+                        "style": {
+                          "margin": "16px 0",
+                          "backgroundColor": "#f0f0f0",
+                          "height": "1px"
+                        }
+                      },
+                      {
+                        "type": "grid",
+                        "config": {
+                          "columns": 2,
+                          "gap": "16px"
+                        },
+                        "components": [
+                          {
+                            "type": "text",
+                            "config": {
+                              "text": "Due: {{task.dueDate}}",
+                              "variant": "caption"
+                            },
+                            "style": {
+                              "fontSize": "14px",
+                              "color": "#888888",
+                              "display": "flex",
+                              "alignItems": "center",
+                              "gap": "8px"
+                            }
+                          },
+                          {
+                            "type": "buttonGroup",
+                            "config": {
+                              "buttons": [
+                                {
+                                  "label": "View",
+                                  "variant": "secondary",
+                                  "icon": "eye"
+                                },
+                                {
+                                  "label": "Complete",
+                                  "variant": "success",
+                                  "icon": "check"
+                                },
+                                {
+                                  "label": "Edit",
+                                  "variant": "secondary",
+                                  "icon": "edit"
+                                }
+                              ]
+                            },
+                            "style": {
+                              "justifySelf": "end",
+                              "display": "flex",
+                              "gap": "8px"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "empty-state",
+        "type": "conditional",
+        "showWhen": "tasks.length === 0",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "64px 24px",
+              "maxWidth": "600px"
+            },
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "shadow": "sm"
+                },
+                "style": {
+                  "backgroundColor": "#fafafa",
+                  "padding": "48px",
+                  "borderRadius": "16px",
+                  "textAlign": "center",
+                  "border": "2px dashed #d0d0d0"
+                },
+                "components": [
+                  {
+                    "type": "heading",
+                    "config": {
+                      "text": "No tasks yet",
+                      "variant": "h2"
+                    },
+                    "style": {
+                      "fontSize": "24px",
+                      "fontWeight": "600",
+                      "color": "#333333",
+                      "marginBottom": "12px"
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "config": {
+                      "text": "Get started by creating your first task",
+                      "variant": "body"
+                    },
+                    "style": {
+                      "fontSize": "16px",
+                      "color": "#666666",
+                      "marginBottom": "24px"
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "label": "Create Your First Task",
+                      "variant": "primary",
+                      "icon": "plus"
+                    },
+                    "style": {
+                      "backgroundColor": "#1976d2",
+                      "color": "#ffffff",
+                      "padding": "14px 32px",
+                      "borderRadius": "8px",
+                      "fontWeight": "600",
+                      "fontSize": "16px",
+                      "boxShadow": "0 4px 12px rgba(25, 118, 210, 0.3)",
+                      "minHeight": "48px"
+                    },
+                    "action": {
+                      "type": "navigate",
+                      "target": "/create-task"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       }
     ],
-    "description": "Central hub for administrative staff to manage tickets, payments, disputes, and user access",
-    "data_sources": []
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "navigate",
+          "target": "/create-task"
+        },
+        "complete": {
+          "type": "workflow",
+          "workflowId": "mark-task-complete"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks",
+          "icon": "list"
+        },
+        {
+          "label": "Create Task",
+          "route": "/create-task",
+          "icon": "plus"
+        },
+        {
+          "label": "Task List View",
+          "route": "/tasks",
+          "icon": "grid"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-new-task"
   },
   {
-    "id": "app_1764272517526_citizen-portal-page",
-    "name": "CitizenPortalPage",
-    "forms": [],
-    "route": "/citizen/portal",
-    "title": "My Parking Tickets",
-    "config": {},
-    "layout": {
-      "type": "dashboard",
-      "spacing": "normal",
-      "responsive": true
-    },
-    "styling": {},
-    "metadata": {},
-    "workflows": [],
-    "components": [
+    "id": "create-task-page-1768498263604",
+    "name": "Create Task Page",
+    "title": "Create New Task",
+    "description": "Page for creating a new task with form input and navigation",
+    "route": "/create-task",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "create-task-form-1768498263604-e9q672"
+    ],
+    "sections": [
       {
-        "id": "ticket-search-input",
-        "type": "input",
-        "label": "Search Tickets",
-        "config": {
-          "variant": "search",
-          "position": "top",
-          "placeholder": "Enter ticket number or license plate"
-        },
-        "dataBinding": "ParkingTicketDataModel.search"
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px"
+            },
+            "components": [
+              {
+                "type": "breadcrumb",
+                "config": {
+                  "items": [
+                    {
+                      "label": "Tasks",
+                      "route": "/task-list"
+                    },
+                    {
+                      "label": "Create Task",
+                      "route": "/create-task"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "spacer",
+                "config": {
+                  "height": "24px"
+                }
+              },
+              {
+                "type": "heading",
+                "config": {
+                  "text": "Create New Task",
+                  "variant": "h1"
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Fill in the details below to create a new task. All fields marked with an asterisk are required.",
+                  "variant": "subtitle"
+                }
+              }
+            ]
+          }
+        ]
       },
       {
-        "id": "outstanding-tickets-table",
-        "type": "table",
-        "label": "Outstanding Tickets",
-        "config": {
-          "actions": [
-            "view",
-            "pay",
-            "dispute"
-          ],
-          "columns": [
-            "ticketNumber",
-            "issueDate",
-            "violation",
-            "amount",
-            "status"
-          ],
-          "variant": "interactive"
-        },
-        "dataBinding": "ParkingTicketDataModel.list"
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "800px"
+            },
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Task Information",
+                  "description": "Enter the basic details for your task",
+                  "shadow": "md",
+                  "hoverElevation": false
+                },
+                "style": {
+                  "borderRadius": "12px",
+                  "padding": "32px"
+                },
+                "components": [
+                  {
+                    "type": "form",
+                    "config": {
+                      "formId": "create-task-form-1768498263604-e9q672",
+                      "title": ""
+                    },
+                    "formRef": "create-task-form-1768498263604-e9q672"
+                  },
+                  {
+                    "type": "spacer",
+                    "config": {
+                      "height": "32px"
+                    }
+                  },
+                  {
+                    "type": "divider",
+                    "config": {}
+                  },
+                  {
+                    "type": "spacer",
+                    "config": {
+                      "height": "24px"
+                    }
+                  },
+                  {
+                    "type": "buttonGroup",
+                    "config": {
+                      "buttons": [
+                        {
+                          "label": "Cancel",
+                          "variant": "secondary",
+                          "icon": "x",
+                          "action": "cancel"
+                        },
+                        {
+                          "label": "Save as Draft",
+                          "variant": "outline",
+                          "icon": "save",
+                          "action": "draft"
+                        },
+                        {
+                          "label": "Create Task",
+                          "variant": "primary",
+                          "icon": "check",
+                          "action": "submit"
+                        }
+                      ]
+                    },
+                    "style": {
+                      "justifyContent": "flex-end",
+                      "gap": "12px"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "spacer",
+                "config": {
+                  "height": "24px"
+                }
+              },
+              {
+                "type": "alert",
+                "config": {
+                  "type": "info",
+                  "message": "Tip: You can edit task details anytime after creation from the task list view.",
+                  "dismissible": true
+                }
+              }
+            ]
+          }
+        ]
       },
       {
-        "id": "payment-history-card",
-        "type": "card",
-        "label": "Payment History",
-        "config": {
-          "variant": "summary",
-          "collapsible": true
-        },
-        "dataBinding": "ParkingTicketDataModel.paymentHistory"
-      },
-      {
-        "id": "dispute-submission-form",
-        "type": "form",
-        "label": "Submit Dispute",
-        "config": {
-          "trigger": "button",
-          "variant": "modal"
-        },
-        "formRef": "DisputeManagementForm"
-      },
-      {
-        "id": "notification-preferences-button",
-        "type": "button",
-        "label": "Notification Preferences",
-        "config": {
-          "variant": "secondary",
-          "position": "bottom"
-        }
+        "id": "sidebar",
+        "type": "sidebar",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "shadow": "sm"
+            },
+            "style": {
+              "borderRadius": "12px",
+              "padding": "24px"
+            },
+            "components": [
+              {
+                "type": "button",
+                "config": {
+                  "label": "View All Tasks",
+                  "variant": "outline",
+                  "icon": "list"
+                },
+                "style": {
+                  "width": "100%",
+                  "marginBottom": "12px"
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Task Templates",
+                  "variant": "outline",
+                  "icon": "file-text"
+                },
+                "style": {
+                  "width": "100%"
+                }
+              },
+              {
+                "type": "spacer",
+                "config": {
+                  "height": "24px"
+                }
+              },
+              {
+                "type": "divider",
+                "config": {}
+              },
+              {
+                "type": "spacer",
+                "config": {
+                  "height": "16px"
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Need Help?",
+                  "variant": "h6"
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Learn how to create and manage tasks effectively.",
+                  "variant": "caption"
+                }
+              },
+              {
+                "type": "spacer",
+                "config": {
+                  "height": "12px"
+                }
+              },
+              {
+                "type": "link",
+                "config": {
+                  "text": "View Documentation",
+                  "href": "/help/tasks"
+                }
+              }
+            ]
+          }
+        ]
       }
     ],
-    "description": "Self-service portal for citizens to view, pay, and dispute parking tickets",
-    "data_sources": []
+    "navigation": {
+      "onAction": {
+        "draft": {
+          "type": "save",
+          "target": "/task-list"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/task-list",
+          "icon": "list"
+        },
+        {
+          "label": "Task List View",
+          "route": "/tasks",
+          "icon": "grid"
+        },
+        {
+          "label": "Create Task",
+          "route": "/create-task",
+          "icon": "plus",
+          "active": true
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-new-task"
   },
   {
-    "id": "app_1764272517526_officer-mobile-interface",
-    "name": "OfficerMobileInterface",
-    "forms": [],
-    "route": "/officer/mobile",
-    "title": "Issue Ticket",
-    "config": {},
-    "layout": {
-      "type": "single-column",
-      "spacing": "compact",
-      "responsive": true
-    },
-    "styling": {},
-    "metadata": {},
-    "workflows": [],
-    "components": [
+    "id": "task-list-view-1768498263604",
+    "name": "Task List View",
+    "title": "Tasks",
+    "description": "Main page displaying all tasks with visual status distinctions",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "create-task-form-1768498263604-e9q672"
+    ],
+    "sections": [
       {
-        "id": "daily-summary-card",
-        "type": "card",
-        "label": "Today's Activity",
-        "config": {
-          "variant": "compact",
-          "position": "top"
-        },
-        "dataBinding": "ParkingTicketDataModel.aggregateByOfficer"
-      },
-      {
-        "id": "quick-ticket-form",
-        "type": "form",
-        "label": "Issue New Ticket",
-        "config": {
-          "variant": "mobile-optimized",
-          "gpsEnabled": true,
-          "cameraEnabled": true,
-          "offlineCapable": true
-        },
-        "formRef": "TicketIssuanceForm",
-        "dataBinding": "ParkingTicketDataModel.create"
-      },
-      {
-        "id": "violation-quick-select",
-        "type": "button",
-        "label": "Common Violations",
-        "config": {
-          "variant": "quick-action",
-          "position": "center"
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px"
+            },
+            "components": [
+              {
+                "type": "heading",
+                "config": {
+                  "text": "Tasks",
+                  "variant": "h1"
+                },
+                "style": {
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a",
+                  "marginBottom": "8px"
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Manage and track all your tasks in one place",
+                  "variant": "subtitle"
+                },
+                "style": {
+                  "fontSize": "16px",
+                  "color": "#6b7280",
+                  "marginBottom": "24px"
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Create New Task",
+                  "variant": "primary",
+                  "icon": "plus"
+                },
+                "style": {
+                  "backgroundColor": "#2563eb",
+                  "color": "#ffffff",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "fontSize": "15px",
+                  "fontWeight": "600",
+                  "border": "none",
+                  "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                  "transition": "all 0.2s ease",
+                  "minHeight": "44px"
+                },
+                "action": {
+                  "type": "navigate",
+                  "target": "/create-task"
+                }
+              }
+            ]
+          }
+        ],
+        "style": {
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e5e7eb",
+          "position": "sticky",
+          "top": "0",
+          "zIndex": "100"
         }
       },
       {
-        "id": "recent-tickets-list",
-        "type": "list",
-        "label": "Recent Tickets",
-        "config": {
-          "variant": "compact",
-          "maxItems": 5
-        },
-        "dataBinding": "ParkingTicketDataModel.queryByOfficer"
-      }
-    ],
-    "description": "Mobile-optimized interface for field officers to quickly issue parking tickets with camera and GPS integration",
-    "data_sources": []
-  },
-  {
-    "id": "app_1764272517526_reporting-dashboard",
-    "name": "ReportingDashboard",
-    "forms": [],
-    "route": "/dashboard/reporting",
-    "title": "Parking Enforcement Analytics",
-    "config": {},
-    "layout": {
-      "type": "dashboard",
-      "spacing": "normal",
-      "responsive": true
-    },
-    "styling": {},
-    "metadata": {},
-    "workflows": [],
-    "components": [
-      {
-        "id": "filter-controls",
-        "type": "card",
-        "label": "Report Filters",
-        "config": {
-          "variant": "outlined",
-          "position": "top"
-        },
-        "dataBinding": "ParkingTicketDataModel.filters"
+        "id": "stats-section",
+        "type": "stats-row",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "32px 24px",
+              "maxWidth": "1200px"
+            },
+            "components": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 4,
+                  "gap": "24px"
+                },
+                "components": [
+                  {
+                    "type": "stat-card",
+                    "config": {
+                      "title": "Total Tasks",
+                      "value": "{{totalTasks}}",
+                      "icon": "clipboard-list",
+                      "trend": "+8%",
+                      "trendDirection": "up"
+                    },
+                    "style": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "24px",
+                      "borderRadius": "12px",
+                      "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                      "border": "1px solid #e5e7eb",
+                      "transition": "all 0.2s ease"
+                    },
+                    "dataBinding": "Task.count"
+                  },
+                  {
+                    "type": "stat-card",
+                    "config": {
+                      "title": "In Progress",
+                      "value": "{{inProgressTasks}}",
+                      "icon": "clock"
+                    },
+                    "style": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "24px",
+                      "borderRadius": "12px",
+                      "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                      "border": "1px solid #e5e7eb",
+                      "transition": "all 0.2s ease"
+                    },
+                    "dataBinding": "Task.filter.status=in_progress"
+                  },
+                  {
+                    "type": "stat-card",
+                    "config": {
+                      "title": "Completed",
+                      "value": "{{completedTasks}}",
+                      "icon": "check-circle"
+                    },
+                    "style": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "24px",
+                      "borderRadius": "12px",
+                      "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                      "border": "1px solid #e5e7eb",
+                      "transition": "all 0.2s ease"
+                    },
+                    "dataBinding": "Task.filter.status=completed"
+                  },
+                  {
+                    "type": "stat-card",
+                    "config": {
+                      "title": "Pending",
+                      "value": "{{pendingTasks}}",
+                      "icon": "alert-circle"
+                    },
+                    "style": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "24px",
+                      "borderRadius": "12px",
+                      "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                      "border": "1px solid #e5e7eb",
+                      "transition": "all 0.2s ease"
+                    },
+                    "dataBinding": "Task.filter.status=pending"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "style": {
+          "backgroundColor": "#f9fafb"
+        }
       },
       {
-        "id": "key-metrics-summary",
-        "type": "card",
-        "label": "Key Performance Indicators",
-        "config": {
-          "columns": 4,
-          "variant": "summary"
-        },
-        "dataBinding": "ParkingTicketDataModel.aggregateMetrics"
+        "id": "filters-section",
+        "type": "filters",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px"
+            },
+            "components": [
+              {
+                "type": "card",
+                "config": {
+                  "title": "Filter Tasks",
+                  "shadow": "sm"
+                },
+                "style": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "20px",
+                  "borderRadius": "12px",
+                  "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                  "border": "1px solid #e5e7eb",
+                  "marginBottom": "24px"
+                },
+                "components": [
+                  {
+                    "type": "grid",
+                    "config": {
+                      "columns": 3,
+                      "gap": "16px"
+                    },
+                    "components": [
+                      {
+                        "type": "search",
+                        "config": {
+                          "placeholder": "Search tasks..."
+                        },
+                        "style": {
+                          "padding": "10px 16px",
+                          "borderRadius": "8px",
+                          "border": "1px solid #d1d5db",
+                          "fontSize": "15px",
+                          "transition": "all 0.2s ease",
+                          "minHeight": "44px"
+                        }
+                      },
+                      {
+                        "type": "select",
+                        "config": {
+                          "label": "Status",
+                          "options": [
+                            "All",
+                            "Pending",
+                            "In Progress",
+                            "Completed"
+                          ]
+                        },
+                        "style": {
+                          "padding": "10px 16px",
+                          "borderRadius": "8px",
+                          "border": "1px solid #d1d5db",
+                          "fontSize": "15px",
+                          "minHeight": "44px"
+                        }
+                      },
+                      {
+                        "type": "select",
+                        "config": {
+                          "label": "Sort By",
+                          "options": [
+                            "Date Created",
+                            "Due Date",
+                            "Priority",
+                            "Name"
+                          ]
+                        },
+                        "style": {
+                          "padding": "10px 16px",
+                          "borderRadius": "8px",
+                          "border": "1px solid #d1d5db",
+                          "fontSize": "15px",
+                          "minHeight": "44px"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "style": {
+          "backgroundColor": "#f9fafb"
+        }
       },
       {
-        "id": "violation-trends-chart",
-        "type": "card",
-        "label": "Ticket Volume by Violation Type",
-        "config": {
-          "variant": "chart",
-          "chartType": "bar"
-        },
-        "dataBinding": "ParkingTicketDataModel.violationTypeAnalytics"
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 24px 32px 24px",
+              "maxWidth": "1200px"
+            },
+            "components": [
+              {
+                "type": "tabs",
+                "config": {
+                  "variant": "underline",
+                  "tabs": [
+                    {
+                      "id": "all-tasks",
+                      "label": "All Tasks",
+                      "icon": "list",
+                      "content": [
+                        {
+                          "type": "grid",
+                          "config": {
+                            "columns": 1,
+                            "gap": "16px"
+                          },
+                          "components": [
+                            {
+                              "type": "card",
+                              "config": {
+                                "title": "{{task.title}}",
+                                "description": "{{task.description}}",
+                                "shadow": "md",
+                                "hoverElevation": true
+                              },
+                              "style": {
+                                "backgroundColor": "#ffffff",
+                                "padding": "24px",
+                                "borderRadius": "12px",
+                                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                                "border": "1px solid #e5e7eb",
+                                "transition": "all 0.2s ease",
+                                "cursor": "pointer"
+                              },
+                              "dataBinding": "Task.all",
+                              "components": [
+                                {
+                                  "type": "grid",
+                                  "config": {
+                                    "columns": 2,
+                                    "gap": "16px"
+                                  },
+                                  "components": [
+                                    {
+                                      "type": "text",
+                                      "config": {
+                                        "text": "{{task.title}}",
+                                        "variant": "h3"
+                                      },
+                                      "style": {
+                                        "fontSize": "20px",
+                                        "fontWeight": "600",
+                                        "color": "#1a1a1a",
+                                        "marginBottom": "8px"
+                                      }
+                                    },
+                                    {
+                                      "type": "badge",
+                                      "config": {
+                                        "text": "{{task.status}}",
+                                        "variant": "{{task.status === 'completed' ? 'success' : task.status === 'in_progress' ? 'warning' : 'default'}}"
+                                      },
+                                      "style": {
+                                        "padding": "4px 12px",
+                                        "borderRadius": "6px",
+                                        "fontSize": "13px",
+                                        "fontWeight": "500",
+                                        "textAlign": "right"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "config": {
+                                    "text": "{{task.description}}",
+                                    "variant": "body"
+                                  },
+                                  "style": {
+                                    "fontSize": "15px",
+                                    "color": "#6b7280",
+                                    "lineHeight": "1.6",
+                                    "marginBottom": "16px"
+                                  }
+                                },
+                                {
+                                  "type": "divider",
+                                  "config": {},
+                                  "style": {
+                                    "margin": "16px 0",
+                                    "borderColor": "#e5e7eb"
+                                  }
+                                },
+                                {
+                                  "type": "buttonGroup",
+                                  "config": {
+                                    "buttons": [
+                                      {
+                                        "label": "View Details",
+                                        "variant": "secondary",
+                                        "icon": "eye"
+                                      },
+                                      {
+                                        "label": "Mark Complete",
+                                        "variant": "primary",
+                                        "icon": "check"
+                                      }
+                                    ]
+                                  },
+                                  "style": {
+                                    "display": "flex",
+                                    "gap": "12px",
+                                    "justifyContent": "flex-end"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "pending-tasks",
+                      "label": "Pending",
+                      "icon": "alert-circle",
+                      "content": [
+                        {
+                          "type": "grid",
+                          "config": {
+                            "columns": 1,
+                            "gap": "16px"
+                          },
+                          "components": [
+                            {
+                              "type": "card",
+                              "config": {
+                                "title": "{{task.title}}",
+                                "description": "{{task.description}}",
+                                "shadow": "md",
+                                "hoverElevation": true
+                              },
+                              "style": {
+                                "backgroundColor": "#fffbeb",
+                                "padding": "24px",
+                                "borderRadius": "12px",
+                                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                                "border": "1px solid #fde68a",
+                                "transition": "all 0.2s ease"
+                              },
+                              "dataBinding": "Task.filter.status=pending"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "in-progress-tasks",
+                      "label": "In Progress",
+                      "icon": "clock",
+                      "content": [
+                        {
+                          "type": "grid",
+                          "config": {
+                            "columns": 1,
+                            "gap": "16px"
+                          },
+                          "components": [
+                            {
+                              "type": "card",
+                              "config": {
+                                "title": "{{task.title}}",
+                                "description": "{{task.description}}",
+                                "shadow": "md",
+                                "hoverElevation": true
+                              },
+                              "style": {
+                                "backgroundColor": "#eff6ff",
+                                "padding": "24px",
+                                "borderRadius": "12px",
+                                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                                "border": "1px solid #bfdbfe",
+                                "transition": "all 0.2s ease"
+                              },
+                              "dataBinding": "Task.filter.status=in_progress"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "completed-tasks",
+                      "label": "Completed",
+                      "icon": "check-circle",
+                      "content": [
+                        {
+                          "type": "grid",
+                          "config": {
+                            "columns": 1,
+                            "gap": "16px"
+                          },
+                          "components": [
+                            {
+                              "type": "card",
+                              "config": {
+                                "title": "{{task.title}}",
+                                "description": "{{task.description}}",
+                                "shadow": "md",
+                                "hoverElevation": true
+                              },
+                              "style": {
+                                "backgroundColor": "#f0fdf4",
+                                "padding": "24px",
+                                "borderRadius": "12px",
+                                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                                "border": "1px solid #bbf7d0",
+                                "transition": "all 0.2s ease"
+                              },
+                              "dataBinding": "Task.filter.status=completed"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "style": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "24px",
+                  "borderRadius": "12px",
+                  "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                  "border": "1px solid #e5e7eb"
+                }
+              }
+            ]
+          }
+        ],
+        "style": {
+          "backgroundColor": "#f9fafb",
+          "minHeight": "calc(100vh - 300px)"
+        }
       },
       {
-        "id": "revenue-collection-chart",
-        "type": "card",
-        "label": "Revenue Collection & Outstanding Balances",
-        "config": {
-          "variant": "chart",
-          "chartType": "line"
-        },
-        "dataBinding": "ParkingTicketDataModel.revenueAnalytics"
-      },
-      {
-        "id": "location-performance-table",
-        "type": "table",
-        "label": "Enforcement by Location",
-        "config": {
-          "variant": "sortable",
-          "pagination": true
-        },
-        "dataBinding": "ParkingTicketDataModel.locationAnalytics"
-      },
-      {
-        "id": "export-report-button",
-        "type": "button",
-        "label": "Export Report",
-        "config": {
-          "variant": "primary",
-          "position": "bottom"
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px"
+            },
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "© 2024 Generated Application. All rights reserved.",
+                  "variant": "caption"
+                },
+                "style": {
+                  "fontSize": "14px",
+                  "color": "#9ca3af",
+                  "textAlign": "center"
+                }
+              }
+            ]
+          }
+        ],
+        "style": {
+          "backgroundColor": "#ffffff",
+          "borderTop": "1px solid #e5e7eb",
+          "marginTop": "48px"
         }
       }
     ],
-    "description": "Visualizes key metrics including ticket volume, revenue collection, dispute rates, and enforcement patterns with filtering and export capabilities.",
-    "data_sources": []
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "navigate",
+          "target": "/create-task"
+        },
+        "complete": {
+          "type": "workflow",
+          "workflow": "Mark Task as Complete"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks",
+          "icon": "list"
+        },
+        {
+          "label": "Create Task",
+          "route": "/create-task",
+          "icon": "plus"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-new-task"
   }
 ]

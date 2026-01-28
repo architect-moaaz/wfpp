@@ -1,6 +1,7 @@
 /**
  * Workflow Database Service
  * Simple file-based database for workflow instances
+ * With file locking for concurrent access safety
  * Can be replaced with PostgreSQL/MongoDB later
  */
 
@@ -14,7 +15,65 @@ class WorkflowDatabase {
     this.dbPath = path.join(__dirname, '../../data');
     this.instancesFile = path.join(this.dbPath, 'instances.json');
     this.workflowsFile = path.join(this.dbPath, 'workflows.json');
+    this.locks = new Map(); // In-memory locks for this process
+    this.lockTimeout = 5000; // 5 second lock timeout
+    this.maxRetries = 3;
+    this.retryDelay = 100; // ms between retries
     this.ensureDatabase();
+  }
+
+  /**
+   * Acquire a lock for a file
+   */
+  async acquireLock(filePath, retries = this.maxRetries) {
+    const lockKey = filePath;
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const existingLock = this.locks.get(lockKey);
+
+      // Check if lock exists and hasn't expired
+      if (existingLock) {
+        if (Date.now() - existingLock.timestamp < this.lockTimeout) {
+          // Lock is held, wait and retry
+          if (attempt < retries) {
+            await new Promise(resolve => setTimeout(resolve, this.retryDelay * (attempt + 1)));
+            continue;
+          }
+          throw new Error(`Could not acquire lock for ${filePath} after ${retries} retries`);
+        }
+        // Lock expired, we can take it
+      }
+
+      // Acquire lock
+      this.locks.set(lockKey, { timestamp: Date.now() });
+      return () => this.releaseLock(lockKey);
+    }
+  }
+
+  /**
+   * Release a lock
+   */
+  releaseLock(lockKey) {
+    this.locks.delete(lockKey);
+  }
+
+  /**
+   * Atomic write with temp file + rename
+   */
+  async atomicWrite(filePath, data) {
+    const tempFile = `${filePath}.${Date.now()}.tmp`;
+    try {
+      await fs.writeFile(tempFile, JSON.stringify(data, null, 2));
+      await fs.rename(tempFile, filePath);
+    } catch (error) {
+      // Cleanup temp file on failure
+      try {
+        await fs.unlink(tempFile);
+      } catch {
+        // Ignore cleanup errors
+      }
+      throw error;
+    }
   }
 
   /**
@@ -41,9 +100,10 @@ class WorkflowDatabase {
   }
 
   /**
-   * Save workflow definition
+   * Save workflow definition with file locking
    */
   async saveWorkflow(workflow) {
+    const release = await this.acquireLock(this.workflowsFile);
     try {
       const workflows = await this.loadWorkflows();
       const existingIndex = workflows.findIndex(w => w.id === workflow.id);
@@ -54,12 +114,14 @@ class WorkflowDatabase {
         workflows.push(workflow);
       }
 
-      await fs.writeFile(this.workflowsFile, JSON.stringify(workflows, null, 2));
+      await this.atomicWrite(this.workflowsFile, workflows);
       console.log(`[Database] Workflow saved: ${workflow.id}`);
       return workflow;
     } catch (error) {
       console.error('[Database] Error saving workflow:', error);
       throw error;
+    } finally {
+      release();
     }
   }
 
@@ -85,9 +147,10 @@ class WorkflowDatabase {
   }
 
   /**
-   * Save workflow instance
+   * Save workflow instance with file locking
    */
   async saveInstance(instance) {
+    const release = await this.acquireLock(this.instancesFile);
     try {
       const instances = await this.loadInstances();
       const existingIndex = instances.findIndex(i => i.id === instance.id);
@@ -100,12 +163,14 @@ class WorkflowDatabase {
         instances.push(instanceData);
       }
 
-      await fs.writeFile(this.instancesFile, JSON.stringify(instances, null, 2));
+      await this.atomicWrite(this.instancesFile, instances);
       console.log(`[Database] Instance saved: ${instance.id} - Status: ${instance.status}`);
       return instanceData;
     } catch (error) {
       console.error('[Database] Error saving instance:', error);
       throw error;
+    } finally {
+      release();
     }
   }
 
@@ -148,18 +213,21 @@ class WorkflowDatabase {
   }
 
   /**
-   * Delete instance
+   * Delete instance with file locking
    */
   async deleteInstance(instanceId) {
+    const release = await this.acquireLock(this.instancesFile);
     try {
       const instances = await this.loadInstances();
       const filtered = instances.filter(i => i.id !== instanceId);
-      await fs.writeFile(this.instancesFile, JSON.stringify(filtered, null, 2));
+      await this.atomicWrite(this.instancesFile, filtered);
       console.log(`[Database] Instance deleted: ${instanceId}`);
       return true;
     } catch (error) {
       console.error('[Database] Error deleting instance:', error);
       throw error;
+    } finally {
+      release();
     }
   }
 

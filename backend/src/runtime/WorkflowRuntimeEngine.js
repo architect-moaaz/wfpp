@@ -34,8 +34,15 @@ class WorkflowRuntimeEngine {
     this.useLLM = !!process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_api_key_here';
     this.runningInstances = new Map();
 
-    // Initialize state manager
+    // Initialize state manager and connect it to this runtime engine
     this.stateManager.initialize();
+    this.stateManager.setRuntimeEngine(this);
+
+    // Enable auto-snapshots (every 60 seconds by default)
+    if (process.env.AUTO_SNAPSHOTS !== 'false') {
+      const interval = parseInt(process.env.AUTO_SNAPSHOT_INTERVAL || '60000');
+      this.stateManager.enableAutoSnapshots(interval);
+    }
   }
 
   /**
@@ -76,12 +83,21 @@ class WorkflowRuntimeEngine {
           }
         }
 
+        // Validate input variables against workflow schema
+        const validationResult = this.validateInputVariables(actualWorkflowDef, inputData);
+        if (!validationResult.valid) {
+          throw new Error(`Input validation failed: ${validationResult.errors.join(', ')}`);
+        }
+
+        // Apply default values for missing optional variables
+        const processData = this.applyDefaultValues(actualWorkflowDef, inputData);
+
         // Create instance
         const instance = new WorkflowInstance({
           workflowId: actualWorkflowDef.id,
           workflowName: actualWorkflowDef.name,
           status: 'RUNNING',
-          processData: inputData,
+          processData: processData,
           initiator
         });
 
@@ -105,7 +121,22 @@ class WorkflowRuntimeEngine {
         // Execute asynchronously
         setImmediate(() => this.executeWorkflow(instance.id, actualWorkflowDef));
 
-        return instance.toJSON();
+        // Find start node to get initial navigation info
+        const startNode = actualWorkflowDef.nodes?.find(n =>
+          n.type === 'startProcess' || n.type === 'startEvent'
+        );
+
+        // Build initial navigation info
+        const navigation = {
+          workflowStarted: true,
+          initialPageId: startNode?.data?.initialPageId || startNode?.data?.displayPageId || null,
+          showWorkflowProgress: startNode?.data?.showWorkflowProgress !== false
+        };
+
+        return {
+          instance: instance.toJSON(),
+          navigation
+        };
       },
       {
         metadata: {
@@ -146,11 +177,13 @@ class WorkflowRuntimeEngine {
       const workflowTimeout = workflow.data?.timeout || this.timeoutManager.defaultTimeouts.workflowExecution;
       const timeoutId = this.timeoutManager.startWorkflowTimeout(instanceId, workflowTimeout);
 
-      // Find start node
-      const startNode = workflow.nodes.find(n => n.type === 'startProcess');
+      // Find start node(s) - supports multiple start events
+      const startNode = this.findStartNode(workflow, inputData?.triggerType, inputData?.triggerNodeId);
       if (!startNode) {
-        throw new Error('No start node found in workflow');
+        throw new Error('No matching start node found in workflow');
       }
+
+      console.log(`[Runtime] Starting from node: ${startNode.id} (${startNode.type})`);
 
       // Create initial token
       const initialToken = this.tokenManager.createInitialToken(instance.id, startNode.id);
@@ -496,6 +529,258 @@ class WorkflowRuntimeEngine {
   }
 
   /**
+   * Valid start event types - workflows can have multiple start events
+   */
+  static START_EVENT_TYPES = [
+    'startProcess',
+    'startEvent',
+    'start',
+    'timerStartEvent',
+    'messageStartEvent',
+    'signalStartEvent',
+    'conditionalStartEvent'
+  ];
+
+  /**
+   * Check if node is a start event
+   */
+  isStartEventNode(node) {
+    return WorkflowRuntimeEngine.START_EVENT_TYPES.includes(node.type);
+  }
+
+  /**
+   * Find all start nodes in a workflow
+   */
+  findAllStartNodes(workflow) {
+    if (!workflow?.nodes) return [];
+    return workflow.nodes.filter(n => this.isStartEventNode(n));
+  }
+
+  /**
+   * Validate input data against workflow's input variable schema
+   * @param {Object} workflow - Workflow definition with inputVariables
+   * @param {Object} inputData - Data provided to start the workflow
+   * @returns {Object} { valid: boolean, errors: string[] }
+   */
+  validateInputVariables(workflow, inputData = {}) {
+    const inputVariables = workflow?.inputVariables || [];
+    const errors = [];
+
+    // If no input variables defined, skip validation
+    if (inputVariables.length === 0) {
+      return { valid: true, errors: [] };
+    }
+
+    for (const variable of inputVariables) {
+      const value = inputData[variable.name];
+
+      // Check required variables
+      if (variable.required && (value === undefined || value === null || value === '')) {
+        errors.push(`Required variable "${variable.name}" is missing`);
+        continue;
+      }
+
+      // Skip type validation for undefined optional variables
+      if (value === undefined || value === null) {
+        continue;
+      }
+
+      // Type validation
+      const actualType = Array.isArray(value) ? 'array' : typeof value;
+      const expectedType = variable.type;
+
+      if (expectedType === 'number' && actualType !== 'number') {
+        const numValue = Number(value);
+        if (isNaN(numValue)) {
+          errors.push(`Variable "${variable.name}" must be a number`);
+        }
+      } else if (expectedType === 'boolean' && actualType !== 'boolean') {
+        if (value !== 'true' && value !== 'false' && actualType !== 'boolean') {
+          errors.push(`Variable "${variable.name}" must be a boolean`);
+        }
+      } else if (expectedType === 'date') {
+        const dateValue = new Date(value);
+        if (isNaN(dateValue.getTime())) {
+          errors.push(`Variable "${variable.name}" must be a valid date`);
+        }
+      } else if (expectedType === 'array' && !Array.isArray(value)) {
+        errors.push(`Variable "${variable.name}" must be an array`);
+      } else if (expectedType === 'object' && (actualType !== 'object' || Array.isArray(value))) {
+        errors.push(`Variable "${variable.name}" must be an object`);
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Apply default values for missing optional variables
+   * @param {Object} workflow - Workflow definition with inputVariables
+   * @param {Object} inputData - Data provided to start the workflow
+   * @returns {Object} Enhanced input data with defaults applied
+   */
+  applyDefaultValues(workflow, inputData = {}) {
+    const inputVariables = workflow?.inputVariables || [];
+    const result = { ...inputData };
+
+    for (const variable of inputVariables) {
+      if ((result[variable.name] === undefined || result[variable.name] === null) &&
+          variable.defaultValue !== undefined && variable.defaultValue !== '') {
+        let defaultValue = variable.defaultValue;
+
+        if (variable.type === 'number') {
+          defaultValue = Number(defaultValue);
+        } else if (variable.type === 'boolean') {
+          defaultValue = defaultValue === 'true' || defaultValue === true;
+        } else if (variable.type === 'date') {
+          defaultValue = new Date(defaultValue).toISOString();
+        } else if (variable.type === 'array' && typeof defaultValue === 'string') {
+          try { defaultValue = JSON.parse(defaultValue); } catch (e) { defaultValue = []; }
+        } else if (variable.type === 'object' && typeof defaultValue === 'string') {
+          try { defaultValue = JSON.parse(defaultValue); } catch (e) { defaultValue = {}; }
+        }
+
+        result[variable.name] = defaultValue;
+        console.log(`[Runtime] Applied default value for "${variable.name}": ${defaultValue}`);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Find a start node based on trigger type or node ID
+   * @param {Object} workflow - Workflow definition
+   * @param {String} triggerType - Optional trigger type (timer, message, signal, conditional, manual)
+   * @param {String} triggerNodeId - Optional specific node ID to start from
+   * @returns {Object} Start node or null
+   */
+  findStartNode(workflow, triggerType = null, triggerNodeId = null) {
+    if (!workflow?.nodes) return null;
+
+    const startNodes = this.findAllStartNodes(workflow);
+
+    if (startNodes.length === 0) {
+      return null;
+    }
+
+    // If specific node ID provided, use that
+    if (triggerNodeId) {
+      const node = startNodes.find(n => n.id === triggerNodeId);
+      if (node) return node;
+    }
+
+    // If trigger type provided, find matching start event
+    if (triggerType) {
+      const typeMapping = {
+        'timer': 'timerStartEvent',
+        'message': 'messageStartEvent',
+        'webhook': 'messageStartEvent',
+        'signal': 'signalStartEvent',
+        'conditional': 'conditionalStartEvent',
+        'condition': 'conditionalStartEvent',
+        'manual': 'startProcess',
+        'api': 'startProcess'
+      };
+
+      const targetType = typeMapping[triggerType] || triggerType;
+      const node = startNodes.find(n => n.type === targetType);
+      if (node) return node;
+    }
+
+    // Default: return the first manual start event, or first start event of any type
+    const manualStart = startNodes.find(n =>
+      n.type === 'startProcess' || n.type === 'startEvent' || n.type === 'start'
+    );
+
+    return manualStart || startNodes[0];
+  }
+
+  /**
+   * Get workflow trigger info - returns all start events with their configurations
+   */
+  getWorkflowTriggers(workflow) {
+    const startNodes = this.findAllStartNodes(workflow);
+
+    return startNodes.map(node => ({
+      nodeId: node.id,
+      type: node.type,
+      label: node.data?.label || node.type,
+      config: {
+        schedule: node.data?.schedule,
+        channel: node.data?.channel,
+        webhookPath: node.data?.webhookPath,
+        signalName: node.data?.signalName,
+        condition: node.data?.condition,
+        dataSource: node.data?.dataSource
+      }
+    }));
+  }
+
+  /**
+   * Start workflow from a specific trigger type
+   */
+  async startWorkflowFromTrigger(workflowDef, triggerType, triggerData = {}, initiator = 'system') {
+    const inputData = {
+      ...triggerData,
+      triggerType,
+      triggeredAt: new Date().toISOString()
+    };
+
+    return this.startWorkflow(workflowDef, inputData, initiator);
+  }
+
+  /**
+   * Start workflow from timer trigger
+   */
+  async triggerFromTimer(workflowDef, scheduleInfo = {}) {
+    console.log(`[Runtime] Timer trigger for workflow: ${workflowDef?.name}`);
+    return this.startWorkflowFromTrigger(workflowDef, 'timer', {
+      scheduledTime: scheduleInfo.scheduledTime || new Date().toISOString(),
+      cronExpression: scheduleInfo.cronExpression
+    }, 'timer');
+  }
+
+  /**
+   * Start workflow from message/webhook trigger
+   */
+  async triggerFromMessage(workflowDef, messageData = {}) {
+    console.log(`[Runtime] Message trigger for workflow: ${workflowDef?.name}`);
+    return this.startWorkflowFromTrigger(workflowDef, 'message', {
+      channel: messageData.channel,
+      messageType: messageData.messageType,
+      payload: messageData.payload
+    }, 'webhook');
+  }
+
+  /**
+   * Start workflow from signal trigger
+   */
+  async triggerFromSignal(workflowDef, signalData = {}) {
+    console.log(`[Runtime] Signal trigger for workflow: ${workflowDef?.name}`);
+    return this.startWorkflowFromTrigger(workflowDef, 'signal', {
+      signalName: signalData.signalName,
+      signalScope: signalData.signalScope,
+      signalPayload: signalData.payload
+    }, 'signal');
+  }
+
+  /**
+   * Start workflow from conditional trigger (when condition is met)
+   */
+  async triggerFromCondition(workflowDef, conditionData = {}) {
+    console.log(`[Runtime] Conditional trigger for workflow: ${workflowDef?.name}`);
+    return this.startWorkflowFromTrigger(workflowDef, 'conditional', {
+      condition: conditionData.condition,
+      dataSource: conditionData.dataSource,
+      matchedData: conditionData.matchedData
+    }, 'condition');
+  }
+
+  /**
    * Get gateway type from node
    */
   getGatewayType(node) {
@@ -687,12 +972,38 @@ Respond with ONLY the nodeId of the chosen path.`;
 
   /**
    * Complete human task and continue workflow
+   *
+   * @param {string} instanceId - Workflow instance ID
+   * @param {Object} taskData - Task completion data
+   * @param {Object} options - Optional parameters
+   * @param {string} options.userId - User ID who completed the task
+   * @param {string} options.taskId - Task ID being completed
    */
-  async completeTask(instanceId, taskData) {
+  async completeTask(instanceId, taskData, options = {}) {
     const instance = await this.getInstance(instanceId);
     const workflow = await workflowDatabase.getWorkflow(instance.workflowId);
 
     console.log(`[Runtime] Completing task for instance: ${instanceId}`);
+
+    const { userId, taskId } = options;
+
+    // Check if this task should capture the initiator
+    if (taskId && userId) {
+      const configEnforcer = require('./WorkflowConfigEnforcer');
+      const taskQueue = configEnforcer.getTasksByPriority(instanceId);
+      const task = taskQueue.find(t => t.taskId === taskId);
+
+      if (task?.captureInitiator && userId) {
+        // Capture the user who completed this task as the process initiator
+        instance.processData.initiator = userId;
+        instance.processData._initiatorCapturedAt = new Date().toISOString();
+        instance.processData._initiatorCapturedBy = taskId;
+        console.log(`[Runtime] Process initiator captured: ${userId} (from task ${taskId})`);
+      }
+
+      // Complete the task and remove from queue
+      this.executionAgent.completeTask(instanceId, taskId);
+    }
 
     // Merge task data into process data
     instance.processData = {
@@ -707,13 +1018,305 @@ Respond with ONLY the nodeId of the chosen path.`;
     const currentNode = workflow.nodes.find(n => n.id === instance.currentNodeId);
     const nextNode = await this.determineNextNode(currentNode, instance, workflow);
 
+    // Track navigation info for response
+    let navigationInfo = {
+      workflowComplete: false,
+      nextPageId: null,
+      nextTaskId: null,
+      currentNodeId: instance.currentNodeId
+    };
+
     if (nextNode) {
-      await this.executeNode(nextNode, instance, workflow);
+      const result = await this.executeNode(nextNode, instance, workflow);
+
+      // Extract navigation from execution result
+      if (result?.output?.navigation) {
+        navigationInfo = {
+          ...navigationInfo,
+          ...result.output.navigation,
+          nextPageId: result.output.navigation.displayPageId ||
+                      result.output.navigation.nextPageId ||
+                      result.output.navigation.completionPageId
+        };
+      }
+
+      // If next node is a user task, include task info for navigation
+      if (result?.status === 'WAITING' && result?.output?.taskId) {
+        navigationInfo.nextTaskId = result.output.taskId;
+        navigationInfo.nextTask = {
+          taskId: result.output.taskId,
+          taskName: result.output.taskName,
+          formMetadata: result.output.formMetadata,
+          navigation: result.output.navigation
+        };
+      }
     } else {
       await this.completeInstance(instance);
+      navigationInfo.workflowComplete = true;
+
+      // Get completion page from end event if configured
+      const endNode = workflow.nodes.find(n => n.type === 'endEvent');
+      if (endNode?.data?.completionPageId) {
+        navigationInfo.nextPageId = endNode.data.completionPageId;
+        navigationInfo.completionPageId = endNode.data.completionPageId;
+      }
     }
 
-    return instance.toJSON();
+    return {
+      instance: instance.toJSON(),
+      navigation: navigationInfo
+    };
+  }
+
+  /**
+   * Claim a group-assigned task
+   * When a task is assigned to a group, any member can claim it.
+   * Once claimed, only the claimer can complete the task.
+   *
+   * @param {string} instanceId - Workflow instance ID
+   * @param {string} taskId - Task ID to claim
+   * @param {string} userId - User ID claiming the task
+   * @param {Object} options - Optional claim options
+   * @returns {Object} Result with claimed task info or error
+   */
+  async claimTask(instanceId, taskId, userId, options = {}) {
+    console.log(`[Runtime] User ${userId} claiming task ${taskId} in instance ${instanceId}`);
+
+    const instance = await this.getInstance(instanceId);
+    if (!instance) {
+      return { success: false, error: 'Instance not found' };
+    }
+
+    // Get the task from the queue
+    const configEnforcer = require('./WorkflowConfigEnforcer');
+    const taskQueue = configEnforcer.getTasksByPriority(instanceId);
+    const task = taskQueue.find(t => t.taskId === taskId);
+
+    if (!task) {
+      return { success: false, error: 'Task not found in queue' };
+    }
+
+    // Check if task is already claimed or assigned to specific user
+    if (task.claimedBy) {
+      if (task.claimedBy === userId) {
+        return { success: true, alreadyClaimed: true, task };
+      }
+      return { success: false, error: 'Task already claimed by another user' };
+    }
+
+    if (task.assignmentType === 'user' && task.assignedTo !== userId) {
+      return { success: false, error: 'Task is assigned to a specific user' };
+    }
+
+    // Validate user eligibility based on assignment type
+    const eligibility = await this.validateClaimEligibility(task, userId, instance);
+    if (!eligibility.eligible) {
+      return { success: false, error: eligibility.reason };
+    }
+
+    // Claim the task
+    task.claimedBy = userId;
+    task.claimedAt = new Date().toISOString();
+    task.assignedTo = userId;
+    task.status = 'CLAIMED';
+
+    // Update the task in the queue
+    configEnforcer.updateTaskInQueue(instanceId, task);
+
+    // Store claim info in instance processData for audit trail
+    if (!instance.processData._taskClaims) {
+      instance.processData._taskClaims = {};
+    }
+    instance.processData._taskClaims[taskId] = {
+      userId,
+      claimedAt: task.claimedAt,
+      previousAssignment: eligibility.originalAssignment
+    };
+
+    await this.saveState(instance);
+
+    console.log(`[Runtime] Task ${taskId} claimed by user ${userId}`);
+
+    // Send notifications asynchronously
+    this.notifyTaskClaim(task, userId, eligibility.otherEligibleUsers || []).catch(err => {
+      console.error(`[Runtime] Failed to send claim notifications:`, err.message);
+    });
+
+    // Cancel any escalation timer for this task
+    if (task.escalationTimer) {
+      this.cancelTaskEscalation(taskId);
+    }
+
+    return {
+      success: true,
+      task: {
+        taskId: task.taskId,
+        taskName: task.taskName,
+        claimedBy: userId,
+        claimedAt: task.claimedAt
+      }
+    };
+  }
+
+  /**
+   * Validate if user is eligible to claim a task
+   * @param {Object} task - Task to claim
+   * @param {string} userId - User attempting to claim
+   * @param {Object} instance - Workflow instance
+   * @returns {Object} Eligibility result
+   */
+  async validateClaimEligibility(task, userId, instance) {
+    const assignmentType = task.assignmentType;
+    const result = {
+      eligible: false,
+      reason: 'Not eligible to claim this task',
+      originalAssignment: assignmentType,
+      otherEligibleUsers: []
+    };
+
+    try {
+      switch (assignmentType) {
+        case 'group': {
+          // Check if user is member of the candidate group
+          const groupId = task.candidateGroups?.[0];
+          if (!groupId) {
+            result.reason = 'No group assignment found';
+            return result;
+          }
+
+          const { GroupService } = require('../services/identity');
+          const db = require('../database/ApplicationDatabase');
+          const groupService = new GroupService(db);
+
+          const isMember = await groupService.isMember(groupId, userId);
+          if (!isMember) {
+            result.reason = 'User is not a member of the assigned group';
+            return result;
+          }
+
+          // Get other group members for notification
+          const members = await groupService.getMembers(groupId);
+          result.otherEligibleUsers = members
+            .filter(m => (m.id || m.user_id) !== userId)
+            .map(m => m.id || m.user_id);
+
+          result.eligible = true;
+          break;
+        }
+
+        case 'role': {
+          // Check if user has the assigned role
+          const roleName = task.assignedRole;
+          if (!roleName) {
+            result.reason = 'No role assignment found';
+            return result;
+          }
+
+          const { RoleService, UserService } = require('../services/identity');
+          const db = require('../database/ApplicationDatabase');
+          const userService = new UserService(db);
+          const roleService = new RoleService(db);
+
+          // Get user's roles
+          const userRoles = await userService.getUserRoles(userId, instance.organizationId);
+          const hasRole = userRoles.some(r => r.name === roleName || r.display_name === roleName);
+
+          if (!hasRole) {
+            result.reason = `User does not have the "${roleName}" role`;
+            return result;
+          }
+
+          // Get other users with this role for notification
+          const role = await roleService.getOrgRoleByName(instance.organizationId, roleName);
+          if (role) {
+            const usersWithRole = await roleService.getUsersWithOrgRole(role.id);
+            result.otherEligibleUsers = usersWithRole
+              .filter(u => (u.id || u.user_id) !== userId)
+              .map(u => u.id || u.user_id);
+          }
+
+          result.eligible = true;
+          break;
+        }
+
+        case 'unassigned': {
+          // Open to all - anyone can claim
+          result.eligible = true;
+          result.reason = null;
+          break;
+        }
+
+        case 'expression': {
+          // Check if user is in candidate users list
+          const candidateUsers = task.candidateUsers || [];
+          if (candidateUsers.includes(userId)) {
+            result.eligible = true;
+            result.otherEligibleUsers = candidateUsers.filter(u => u !== userId);
+          } else {
+            result.reason = 'User is not in the candidate list';
+          }
+          break;
+        }
+
+        default:
+          result.reason = `Assignment type "${assignmentType}" does not support claiming`;
+      }
+    } catch (error) {
+      console.error(`[Runtime] Error validating claim eligibility:`, error.message);
+      result.reason = 'Failed to validate eligibility';
+    }
+
+    return result;
+  }
+
+  /**
+   * Send notifications when a task is claimed
+   * @param {Object} task - Claimed task
+   * @param {string} claimerId - User who claimed the task
+   * @param {string[]} otherUserIds - Other eligible users to notify
+   */
+  async notifyTaskClaim(task, claimerId, otherUserIds) {
+    const notificationService = require('../services/NotificationService');
+
+    // Notify the claimer (confirmation)
+    await notificationService.send({
+      userId: claimerId,
+      title: 'Task Claimed',
+      message: `You have successfully claimed the task: ${task.taskName}`,
+      category: 'task',
+      priority: 'normal',
+      data: {
+        taskId: task.taskId,
+        action: 'claimed'
+      }
+    });
+
+    // Notify other eligible users that task is no longer available
+    if (otherUserIds.length > 0) {
+      await notificationService.send({
+        userId: otherUserIds,
+        title: 'Task No Longer Available',
+        message: `The task "${task.taskName}" has been claimed by another user`,
+        category: 'task',
+        priority: 'low',
+        data: {
+          taskId: task.taskId,
+          action: 'claimed_by_other'
+        }
+      });
+    }
+  }
+
+  /**
+   * Cancel task escalation timer
+   * @param {string} taskId - Task ID
+   */
+  cancelTaskEscalation(taskId) {
+    const configEnforcer = require('./WorkflowConfigEnforcer');
+    if (configEnforcer.cancelTaskEscalation) {
+      configEnforcer.cancelTaskEscalation(taskId);
+      console.log(`[Runtime] Cancelled escalation timer for task ${taskId}`);
+    }
   }
 
   /**

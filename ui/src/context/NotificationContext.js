@@ -54,6 +54,7 @@ export const NotificationProvider = ({ children }) => {
 
   const value = {
     showToast,
+    notify: showToast, // Alias for showToast
     showSuccess,
     showError,
     showWarning,

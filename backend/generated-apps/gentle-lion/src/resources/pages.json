@@ -1,73 +1,619 @@
 [
   {
-    "id": "app_1764273422518_order-dashboard",
-    "name": "OrderDashboard",
+    "id": "create-task-page-1767362526887",
+    "name": "Create Task Page",
+    "title": "Create New Task",
+    "description": "Page for creating a new task",
+    "route": "/create-task",
+    "type": "form",
+    "platform": "both",
     "forms": [
-      "order-approval-form",
-      "order-submission-form"
+      "create-task-form-1767362526887-nlfwmk"
     ],
-    "route": "/dashboard/orders",
-    "title": "Order Dashboard",
-    "config": {},
-    "layout": {
-      "type": "dashboard",
-      "spacing": "normal",
-      "responsive": true
-    },
-    "styling": {},
-    "metadata": {},
-    "workflows": [],
-    "components": [
+    "sections": [
       {
-        "id": "order-summary-stats",
-        "type": "card",
-        "label": "Order Summary Statistics",
-        "config": {
-          "variant": "stats-grid",
-          "position": "top"
-        },
-        "dataBinding": "Order.aggregateByStatus"
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Create New Task",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Fill in the details below to create a new task",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ],
+        "style": {
+          "padding": "32px 24px",
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e5e5e5"
+        }
       },
       {
-        "id": "pending-tasks-card",
-        "type": "card",
-        "label": "My Pending Tasks",
-        "config": {
-          "variant": "task-list",
-          "position": "top"
-        },
-        "dataBinding": "OrderProcessingWorkflow.pendingTasksByRole"
-      },
-      {
-        "id": "orders-table",
-        "type": "table",
-        "label": "Orders",
-        "config": {
-          "variant": "interactive",
-          "sortable": true,
-          "filterable": true,
-          "pagination": true,
-          "rowActions": [
-            "view",
-            "edit",
-            "approve"
-          ],
-          "searchable": true
-        },
-        "dataBinding": "Order.listByRole"
-      },
-      {
-        "id": "create-order-btn",
-        "type": "button",
-        "label": "Create New Order",
-        "config": {
-          "variant": "primary",
-          "position": "top"
-        },
-        "formRef": "OrderSubmissionForm"
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Task Details",
+              "submitLabel": "Create Task",
+              "cancelLabel": "Cancel",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "8px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "maxWidth": "600px",
+                "margin": "0 auto"
+              }
+            },
+            "formRef": "create-task-form-1767362526887-nlfwmk"
+          }
+        ],
+        "style": {
+          "padding": "32px 24px",
+          "backgroundColor": "#f8f9fa",
+          "minHeight": "calc(100vh - 200px)"
+        }
       }
     ],
-    "description": "Role-based dashboard for monitoring and managing orders across all stages with filtering and quick actions",
-    "data_sources": []
+    "navigation": {
+      "onAction": {},
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/task-list"
+        },
+        {
+          "label": "Task List View",
+          "route": "/tasks"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-create-task-001"
+  },
+  {
+    "id": "edit-task-page-1767362544636",
+    "name": "Edit Task Page",
+    "title": "Edit Task",
+    "description": "Page for editing an existing task",
+    "route": "/edit-task/:id",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "edit-task-form-1767362544636-n01eor"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Edit Task",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Update task details and save changes",
+              "variant": "body",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ],
+        "style": {
+          "padding": "24px",
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e5e5e5"
+        }
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Task Information",
+              "submitLabel": "Save Changes",
+              "cancelLabel": "Cancel",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "8px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "buttonStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "padding": "12px 24px",
+                "borderRadius": "6px",
+                "border": "none",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease"
+              },
+              "primaryButtonStyle": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff"
+              },
+              "secondaryButtonStyle": {
+                "backgroundColor": "#f5f5f5",
+                "color": "#1a1a1a"
+              }
+            },
+            "formRef": "edit-task-form-1767362544636-n01eor",
+            "dataBinding": "Task.findById"
+          }
+        ],
+        "style": {
+          "padding": "24px",
+          "backgroundColor": "#f9fafb",
+          "minHeight": "calc(100vh - 200px)"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/tasks"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks"
+        },
+        {
+          "label": "Create Task",
+          "route": "/create-task"
+        },
+        {
+          "label": "Task List View",
+          "route": "/tasks"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-create-task-001"
+  },
+  {
+    "id": "task-list-page-1767362600000-main",
+    "name": "Task List Page",
+    "title": "Task List",
+    "description": "Main page displaying all tasks with filtering and actions",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "create-task-form-1767362526887-nlfwmk"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Task List",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Create New Task",
+              "action": "navigate",
+              "target": "/create-task",
+              "variant": "primary",
+              "style": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "border": "none",
+                "cursor": "pointer"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "filter",
+            "config": {
+              "label": "Filter by Status",
+              "filterField": "status",
+              "options": [
+                {
+                  "label": "All Tasks",
+                  "value": "all"
+                },
+                {
+                  "label": "Pending",
+                  "value": "pending"
+                },
+                {
+                  "label": "In Progress",
+                  "value": "in_progress"
+                },
+                {
+                  "label": "Completed",
+                  "value": "completed"
+                }
+              ],
+              "style": {
+                "marginBottom": "24px",
+                "padding": "12px 16px",
+                "borderRadius": "8px",
+                "border": "1px solid #e5e7eb",
+                "backgroundColor": "#ffffff",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px"
+              }
+            },
+            "dataBinding": "Task.query"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Tasks",
+              "columns": [
+                {
+                  "key": "title",
+                  "label": "Title",
+                  "sortable": true
+                },
+                {
+                  "key": "description",
+                  "label": "Description",
+                  "sortable": false
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "badge": true
+                },
+                {
+                  "key": "dueDate",
+                  "label": "Due Date",
+                  "sortable": true,
+                  "type": "date"
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "action": "navigate",
+                  "target": "/tasks/:id",
+                  "icon": "eye"
+                },
+                {
+                  "label": "Edit",
+                  "action": "navigate",
+                  "target": "/edit-task/:id",
+                  "icon": "edit"
+                },
+                {
+                  "label": "Toggle Status",
+                  "action": "workflow",
+                  "workflow": "Toggle Task Status",
+                  "icon": "toggle"
+                },
+                {
+                  "label": "Delete",
+                  "action": "workflow",
+                  "workflow": "Delete Task",
+                  "icon": "delete",
+                  "confirm": true
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px"
+              },
+              "headerStyle": {
+                "backgroundColor": "#f9fafb",
+                "fontWeight": "600",
+                "color": "#374151",
+                "padding": "12px 16px"
+              },
+              "rowStyle": {
+                "padding": "16px",
+                "borderBottom": "1px solid #f3f4f6"
+              }
+            },
+            "dataBinding": "Task.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "navigate",
+          "target": "/create-task"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "edit": {
+          "type": "navigate",
+          "target": "/edit-task/:id"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks"
+        },
+        {
+          "label": "Create Task",
+          "route": "/create-task"
+        },
+        {
+          "label": "Task List View",
+          "route": "/tasks"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-create-task-001"
+  },
+  {
+    "id": "task-list-view-1767362600000-abc123",
+    "name": "Task List View",
+    "title": "Tasks",
+    "description": "Page displaying tasks with status toggle and filter controls",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "create-task-form-1767362526887-nlfwmk"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Tasks",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Create Task",
+              "variant": "primary",
+              "action": "navigate",
+              "target": "/create-task",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "none"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "filter",
+            "config": {
+              "label": "Filter by Status",
+              "filterField": "status",
+              "options": [
+                {
+                  "label": "All",
+                  "value": "all"
+                },
+                {
+                  "label": "Active",
+                  "value": "active"
+                },
+                {
+                  "label": "Completed",
+                  "value": "completed"
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#4b5563",
+                "marginBottom": "24px",
+                "padding": "8px 12px",
+                "borderRadius": "8px",
+                "border": "1px solid #e5e7eb"
+              }
+            },
+            "dataBinding": "Task.query"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Task List",
+              "columns": [
+                {
+                  "key": "title",
+                  "label": "Title",
+                  "sortable": true
+                },
+                {
+                  "key": "description",
+                  "label": "Description",
+                  "sortable": false
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "render": "badge"
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "actions"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Toggle Status",
+                  "type": "workflow",
+                  "workflow": "Toggle Task Status",
+                  "icon": "toggle"
+                },
+                {
+                  "label": "Edit",
+                  "type": "navigate",
+                  "target": "/edit-task",
+                  "icon": "edit"
+                },
+                {
+                  "label": "Delete",
+                  "type": "workflow",
+                  "workflow": "Delete Task",
+                  "icon": "delete",
+                  "confirm": true
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "padding": "24px"
+              }
+            },
+            "dataBinding": "Task.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "navigate",
+          "target": "/create-task"
+        },
+        "edit": {
+          "type": "navigate",
+          "target": "/edit-task/:id"
+        }
+      },
+      "menu": [
+        {
+          "label": "Tasks",
+          "route": "/tasks"
+        },
+        {
+          "label": "Create Task",
+          "route": "/create-task"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-create-task-001"
   }
 ]

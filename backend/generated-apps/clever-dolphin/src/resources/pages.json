@@ -1,26 +1,919 @@
 [
   {
-    "id": "app_1764401384600_library-dashboard",
-    "name": "LibraryDashboard",
-    "forms": [],
-    "route": "/dashboard",
-    "title": "Library Dashboard",
-    "config": {},
-    "layout": {
-      "type": "grid",
-      "columns": {
-        "mobile": 1,
-        "tablet": 2,
-        "desktop": 2
+    "id": "search-results-page-1767692950000-sr8pqx",
+    "name": "Search Results Page",
+    "title": "Search Results",
+    "description": "Page displaying filtered contact results with sorting options",
+    "route": "/search-results",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "contact-search-form-1767692917442-3p4atj",
+      "add-contact-form-1767692879361-eb6znx"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Search Results",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Refine Search",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "formRef": "contact-search-form-1767692917442-3p4atj"
+          }
+        ]
       },
-      "spacing": "normal",
-      "responsive": true
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Contact.query.length}} contacts found",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "color": "#6b7280",
+                "marginBottom": "16px"
+              }
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Contact Results",
+              "columns": [
+                {
+                  "key": "name",
+                  "label": "Name",
+                  "sortable": true
+                },
+                {
+                  "key": "email",
+                  "label": "Email",
+                  "sortable": true
+                },
+                {
+                  "key": "phone",
+                  "label": "Phone",
+                  "sortable": false
+                },
+                {
+                  "key": "company",
+                  "label": "Company",
+                  "sortable": true
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "type": "view",
+                  "style": "primary"
+                },
+                {
+                  "label": "Edit",
+                  "type": "edit",
+                  "style": "secondary"
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "sortable": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "overflow": "hidden"
+              },
+              "headerStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "backgroundColor": "#f9fafb",
+                "padding": "12px 16px"
+              },
+              "rowStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#374151",
+                "padding": "16px",
+                "borderBottom": "1px solid #f3f4f6"
+              }
+            },
+            "dataBinding": "Contact.query"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Add New Contact",
+              "variant": "primary",
+              "action": "navigate",
+              "target": "/add-contact",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "cursor": "pointer",
+                "marginTop": "24px",
+                "boxShadow": "0 1px 2px rgba(0, 0, 0, 0.05)"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "edit": {
+          "type": "navigate",
+          "target": "/edit-contact/:id"
+        },
+        "search": {
+          "type": "navigate",
+          "target": "/search-results"
+        }
+      },
+      "menu": [
+        {
+          "label": "Contact List",
+          "route": "/contact-list"
+        },
+        {
+          "label": "Add Contact",
+          "route": "/add-contact"
+        },
+        {
+          "label": "Search Contacts",
+          "route": "/contact-search"
+        }
+      ]
     },
-    "styling": {},
-    "metadata": {},
-    "workflows": [],
-    "components": [],
-    "description": "Centralized interface for librarians and members to access all system features with role-based views",
-    "data_sources": []
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-new-contact"
+  },
+  {
+    "id": "contact-list-page-1767692950000-main",
+    "name": "Contact List Page",
+    "title": "Contacts",
+    "description": "Main page displaying all contacts with actions",
+    "route": "/contacts",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "add-contact-form-1767692879361-eb6znx",
+      "contact-search-form-1767692917442-3p4atj"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Contacts",
+              "variant": "h1",
+              "align": "left"
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Add Contact",
+              "variant": "primary",
+              "size": "medium",
+              "action": "navigate",
+              "target": "/add-contact"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Search Contacts",
+              "layout": "inline",
+              "showLabels": false
+            },
+            "formRef": "contact-search-form-1767692917442-3p4atj"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "All Contacts",
+              "columns": [
+                {
+                  "key": "name",
+                  "label": "Name",
+                  "sortable": true
+                },
+                {
+                  "key": "email",
+                  "label": "Email",
+                  "sortable": true
+                },
+                {
+                  "key": "phone",
+                  "label": "Phone",
+                  "sortable": false
+                },
+                {
+                  "key": "company",
+                  "label": "Company",
+                  "sortable": true
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "sortable": false
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "type": "view",
+                  "icon": "eye"
+                },
+                {
+                  "label": "Edit",
+                  "type": "edit",
+                  "icon": "edit"
+                },
+                {
+                  "label": "Delete",
+                  "type": "delete",
+                  "icon": "trash",
+                  "confirm": true
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "searchable": false,
+              "selectable": false
+            },
+            "dataBinding": "Contact.list"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/contact/:id"
+        },
+        "edit": {
+          "type": "navigate",
+          "target": "/edit-contact/:id"
+        },
+        "delete": {
+          "type": "workflow",
+          "workflow": "Delete Contact",
+          "confirm": true,
+          "confirmMessage": "Are you sure you want to delete this contact?"
+        },
+        "search": {
+          "type": "navigate",
+          "target": "/contact-search"
+        }
+      },
+      "menu": [
+        {
+          "label": "All Contacts",
+          "route": "/contacts"
+        },
+        {
+          "label": "Add Contact",
+          "route": "/add-contact"
+        },
+        {
+          "label": "Search Contacts",
+          "route": "/contact-search"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-new-contact"
+  },
+  {
+    "id": "add-contact-page-1767692950000-xyz123",
+    "name": "Add Contact Page",
+    "title": "Add New Contact",
+    "description": "Page for creating a new contact",
+    "route": "/add-contact",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "add-contact-form-1767692879361-eb6znx"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Add New Contact",
+              "variant": "h1",
+              "align": "left"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Fill in the details below to create a new contact in your system",
+              "variant": "body1",
+              "align": "left"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Contact Information",
+              "submitLabel": "Create Contact",
+              "cancelLabel": "Cancel"
+            },
+            "formRef": "add-contact-form-1767692879361-eb6znx",
+            "dataBinding": "Contact.create"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {},
+      "menu": [
+        {
+          "label": "Contact List",
+          "route": "/contact-list"
+        },
+        {
+          "label": "Search Contacts",
+          "route": "/contact-search"
+        },
+        {
+          "label": "Add Contact",
+          "route": "/add-contact"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-new-contact"
+  },
+  {
+    "id": "edit-contact-page-1767692950000-xyz123",
+    "name": "Edit Contact Page",
+    "title": "Edit Contact",
+    "description": "Page for editing an existing contact",
+    "route": "/edit-contact/:id",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "edit-contact-form-1767692898842-1c4mvq"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Edit Contact",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Update contact information below",
+              "variant": "body",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ],
+        "style": {
+          "padding": "32px 24px",
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e5e5e5"
+        }
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Contact Information",
+              "submitLabel": "Save Changes",
+              "cancelLabel": "Cancel",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "32px",
+                "borderRadius": "12px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "buttonStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "border": "none",
+                "cursor": "pointer"
+              }
+            },
+            "dataBinding": "Contact.findById",
+            "formRef": "edit-contact-form-1767692898842-1c4mvq"
+          }
+        ],
+        "style": {
+          "padding": "32px 24px",
+          "backgroundColor": "#f9fafb",
+          "minHeight": "calc(100vh - 200px)"
+        }
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Back to Contact List",
+              "variant": "secondary",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "backgroundColor": "#f3f4f6",
+                "color": "#374151",
+                "border": "1px solid #d1d5db",
+                "cursor": "pointer"
+              }
+            },
+            "action": {
+              "type": "navigate",
+              "target": "/contact-list"
+            }
+          }
+        ],
+        "style": {
+          "padding": "24px",
+          "backgroundColor": "#ffffff",
+          "borderTop": "1px solid #e5e5e5",
+          "display": "flex",
+          "justifyContent": "center"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {},
+      "menu": [
+        {
+          "label": "Contact List",
+          "route": "/contact-list"
+        },
+        {
+          "label": "Add Contact",
+          "route": "/add-contact"
+        },
+        {
+          "label": "Search Contacts",
+          "route": "/contact-search"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-new-contact"
+  },
+  {
+    "id": "contact-detail-page-1767692945123-xk9pqr",
+    "name": "Contact Detail Page",
+    "title": "Contact Details",
+    "description": "Page showing detailed view of a single contact",
+    "route": "/contact/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "edit-contact-form-1767692898842-1c4mvq"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Contact Details",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Contact Information",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "Contact.findById",
+            "content": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "{{Contact.firstName}}, {{Contact.lastName}}",
+                  "variant": "h2",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a",
+                    "marginBottom": "16px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Email: {{Contact.email}}",
+                  "variant": "body",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "400",
+                    "color": "#4b5563",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Phone: {{Contact.phone}}",
+                  "variant": "body",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "400",
+                    "color": "#4b5563",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Company: {{Contact.company}}",
+                  "variant": "body",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "400",
+                    "color": "#4b5563",
+                    "marginBottom": "8px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Edit Contact",
+              "variant": "primary",
+              "action": "navigate",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "500",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "cursor": "pointer",
+                "marginRight": "12px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Delete Contact",
+              "variant": "danger",
+              "action": "delete",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "500",
+                "backgroundColor": "#dc2626",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "cursor": "pointer",
+                "marginRight": "12px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Back to List",
+              "variant": "secondary",
+              "action": "navigate",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "500",
+                "backgroundColor": "#f3f4f6",
+                "color": "#1a1a1a",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "1px solid #d1d5db",
+                "cursor": "pointer"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "edit": {
+          "type": "navigate",
+          "target": "/edit-contact/:id"
+        },
+        "back": {
+          "type": "navigate",
+          "target": "/contacts"
+        }
+      },
+      "menu": [
+        {
+          "label": "Contact List",
+          "route": "/contact-list"
+        },
+        {
+          "label": "Add Contact",
+          "route": "/add-contact"
+        },
+        {
+          "label": "Search Contacts",
+          "route": "/contact-search"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-new-contact"
+  },
+  {
+    "id": "contact-search-page-1767692950000-xk9pqr",
+    "name": "Contact Search Page",
+    "title": "Search Contacts",
+    "description": "Main page for searching and filtering contacts with results display",
+    "route": "/contact-search",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "contact-search-form-1767692917442-3p4atj"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Search Contacts",
+              "variant": "h1",
+              "align": "left",
+              "color": "#1a1a1a",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "margin": "0 0 8px 0"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Find and filter contacts using the search form below",
+              "variant": "body1",
+              "align": "left",
+              "color": "#666666",
+              "fontSize": "16px",
+              "fontWeight": "400"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Search Filters",
+              "submitLabel": "Search",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 8px rgba(0,0,0,0.1)"
+            },
+            "formRef": "contact-search-form-1767692917442-3p4atj"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Search Results",
+              "columns": [
+                {
+                  "key": "name",
+                  "label": "Name",
+                  "sortable": true
+                },
+                {
+                  "key": "email",
+                  "label": "Email",
+                  "sortable": true
+                },
+                {
+                  "key": "phone",
+                  "label": "Phone",
+                  "sortable": false
+                },
+                {
+                  "key": "company",
+                  "label": "Company",
+                  "sortable": true
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "type": "view",
+                  "variant": "text"
+                },
+                {
+                  "label": "Edit",
+                  "type": "edit",
+                  "variant": "text"
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "boxShadow": "0 2px 8px rgba(0,0,0,0.1)"
+            },
+            "dataBinding": "Contact.search"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Add New Contact",
+              "variant": "contained",
+              "color": "#007bff",
+              "hoverColor": "#0056b3",
+              "textColor": "#ffffff",
+              "borderRadius": "6px",
+              "padding": "12px 24px",
+              "fontSize": "16px",
+              "fontWeight": "600",
+              "fullWidth": false,
+              "align": "right"
+            },
+            "action": {
+              "type": "navigate",
+              "target": "/add-contact"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "edit": {
+          "type": "navigate",
+          "target": "/edit-contact/:id"
+        },
+        "submit": {
+          "type": "refresh",
+          "target": "Contact.search"
+        }
+      },
+      "menu": [
+        {
+          "label": "Contact List",
+          "route": "/contact-list"
+        },
+        {
+          "label": "Add Contact",
+          "route": "/add-contact"
+        },
+        {
+          "label": "Search Results",
+          "route": "/search-results"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-new-contact"
   }
 ]

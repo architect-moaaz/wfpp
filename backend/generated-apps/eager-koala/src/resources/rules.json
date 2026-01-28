@@ -1,0 +1,274 @@
+[
+  {
+    "id": "rule_start_process_validation",
+    "name": "Start Process Validation",
+    "description": "Validate that user is authenticated before creating a task",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "userId",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "userId",
+          "value": "",
+          "message": "User must be authenticated to create a task"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1769586616787"
+  },
+  {
+    "id": "rule_enter_task_validation",
+    "name": "Enter Task Details Validation",
+    "description": "Validate that task title and description are provided",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.title",
+          "operator": "equals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "task.title",
+          "value": "",
+          "message": "Task title is required and cannot be empty"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1769586616787"
+  },
+  {
+    "id": "rule_validate_task_data",
+    "name": "Validate Task Data",
+    "description": "Validate task due date is not in the past",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.dueDate",
+          "operator": "lessThan",
+          "value": "{{currentDate}}"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "isValid",
+          "value": false,
+          "message": "Task due date cannot be in the past"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "Invalid due date detected",
+          "message": "Task validation failed: due date is in the past"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1769586616787"
+  },
+  {
+    "id": "rule_is_valid_decision",
+    "name": "Is Valid Decision",
+    "description": "Determine if task data is valid to proceed or needs correction",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "isValid",
+          "operator": "equals",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "correctTaskDetails",
+          "message": "Routing to correction step"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1769586616787"
+  },
+  {
+    "id": "rule_correct_task_validation",
+    "name": "Correct Task Details Validation",
+    "description": "Validate corrected task details meet minimum requirements",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.title.length",
+          "operator": "lessThan",
+          "value": 3
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "task.title",
+          "value": "",
+          "message": "Task title must be at least 3 characters long"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1769586616787"
+  },
+  {
+    "id": "rule_high_priority_decision",
+    "name": "High Priority Decision",
+    "description": "Determine if task requires manager approval based on priority",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.priority",
+          "operator": "equals",
+          "value": "high"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "requiresApproval",
+          "value": true,
+          "message": "High priority task requires manager approval"
+        },
+        {
+          "type": "sendNotification",
+          "field": "managerEmail",
+          "value": "{{task.managerId}}",
+          "message": "New high priority task requires your approval"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1769586616787"
+  },
+  {
+    "id": "rule_manager_approval_validation",
+    "name": "Manager Approval Validation",
+    "description": "Validate manager has provided approval decision with comments",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approval.decision",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "approval.decision",
+          "value": "",
+          "message": "Manager must provide an approval decision"
+        }
+      ]
+    },
+    "node_id": "userTask-3",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1769586616787"
+  },
+  {
+    "id": "rule_approved_decision",
+    "name": "Approved Decision",
+    "description": "Determine workflow completion based on approval status",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approval.decision",
+          "operator": "equals",
+          "value": "approved"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "task.status",
+          "value": "active",
+          "message": "Task approved and activated"
+        },
+        {
+          "type": "sendNotification",
+          "field": "userEmail",
+          "value": "{{task.userId}}",
+          "message": "Your high priority task has been approved"
+        },
+        {
+          "type": "updateData",
+          "field": "task",
+          "value": "{{task}}",
+          "message": "Task saved to database"
+        }
+      ]
+    },
+    "node_id": "decision-3",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1769586616787"
+  }
+]

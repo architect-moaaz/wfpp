@@ -78,7 +78,10 @@ function AppContent() {
     }
   };
 
+  console.log('[AppContent] currentApplication:', currentApplication?.id, currentApplication?.name);
+
   if (!currentApplication) {
+    console.log('[AppContent] No currentApplication - showing WelcomeScreen');
     return (
       <>
         <WelcomeScreen
@@ -93,6 +96,7 @@ function AppContent() {
     );
   }
 
+  console.log('[AppContent] Has currentApplication - showing only MainLayout');
   return <MainLayout appName={currentApplication?.name} />;
 }
 

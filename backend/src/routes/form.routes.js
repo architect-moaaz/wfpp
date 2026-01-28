@@ -138,14 +138,65 @@ router.post('/', async (req, res) => {
   try {
     const formData = req.body;
 
-    if (!formData.name || !formData.fields) {
+    // Accept either 'fields' or 'components' for flexibility
+    const hasFields = formData.fields && formData.fields.length > 0;
+    const hasComponents = formData.components && formData.components.length > 0;
+
+    if (!formData.name || (!hasFields && !hasComponents)) {
       return res.status(400).json({
         success: false,
-        error: 'Form name and fields are required'
+        error: 'Form name and fields/components are required'
       });
     }
 
+    // If only components provided, convert to fields
+    if (!hasFields && hasComponents) {
+      formData.fields = formData.components.map(comp => ({
+        id: comp.id,
+        type: comp.type,
+        fieldName: comp.fieldName,
+        name: comp.fieldName,
+        label: comp.properties?.label || comp.fieldName,
+        processVariable: comp.processVariable,
+        required: comp.required || false,
+        placeholder: comp.properties?.placeholder,
+        options: comp.properties?.options,
+        properties: comp.properties
+      }));
+    }
+
+    // Save to file-based storage
     const form = await formDatabase.saveForm(formData);
+
+    // Also save to PostgreSQL if applicationId is provided
+    if (formData.applicationId) {
+      try {
+        await db.query(`
+          UPDATE k1.forms SET
+            name = $1,
+            description = $2,
+            fields = $3,
+            layout = $4,
+            grid_layout = $5,
+            title = $6,
+            updated_at = NOW()
+          WHERE id = $7 AND application_id = $8
+        `, [
+          formData.name,
+          formData.description || '',
+          JSON.stringify(formData.fields || []),
+          JSON.stringify(formData.layout || {}),
+          JSON.stringify(formData.gridLayout || formData.layout || []),
+          formData.title || formData.name,
+          formData.id,
+          formData.applicationId
+        ]);
+        console.log(`[Form API] Updated form in PostgreSQL: ${formData.id}`);
+      } catch (pgError) {
+        console.error('[Form API] PostgreSQL update failed:', pgError);
+        // Don't fail the request - file-based save succeeded
+      }
+    }
 
     res.status(200).json({
       success: true,

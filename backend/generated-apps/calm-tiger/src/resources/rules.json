@@ -1,0 +1,90 @@
+[
+  {
+    "id": "rule_start_escalation_validation",
+    "name": "Start Escalation Check Rule",
+    "description": "Validate ticket data quality before initiating escalation workflow",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.priority",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Ticket.priority",
+          "value": null,
+          "message": "Ticket priority is required before escalation can be evaluated"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "Escalation validation failed: Missing priority",
+          "message": "Validation error logged for ticket escalation"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "ticket-escalation-workflow",
+    "workflowId": "ticket-escalation-workflow",
+    "application_id": "app_1766577807321"
+  },
+  {
+    "id": "rule_escalation_decision",
+    "name": "Escalation Required? Rule",
+    "description": "Determine if ticket requires escalation based on priority and age",
+    "type": "decision",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.priority",
+          "operator": "in",
+          "value": [
+            "High",
+            "Critical"
+          ]
+        },
+        {
+          "field": "Ticket.hoursOpen",
+          "operator": "greaterThan",
+          "value": 24
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "escalationRequired",
+          "value": true,
+          "message": "Ticket meets escalation criteria"
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.email",
+          "value": "manager@company.com",
+          "message": "High priority ticket requires immediate escalation"
+        },
+        {
+          "type": "updateData",
+          "field": "Ticket.status",
+          "value": "Escalated",
+          "message": "Ticket status updated to Escalated"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "ticket-escalation-workflow",
+    "workflowId": "ticket-escalation-workflow",
+    "application_id": "app_1766577807321"
+  }
+]

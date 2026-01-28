@@ -3,7 +3,8 @@ import './NodePalette.css';
 import {
   PlayCircle, CheckCircle, GitBranch, Mail, Database,
   ChevronLeft, ChevronRight, Circle, User,
-  FileCode, Clock, Sparkles, Boxes
+  FileCode, Clock, Sparkles, Boxes, Globe,
+  Webhook, Radio, AlertCircle, Calendar
 } from 'lucide-react';
 
 const NodePalette = ({ onCollapseChange }) => {
@@ -19,11 +20,20 @@ const NodePalette = ({ onCollapseChange }) => {
 
   const nodeCategories = [
     {
-      category: 'Events',
+      category: 'Start Events',
       nodes: [
-        { type: 'startProcess', label: 'Start Event', icon: PlayCircle, description: 'Workflow start' },
+        { type: 'startProcess', label: 'Manual Start', icon: PlayCircle, description: 'User/API triggered' },
+        { type: 'timerStartEvent', label: 'Timer Start', icon: Calendar, description: 'Scheduled trigger' },
+        { type: 'messageStartEvent', label: 'Message Start', icon: Webhook, description: 'Webhook/message trigger' },
+        { type: 'signalStartEvent', label: 'Signal Start', icon: Radio, description: 'Broadcast signal trigger' },
+        { type: 'conditionalStartEvent', label: 'Conditional Start', icon: AlertCircle, description: 'Data condition trigger' },
+      ]
+    },
+    {
+      category: 'End Events',
+      nodes: [
         { type: 'endEvent', label: 'End Event', icon: Circle, description: 'Workflow end' },
-        { type: 'timerEvent', label: 'Timer Event', icon: Clock, description: 'Time-based trigger' },
+        { type: 'timerEvent', label: 'Timer Event', icon: Clock, description: 'Time-based intermediate' },
       ]
     },
     {
@@ -31,6 +41,7 @@ const NodePalette = ({ onCollapseChange }) => {
       nodes: [
         { type: 'userTask', label: 'Human Task', icon: User, description: 'Manual user task' },
         { type: 'scriptTask', label: 'Script', icon: FileCode, description: 'Execute script' },
+        { type: 'restApi', label: 'REST API', icon: Globe, description: 'Call external API' },
         { type: 'llmTask', label: 'LLM Task', icon: Sparkles, description: 'AI-powered task' },
         { type: 'subWorkflow', label: 'Sub Workflow', icon: Boxes, description: 'Call another workflow' },
       ]

@@ -27,6 +27,23 @@ app.use((req, res, next) => {
   next();
 });
 
+// Root route - Application info
+app.get('/', (req, res) => {
+  res.json({
+    name: 'fancy-falcon',
+    description: 'Help Desk Ticketing System',
+    status: 'running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      workflows: '/api/workflows',
+      forms: '/api/forms',
+      data: '/api/data'
+    },
+    documentation: 'Access the API endpoints above for full functionality'
+  });
+});
+
 // API Routes
 app.use('/api', apiRoutes);
 app.use('/api/execution-logs', executionLogsRoutes);

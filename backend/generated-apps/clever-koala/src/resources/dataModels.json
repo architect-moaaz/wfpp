@@ -1,0 +1,230 @@
+[
+  {
+    "id": "user",
+    "name": "User",
+    "description": "User account and profile information",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address for login and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "User's first name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "description": "User's last name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates whether the user account is active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the user account was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastLoginAt",
+        "type": "date",
+        "description": "Timestamp of the user's last login",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "task",
+    "name": "Task",
+    "description": "Core task entity for personal task management",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the task",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Title or name of the task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the task",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the task (e.g., pending, in-progress, completed)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Due date for task completion",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user who owns this task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the task was created",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Each task belongs to one user"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {},
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Stores notification messages and their display properties",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user receiving the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "message",
+        "type": "string",
+        "description": "The notification message content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of notification (info, warning, error, success)",
+        "required": true,
+        "defaultValue": "info"
+      },
+      {
+        "name": "isRead",
+        "type": "boolean",
+        "description": "Whether the notification has been read",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the notification was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "relatedTaskId",
+        "type": "string",
+        "description": "Optional reference to a related task",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Task",
+        "foreignKey": "relatedTaskId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId",
+          "isRead"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "createdAt"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {},
+    "workflowId": "user-registration-workflow"
+  }
+]

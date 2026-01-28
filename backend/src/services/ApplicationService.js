@@ -375,34 +375,54 @@ class ApplicationService {
    * Add a workflow to an application
    */
   async addWorkflow(appId, workflow) {
-    // First get the app to check existing forms
-    let app = await this.db.getById(appId);
-    const existingForms = app?.resources?.forms || [];
-    const existingFormIds = new Set((existingForms || []).map(f => f.id));
-
-    // Auto-assign formId to startProcess and userTask nodes that don't have one
-    // This ensures forms are always generated for these node types
     const workflowId = workflow.id || `workflow_${Date.now()}`;
+
+    // Check if this workflow has any nodes that need form checking
+    const nodesNeedingForms = (workflow.nodes || []).filter(node =>
+      (node.type === 'startProcess' || node.type === 'userTask') && node.data
+    );
+
+    // FAST PATH: Simple workflow with no form-dependent nodes
+    if (nodesNeedingForms.length === 0) {
+      console.log(`[ApplicationService] Fast path: Adding simple workflow ${workflowId}`);
+      const result = await this.db.addWorkflowFast(appId, workflow);
+
+      // Save to file system (fire and forget for speed)
+      this.saveWorkflowToFolder(result.appName, workflow).catch(err => {
+        console.error('[ApplicationService] Failed to save workflow to folder:', err);
+      });
+
+      return { id: appId, name: result.appName };
+    }
+
+    // SLOW PATH: Workflow needs form checking/generation
+    console.log(`[ApplicationService] Slow path: Workflow ${workflowId} has ${nodesNeedingForms.length} form-dependent nodes`);
+
+    // Get lightweight form context instead of full app
+    const context = await this.db.getFormContext(appId);
+    if (!context) {
+      throw new Error(`Application not found: ${appId}`);
+    }
+
+    const existingFormIds = new Set(context.formIds || []);
     let formsNeedGeneration = false;
 
-    (workflow.nodes || []).forEach(node => {
-      if ((node.type === 'startProcess' || node.type === 'userTask') && node.data) {
-        // Only assign if no formId exists
-        if (!node.data.formId) {
-          const generatedFormId = `form_${workflowId}_${node.id}`;
-          node.data.formId = generatedFormId;
-          formsNeedGeneration = true;
-          console.log(`[ApplicationService] Auto-assigned formId ${generatedFormId} to ${node.type} node: ${node.id}`);
-        }
+    // Auto-assign formId to startProcess and userTask nodes that don't have one
+    nodesNeedingForms.forEach(node => {
+      if (!node.data.formId) {
+        const generatedFormId = `form_${workflowId}_${node.id}`;
+        node.data.formId = generatedFormId;
+        formsNeedGeneration = true;
+        console.log(`[ApplicationService] Auto-assigned formId ${generatedFormId} to ${node.type} node: ${node.id}`);
       }
     });
 
     // Check for orphan formIds and auto-generate forms using AI
-    const orphanFormIds = this.findOrphanFormIds(workflow, existingForms);
+    const orphanFormIds = this.findOrphanFormIdsFromSet(workflow, existingFormIds);
     if (orphanFormIds.size > 0) {
       console.log(`[ApplicationService] Found ${orphanFormIds.size} orphan formIds in workflow ${workflow.id}, generating AI forms...`);
 
-      const dataModels = app?.resources?.dataModels || [];
+      const dataModels = context.dataModels || [];
 
       // Prepare orphan form data with node context
       const orphanFormData = [];
@@ -420,7 +440,7 @@ class ApplicationService {
         });
 
         for (const form of generatedForms) {
-          app = await this.db.addResource(appId, 'forms', form);
+          await this.db.addResource(appId, 'forms', form);
           console.log(`[ApplicationService] Created AI form: ${form.id} (${form.aiGenerated ? 'AI' : 'fallback'})`);
         }
       } catch (aiError) {
@@ -428,32 +448,74 @@ class ApplicationService {
         // Fallback to template-based generation
         for (const formId of orphanFormIds) {
           const stubForm = this.generateStubForm(formId, workflow, dataModels);
-          app = await this.db.addResource(appId, 'forms', stubForm);
+          await this.db.addResource(appId, 'forms', stubForm);
           console.log(`[ApplicationService] Created fallback form: ${formId}`);
         }
       }
-
-      // Save forms to file system
-      try {
-        await this.saveResourceToFolder(app.name, 'forms', app.resources.forms || []);
-        console.log(`[ApplicationService] Forms saved to ${app.name} folder`);
-      } catch (error) {
-        console.error('[ApplicationService] Failed to save forms to folder:', error);
-      }
     }
 
-    // Now add the workflow
-    app = await this.db.addResource(appId, 'workflows', workflow);
+    // Now add the workflow using fast method
+    await this.db.addWorkflowFast(appId, workflow);
 
-    // Save to file system
+    // Save to file system (fire and forget for speed)
+    this.saveWorkflowToFolder(context.name, workflow).catch(err => {
+      console.error('[ApplicationService] Failed to save workflow to folder:', err);
+    });
+
+    return { id: appId, name: context.name };
+  }
+
+  /**
+   * Save workflow to folder (helper method)
+   */
+  async saveWorkflowToFolder(appName, workflow) {
+    const fs = require('fs').promises;
+    const path = require('path');
+
+    const appFolder = path.join(__dirname, '../../generated-apps', appName);
+    const resourceFolder = path.join(appFolder, 'src/resources');
+
     try {
-      await this.saveResourceToFolder(app.name, 'workflows', app.resources.workflows || []);
-      console.log(`[ApplicationService] Workflow saved to ${app.name} folder`);
+      await fs.mkdir(resourceFolder, { recursive: true });
+
+      // Read existing workflows
+      const workflowsPath = path.join(resourceFolder, 'workflows.json');
+      let workflows = [];
+      try {
+        const data = await fs.readFile(workflowsPath, 'utf8');
+        workflows = JSON.parse(data);
+      } catch (e) {
+        // File doesn't exist yet
+      }
+
+      // Add or update workflow
+      const existingIndex = workflows.findIndex(w => w.id === workflow.id);
+      if (existingIndex >= 0) {
+        workflows[existingIndex] = workflow;
+      } else {
+        workflows.push(workflow);
+      }
+
+      await fs.writeFile(workflowsPath, JSON.stringify(workflows, null, 2));
+      console.log(`[ApplicationService] Workflow saved to ${appName} folder`);
     } catch (error) {
       console.error('[ApplicationService] Failed to save workflow to folder:', error);
     }
+  }
 
-    return app;
+  /**
+   * Find orphan form IDs using a Set of existing form IDs
+   */
+  findOrphanFormIdsFromSet(workflow, existingFormIds) {
+    const orphanFormIds = new Set();
+
+    (workflow.nodes || []).forEach(node => {
+      if (node.data?.formId && !existingFormIds.has(node.data.formId)) {
+        orphanFormIds.add(node.data.formId);
+      }
+    });
+
+    return orphanFormIds;
   }
 
   /**

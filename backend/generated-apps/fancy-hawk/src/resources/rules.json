@@ -1,1 +1,306 @@
-[]
+[
+  {
+    "id": "rule_start_validation",
+    "name": "Start Validation Rule",
+    "description": "Validate user input when starting contact creation process to ensure minimum required data is present",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "contact.firstName",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "contact.firstName",
+          "message": "First name is required to create a contact",
+          "value": "VALIDATION_ERROR"
+        },
+        {
+          "type": "stopWorkflow",
+          "field": "workflowStatus",
+          "value": "failed"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "validate-contact-information",
+    "workflowId": "validate-contact-information",
+    "application_id": "app_1768571840984"
+  },
+  {
+    "id": "rule_validate_required_fields",
+    "name": "Validate Required Fields Rule",
+    "description": "Ensure all mandatory contact fields are populated before proceeding with validation workflow",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "contact.lastName",
+          "operator": "isNull",
+          "value": true
+        },
+        {
+          "field": "contact.email",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "contact",
+          "message": "Last name and email are required fields",
+          "value": "invalid"
+        },
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "failed"
+        },
+        {
+          "type": "stopWorkflow",
+          "field": "workflowStatus",
+          "value": "validation_failed"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "validate-contact-information",
+    "workflowId": "validate-contact-information",
+    "application_id": "app_1768571840984"
+  },
+  {
+    "id": "rule_validate_email_format",
+    "name": "Validate Email Format Rule",
+    "description": "Check if the provided email address follows valid email format standards",
+    "type": "validation",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "contact.email",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "contact.email",
+          "operator": "notContains",
+          "value": "@"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "contact.email",
+          "message": "Invalid email format. Please provide a valid email address",
+          "value": "invalid"
+        },
+        {
+          "type": "throwError",
+          "field": "contact.email",
+          "value": "INVALID_EMAIL_FORMAT"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "message": "Email validation failed for contact",
+          "value": "error"
+        }
+      ]
+    },
+    "node_id": "validation-2",
+    "workflow_id": "validate-contact-information",
+    "workflowId": "validate-contact-information",
+    "application_id": "app_1768571840984"
+  },
+  {
+    "id": "rule_validate_phone_format",
+    "name": "Validate Phone Format Rule",
+    "description": "Verify phone number contains only valid characters and meets minimum length requirements",
+    "type": "validation",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "contact.phone",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "contact.phoneLength",
+          "operator": "lessThan",
+          "value": 10
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "contact.phone",
+          "message": "Phone number must be at least 10 digits",
+          "value": "invalid"
+        },
+        {
+          "type": "setVariable",
+          "field": "phoneValidationStatus",
+          "value": "failed"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "message": "Phone format validation failed",
+          "value": "warning"
+        }
+      ]
+    },
+    "node_id": "validation-3",
+    "workflow_id": "validate-contact-information",
+    "workflowId": "validate-contact-information",
+    "application_id": "app_1768571840984"
+  },
+  {
+    "id": "rule_duplicates_found",
+    "name": "Duplicates Found? Rule",
+    "description": "Determine if duplicate contacts exist based on email or phone matching and route to appropriate workflow path",
+    "type": "decision",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "duplicateCheckResult.count",
+          "operator": "greaterThan",
+          "value": 0
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "duplicateReview"
+        },
+        {
+          "type": "setVariable",
+          "field": "requiresReview",
+          "value": true
+        },
+        {
+          "type": "sendNotification",
+          "field": "assignedUser",
+          "message": "Potential duplicate contact found. Review required before proceeding",
+          "value": "duplicate_alert"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "validate-contact-information",
+    "workflowId": "validate-contact-information",
+    "application_id": "app_1768571840984"
+  },
+  {
+    "id": "rule_review_duplicate_contact",
+    "name": "Review Duplicate Contact Rule",
+    "description": "Validate user review decision on duplicate contacts and ensure proper data quality assessment",
+    "type": "validation",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "userReview.decision",
+          "operator": "isNull",
+          "value": true
+        },
+        {
+          "field": "requiresReview",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "userReview.decision",
+          "message": "Review decision is required before proceeding with duplicate contact",
+          "value": "REVIEW_REQUIRED"
+        },
+        {
+          "type": "setVariable",
+          "field": "taskStatus",
+          "value": "pending_review"
+        },
+        {
+          "type": "stopWorkflow",
+          "field": "workflowStatus",
+          "value": "awaiting_user_input"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "validate-contact-information",
+    "workflowId": "validate-contact-information",
+    "application_id": "app_1768571840984"
+  },
+  {
+    "id": "rule_merge_or_keep_separate",
+    "name": "Merge or Keep Separate? Rule",
+    "description": "Route contact processing based on user decision to merge duplicate contacts or keep them as separate entries",
+    "type": "decision",
+    "priority": 7,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "userReview.decision",
+          "operator": "equals",
+          "value": "merge"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "mergeContacts"
+        },
+        {
+          "type": "executeScript",
+          "field": "mergeOperation",
+          "value": "initiateMergeProcess"
+        },
+        {
+          "type": "logMessage",
+          "field": "auditLog",
+          "message": "Contact merge initiated by user decision",
+          "value": "info"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "validate-contact-information",
+    "workflowId": "validate-contact-information",
+    "application_id": "app_1768571840984"
+  }
+]

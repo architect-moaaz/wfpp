@@ -114,4 +114,103 @@ router.get('/health', (req, res) => {
   });
 });
 
+// ============================================================================
+// DATA MODEL CRUD ROUTES
+// ============================================================================
+
+const database = require('../database');
+
+// Helper to convert model name to table name
+function toSnakeCase(str) {
+  return str.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
+}
+
+// List all records for a model
+router.get('/data/:model', async (req, res) => {
+  try {
+    const tableName = toSnakeCase(req.params.model);
+    const result = await database.query(`SELECT * FROM ${tableName} ORDER BY created_at DESC`);
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    logger.error(`Failed to list ${req.params.model}:`, error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get single record by ID
+router.get('/data/:model/:id', async (req, res) => {
+  try {
+    const tableName = toSnakeCase(req.params.model);
+    const result = await database.query(`SELECT * FROM ${tableName} WHERE id = $1`, [req.params.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Record not found' });
+    }
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    logger.error(`Failed to get ${req.params.model}:`, error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Create new record
+router.post('/data/:model', async (req, res) => {
+  try {
+    const tableName = toSnakeCase(req.params.model);
+    const data = req.body;
+
+    // Convert field names to snake_case
+    const columns = Object.keys(data).map(toSnakeCase);
+    const values = Object.values(data);
+    const placeholders = values.map((_, i) => `$${i + 1}`);
+
+    const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders.join(', ')}) RETURNING *`;
+    const result = await database.query(sql, values);
+
+    res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    logger.error(`Failed to create ${req.params.model}:`, error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Update record
+router.put('/data/:model/:id', async (req, res) => {
+  try {
+    const tableName = toSnakeCase(req.params.model);
+    const data = req.body;
+
+    // Build SET clause
+    const columns = Object.keys(data).map(toSnakeCase);
+    const values = Object.values(data);
+    const setClause = columns.map((col, i) => `${col} = $${i + 1}`).join(', ');
+
+    const sql = `UPDATE ${tableName} SET ${setClause}, updated_at = NOW() WHERE id = $${values.length + 1} RETURNING *`;
+    const result = await database.query(sql, [...values, req.params.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Record not found' });
+    }
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    logger.error(`Failed to update ${req.params.model}:`, error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Delete record
+router.delete('/data/:model/:id', async (req, res) => {
+  try {
+    const tableName = toSnakeCase(req.params.model);
+    const result = await database.query(`DELETE FROM ${tableName} WHERE id = $1 RETURNING *`, [req.params.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Record not found' });
+    }
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    logger.error(`Failed to delete ${req.params.model}:`, error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 module.exports = router;

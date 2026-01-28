@@ -11,7 +11,13 @@ export const useWorkflow = () => {
 };
 
 export const WorkflowProvider = ({ children, currentApp }) => {
-  const [currentApplication, setCurrentApplication] = useState(null);
+  const [currentApplication, setCurrentApplicationInternal] = useState(null);
+
+  // Wrapper to debug currentApplication changes
+  const setCurrentApplication = (app) => {
+    console.log('[WorkflowContext] setCurrentApplication called with:', app?.id, app?.name);
+    setCurrentApplicationInternal(app);
+  };
   const [currentWorkflow, setCurrentWorkflow] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
   const [activeTab, setActiveTab] = useState('designer');
@@ -60,6 +66,10 @@ export const WorkflowProvider = ({ children, currentApp }) => {
               fullWorkflow: latestWorkflow
             });
             setCurrentWorkflow(latestWorkflow);
+          } else {
+            // Clear workflow when none exist to avoid showing previous app's data
+            console.log('[WorkflowContext] No workflows found, clearing current workflow');
+            setCurrentWorkflow(null);
           }
 
           // Load forms from application resources (not from global database)
@@ -100,12 +110,27 @@ export const WorkflowProvider = ({ children, currentApp }) => {
   }, [currentApp]);
 
   const updateNodeData = (nodeId, newData) => {
-    setCurrentWorkflow(prev => ({
-      ...prev,
-      nodes: prev.nodes.map(node =>
+    console.log('[WorkflowContext] updateNodeData called:', { nodeId, newData });
+    setCurrentWorkflow(prev => {
+      const updatedNodes = prev.nodes.map(node =>
         node.id === nodeId ? { ...node, data: { ...node.data, ...newData } } : node
-      )
-    }));
+      );
+      console.log('[WorkflowContext] Updated nodes:', updatedNodes.map(n => ({ id: n.id, formId: n.data?.formId, formName: n.data?.formName })));
+      return {
+        ...prev,
+        nodes: updatedNodes
+      };
+    });
+  };
+
+  // Update workflow-level properties (name, inputVariables, etc.)
+  const updateWorkflow = (updates) => {
+    console.log('[WorkflowContext] updateWorkflow called:', updates);
+    setCurrentWorkflow(prev => {
+      const updated = { ...prev, ...updates };
+      console.log('[WorkflowContext] Updated workflow:', { startForm: updated.startForm });
+      return updated;
+    });
   };
 
   const addNode = (nodeType, position) => {
@@ -136,6 +161,35 @@ export const WorkflowProvider = ({ children, currentApp }) => {
     }));
   };
 
+  // Save workflow to backend
+  const saveWorkflow = async (workflow = currentWorkflow) => {
+    if (!workflow || !currentApplication?.id) {
+      return { success: false, error: 'No workflow or application to save' };
+    }
+
+    try {
+      // POST endpoint handles both add and update (checks if workflow.id exists)
+      const response = await fetch(
+        `http://localhost:5000/api/applications/${currentApplication.id}/workflows`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(workflow)
+        }
+      );
+
+      if (response.ok) {
+        return { success: true };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        return { success: false, error: errorData.message || 'Failed to save workflow' };
+      }
+    } catch (error) {
+      console.error('Failed to save workflow:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const value = {
     currentApplication,
     setCurrentApplication,
@@ -163,9 +217,11 @@ export const WorkflowProvider = ({ children, currentApp }) => {
     setAresMode,
     loadApplicationData,
     updateNodeData,
+    updateWorkflow,
     addNode,
     deleteNode,
-    addEdge
+    addEdge,
+    saveWorkflow
   };
 
   return (

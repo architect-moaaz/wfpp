@@ -1,568 +1,196 @@
 [
   {
-    "id": "officer",
-    "name": "Officer",
-    "description": "Store parking enforcement officer information and credentials",
+    "id": "survey",
+    "name": "Survey",
+    "description": "Survey template configuration and metadata",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the officer",
+        "description": "Unique identifier for the survey",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "badgeNumber",
+        "name": "title",
         "type": "string",
-        "description": "Official badge number assigned to the officer",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "firstName",
-        "type": "string",
-        "description": "Officer's first name",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "lastName",
-        "type": "string",
-        "description": "Officer's last name",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "email",
-        "type": "string",
-        "description": "Officer's contact email address",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "phone",
-        "type": "string",
-        "description": "Officer's contact phone number",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "isActive",
-        "type": "boolean",
-        "description": "Employment status indicating if officer is currently active",
-        "required": true,
-        "defaultValue": true
-      },
-      {
-        "name": "hireDate",
-        "type": "date",
-        "description": "Date when officer was hired",
-        "required": true,
-        "defaultValue": null
-      }
-    ],
-    "relationships": [],
-    "indexes": [
-      "badgeNumber",
-      "email"
-    ],
-    "constraints": {
-      "unique": [
-        "badgeNumber",
-        "email"
-      ]
-    },
-    "workflowId": "workflow_1735227156483"
-  },
-  {
-    "id": "violation-type",
-    "name": "ViolationType",
-    "description": "Catalog of all parking violation types with standardized codes, detailed descriptions, base fine amounts, and escalation rules",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for the violation type",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "code",
-        "type": "string",
-        "description": "Standardized violation code (e.g., 'NO-PARK-01', 'METER-EXP')",
+        "description": "Title of the survey",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "description",
         "type": "string",
-        "description": "Detailed description of the violation type",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "baseFineAmount",
-        "type": "number",
-        "description": "Base fine amount in dollars for this violation",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "escalationRate",
-        "type": "number",
-        "description": "Percentage increase for repeat violations (e.g., 0.25 for 25% increase)",
+        "description": "Detailed description of the survey purpose",
         "required": false,
-        "defaultValue": 0
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the survey (draft, active, closed)",
+        "required": true,
+        "defaultValue": "draft"
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the survey was created",
+        "required": true,
+        "defaultValue": "now"
+      },
+      {
+        "name": "expiresAt",
+        "type": "date",
+        "description": "Expiration date for the survey",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isAnonymous",
+        "type": "boolean",
+        "description": "Whether responses are collected anonymously",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "question-type",
+    "name": "QuestionType",
+    "description": "Types of questions available for surveys",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the question type",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the question type (e.g., Multiple Choice, Text, Rating)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "code",
+        "type": "string",
+        "description": "Short code identifier for the question type (e.g., MC, TEXT, RATING)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the question type and its usage",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "allowsMultipleAnswers",
+        "type": "boolean",
+        "description": "Indicates if this question type supports multiple answer selections",
+        "required": true,
+        "defaultValue": false
       },
       {
         "name": "isActive",
         "type": "boolean",
-        "description": "Whether this violation type is currently in use",
+        "description": "Indicates if this question type is currently available for use",
         "required": true,
         "defaultValue": true
       },
       {
-        "name": "severity",
-        "type": "string",
-        "description": "Severity level of violation (e.g., 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL')",
-        "required": true,
-        "defaultValue": "MEDIUM"
+        "name": "displayOrder",
+        "type": "number",
+        "description": "Order in which this question type appears in selection lists",
+        "required": false,
+        "defaultValue": 0
       }
     ],
     "relationships": [],
     "indexes": [
       {
-        "name": "idx_violation_code",
+        "name": "idx_question_type_code",
         "fields": [
           "code"
         ],
         "unique": true
       },
       {
-        "name": "idx_active_violations",
+        "name": "idx_question_type_active",
         "fields": [
           "isActive"
         ]
       }
     ],
     "constraints": {
-      "baseFineAmount": "Must be greater than 0",
-      "escalationRate": "Must be between 0 and 1",
-      "code": "Must be unique and follow standard format",
-      "severity": "Must be one of: LOW, MEDIUM, HIGH, CRITICAL"
-    },
-    "workflowId": "workflow_1735227156483"
-  },
-  {
-    "id": "parking-location",
-    "name": "ParkingLocation",
-    "description": "Store parking zone and location information for violation tracking",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for the parking location",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "zoneCode",
-        "type": "string",
-        "description": "Parking zone code or identifier (e.g., 'ZONE-A', 'DOWNTOWN-1')",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "streetAddress",
-        "type": "string",
-        "description": "Street address or block location where parking zone is located",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "zoneType",
-        "type": "string",
-        "description": "Type of parking zone (e.g., 'Metered', 'Residential', 'Commercial', 'No Parking')",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "restrictions",
-        "type": "string",
-        "description": "Parking restrictions and rules for this location (e.g., '2-hour limit', 'Permit only')",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "enforcementSchedule",
-        "type": "string",
-        "description": "Days and hours when enforcement is active (e.g., 'Mon-Fri 8AM-6PM')",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "coordinates",
-        "type": "string",
-        "description": "Geographic coordinates in lat,long format for mapping",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "isActive",
-        "type": "boolean",
-        "description": "Whether this parking location is currently active for enforcement",
-        "required": true,
-        "defaultValue": true
-      }
-    ],
-    "relationships": [],
-    "indexes": [
-      {
-        "name": "idx_zone_code",
-        "fields": [
-          "zoneCode"
-        ]
-      },
-      {
-        "name": "idx_zone_type",
-        "fields": [
-          "zoneType"
-        ]
-      }
-    ],
-    "constraints": {
       "unique": [
-        "zoneCode"
+        "code"
       ]
     },
-    "workflowId": "workflow_1735227156483"
+    "workflowId": "workflow-create-survey"
   },
   {
-    "id": "vehicle",
-    "name": "Vehicle",
-    "description": "Stores vehicle information associated with parking tickets including license plate, registration details, and physical characteristics",
+    "id": "respondent",
+    "name": "Respondent",
+    "description": "Stores information about survey respondents",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the vehicle record",
+        "description": "Unique identifier for the respondent",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "licensePlate",
+        "name": "surveyId",
         "type": "string",
-        "description": "Vehicle license plate number",
+        "description": "Reference to the survey being responded to",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "state",
+        "name": "email",
         "type": "string",
-        "description": "State or jurisdiction of vehicle registration",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "make",
-        "type": "string",
-        "description": "Vehicle manufacturer (e.g., Toyota, Ford, Honda)",
+        "description": "Email address of the respondent",
         "required": false,
         "defaultValue": null
       },
       {
-        "name": "model",
-        "type": "string",
-        "description": "Vehicle model name",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "color",
-        "type": "string",
-        "description": "Primary color of the vehicle",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "vin",
-        "type": "string",
-        "description": "Vehicle Identification Number (17-character unique identifier)",
-        "required": false,
-        "defaultValue": null
-      }
-    ],
-    "relationships": [],
-    "indexes": [
-      {
-        "name": "idx_license_state",
-        "fields": [
-          "licensePlate",
-          "state"
-        ],
-        "unique": true
-      },
-      {
-        "name": "idx_vin",
-        "fields": [
-          "vin"
-        ],
-        "unique": true
-      }
-    ],
-    "constraints": {
-      "licensePlate": {
-        "pattern": "^[A-Z0-9-]+$",
-        "maxLength": 10
-      },
-      "state": {
-        "maxLength": 2,
-        "pattern": "^[A-Z]{2}$"
-      },
-      "vin": {
-        "minLength": 17,
-        "maxLength": 17,
-        "pattern": "^[A-HJ-NPR-Z0-9]{17}$"
-      }
-    },
-    "workflowId": "workflow_1735227156483"
-  },
-  {
-    "id": "audit-log",
-    "name": "AuditLog",
-    "description": "Records all system actions, data modifications, and events for compliance, security monitoring, and troubleshooting purposes",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for the audit log entry",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "timestamp",
+        "name": "startedAt",
         "type": "date",
-        "description": "Date and time when the action occurred",
+        "description": "Timestamp when the respondent started the survey",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "userId",
-        "type": "string",
-        "description": "ID of the officer or user who performed the action",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "action",
-        "type": "string",
-        "description": "Type of action performed (CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc.)",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "entityType",
-        "type": "string",
-        "description": "Type of entity affected (Ticket, Officer, Vehicle, ViolationType, etc.)",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "entityId",
-        "type": "string",
-        "description": "ID of the specific entity that was affected by the action",
+        "name": "completedAt",
+        "type": "date",
+        "description": "Timestamp when the respondent completed the survey",
         "required": false,
         "defaultValue": null
       },
       {
-        "name": "changes",
-        "type": "json",
-        "description": "JSON object containing before/after values of modified fields",
-        "required": false,
-        "defaultValue": null
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the response (in_progress, completed, abandoned)",
+        "required": true,
+        "defaultValue": "in_progress"
       },
       {
         "name": "ipAddress",
         "type": "string",
-        "description": "IP address from which the action was performed",
-        "required": false,
-        "defaultValue": null
-      }
-    ],
-    "relationships": [],
-    "indexes": [
-      "timestamp",
-      "userId",
-      "action",
-      "entityType"
-    ],
-    "constraints": {
-      "action": "Must be one of: CREATE, UPDATE, DELETE, LOGIN, LOGOUT, VIEW, EXPORT, APPROVE, REJECT",
-      "entityType": "Must reference valid system entities: Ticket, Officer, Vehicle, ViolationType, ParkingLocation"
-    },
-    "workflowId": "workflow_1735227156483"
-  },
-  {
-    "id": "payment",
-    "name": "Payment",
-    "description": "Records payment transactions for parking tickets including amount, method, and processing status",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for the payment transaction",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "ticketId",
-        "type": "string",
-        "description": "Reference to the parking ticket being paid",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "amount",
-        "type": "number",
-        "description": "Payment amount in currency units",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "paymentMethod",
-        "type": "string",
-        "description": "Method of payment (credit_card, debit_card, cash, check, online)",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "transactionId",
-        "type": "string",
-        "description": "External transaction identifier from payment processor",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "paymentDate",
-        "type": "date",
-        "description": "Date and time when payment was processed",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "status",
-        "type": "string",
-        "description": "Payment processing status (pending, completed, failed, refunded)",
-        "required": true,
-        "defaultValue": "pending"
-      }
-    ],
-    "relationships": [
-      {
-        "type": "many-to-one",
-        "relatedModel": "Ticket",
-        "foreignKey": "ticketId",
-        "description": "Links payment to the associated parking ticket"
-      }
-    ],
-    "indexes": [
-      {
-        "fields": [
-          "ticketId"
-        ],
-        "unique": false
-      },
-      {
-        "fields": [
-          "transactionId"
-        ],
-        "unique": true
-      },
-      {
-        "fields": [
-          "paymentDate"
-        ],
-        "unique": false
-      },
-      {
-        "fields": [
-          "status"
-        ],
-        "unique": false
-      }
-    ],
-    "constraints": {
-      "amount": "Must be greater than 0",
-      "paymentMethod": "Must be one of: credit_card, debit_card, cash, check, online",
-      "status": "Must be one of: pending, completed, failed, refunded"
-    },
-    "workflowId": "workflow_1735227156483"
-  },
-  {
-    "id": "dispute",
-    "name": "Dispute",
-    "description": "Manages parking ticket disputes and appeals with supporting documentation and resolution tracking",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for the dispute",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "ticketId",
-        "type": "string",
-        "description": "Reference to the parking ticket being disputed",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "reason",
-        "type": "string",
-        "description": "Citizen's explanation for disputing the ticket",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "submissionDate",
-        "type": "date",
-        "description": "Date and time when the dispute was submitted",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "status",
-        "type": "string",
-        "description": "Current status of the dispute (pending, under_review, approved, denied)",
-        "required": true,
-        "defaultValue": "pending"
-      },
-      {
-        "name": "supportingDocuments",
-        "type": "array",
-        "description": "URLs or file paths to uploaded supporting evidence documents",
-        "required": false,
-        "defaultValue": []
-      },
-      {
-        "name": "adminNotes",
-        "type": "string",
-        "description": "Internal notes and comments from reviewing administrator",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "resolutionDate",
-        "type": "date",
-        "description": "Date when the dispute was resolved with final decision",
+        "description": "IP address of the respondent for tracking purposes",
         "required": false,
         "defaultValue": null
       }
@@ -570,27 +198,27 @@
     "relationships": [
       {
         "type": "many-to-one",
-        "relatedModel": "Ticket",
-        "foreignKey": "ticketId",
-        "description": "Each dispute is associated with one parking ticket"
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId",
+        "description": "Each respondent belongs to one survey"
       }
     ],
     "indexes": [
       {
         "fields": [
-          "ticketId"
+          "surveyId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "email"
         ],
         "unique": false
       },
       {
         "fields": [
           "status"
-        ],
-        "unique": false
-      },
-      {
-        "fields": [
-          "submissionDate"
         ],
         "unique": false
       }
@@ -598,115 +226,18 @@
     "constraints": {
       "status": {
         "enum": [
-          "pending",
-          "under_review",
-          "approved",
-          "denied"
+          "in_progress",
+          "completed",
+          "abandoned"
         ]
       }
     },
-    "workflowId": "workflow_1735227156483"
-  },
-  {
-    "id": "late-fee",
-    "name": "LateFee",
-    "description": "Track late fee assessments and calculations for overdue tickets",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for the late fee record",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "ticketId",
-        "type": "string",
-        "description": "Reference to the overdue parking ticket",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "assessmentDate",
-        "type": "date",
-        "description": "Date when the late fee was assessed",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "feeAmount",
-        "type": "number",
-        "description": "Amount of the late fee charged in currency",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "paymentStatus",
-        "type": "string",
-        "description": "Current payment status (pending, paid, waived)",
-        "required": true,
-        "defaultValue": "pending"
-      },
-      {
-        "name": "paymentId",
-        "type": "string",
-        "description": "Reference to the payment record if fee has been paid",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "notes",
-        "type": "string",
-        "description": "Additional notes about fee escalation or waivers",
-        "required": false,
-        "defaultValue": null
-      }
-    ],
-    "relationships": [
-      {
-        "type": "many-to-one",
-        "relatedModel": "Ticket",
-        "foreignKey": "ticketId",
-        "description": "Each late fee is associated with one ticket"
-      },
-      {
-        "type": "many-to-one",
-        "relatedModel": "Payment",
-        "foreignKey": "paymentId",
-        "description": "Late fee may be linked to a payment record"
-      }
-    ],
-    "indexes": [
-      {
-        "name": "idx_ticket_id",
-        "fields": [
-          "ticketId"
-        ]
-      },
-      {
-        "name": "idx_payment_status",
-        "fields": [
-          "paymentStatus"
-        ]
-      },
-      {
-        "name": "idx_assessment_date",
-        "fields": [
-          "assessmentDate"
-        ]
-      }
-    ],
-    "constraints": {
-      "feeAmount": "Must be greater than 0",
-      "paymentStatus": "Must be one of: pending, paid, waived"
-    },
-    "workflowId": "workflow_1735227156483"
+    "workflowId": "workflow-create-survey"
   },
   {
     "id": "notification",
     "name": "Notification",
-    "description": "Log all notifications sent to citizens and officers regarding ticket status changes, payment confirmations, and dispute updates",
+    "description": "Stores notification records sent to administrators",
     "fields": [
       {
         "name": "id",
@@ -717,238 +248,710 @@
         "defaultValue": null
       },
       {
-        "name": "recipientEmail",
+        "name": "title",
         "type": "string",
-        "description": "Email address of the notification recipient",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "recipientPhone",
-        "type": "string",
-        "description": "Phone number of the recipient for SMS notifications",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "notificationType",
-        "type": "string",
-        "description": "Type of notification (ticket_issued, payment_received, dispute_filed, dispute_resolved, late_fee_applied)",
+        "description": "Title or subject of the notification",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "deliveryMethod",
+        "name": "message",
         "type": "string",
-        "description": "Method used to send notification (email, sms, both)",
+        "description": "Content or body of the notification",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "deliveryStatus",
+        "name": "type",
         "type": "string",
-        "description": "Current delivery status (pending, sent, delivered, failed, retrying)",
+        "description": "Type of notification (e.g., info, warning, alert, success)",
         "required": true,
-        "defaultValue": "pending"
+        "defaultValue": "info"
       },
       {
-        "name": "retryCount",
-        "type": "number",
-        "description": "Number of delivery retry attempts made",
+        "name": "isRead",
+        "type": "boolean",
+        "description": "Indicates whether the notification has been read",
         "required": true,
-        "defaultValue": 0
+        "defaultValue": false
       },
       {
-        "name": "sentAt",
+        "name": "createdAt",
         "type": "date",
-        "description": "Timestamp when the notification was sent",
-        "required": false,
+        "description": "Timestamp when the notification was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientId",
+        "type": "string",
+        "description": "ID of the administrator who receives the notification",
+        "required": true,
         "defaultValue": null
       }
     ],
     "relationships": [],
     "indexes": [
-      "recipientEmail",
-      "recipientPhone",
-      "notificationType",
-      "deliveryStatus",
-      "sentAt"
+      "recipientId",
+      "createdAt",
+      "isRead"
     ],
-    "constraints": {
-      "notificationType": [
-        "ticket_issued",
-        "payment_received",
-        "dispute_filed",
-        "dispute_resolved",
-        "late_fee_applied"
-      ],
-      "deliveryMethod": [
-        "email",
-        "sms",
-        "both"
-      ],
-      "deliveryStatus": [
-        "pending",
-        "sent",
-        "delivered",
-        "failed",
-        "retrying"
-      ],
-      "atLeastOneRecipient": "Either recipientEmail or recipientPhone must be provided"
-    },
-    "workflowId": "workflow_1735227156483"
+    "constraints": {},
+    "workflowId": "workflow-create-survey"
   },
   {
-    "id": "ticket",
-    "name": "Ticket",
-    "description": "Core entity representing parking violation tickets with all violation details and lifecycle tracking",
+    "id": "notification-template",
+    "name": "NotificationTemplate",
+    "description": "Configurable templates for notification messages",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique ticket identifier/number",
+        "description": "Unique identifier for the notification template",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "violationTypeId",
+        "name": "name",
         "type": "string",
-        "description": "Reference to the type of parking violation",
+        "description": "Template name for identification",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "vehicleId",
+        "name": "subject",
         "type": "string",
-        "description": "Reference to the vehicle that received the ticket",
+        "description": "Subject line for the notification",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "locationId",
-        "type": "string",
-        "description": "Reference to the parking location where violation occurred",
+        "name": "body",
+        "type": "text",
+        "description": "Message body with placeholder variables",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "officerId",
+        "name": "type",
         "type": "string",
-        "description": "Reference to the officer who issued the ticket",
+        "description": "Notification type (email, sms, push, in-app)",
         "required": true,
-        "defaultValue": null
+        "defaultValue": "email"
       },
       {
-        "name": "violationDateTime",
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the template is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
         "type": "date",
-        "description": "Date and time when the violation occurred",
+        "description": "Timestamp when template was created",
+        "required": true,
+        "defaultValue": "now()"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_template_type",
+        "fields": [
+          "type"
+        ]
+      },
+      {
+        "name": "idx_template_active",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ],
+      "check": [
+        "type IN ('email', 'sms', 'push', 'in-app')"
+      ]
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "response-summary",
+    "name": "ResponseSummary",
+    "description": "Aggregated view of survey responses for admin review",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the response summary",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the survey being summarized",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "fineAmount",
+        "name": "totalResponses",
         "type": "number",
-        "description": "Base fine amount for the violation in currency units",
+        "description": "Total number of responses received",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "completionRate",
+        "type": "number",
+        "description": "Percentage of completed responses (0-100)",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "averageCompletionTime",
+        "type": "number",
+        "description": "Average time to complete survey in minutes",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "lastUpdated",
+        "type": "date",
+        "description": "Timestamp when summary was last calculated",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId",
+        "description": "Links summary to its parent survey"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "surveyId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "lastUpdated"
+        ]
+      }
+    ],
+    "constraints": {
+      "completionRate": "Must be between 0 and 100",
+      "totalResponses": "Must be non-negative"
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "response",
+    "name": "Response",
+    "description": "Represents a complete survey submission",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the response",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the survey being responded to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "respondentId",
+        "type": "string",
+        "description": "Reference to the respondent who submitted the response",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "answers",
+        "type": "json",
+        "description": "Collection of question-answer pairs for the survey",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "submittedAt",
+        "type": "date",
+        "description": "Timestamp when the response was submitted",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "status",
         "type": "string",
-        "description": "Current status of the ticket (issued, paid, disputed, overdue, dismissed)",
+        "description": "Status of the response (draft, submitted, completed)",
         "required": true,
-        "defaultValue": "issued"
+        "defaultValue": "draft"
+      },
+      {
+        "name": "completionTime",
+        "type": "number",
+        "description": "Time taken to complete the survey in seconds",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "Respondent",
+        "foreignKey": "respondentId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "surveyId"
+        ]
+      },
+      {
+        "fields": [
+          "respondentId"
+        ]
+      },
+      {
+        "fields": [
+          "submittedAt"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        [
+          "surveyId",
+          "respondentId"
+        ]
+      ]
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "answer",
+    "name": "Answer",
+    "description": "Individual answer to a survey question",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the answer",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "responseId",
+        "type": "string",
+        "description": "Reference to the parent response",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "questionId",
+        "type": "string",
+        "description": "Reference to the survey question being answered",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "description": "The actual answer value provided by respondent",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "questionType",
+        "type": "string",
+        "description": "Type of question answered (text, multiple choice, rating, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the answer was submitted",
+        "required": true,
+        "defaultValue": "now()"
       }
     ],
     "relationships": [
       {
         "type": "many-to-one",
-        "relatedModel": "ViolationType",
-        "foreignKey": "violationTypeId"
+        "relatedModel": "Response",
+        "foreignKey": "responseId"
       },
       {
         "type": "many-to-one",
-        "relatedModel": "Vehicle",
-        "foreignKey": "vehicleId"
-      },
-      {
-        "type": "many-to-one",
-        "relatedModel": "ParkingLocation",
-        "foreignKey": "locationId"
-      },
-      {
-        "type": "many-to-one",
-        "relatedModel": "Officer",
-        "foreignKey": "officerId"
-      },
-      {
-        "type": "one-to-many",
-        "relatedModel": "Payment",
-        "foreignKey": "ticketId"
-      },
-      {
-        "type": "one-to-many",
-        "relatedModel": "Dispute",
-        "foreignKey": "ticketId"
-      },
-      {
-        "type": "one-to-many",
-        "relatedModel": "LateFee",
-        "foreignKey": "ticketId"
-      },
-      {
-        "type": "one-to-many",
-        "relatedModel": "Notification",
-        "foreignKey": "ticketId"
-      },
-      {
-        "type": "one-to-many",
-        "relatedModel": "AuditLog",
-        "foreignKey": "ticketId"
+        "relatedModel": "QuestionType",
+        "foreignKey": "questionType"
       }
     ],
     "indexes": [
       {
-        "name": "idx_ticket_status",
         "fields": [
-          "status"
+          "responseId"
         ]
       },
       {
-        "name": "idx_ticket_violation_date",
         "fields": [
-          "violationDateTime"
-        ]
-      },
-      {
-        "name": "idx_ticket_vehicle",
-        "fields": [
-          "vehicleId"
-        ]
-      },
-      {
-        "name": "idx_ticket_officer",
-        "fields": [
-          "officerId"
+          "questionId"
         ]
       }
     ],
     "constraints": {
-      "status": {
-        "enum": [
-          "issued",
-          "paid",
-          "disputed",
-          "overdue",
-          "dismissed",
-          "void"
-        ]
+      "unique": []
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "notification-settings",
+    "name": "NotificationSettings",
+    "description": "Global notification configuration settings",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for notification settings",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
       },
-      "fineAmount": {
-        "min": 0
+      {
+        "name": "emailEnabled",
+        "type": "boolean",
+        "description": "Whether email notifications are enabled globally",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "smsEnabled",
+        "type": "boolean",
+        "description": "Whether SMS notifications are enabled globally",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "pushEnabled",
+        "type": "boolean",
+        "description": "Whether push notifications are enabled globally",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "defaultSendTime",
+        "type": "string",
+        "description": "Default time to send scheduled notifications (HH:MM format)",
+        "required": false,
+        "defaultValue": "09:00"
+      },
+      {
+        "name": "retryAttempts",
+        "type": "number",
+        "description": "Number of retry attempts for failed notifications",
+        "required": true,
+        "defaultValue": 3
+      },
+      {
+        "name": "batchSize",
+        "type": "number",
+        "description": "Maximum number of notifications to send in a single batch",
+        "required": true,
+        "defaultValue": 100
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp of last settings update",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "analytics",
+    "name": "Analytics",
+    "description": "Statistical analysis and metrics for survey data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the analytics record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the survey being analyzed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "metricType",
+        "type": "string",
+        "description": "Type of metric (e.g., completion_rate, response_time, satisfaction_score)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "metricValue",
+        "type": "number",
+        "description": "Calculated value of the metric",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "periodStart",
+        "type": "date",
+        "description": "Start date of the analysis period",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "periodEnd",
+        "type": "date",
+        "description": "End date of the analysis period",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "calculatedAt",
+        "type": "date",
+        "description": "Timestamp when the analytics were calculated",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId",
+        "description": "Analytics belongs to a survey"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "surveyId",
+          "metricType"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "calculatedAt"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "metricType": "Must be a valid metric type (completion_rate, response_time, satisfaction_score, etc.)",
+      "periodEnd": "Must be greater than or equal to periodStart"
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "export-configuration",
+    "name": "ExportConfiguration",
+    "description": "Settings for data export operations",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the export configuration",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the export configuration",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "format",
+        "type": "string",
+        "description": "Export format (CSV, JSON, Excel, PDF)",
+        "required": true,
+        "defaultValue": "CSV"
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the survey being exported",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "includeMetadata",
+        "type": "boolean",
+        "description": "Whether to include metadata in export",
+        "required": false,
+        "defaultValue": true
+      },
+      {
+        "name": "dateRange",
+        "type": "object",
+        "description": "Start and end dates for filtering exported data",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when configuration was created",
+        "required": true,
+        "defaultValue": "now()"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId",
+        "description": "Export configuration belongs to a survey"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "surveyId"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "format": {
+        "enum": [
+          "CSV",
+          "JSON",
+          "Excel",
+          "PDF"
+        ]
       }
     },
-    "workflowId": "workflow_1735227156483"
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "question",
+    "name": "Question",
+    "description": "Individual survey questions with configuration",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the question",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the parent survey",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "questionTypeId",
+        "type": "string",
+        "description": "Reference to the question type (multiple choice, text, rating, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "description": "The actual question text displayed to respondents",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "orderIndex",
+        "type": "number",
+        "description": "Display order of the question within the survey",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isRequired",
+        "type": "boolean",
+        "description": "Whether the question must be answered",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "configuration",
+        "type": "json",
+        "description": "Additional settings like options, validation rules, or display logic",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "QuestionType",
+        "foreignKey": "questionTypeId"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "Answer",
+        "foreignKey": "questionId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "surveyId",
+          "orderIndex"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "orderIndex": "Must be a positive integer",
+      "text": "Maximum length 1000 characters"
+    },
+    "workflowId": "workflow-create-survey"
   }
 ]

@@ -1,8 +1,191 @@
 [
   {
-    "id": "user",
+    "id": "dm_ticket_1766611043606",
+    "name": "Ticket",
+    "description": "Primary entity capturing ticket details from submission through resolution, tracking complete lifecycle of support requests",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the ticket",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketNumber",
+        "type": "string",
+        "description": "Human-readable ticket number for reference",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Brief summary of the ticket issue",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the issue or request",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the ticket (new, assigned, in_progress, resolved, closed, reopened)",
+        "required": true,
+        "defaultValue": "new"
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the ticket (low, medium, high, urgent)",
+        "required": true,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "description": "Category or type of the ticket (IT, payroll, benefits, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "submitterId",
+        "type": "string",
+        "description": "ID of the user who submitted the ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedAgentId",
+        "type": "string",
+        "description": "ID of the agent assigned to handle the ticket",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedQueueId",
+        "type": "string",
+        "description": "ID of the queue the ticket is assigned to",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the ticket was created",
+        "required": true,
+        "defaultValue": "now"
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp of the last update to the ticket",
+        "required": true,
+        "defaultValue": "now"
+      },
+      {
+        "name": "resolvedAt",
+        "type": "date",
+        "description": "Timestamp when the ticket was resolved",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "closedAt",
+        "type": "date",
+        "description": "Timestamp when the ticket was closed",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Expected resolution date based on priority and SLA",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "resolutionNotes",
+        "type": "string",
+        "description": "Notes describing how the ticket was resolved",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "reopenCount",
+        "type": "number",
+        "description": "Number of times the ticket has been reopened",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "lastActivityAt",
+        "type": "date",
+        "description": "Timestamp of the last activity on the ticket",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "ticketNumber",
+      "status",
+      "priority",
+      "submitterId",
+      "assignedAgentId",
+      "assignedQueueId",
+      "createdAt"
+    ],
+    "constraints": {
+      "uniqueFields": [
+        "ticketNumber"
+      ],
+      "statusValues": [
+        "new",
+        "assigned",
+        "in_progress",
+        "resolved",
+        "closed",
+        "reopened"
+      ],
+      "priorityValues": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ]
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketSubmissionWorkflow",
+        "TicketRoutingWorkflow",
+        "TicketManagementWorkflow",
+        "TicketResolutionWorkflow",
+        "TicketReopenWorkflow"
+      ],
+      "usedByForms": [
+        "TicketSubmissionForm",
+        "TicketAssignmentForm",
+        "TicketUpdateForm",
+        "TicketResolutionForm",
+        "TicketReopenForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "Ticket",
+    "workflowId": "priority-management-workflow"
+  },
+  {
+    "id": "dm_user_1766611043606",
     "name": "User",
-    "description": "Store user information for ticket submitters, support agents, and administrators",
+    "description": "Stores user information for all system participants including end users, support agents, and supervisors",
     "fields": [
       {
         "name": "id",
@@ -20,42 +203,62 @@
         "defaultValue": null
       },
       {
-        "name": "fullName",
+        "name": "passwordHash",
         "type": "string",
-        "description": "User's full name for display and identification",
+        "description": "Hashed password for secure authentication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "User's first name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "description": "User's last name",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "role",
         "type": "string",
-        "description": "User role for access control (end_user, support_agent, manager, admin)",
+        "description": "User's role in the system (end_user, support_agent, supervisor)",
         "required": true,
         "defaultValue": "end_user"
       },
       {
         "name": "department",
         "type": "string",
-        "description": "Department affiliation for ticket routing and organization",
+        "description": "Department or organizational unit the user belongs to",
         "required": false,
         "defaultValue": null
       },
       {
         "name": "isActive",
         "type": "boolean",
-        "description": "Indicates if the user account is active",
+        "description": "Indicates whether the user account is active",
         "required": true,
         "defaultValue": true
-      },
-      {
-        "name": "createdAt",
-        "type": "date",
-        "description": "Timestamp when the user account was created",
-        "required": true,
-        "defaultValue": null
       }
     ],
-    "relationships": [],
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "relatedEntity": "Ticket",
+        "foreignKey": "assignedTo",
+        "description": "Tickets assigned to this user"
+      },
+      {
+        "type": "oneToMany",
+        "relatedEntity": "Ticket",
+        "foreignKey": "createdBy",
+        "description": "Tickets created by this user"
+      }
+    ],
     "indexes": [
       {
         "name": "idx_user_email",
@@ -68,20 +271,34 @@
         "name": "idx_user_role",
         "fields": [
           "role"
-        ],
-        "unique": false
+        ]
       }
     ],
     "constraints": {
-      "email": "Must be valid email format and unique",
-      "role": "Must be one of: end_user, support_agent, manager, admin"
+      "uniqueEmail": "Email must be unique across all users",
+      "validRole": "Role must be one of: end_user, support_agent, supervisor"
     },
-    "workflowId": "workflow_1737006848000"
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "UserRegistrationWorkflow",
+        "TicketRoutingWorkflow",
+        "TicketManagementWorkflow"
+      ],
+      "usedByForms": [
+        "UserRegistrationForm",
+        "UserProfileUpdateForm",
+        "TicketAssignmentForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "User",
+    "workflowId": "priority-management-workflow"
   },
   {
-    "id": "category",
+    "id": "dm_category_1766611043607",
     "name": "Category",
-    "description": "Define ticket categories for classification and routing purposes with hierarchical structure",
+    "description": "Lookup entity for ticket categorization including IT, HR, Facilities, and other department-specific categories used for routing and reporting",
     "fields": [
       {
         "name": "id",
@@ -99,195 +316,379 @@
         "defaultValue": null
       },
       {
-        "name": "parentCategoryId",
+        "name": "description",
         "type": "string",
-        "description": "Reference to parent category ID for hierarchical structure, null for top-level categories",
+        "description": "Detailed description of what types of tickets belong to this category",
         "required": false,
         "defaultValue": null
       },
       {
-        "name": "description",
+        "name": "defaultQueueId",
         "type": "string",
-        "description": "Detailed description of what this category covers",
+        "description": "ID of the default queue or team to route tickets in this category",
         "required": false,
         "defaultValue": null
       },
       {
         "name": "isActive",
         "type": "boolean",
-        "description": "Indicates if the category is currently active and available for ticket assignment",
+        "description": "Indicates whether this category is currently active and available for selection",
         "required": true,
         "defaultValue": true
       },
       {
-        "name": "assignedToUserId",
+        "name": "sortOrder",
+        "type": "number",
+        "description": "Display order for sorting categories in lists and dropdowns",
+        "required": true,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_category_active",
+        "fields": [
+          "isActive"
+        ]
+      },
+      {
+        "name": "idx_category_sort",
+        "fields": [
+          "sortOrder"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ]
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketRoutingWorkflow",
+        "CategoryManagementWorkflow"
+      ],
+      "usedByForms": [
+        "TicketSubmissionForm",
+        "CategoryManagementForm"
+      ],
+      "isPrimary": false,
+      "entityType": "lookup"
+    },
+    "_specName": "Category",
+    "workflowId": "priority-management-workflow"
+  },
+  {
+    "id": "dm_priority_1766611043607",
+    "name": "Priority",
+    "description": "Lookup entity for ticket priority levels with associated SLA timeframes and escalation rules",
+    "fields": [
+      {
+        "name": "id",
         "type": "string",
-        "description": "Default user ID for auto-assignment of tickets in this category",
-        "required": false,
+        "description": "Unique identifier for the priority level",
+        "required": true,
+        "primaryKey": true,
         "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Display name of the priority level (e.g., Low, Medium, High, Critical)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "description": "Numeric level for priority ordering (1=lowest, 4=highest)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "slaResponseMinutes",
+        "type": "number",
+        "description": "SLA timeframe in minutes for initial response",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "slaResolutionMinutes",
+        "type": "number",
+        "description": "SLA timeframe in minutes for ticket resolution",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "description": "Hex color code for UI display (e.g., #FF0000 for Critical)",
+        "required": false,
+        "defaultValue": "#808080"
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if this priority level is currently active",
+        "required": true,
+        "defaultValue": true
       },
       {
         "name": "sortOrder",
         "type": "number",
-        "description": "Display order for sorting categories in lists",
-        "required": false,
+        "description": "Display order in dropdown lists and UI",
+        "required": true,
         "defaultValue": 0
       }
     ],
-    "relationships": [
-      {
-        "type": "self-referencing",
-        "field": "parentCategoryId",
-        "references": "Category.id",
-        "description": "Enables hierarchical category structure"
-      },
-      {
-        "type": "many-to-one",
-        "field": "assignedToUserId",
-        "references": "User.id",
-        "description": "Links to default assignee for auto-routing"
-      }
-    ],
+    "relationships": [],
     "indexes": [
       {
-        "name": "idx_parent_category",
+        "name": "idx_priority_level",
         "fields": [
-          "parentCategoryId"
+          "level"
         ]
       },
       {
-        "name": "idx_active_categories",
+        "name": "idx_priority_active_sort",
         "fields": [
-          "isActive"
+          "isActive",
+          "sortOrder"
         ]
       }
     ],
     "constraints": {
       "unique": [
         "name",
-        "parentCategoryId"
+        "level"
       ],
-      "check": "sortOrder >= 0"
+      "check": [
+        "level >= 1 AND level <= 4",
+        "slaResponseMinutes > 0",
+        "slaResolutionMinutes > 0"
+      ]
     },
-    "workflowId": "workflow_1737006848000"
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketSubmissionWorkflow",
+        "SLAMonitoringWorkflow",
+        "PriorityManagementWorkflow"
+      ],
+      "usedByForms": [
+        "TicketSubmissionForm",
+        "TicketUpdateForm",
+        "PriorityManagementForm"
+      ],
+      "isPrimary": false,
+      "entityType": "lookup"
+    },
+    "_specName": "Priority",
+    "workflowId": "priority-management-workflow"
   },
   {
-    "id": "ticket",
-    "name": "Ticket",
-    "description": "Central data model capturing ticket lifecycle from submission to closure with essential tracking information",
+    "id": "dm_status_1766611043607",
+    "name": "Status",
+    "description": "Lookup entity for ticket statuses with workflow state transition rules",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the ticket",
+        "description": "Unique identifier for the status",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "subject",
+        "name": "name",
         "type": "string",
-        "description": "Brief summary of the ticket issue",
+        "description": "Display name of the status (e.g., New, Assigned, In Progress, Pending, Resolved, Closed)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "statusType",
+        "type": "string",
+        "description": "Category of status: OPEN, IN_PROGRESS, PENDING, RESOLVED, CLOSED",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isTerminal",
+        "type": "boolean",
+        "description": "Indicates if this is a final state (no further transitions allowed)",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "allowedTransitions",
+        "type": "array",
+        "description": "Array of status IDs that this status can transition to",
+        "required": false,
+        "defaultValue": []
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "description": "Hex color code for UI display (e.g., #FF5733)",
+        "required": false,
+        "defaultValue": "#808080"
+      },
+      {
+        "name": "sortOrder",
+        "type": "number",
+        "description": "Display order in lists and dropdowns",
+        "required": true,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_status_type",
+        "fields": [
+          "statusType"
+        ]
+      },
+      {
+        "name": "idx_sort_order",
+        "fields": [
+          "sortOrder"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ],
+      "check": [
+        "statusType IN ('OPEN', 'IN_PROGRESS', 'PENDING', 'RESOLVED', 'CLOSED')"
+      ]
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketManagementWorkflow",
+        "TicketResolutionWorkflow",
+        "StatusManagementWorkflow"
+      ],
+      "usedByForms": [
+        "TicketUpdateForm",
+        "StatusManagementForm"
+      ],
+      "isPrimary": false,
+      "entityType": "lookup"
+    },
+    "_specName": "Status",
+    "workflowId": "priority-management-workflow"
+  },
+  {
+    "id": "dm_queue_1766611043607",
+    "name": "Queue",
+    "description": "Entity defining support queues for ticket routing and assignment to agent groups",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the queue",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the queue",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "description",
         "type": "string",
-        "description": "Detailed description of the issue or request",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "priority",
-        "type": "string",
-        "description": "Priority level (Low, Medium, High, Critical)",
-        "required": true,
-        "defaultValue": "Medium"
-      },
-      {
-        "name": "status",
-        "type": "string",
-        "description": "Current ticket status (Open, In Progress, Resolved, Closed)",
-        "required": true,
-        "defaultValue": "Open"
-      },
-      {
-        "name": "categoryId",
-        "type": "string",
-        "description": "Reference to the ticket category",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "assignedAgentId",
-        "type": "string",
-        "description": "Reference to the assigned support agent",
+        "description": "Detailed description of the queue purpose and scope",
         "required": false,
         "defaultValue": null
       },
       {
-        "name": "createdAt",
-        "type": "date",
-        "description": "Timestamp when ticket was created",
+        "name": "categoryId",
+        "type": "string",
+        "description": "Reference to the category this queue handles",
         "required": true,
-        "defaultValue": "CURRENT_TIMESTAMP"
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the queue is currently active and accepting tickets",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "maxCapacity",
+        "type": "number",
+        "description": "Maximum number of tickets that can be assigned to this queue",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "currentLoad",
+        "type": "number",
+        "description": "Current number of active tickets in the queue",
+        "required": true,
+        "defaultValue": 0
       }
     ],
     "relationships": [
       {
-        "type": "manyToOne",
-        "relatedModel": "Category",
+        "entity": "Category",
+        "type": "many-to-one",
         "foreignKey": "categoryId",
-        "description": "Ticket belongs to one category"
+        "description": "Queue belongs to a specific category"
       },
       {
-        "type": "manyToOne",
-        "relatedModel": "User",
-        "foreignKey": "assignedAgentId",
-        "description": "Ticket assigned to one agent"
+        "entity": "Ticket",
+        "type": "one-to-many",
+        "foreignKey": "queueId",
+        "description": "Queue contains multiple tickets"
       }
     ],
     "indexes": [
       {
         "fields": [
-          "status"
-        ],
-        "unique": false
-      },
-      {
-        "fields": [
-          "assignedAgentId"
-        ],
-        "unique": false
-      },
-      {
-        "fields": [
           "categoryId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "isActive"
         ],
         "unique": false
       }
     ],
     "constraints": {
-      "priority": [
-        "Low",
-        "Medium",
-        "High",
-        "Critical"
-      ],
-      "status": [
-        "Open",
-        "In Progress",
-        "Resolved",
-        "Closed"
-      ]
+      "maxCapacity": "Must be a positive integer or null",
+      "currentLoad": "Must be a non-negative integer",
+      "name": "Must be unique within the system"
     },
-    "workflowId": "workflow_1737006848000"
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketRoutingWorkflow",
+        "QueueManagementWorkflow"
+      ],
+      "usedByForms": [
+        "TicketAssignmentForm",
+        "QueueManagementForm"
+      ],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Queue",
+    "workflowId": "priority-management-workflow"
   },
   {
-    "id": "ticket-comment",
-    "name": "TicketComment",
-    "description": "Record updates, notes, and communications related to tickets",
+    "id": "dm_comment_1766611043607",
+    "name": "Comment",
+    "description": "Stores ticket comments, notes, and communication between users and agents with full audit trail",
     "fields": [
       {
         "name": "id",
@@ -305,84 +706,108 @@
         "defaultValue": null
       },
       {
-        "name": "authorId",
+        "name": "userId",
         "type": "string",
         "description": "Reference to the user who created the comment",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "content",
+        "name": "commentText",
         "type": "string",
-        "description": "The actual comment text or update message",
+        "description": "The actual comment or note content",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "isInternal",
         "type": "boolean",
-        "description": "Flag indicating if comment is internal note (true) or customer-facing (false)",
+        "description": "Flag indicating if comment is internal (visible only to agents) or public",
         "required": true,
         "defaultValue": false
       },
       {
+        "name": "commentType",
+        "type": "string",
+        "description": "Type of comment: note, status_update, resolution, or reply",
+        "required": true,
+        "defaultValue": "note"
+      },
+      {
         "name": "createdAt",
         "type": "date",
-        "description": "Timestamp when the comment was created",
+        "description": "Timestamp when comment was created",
         "required": true,
         "defaultValue": null
       }
     ],
     "relationships": [
       {
+        "entity": "Ticket",
         "type": "many-to-one",
-        "relatedModel": "Ticket",
         "foreignKey": "ticketId",
         "description": "Each comment belongs to one ticket"
       },
       {
+        "entity": "User",
         "type": "many-to-one",
-        "relatedModel": "User",
-        "foreignKey": "authorId",
-        "description": "Each comment is authored by one user"
+        "foreignKey": "userId",
+        "description": "Each comment is created by one user"
       }
     ],
     "indexes": [
       {
+        "name": "idx_comment_ticket",
         "fields": [
           "ticketId",
           "createdAt"
         ],
-        "description": "Optimize retrieval of comments for a ticket in chronological order"
+        "description": "Optimize retrieval of comments by ticket in chronological order"
       },
       {
+        "name": "idx_comment_user",
         "fields": [
-          "authorId"
+          "userId"
         ],
-        "description": "Optimize queries for comments by specific author"
+        "description": "Optimize retrieval of comments by user"
       }
     ],
     "constraints": {
-      "uniqueConstraints": [],
-      "checkConstraints": [
-        {
-          "field": "content",
-          "rule": "length > 0",
-          "description": "Comment content cannot be empty"
-        }
-      ]
+      "commentType": {
+        "type": "enum",
+        "values": [
+          "note",
+          "status_update",
+          "resolution",
+          "reply"
+        ],
+        "description": "Restrict comment types to predefined values"
+      }
     },
-    "workflowId": "workflow_1737006848000"
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketManagementWorkflow",
+        "TicketResolutionWorkflow"
+      ],
+      "usedByForms": [
+        "TicketUpdateForm",
+        "TicketCommentForm"
+      ],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Comment",
+    "workflowId": "priority-management-workflow"
   },
   {
-    "id": "ticket-history",
-    "name": "TicketHistory",
-    "description": "Maintains a complete audit trail of all ticket changes and events for compliance and tracking purposes",
+    "id": "dm_attachment_1766611043607",
+    "name": "Attachment",
+    "description": "Stores file attachments related to tickets including documents, screenshots, and supporting materials with metadata and storage locations",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the history entry",
+        "description": "Unique identifier for the attachment",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
@@ -390,21 +815,245 @@
       {
         "name": "ticketId",
         "type": "string",
-        "description": "Reference to the ticket being modified",
+        "description": "Reference to the ticket this attachment belongs to",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "changedBy",
+        "name": "uploadedByUserId",
         "type": "string",
-        "description": "User ID of the person who made the change",
+        "description": "Reference to the user who uploaded the attachment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileName",
+        "type": "string",
+        "description": "Original name of the uploaded file",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileSize",
+        "type": "number",
+        "description": "Size of the file in bytes",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileType",
+        "type": "string",
+        "description": "MIME type of the file (e.g., image/png, application/pdf)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "storagePath",
+        "type": "string",
+        "description": "Path or URL where the file is stored in the storage system",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "uploadedAt",
+        "type": "date",
+        "description": "Timestamp when the file was uploaded",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedEntity": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each attachment belongs to one ticket"
+      },
+      {
+        "type": "manyToOne",
+        "relatedEntity": "User",
+        "foreignKey": "uploadedByUserId",
+        "description": "Each attachment is uploaded by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_attachment_ticket",
+        "fields": [
+          "ticketId"
+        ],
+        "description": "Index for efficient retrieval of attachments by ticket"
+      },
+      {
+        "name": "idx_attachment_uploaded_at",
+        "fields": [
+          "uploadedAt"
+        ],
+        "description": "Index for sorting attachments by upload date"
+      }
+    ],
+    "constraints": {
+      "maxFileSize": "Maximum file size limit (e.g., 10MB)",
+      "allowedFileTypes": "Whitelist of permitted file types for security"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketSubmissionWorkflow",
+        "TicketManagementWorkflow"
+      ],
+      "usedByForms": [
+        "TicketSubmissionForm",
+        "TicketUpdateForm"
+      ],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Attachment",
+    "workflowId": "priority-management-workflow"
+  },
+  {
+    "id": "queue-member",
+    "name": "QueueMember",
+    "description": "Junction entity linking agents to queues they can work from, managing queue membership and agent availability",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the queue membership",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "queueId",
+        "type": "string",
+        "description": "Reference to the queue this membership belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user (agent) assigned to the queue",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the agent is currently active and available in this queue",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "addedAt",
+        "type": "date",
+        "description": "Timestamp when the agent was added to the queue",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "addedBy",
+        "type": "string",
+        "description": "Reference to the user who added this agent to the queue",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "entity": "Queue",
+        "foreignKey": "queueId",
+        "description": "Queue this membership belongs to"
+      },
+      {
+        "type": "many-to-one",
+        "entity": "User",
+        "foreignKey": "userId",
+        "description": "Agent assigned to the queue"
+      },
+      {
+        "type": "many-to-one",
+        "entity": "User",
+        "foreignKey": "addedBy",
+        "description": "User who created this queue membership"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "queueId",
+          "userId"
+        ],
+        "unique": true,
+        "description": "Ensures an agent can only be added once to a queue"
+      },
+      {
+        "fields": [
+          "queueId",
+          "isActive"
+        ],
+        "unique": false,
+        "description": "Optimizes queries for active agents in a queue"
+      },
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": false,
+        "description": "Optimizes queries for all queues an agent belongs to"
+      }
+    ],
+    "constraints": {
+      "uniqueQueueMembership": "A user can only have one membership record per queue",
+      "validReferences": "queueId must reference existing Queue, userId and addedBy must reference existing User"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketRoutingWorkflow",
+        "QueueManagementWorkflow"
+      ],
+      "usedByForms": [
+        "QueueManagementForm"
+      ],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "QueueMember",
+    "workflowId": "priority-management-workflow"
+  },
+  {
+    "id": "ticket-history",
+    "name": "TicketHistory",
+    "description": "Audit entity tracking all changes to tickets including status changes, assignments, priority updates, and field modifications for compliance and reporting",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the history record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket that was modified",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changedByUserId",
+        "type": "string",
+        "description": "Reference to the user who made the change",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "changeType",
         "type": "string",
-        "description": "Type of change (status, assignment, priority, category, etc.)",
+        "description": "Type of change (status_change, assignment, priority_update, field_modification, etc.)",
         "required": true,
         "defaultValue": null
       },
@@ -412,7 +1061,7 @@
         "name": "fieldName",
         "type": "string",
         "description": "Name of the field that was changed",
-        "required": true,
+        "required": false,
         "defaultValue": null
       },
       {
@@ -440,15 +1089,15 @@
     "relationships": [
       {
         "type": "many-to-one",
-        "relatedModel": "Ticket",
+        "relatedEntity": "Ticket",
         "foreignKey": "ticketId",
-        "description": "Each history entry belongs to one ticket"
+        "description": "Each history record belongs to one ticket"
       },
       {
         "type": "many-to-one",
-        "relatedModel": "User",
-        "foreignKey": "changedBy",
-        "description": "Each history entry is created by one user"
+        "relatedEntity": "User",
+        "foreignKey": "changedByUserId",
+        "description": "Each history record is created by one user"
       }
     ],
     "indexes": [
@@ -456,122 +1105,51 @@
         "name": "idx_ticket_history_ticket_id",
         "fields": [
           "ticketId"
-        ]
+        ],
+        "description": "Index for efficient retrieval of all changes for a specific ticket"
       },
       {
         "name": "idx_ticket_history_changed_at",
         "fields": [
           "changedAt"
-        ]
+        ],
+        "description": "Index for time-based queries and reporting"
       },
       {
-        "name": "idx_ticket_history_changed_by",
+        "name": "idx_ticket_history_change_type",
         "fields": [
-          "changedBy"
-        ]
+          "changeType"
+        ],
+        "description": "Index for filtering by type of change"
       }
     ],
     "constraints": {
       "immutable": true,
-      "allowDelete": false
+      "auditLog": false,
+      "softDelete": false
     },
-    "workflowId": "workflow_1737006848000"
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketManagementWorkflow",
+        "TicketResolutionWorkflow",
+        "TicketReopenWorkflow"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "TicketHistory",
+    "workflowId": "priority-management-workflow"
   },
   {
-    "id": "assignment-rule",
-    "name": "AssignmentRule",
-    "description": "Defines rules for automatic ticket assignment to support agents based on category, priority, availability, and workload distribution",
+    "id": "sla-tracking",
+    "name": "SLATracking",
+    "description": "Tracks SLA compliance metrics for tickets including response and resolution deadlines, breach status, and escalation levels",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the assignment rule",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "name",
-        "type": "string",
-        "description": "Descriptive name of the assignment rule",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "categoryId",
-        "type": "string",
-        "description": "Reference to ticket category this rule applies to (null for all categories)",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "priority",
-        "type": "string",
-        "description": "Ticket priority level this rule applies to (low, medium, high, critical, or null for all)",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "assignmentStrategy",
-        "type": "string",
-        "description": "Distribution method: round-robin, load-balanced, skill-based, or manual",
-        "required": true,
-        "defaultValue": "round-robin"
-      },
-      {
-        "name": "isActive",
-        "type": "boolean",
-        "description": "Whether this assignment rule is currently active",
-        "required": true,
-        "defaultValue": true
-      },
-      {
-        "name": "executionOrder",
-        "type": "number",
-        "description": "Priority order for rule evaluation (lower numbers execute first)",
-        "required": true,
-        "defaultValue": 0
-      }
-    ],
-    "relationships": [
-      {
-        "type": "many-to-one",
-        "relatedModel": "Category",
-        "foreignKey": "categoryId",
-        "description": "Links rule to specific ticket category"
-      }
-    ],
-    "indexes": [
-      {
-        "name": "idx_assignment_rule_category",
-        "fields": [
-          "categoryId"
-        ]
-      },
-      {
-        "name": "idx_assignment_rule_active_order",
-        "fields": [
-          "isActive",
-          "executionOrder"
-        ]
-      }
-    ],
-    "constraints": {
-      "uniqueRuleName": "name must be unique",
-      "validStrategy": "assignmentStrategy must be one of: round-robin, load-balanced, skill-based, manual",
-      "validPriority": "priority must be one of: low, medium, high, critical, or null"
-    },
-    "workflowId": "workflow_1737006848000"
-  },
-  {
-    "id": "email-notification",
-    "name": "EmailNotification",
-    "description": "Logs all email notifications triggered by ticket events with delivery status tracking to prevent duplicate notifications",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for the email notification",
+        "description": "Unique identifier for the SLA tracking record",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
@@ -579,98 +1157,249 @@
       {
         "name": "ticketId",
         "type": "string",
-        "description": "Reference to the ticket that triggered the notification",
+        "description": "Reference to the ticket being tracked",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "recipientEmail",
+        "name": "priorityId",
         "type": "string",
-        "description": "Email address of the notification recipient",
+        "description": "Reference to the priority level that determines SLA thresholds",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "eventType",
+        "name": "responseDeadline",
+        "type": "date",
+        "description": "Deadline by which the first response must be provided",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "resolutionDeadline",
+        "type": "date",
+        "description": "Deadline by which the ticket must be resolved",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstResponseAt",
+        "type": "date",
+        "description": "Timestamp when the first response was provided to the ticket",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "responseBreached",
+        "type": "boolean",
+        "description": "Indicates if the response SLA deadline was breached",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "resolutionBreached",
+        "type": "boolean",
+        "description": "Indicates if the resolution SLA deadline was breached",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "escalationLevel",
+        "type": "number",
+        "description": "Current escalation level (0=none, 1=first level, 2=second level, etc.)",
+        "required": true,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "relatedEntity": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each SLA tracking record belongs to one ticket"
+      },
+      {
+        "type": "belongsTo",
+        "relatedEntity": "Priority",
+        "foreignKey": "priorityId",
+        "description": "Each SLA tracking record is associated with a priority level"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_id",
+        "fields": [
+          "ticketId"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_response_deadline",
+        "fields": [
+          "responseDeadline"
+        ]
+      },
+      {
+        "name": "idx_resolution_deadline",
+        "fields": [
+          "resolutionDeadline"
+        ]
+      },
+      {
+        "name": "idx_breached_status",
+        "fields": [
+          "responseBreached",
+          "resolutionBreached"
+        ]
+      }
+    ],
+    "constraints": {
+      "uniqueTicket": "Each ticket can have only one SLA tracking record",
+      "deadlineOrder": "Resolution deadline must be after response deadline",
+      "escalationRange": "Escalation level must be a non-negative integer"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "SLAMonitoringWorkflow",
+        "TicketSubmissionWorkflow"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "SLATracking",
+    "workflowId": "priority-management-workflow"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Tracks email notifications sent to users for ticket updates, assignments, resolutions, and SLA alerts",
+    "fields": [
+      {
+        "name": "id",
         "type": "string",
-        "description": "Type of ticket event that triggered the notification (creation, assignment, status_change, resolution, comment)",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket this notification relates to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientUserId",
+        "type": "string",
+        "description": "Reference to the user receiving the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "notificationType",
+        "type": "string",
+        "description": "Type of notification (e.g., ticket_created, ticket_assigned, ticket_updated, ticket_resolved, sla_warning, sla_breach)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "description": "Email subject line for the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sentAt",
+        "type": "date",
+        "description": "Timestamp when the notification was sent",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "deliveryStatus",
         "type": "string",
-        "description": "Current delivery status of the email (pending, sent, failed, bounced)",
+        "description": "Status of notification delivery (e.g., sent, delivered, failed, bounced)",
         "required": true,
-        "defaultValue": "pending"
-      },
-      {
-        "name": "sentAt",
-        "type": "date",
-        "description": "Timestamp when the email was successfully sent",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "createdAt",
-        "type": "date",
-        "description": "Timestamp when the notification record was created",
-        "required": true,
-        "defaultValue": "CURRENT_TIMESTAMP"
+        "defaultValue": "sent"
       }
     ],
     "relationships": [
       {
         "type": "many-to-one",
-        "relatedModel": "Ticket",
+        "relatedEntity": "Ticket",
         "foreignKey": "ticketId",
-        "description": "Links notification to the associated ticket"
+        "description": "Each notification is associated with one ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedEntity": "User",
+        "foreignKey": "recipientUserId",
+        "description": "Each notification is sent to one user"
       }
     ],
     "indexes": [
       {
-        "name": "idx_ticket_event",
+        "name": "idx_notification_ticket",
         "fields": [
-          "ticketId",
-          "eventType",
-          "recipientEmail"
-        ],
-        "unique": false,
-        "description": "Optimizes duplicate detection and notification history queries"
+          "ticketId"
+        ]
       },
       {
-        "name": "idx_delivery_status",
+        "name": "idx_notification_recipient",
         "fields": [
-          "deliveryStatus",
-          "createdAt"
-        ],
-        "unique": false,
-        "description": "Supports queries for pending or failed notifications"
+          "recipientUserId"
+        ]
+      },
+      {
+        "name": "idx_notification_sent_at",
+        "fields": [
+          "sentAt"
+        ]
+      },
+      {
+        "name": "idx_notification_type",
+        "fields": [
+          "notificationType"
+        ]
       }
     ],
     "constraints": {
-      "eventType": {
-        "type": "enum",
-        "values": [
-          "creation",
-          "assignment",
-          "status_change",
-          "resolution",
-          "comment"
-        ],
-        "description": "Restricts event types to valid ticket events"
+      "notificationType": {
+        "enum": [
+          "ticket_created",
+          "ticket_assigned",
+          "ticket_updated",
+          "ticket_resolved",
+          "ticket_closed",
+          "comment_added",
+          "sla_warning",
+          "sla_breach"
+        ]
       },
       "deliveryStatus": {
-        "type": "enum",
-        "values": [
-          "pending",
+        "enum": [
           "sent",
+          "delivered",
           "failed",
           "bounced"
-        ],
-        "description": "Restricts delivery status to valid states"
+        ]
       }
     },
-    "workflowId": "workflow_1737006848000"
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "NotificationWorkflow",
+        "TicketSubmissionWorkflow",
+        "TicketManagementWorkflow",
+        "TicketResolutionWorkflow"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Notification",
+    "workflowId": "priority-management-workflow"
   }
 ]

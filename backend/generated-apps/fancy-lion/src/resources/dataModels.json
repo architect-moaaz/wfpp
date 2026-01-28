@@ -1,283 +1,192 @@
 [
   {
-    "id": "app_1764335170479_parking-ticket-data",
-    "name": "ParkingTicketData",
-    "config": {},
-    "fields": [
-      {
-        "name": "ticketNumber",
-        "type": "string",
-        "required": true,
-        "description": "Unique identifier for the parking ticket",
-        "defaultValue": null
-      },
-      {
-        "name": "vehicleLicensePlate",
-        "type": "string",
-        "required": true,
-        "description": "License plate number of the vehicle that received the ticket",
-        "defaultValue": null
-      },
-      {
-        "name": "violationType",
-        "type": "string",
-        "required": true,
-        "description": "Type of parking violation (e.g., expired meter, no parking zone, fire hydrant)",
-        "defaultValue": null
-      },
-      {
-        "name": "fineAmount",
-        "type": "number",
-        "required": true,
-        "description": "Monetary fine amount in dollars for the violation",
-        "defaultValue": null
-      },
-      {
-        "name": "issuedDateTime",
-        "type": "date",
-        "required": true,
-        "description": "Date and time when the ticket was issued",
-        "defaultValue": null
-      },
-      {
-        "name": "location",
-        "type": "string",
-        "required": true,
-        "description": "Street address or GPS coordinates where the violation occurred",
-        "defaultValue": null
-      },
-      {
-        "name": "photoEvidenceUrl",
-        "type": "string",
-        "required": false,
-        "description": "URL or file path to photo evidence of the violation",
-        "defaultValue": null
-      },
-      {
-        "name": "ticketStatus",
-        "type": "string",
-        "required": true,
-        "description": "Current status of the ticket (e.g., issued, paid, contested, dismissed)",
-        "defaultValue": "issued"
-      }
-    ],
-    "indexes": [
-      "ticketNumber",
-      "vehicleLicensePlate",
-      "issuedDateTime"
-    ],
-    "metadata": {},
-    "constraints": {
-      "uniqueFields": [
-        "ticketNumber"
-      ],
-      "validStatuses": [
-        "issued",
-        "paid",
-        "contested",
-        "dismissed",
-        "overdue"
-      ]
-    },
-    "description": "Central data model for storing parking ticket records with violation details, vehicle information, and ticket lifecycle status",
-    "relationships": []
-  },
-  {
-    "id": "app_1764335170479_payment-appeal-data",
-    "name": "PaymentAppealData",
-    "config": {},
+    "id": "dm_ticket_1766588906286",
+    "name": "Ticket",
+    "description": "Primary entity for managing customer support tickets including status, priority, category, assignment, and resolution details",
     "fields": [
       {
         "name": "id",
         "type": "string",
+        "description": "Unique identifier for the ticket",
         "required": true,
-        "description": "Unique identifier for the payment or appeal record",
+        "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "ticketId",
+        "name": "ticketNumber",
         "type": "string",
+        "description": "Human-readable ticket number (e.g., TKT-001234)",
         "required": true,
-        "description": "Reference to the associated parking ticket",
         "defaultValue": null
       },
       {
-        "name": "recordType",
+        "name": "title",
         "type": "string",
+        "description": "Brief summary of the support request",
         "required": true,
-        "description": "Type of record: PAYMENT, APPEAL, or NOTIFICATION",
         "defaultValue": null
       },
       {
-        "name": "transactionId",
-        "type": "string",
-        "required": false,
-        "description": "Payment transaction ID or appeal submission ID",
-        "defaultValue": null
-      },
-      {
-        "name": "amount",
-        "type": "number",
-        "required": false,
-        "description": "Payment amount in currency units",
-        "defaultValue": null
-      },
-      {
-        "name": "paymentMethod",
-        "type": "string",
-        "required": false,
-        "description": "Method used for payment (CREDIT_CARD, DEBIT_CARD, CASH, ONLINE)",
+        "name": "description",
+        "type": "text",
+        "description": "Detailed description of the issue or request",
+        "required": true,
         "defaultValue": null
       },
       {
         "name": "status",
         "type": "string",
+        "description": "Current ticket status (open, in_progress, resolved, closed, reopened)",
         "required": true,
-        "description": "Current status: PENDING, APPROVED, REJECTED, COMPLETED, SENT",
-        "defaultValue": "PENDING"
+        "defaultValue": "open"
       },
       {
-        "name": "content",
+        "name": "priority",
         "type": "string",
-        "required": false,
-        "description": "Citizen statement for appeals or notification message content",
-        "defaultValue": null
-      },
-      {
-        "name": "timestamp",
-        "type": "date",
+        "description": "Ticket priority level (low, medium, high, critical)",
         "required": true,
-        "description": "Date and time when the record was created",
+        "defaultValue": "medium"
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "description": "Ticket category or type (technical, billing, general, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "submitterId",
+        "type": "string",
+        "description": "ID of the user who submitted the ticket",
+        "required": true,
         "defaultValue": null
       }
     ],
+    "relationships": [],
     "indexes": [
-      {
-        "fields": [
-          "ticketId"
-        ],
-        "unique": false
-      },
-      {
-        "fields": [
-          "transactionId"
-        ],
-        "unique": true
-      },
-      {
-        "fields": [
-          "recordType",
-          "status"
-        ],
-        "unique": false
-      }
+      "ticketNumber",
+      "status",
+      "priority",
+      "submitterId"
     ],
-    "metadata": {},
     "constraints": {
-      "status": [
-        "PENDING",
-        "APPROVED",
-        "REJECTED",
-        "COMPLETED",
-        "SENT"
+      "uniqueFields": [
+        "ticketNumber"
       ],
-      "recordType": [
-        "PAYMENT",
-        "APPEAL",
-        "NOTIFICATION"
-      ],
-      "paymentMethod": [
-        "CREDIT_CARD",
-        "DEBIT_CARD",
-        "CASH",
-        "ONLINE"
-      ]
-    },
-    "description": "Manages payment transactions, appeal submissions, and notification logs for parking tickets",
-    "relationships": [
-      {
-        "type": "manyToOne",
-        "foreignKey": "ticketId",
-        "description": "Links to the parking ticket this record belongs to",
-        "relatedModel": "ParkingTicketData"
-      },
-      {
-        "type": "manyToOne",
-        "foreignKey": "userId",
-        "description": "Links to the user who made the payment or appeal",
-        "relatedModel": "UserProfileData"
+      "enumValues": {
+        "status": [
+          "open",
+          "in_progress",
+          "resolved",
+          "closed",
+          "reopened"
+        ],
+        "priority": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ]
       }
-    ]
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketManagement",
+        "TicketAssignment",
+        "TicketResolution",
+        "TicketReopening"
+      ],
+      "usedByForms": [
+        "TicketSubmissionForm",
+        "TicketUpdateForm",
+        "TicketAssignmentForm",
+        "TicketResolutionForm",
+        "TicketReopenForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "Ticket",
+    "workflowId": "user-registration-workflow"
   },
   {
-    "id": "app_1764335170479_user-profile-data",
-    "name": "UserProfileData",
-    "config": {},
+    "id": "dm_user_1766588906286",
+    "name": "User",
+    "description": "Stores user information for all system participants including end users, support agents, and managers with authentication and role management",
     "fields": [
       {
-        "name": "userId",
+        "name": "id",
         "type": "string",
+        "description": "Unique identifier for the user",
         "required": true,
-        "description": "Unique identifier for the user profile",
+        "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "fullName",
+        "name": "name",
         "type": "string",
-        "required": true,
         "description": "Full name of the user",
+        "required": true,
         "defaultValue": null
       },
       {
         "name": "email",
         "type": "string",
+        "description": "Email address used for login and communication",
         "required": true,
-        "description": "Email address for authentication and notifications",
+        "defaultValue": null
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "description": "Hashed password for authentication",
+        "required": true,
         "defaultValue": null
       },
       {
         "name": "role",
         "type": "string",
+        "description": "User role (end_user, support_agent, manager)",
         "required": true,
-        "description": "User role type: officer, citizen, or administrator",
-        "defaultValue": null
+        "defaultValue": "end_user"
       },
       {
-        "name": "badgeNumber",
+        "name": "department",
         "type": "string",
+        "description": "Department or team the user belongs to",
         "required": false,
-        "description": "Badge number for parking officers (null for other roles)",
-        "defaultValue": null
-      },
-      {
-        "name": "vehicleRegistrations",
-        "type": "array",
-        "required": false,
-        "description": "List of vehicle license plates registered to citizen (empty for other roles)",
-        "defaultValue": []
-      },
-      {
-        "name": "phoneNumber",
-        "type": "string",
-        "required": false,
-        "description": "Contact phone number for notifications",
         "defaultValue": null
       },
       {
         "name": "isActive",
         "type": "boolean",
+        "description": "Indicates if the user account is active",
         "required": true,
-        "description": "Indicates if the user account is active and can access the system",
         "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the user account was created",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "relatedModel": "Ticket",
+        "foreignKey": "userId",
+        "description": "User can create multiple tickets"
+      },
+      {
+        "type": "oneToMany",
+        "relatedModel": "Ticket",
+        "foreignKey": "assignedTo",
+        "description": "User can be assigned multiple tickets"
       }
     ],
     "indexes": [
-      {
-        "fields": [
-          "userId"
-        ],
-        "unique": true
-      },
       {
         "fields": [
           "email"
@@ -291,32 +200,836 @@
       },
       {
         "fields": [
-          "badgeNumber"
-        ],
-        "sparse": true,
-        "unique": true
+          "isActive"
+        ]
       }
     ],
-    "metadata": {},
     "constraints": {
+      "email": {
+        "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+        "message": "Must be a valid email address"
+      },
       "role": {
         "enum": [
-          "officer",
-          "citizen",
-          "administrator"
-        ]
-      },
-      "email": {
-        "format": "email"
+          "end_user",
+          "support_agent",
+          "manager"
+        ],
+        "message": "Role must be one of: end_user, support_agent, manager"
       }
     },
-    "description": "Store user profiles for parking officers, citizens, and administrators with role-based access control",
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "UserRegistration",
+        "TicketManagement",
+        "TicketAssignment"
+      ],
+      "usedByForms": [
+        "UserRegistrationForm",
+        "TicketSubmissionForm",
+        "TicketAssignmentForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "User",
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "dm_category_1766588906286",
+    "name": "Category",
+    "description": "Lookup table for ticket categories used for routing and organization",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the category",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Display name of the category (e.g., Technical, Billing, General Inquiry)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of what tickets belong in this category",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "defaultTeamId",
+        "type": "string",
+        "description": "ID of the team that handles tickets in this category by default",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "defaultPriority",
+        "type": "string",
+        "description": "Default priority level for tickets in this category (e.g., Low, Medium, High)",
+        "required": false,
+        "defaultValue": "Medium"
+      },
+      {
+        "name": "slaResponseTime",
+        "type": "number",
+        "description": "Expected response time in hours for this category",
+        "required": false,
+        "defaultValue": 24
+      },
+      {
+        "name": "slaResolutionTime",
+        "type": "number",
+        "description": "Expected resolution time in hours for this category",
+        "required": false,
+        "defaultValue": 72
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this category is currently active and available for selection",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
     "relationships": [
       {
         "type": "oneToMany",
-        "description": "Officers issue tickets, citizens receive tickets",
-        "relatedModel": "ParkingTicketData"
+        "relatedEntity": "Ticket",
+        "foreignKey": "categoryId",
+        "description": "A category can be assigned to many tickets"
       }
-    ]
+    ],
+    "indexes": [
+      {
+        "name": "idx_category_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_category_active",
+        "fields": [
+          "isActive"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "uniqueFields": [
+        "name"
+      ],
+      "validation": {
+        "slaResponseTime": "Must be a positive number",
+        "slaResolutionTime": "Must be a positive number greater than slaResponseTime"
+      }
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketManagement",
+        "TicketAssignment"
+      ],
+      "usedByForms": [
+        "TicketSubmissionForm",
+        "CategoryManagementForm"
+      ],
+      "isPrimary": false,
+      "entityType": "lookup"
+    },
+    "_specName": "Category",
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "dm_team_1766588906286",
+    "name": "Team",
+    "description": "Groups support agents into teams for ticket assignment and workload distribution based on categories or departments",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the team",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the team",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Description of team responsibilities and scope",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "managerId",
+        "type": "string",
+        "description": "Reference to User who manages this team",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the team is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the team was created",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "entity": "User",
+        "type": "many-to-one",
+        "foreignKey": "managerId",
+        "description": "Team manager relationship"
+      },
+      {
+        "entity": "User",
+        "type": "one-to-many",
+        "description": "Team members (agents assigned to this team)"
+      },
+      {
+        "entity": "Ticket",
+        "type": "one-to-many",
+        "description": "Tickets assigned to this team"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "isActive"
+        ]
+      },
+      {
+        "fields": [
+          "managerId"
+        ]
+      }
+    ],
+    "constraints": {
+      "uniqueTeamName": "Team name must be unique across all teams",
+      "validManager": "Manager ID must reference an existing User with appropriate role"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketAssignment",
+        "TicketManagement"
+      ],
+      "usedByForms": [
+        "TicketAssignmentForm",
+        "TeamManagementForm"
+      ],
+      "isPrimary": false,
+      "entityType": "lookup"
+    },
+    "_specName": "Team",
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "sla-metric",
+    "name": "SLAMetric",
+    "description": "Tracks SLA compliance and performance metrics for tickets including response and resolution times",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the SLA metric record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the associated ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "responseTimeMinutes",
+        "type": "number",
+        "description": "Actual time taken for first response in minutes",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "resolutionTimeMinutes",
+        "type": "number",
+        "description": "Actual time taken to resolve the ticket in minutes",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "slaResponseTarget",
+        "type": "number",
+        "description": "Target response time in minutes as per SLA",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "slaResolutionTarget",
+        "type": "number",
+        "description": "Target resolution time in minutes as per SLA",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "responseBreached",
+        "type": "boolean",
+        "description": "Indicates if response SLA was breached",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "resolutionBreached",
+        "type": "boolean",
+        "description": "Indicates if resolution SLA was breached",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedEntity": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each SLA metric belongs to one ticket"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_id",
+        "fields": [
+          "ticketId"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_breached_status",
+        "fields": [
+          "responseBreached",
+          "resolutionBreached"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "responseTimeMinutes": "Must be non-negative when set",
+      "resolutionTimeMinutes": "Must be non-negative when set",
+      "slaResponseTarget": "Must be greater than 0",
+      "slaResolutionTarget": "Must be greater than 0"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketManagement",
+        "SLAMonitoring"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "SLAMetric",
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "dm_comment_1766588906286",
+    "name": "Comment",
+    "description": "Store ticket communications and updates including customer-facing comments and internal notes",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the comment",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the associated ticket",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user who created the comment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "content",
+        "type": "text",
+        "description": "The actual comment text or note content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isInternal",
+        "type": "boolean",
+        "description": "Flag indicating if comment is internal note (true) or public customer-facing (false)",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the comment was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp when the comment was last modified",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedEntity": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each comment belongs to one ticket"
+      },
+      {
+        "type": "manyToOne",
+        "relatedEntity": "User",
+        "foreignKey": "userId",
+        "description": "Each comment is created by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_comment_ticket",
+        "fields": [
+          "ticketId",
+          "createdAt"
+        ],
+        "description": "Optimize retrieval of comments for a specific ticket in chronological order"
+      },
+      {
+        "name": "idx_comment_user",
+        "fields": [
+          "userId"
+        ],
+        "description": "Optimize retrieval of comments by user"
+      }
+    ],
+    "constraints": {
+      "foreignKeys": [
+        {
+          "field": "ticketId",
+          "references": "Ticket.id",
+          "onDelete": "CASCADE"
+        },
+        {
+          "field": "userId",
+          "references": "User.id",
+          "onDelete": "SET_NULL"
+        }
+      ]
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketManagement",
+        "TicketResolution"
+      ],
+      "usedByForms": [
+        "CommentForm",
+        "TicketUpdateForm"
+      ],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Comment",
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "dm_attachment_1766588906286",
+    "name": "Attachment",
+    "description": "Stores files and screenshots related to tickets including documents, images, and other supporting materials for ticket resolution",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the attachment",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket this attachment belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user who uploaded the attachment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileName",
+        "type": "string",
+        "description": "Original name of the uploaded file",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileSize",
+        "type": "number",
+        "description": "Size of the file in bytes",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileType",
+        "type": "string",
+        "description": "MIME type of the file (e.g., image/png, application/pdf)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "filePath",
+        "type": "string",
+        "description": "Storage path or URL where the file is stored",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "uploadedAt",
+        "type": "date",
+        "description": "Timestamp when the file was uploaded",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedEntity": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each attachment belongs to one ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedEntity": "User",
+        "foreignKey": "userId",
+        "description": "Each attachment is uploaded by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_attachment_ticket",
+        "fields": [
+          "ticketId"
+        ],
+        "description": "Index for quickly retrieving all attachments for a ticket"
+      },
+      {
+        "name": "idx_attachment_user",
+        "fields": [
+          "userId"
+        ],
+        "description": "Index for retrieving attachments by user"
+      }
+    ],
+    "constraints": {
+      "maxFileSize": "Maximum file size of 10MB per attachment",
+      "allowedFileTypes": "Restrict to common file types (images, PDFs, documents)",
+      "filePathUnique": "File path should be unique to prevent overwrites"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketManagement",
+        "TicketResolution"
+      ],
+      "usedByForms": [
+        "TicketSubmissionForm",
+        "CommentForm",
+        "TicketUpdateForm"
+      ],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Attachment",
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "audit-log",
+    "name": "AuditLog",
+    "description": "Records all changes made to tickets including status updates, assignments, priority changes, and field modifications for compliance and tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the audit log entry",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket that was modified",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user who made the change",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "action",
+        "type": "string",
+        "description": "Type of action performed (e.g., created, updated, assigned, status_changed, priority_changed)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fieldChanged",
+        "type": "string",
+        "description": "Name of the field that was modified (null for creation actions)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "oldValue",
+        "type": "string",
+        "description": "Previous value of the field before the change",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "newValue",
+        "type": "string",
+        "description": "New value of the field after the change",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "timestamp",
+        "type": "date",
+        "description": "Date and time when the change occurred",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedEntity": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Each audit log entry belongs to one ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedEntity": "User",
+        "foreignKey": "userId",
+        "description": "Each audit log entry is created by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_audit_ticket",
+        "fields": [
+          "ticketId",
+          "timestamp"
+        ],
+        "description": "Optimize queries for ticket history retrieval"
+      },
+      {
+        "name": "idx_audit_user",
+        "fields": [
+          "userId",
+          "timestamp"
+        ],
+        "description": "Optimize queries for user activity tracking"
+      },
+      {
+        "name": "idx_audit_timestamp",
+        "fields": [
+          "timestamp"
+        ],
+        "description": "Optimize queries for time-based audit reports"
+      }
+    ],
+    "constraints": {
+      "immutable": true,
+      "retentionPolicy": "Retain for compliance period (e.g., 7 years)",
+      "appendOnly": true
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketManagement",
+        "TicketAssignment",
+        "TicketResolution"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "AuditLog",
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Queue and track email notifications for ticket updates, assignments, and status changes with delivery status and retry attempts",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the ticket this notification relates to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientEmail",
+        "type": "string",
+        "description": "Email address of the notification recipient",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "description": "Email subject line",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "body",
+        "type": "string",
+        "description": "Email body content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Delivery status: pending, sent, failed, retrying",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "retryCount",
+        "type": "number",
+        "description": "Number of delivery retry attempts",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "sentAt",
+        "type": "date",
+        "description": "Timestamp when notification was successfully sent",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when notification was created",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedEntity": "Ticket",
+        "foreignKey": "ticketId",
+        "description": "Notification belongs to a ticket"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_id",
+        "fields": [
+          "ticketId"
+        ]
+      },
+      {
+        "name": "idx_status_created",
+        "fields": [
+          "status",
+          "createdAt"
+        ]
+      },
+      {
+        "name": "idx_recipient_email",
+        "fields": [
+          "recipientEmail"
+        ]
+      }
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "pending",
+          "sent",
+          "failed",
+          "retrying"
+        ]
+      },
+      "retryCount": {
+        "min": 0,
+        "max": 5
+      }
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "NotificationManagement",
+        "TicketManagement",
+        "TicketAssignment"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Notification",
+    "workflowId": "user-registration-workflow"
   }
 ]

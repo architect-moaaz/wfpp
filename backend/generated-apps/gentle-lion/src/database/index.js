@@ -185,14 +185,25 @@ class Database {
       const dataModelsData = await fs.readFile(dataModelsPath, 'utf8');
       const dataModels = JSON.parse(dataModelsData);
 
-      logger.info(`Creating tables for ${dataModels.length} data models`);
+      // Deduplicate models by name (keep first occurrence)
+      const seenModels = new Set();
+      const uniqueModels = dataModels.filter(model => {
+        const name = model.name?.toLowerCase();
+        if (!name || seenModels.has(name)) return false;
+        seenModels.add(name);
+        return true;
+      });
 
-      for (const model of dataModels) {
+      logger.info(`Creating tables for ${uniqueModels.length} unique data models (${dataModels.length} total, ${dataModels.length - uniqueModels.length} duplicates removed)`);
+
+      for (const model of uniqueModels) {
         try {
           await this.createTableFromModel(client, model);
         } catch (modelError) {
-          logger.error(`Failed to create table for model ${model.name}:`, modelError.message);
-          logger.error('Error stack:', modelError.stack);
+          const errMsg = modelError?.message || modelError?.toString() || 'Unknown error';
+          const errStack = modelError?.stack || '';
+          logger.error(`Failed to create table for model ${model.name}: ${errMsg}`);
+          if (errStack) logger.error(`Error stack: ${errStack}`);
           // Continue with other models
         }
       }

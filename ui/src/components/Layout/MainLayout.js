@@ -17,6 +17,14 @@ import VersionHistoryPanel from '../Panels/VersionHistoryPanel';
 import WorkflowsPanel from '../Panels/WorkflowsPanel';
 import ApplicationsList from '../Applications/ApplicationsList';
 import ApplicationsDashboard from '../Applications/ApplicationsDashboard';
+import { Analytics } from '../Analytics';
+import {
+  OrganizationSettings,
+  OrgChartCanvas,
+  RolesTab,
+  GroupsTab,
+  DepartmentsTab
+} from '../Identity';
 import { useWorkflow } from '../../context/WorkflowContext';
 import { useAres } from '../../context/AresContext';
 
@@ -220,6 +228,18 @@ const MainLayout = () => {
             onVersionRestore={handleVersionRestore}
           />
         );
+      case 'org-settings':
+        return <OrganizationSettings initialTab="general" />;
+      case 'org-chart':
+        return <OrgChartCanvas />;
+      case 'org-roles':
+        return <OrganizationSettings initialTab="roles" />;
+      case 'org-groups':
+        return <OrganizationSettings initialTab="groups" />;
+      case 'org-departments':
+        return <OrganizationSettings initialTab="departments" />;
+      case 'analytics':
+        return <Analytics />;
       default:
         return <WorkflowCanvas />;
     }

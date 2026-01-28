@@ -15,6 +15,33 @@ export const COMPONENT_CATEGORIES = {
   ADVANCED: 'Advanced Elements'
 };
 
+// Shadcn component mapping - maps form components to Shadcn UI equivalents
+export const SHADCN_MAPPINGS = {
+  text: { component: 'Input', variants: 1 },
+  number: { component: 'Input', variants: 1 },
+  textarea: { component: 'Textarea', variants: 1 },
+  dropdown: { component: 'Select', variants: 1 },
+  radio: { component: 'RadioGroup', variants: 1 },
+  checkbox: { component: 'Checkbox', variants: 1 },
+  button: { component: 'Button', variants: 6 },
+  date: { component: 'DatePicker', variants: 1 },
+  slider: { component: 'Slider', variants: 1 },
+  'Progress Bar': { component: 'Progress', variants: 1 },
+  tab: { component: 'Tabs', variants: 1 },
+  accord: { component: 'Accordion', variants: 1 },
+  card: { component: 'Card', variants: 1 },
+  section: { component: 'Card', variants: 1 },
+  dataGrid: { component: 'Table', variants: 1 },
+  tableView: { component: 'Table', variants: 1 },
+  calendar: { component: 'Calendar', variants: 1 },
+  label: { component: 'Label', variants: 1 },
+  rating: { component: 'Custom', variants: 1 },
+  file: { component: 'Input', variants: 1 },
+  image: { component: 'Avatar', variants: 3 },
+  search: { component: 'Input', variants: 1 },
+  link: { component: 'Button', variants: 6 }
+};
+
 export const COMPONENT_DEFINITIONS = {
   // CORE ELEMENTS (18 components)
   label: {

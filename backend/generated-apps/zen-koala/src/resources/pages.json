@@ -1,0 +1,1136 @@
+[
+  {
+    "id": "user-list-page-1768494900000-xyz123",
+    "name": "User List Page",
+    "title": "Users",
+    "description": "Display all users with search and filter options",
+    "route": "/users",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "user-registration-form-1768494814460-mxoiy6"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Users",
+              "variant": "h1"
+            },
+            "style": {
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "color": "#1a1a1a",
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Add User",
+              "variant": "primary",
+              "icon": "plus",
+              "action": "navigate",
+              "target": "/user-registration"
+            },
+            "style": {
+              "backgroundColor": "#2563eb",
+              "color": "#ffffff",
+              "padding": "12px 24px",
+              "borderRadius": "8px",
+              "fontWeight": "600",
+              "border": "none",
+              "cursor": "pointer",
+              "transition": "all 0.2s ease",
+              "hoverBackgroundColor": "#1d4ed8",
+              "shadow": "sm"
+            }
+          }
+        ],
+        "style": {
+          "display": "flex",
+          "justifyContent": "space-between",
+          "alignItems": "center",
+          "padding": "24px 32px",
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e5e7eb"
+        }
+      },
+      {
+        "id": "filters",
+        "type": "filter-bar",
+        "components": [
+          {
+            "type": "search",
+            "config": {
+              "placeholder": "Search users by name or email...",
+              "icon": "search",
+              "debounce": 300
+            },
+            "style": {
+              "width": "100%",
+              "maxWidth": "400px",
+              "padding": "10px 16px",
+              "borderRadius": "8px",
+              "border": "1px solid #d1d5db",
+              "fontSize": "14px",
+              "transition": "all 0.2s ease",
+              "focusBorderColor": "#2563eb",
+              "focusShadow": "0 0 0 3px rgba(37, 99, 235, 0.1)"
+            }
+          },
+          {
+            "type": "filter",
+            "config": {
+              "label": "Status",
+              "options": [
+                {
+                  "label": "All",
+                  "value": "all"
+                },
+                {
+                  "label": "Active",
+                  "value": "active"
+                },
+                {
+                  "label": "Inactive",
+                  "value": "inactive"
+                }
+              ],
+              "defaultValue": "all"
+            },
+            "style": {
+              "padding": "10px 16px",
+              "borderRadius": "8px",
+              "border": "1px solid #d1d5db",
+              "fontSize": "14px",
+              "backgroundColor": "#ffffff",
+              "cursor": "pointer"
+            }
+          }
+        ],
+        "style": {
+          "display": "flex",
+          "gap": "16px",
+          "padding": "24px 32px",
+          "backgroundColor": "#f9fafb",
+          "borderBottom": "1px solid #e5e7eb"
+        }
+      },
+      {
+        "id": "main",
+        "type": "card-grid",
+        "layout": "grid-3",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "{{user.name}}",
+              "subtitle": "{{user.email}}",
+              "description": "{{user.role}}",
+              "avatar": "{{user.avatar}}",
+              "footer": "Joined {{user.createdAt | date}}",
+              "actions": [
+                {
+                  "label": "View Profile",
+                  "icon": "eye",
+                  "action": "navigate",
+                  "target": "/user/{{user.id}}"
+                },
+                {
+                  "label": "Edit",
+                  "icon": "edit",
+                  "action": "navigate",
+                  "target": "/user/{{user.id}}/edit"
+                }
+              ]
+            },
+            "dataBinding": "User.query",
+            "style": {
+              "backgroundColor": "#ffffff",
+              "borderRadius": "12px",
+              "padding": "24px",
+              "border": "1px solid #e5e7eb",
+              "shadow": "md",
+              "transition": "all 0.3s ease",
+              "hoverElevation": true,
+              "hoverShadow": "lg",
+              "hoverTransform": "translateY(-4px)",
+              "cursor": "pointer"
+            }
+          }
+        ],
+        "style": {
+          "display": "grid",
+          "gridTemplateColumns": "repeat(auto-fill, minmax(320px, 1fr))",
+          "gap": "24px",
+          "padding": "32px",
+          "backgroundColor": "#f9fafb",
+          "minHeight": "calc(100vh - 300px)"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/user/:id"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "home"
+        },
+        {
+          "label": "Users",
+          "route": "/users",
+          "icon": "users",
+          "active": true
+        },
+        {
+          "label": "Tasks",
+          "route": "/tasks",
+          "icon": "check-square"
+        },
+        {
+          "label": "Create Task",
+          "route": "/create-task",
+          "icon": "plus-circle"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-task-creation"
+  },
+  {
+    "id": "user-detail-page-1768494900000-xyz123",
+    "name": "User Detail Page",
+    "title": "User Profile",
+    "description": "View and edit individual user information",
+    "route": "/user/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "user-profile-form-1768494835903-mu0dpb"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "{{user.name}}",
+              "variant": "h1"
+            },
+            "style": {
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Edit Profile",
+              "variant": "primary",
+              "icon": "edit",
+              "action": "editUser"
+            },
+            "style": {
+              "borderRadius": "md",
+              "shadow": "sm"
+            }
+          }
+        ],
+        "style": {
+          "padding": "24px",
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e5e7eb"
+        }
+      },
+      {
+        "id": "main",
+        "type": "two-column",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "User Information",
+              "fields": [
+                {
+                  "label": "Email",
+                  "value": "{{user.email}}",
+                  "icon": "mail"
+                },
+                {
+                  "label": "Role",
+                  "value": "{{user.role}}",
+                  "icon": "shield"
+                },
+                {
+                  "label": "Status",
+                  "value": "{{user.status}}",
+                  "icon": "activity",
+                  "badge": true
+                },
+                {
+                  "label": "Joined",
+                  "value": "{{user.createdAt}}",
+                  "icon": "calendar"
+                }
+              ]
+            },
+            "dataBinding": "User.findById",
+            "style": {
+              "shadow": "md",
+              "borderRadius": "lg",
+              "padding": "24px",
+              "backgroundColor": "#ffffff"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Assigned Tasks",
+              "emptyMessage": "No tasks assigned",
+              "showCount": true
+            },
+            "dataBinding": "Task.query.filter(assignedTo={{user.id}})",
+            "style": {
+              "shadow": "md",
+              "borderRadius": "lg",
+              "padding": "24px",
+              "backgroundColor": "#ffffff"
+            }
+          }
+        ],
+        "style": {
+          "padding": "32px",
+          "gap": "24px",
+          "backgroundColor": "#f9fafb"
+        }
+      },
+      {
+        "id": "activity",
+        "type": "main",
+        "components": [
+          {
+            "type": "activity-feed",
+            "config": {
+              "title": "Recent Activity",
+              "limit": 10,
+              "showTimestamp": true,
+              "emptyMessage": "No recent activity"
+            },
+            "dataBinding": "user.activities",
+            "style": {
+              "shadow": "md",
+              "borderRadius": "lg",
+              "padding": "24px",
+              "backgroundColor": "#ffffff"
+            }
+          }
+        ],
+        "style": {
+          "padding": "0 32px 32px 32px"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "editUser": {
+          "type": "openForm",
+          "formId": "user-profile-form-1768494835903-mu0dpb"
+        },
+        "back": {
+          "type": "navigate",
+          "target": "/users"
+        }
+      },
+      "menu": [
+        {
+          "label": "User List",
+          "route": "/users",
+          "icon": "users"
+        },
+        {
+          "label": "Task List",
+          "route": "/tasks",
+          "icon": "list"
+        },
+        {
+          "label": "Create Task",
+          "route": "/create-task",
+          "icon": "plus"
+        },
+        {
+          "label": "Register User",
+          "route": "/register",
+          "icon": "user-plus"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-task-creation"
+  },
+  {
+    "id": "task-detail-view-1768494900000-xyz123",
+    "name": "Task Detail View",
+    "title": "Task Details",
+    "description": "Detailed view of individual task with actions and information",
+    "route": "/tasks/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "task-completion-action-1768494796431-5xbst6",
+      "task-assignment-form-1768494858973-gz3183"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "breadcrumb",
+            "config": {
+              "items": [
+                {
+                  "label": "Tasks",
+                  "route": "/tasks"
+                },
+                {
+                  "label": "{{task.title}}",
+                  "active": true
+                }
+              ]
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "{{task.title}}",
+              "variant": "h1"
+            },
+            "style": {
+              "marginBottom": "8px"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "two-column",
+        "layout": "70-30",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Task Information",
+              "sections": [
+                {
+                  "label": "Description",
+                  "value": "{{task.description}}",
+                  "type": "text"
+                },
+                {
+                  "label": "Status",
+                  "value": "{{task.status}}",
+                  "type": "badge",
+                  "badgeColor": "{{task.status === 'completed' ? 'success' : task.status === 'in-progress' ? 'warning' : 'default'}}"
+                },
+                {
+                  "label": "Priority",
+                  "value": "{{task.priority}}",
+                  "type": "badge",
+                  "badgeColor": "{{task.priority === 'high' ? 'error' : task.priority === 'medium' ? 'warning' : 'default'}}"
+                },
+                {
+                  "label": "Due Date",
+                  "value": "{{task.dueDate | date}}",
+                  "type": "text",
+                  "icon": "calendar"
+                },
+                {
+                  "label": "Assigned To",
+                  "value": "{{task.assignedUser.name}}",
+                  "type": "link",
+                  "link": "/users/{{task.assignedUser.id}}",
+                  "icon": "user"
+                },
+                {
+                  "label": "Created By",
+                  "value": "{{task.createdBy.name}}",
+                  "type": "text",
+                  "icon": "user"
+                },
+                {
+                  "label": "Created Date",
+                  "value": "{{task.createdAt | date}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "dataBinding": "task",
+            "style": {
+              "shadow": "md",
+              "borderRadius": "lg",
+              "padding": "24px"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Actions",
+              "actions": [
+                {
+                  "label": "Complete Task",
+                  "variant": "primary",
+                  "icon": "check-circle",
+                  "formRef": "task-completion-action-1768494796431-5xbst6",
+                  "condition": "{{task.status !== 'completed'}}"
+                },
+                {
+                  "label": "Reassign Task",
+                  "variant": "secondary",
+                  "icon": "user-plus",
+                  "formRef": "task-assignment-form-1768494858973-gz3183"
+                },
+                {
+                  "label": "Edit Task",
+                  "variant": "secondary",
+                  "icon": "edit",
+                  "action": "navigate",
+                  "target": "/tasks/{{task.id}}/edit"
+                },
+                {
+                  "label": "Delete Task",
+                  "variant": "danger",
+                  "icon": "trash",
+                  "action": "delete",
+                  "confirm": true,
+                  "confirmMessage": "Are you sure you want to delete this task?"
+                }
+              ]
+            },
+            "style": {
+              "shadow": "md",
+              "borderRadius": "lg",
+              "padding": "24px",
+              "marginBottom": "16px"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Activity",
+              "icon": "clock",
+              "items": [
+                {
+                  "text": "Task created",
+                  "timestamp": "{{task.createdAt}}",
+                  "icon": "plus-circle",
+                  "iconColor": "primary"
+                },
+                {
+                  "text": "Status changed to {{task.status}}",
+                  "timestamp": "{{task.updatedAt}}",
+                  "icon": "refresh",
+                  "iconColor": "warning"
+                }
+              ]
+            },
+            "style": {
+              "shadow": "md",
+              "borderRadius": "lg",
+              "padding": "24px"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "complete": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "delete": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "edit": {
+          "type": "navigate",
+          "target": "/tasks"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks",
+          "icon": "list"
+        },
+        {
+          "label": "Create Task",
+          "route": "/tasks/create",
+          "icon": "plus"
+        },
+        {
+          "label": "Users",
+          "route": "/users",
+          "icon": "users"
+        },
+        {
+          "label": "User Registration",
+          "route": "/register",
+          "icon": "user-plus"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-task-creation"
+  },
+  {
+    "id": "create-task-page-1768494900000-xyz123",
+    "name": "Create Task Page",
+    "title": "Create New Task",
+    "description": "Page for creating new tasks",
+    "route": "/tasks/create",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "create-task-form-1768494778184-a6q3ix"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Create New Task",
+              "variant": "h1"
+            },
+            "style": {
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Fill in the details below to create a new task",
+              "variant": "body1",
+              "color": "textSecondary"
+            }
+          }
+        ],
+        "style": {
+          "padding": "32px",
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e0e0e0"
+        }
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Task Information"
+            },
+            "style": {
+              "shadow": "md",
+              "borderRadius": "lg",
+              "padding": "24px",
+              "backgroundColor": "#ffffff",
+              "maxWidth": "800px",
+              "margin": "0 auto"
+            },
+            "components": [
+              {
+                "type": "form",
+                "formRef": "create-task-form-1768494778184-a6q3ix",
+                "config": {
+                  "submitLabel": "Create Task",
+                  "cancelLabel": "Cancel",
+                  "showLabels": true
+                },
+                "style": {
+                  "gap": "24px"
+                }
+              }
+            ]
+          }
+        ],
+        "style": {
+          "padding": "32px",
+          "backgroundColor": "#f5f5f5",
+          "minHeight": "calc(100vh - 200px)"
+        }
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Back to Tasks",
+              "variant": "text",
+              "icon": "arrow-left"
+            },
+            "style": {
+              "color": "#666666"
+            }
+          }
+        ],
+        "style": {
+          "padding": "16px 32px",
+          "backgroundColor": "#ffffff",
+          "borderTop": "1px solid #e0e0e0",
+          "display": "flex",
+          "justifyContent": "center"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/tasks"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks",
+          "icon": "list"
+        },
+        {
+          "label": "User List",
+          "route": "/users",
+          "icon": "users"
+        },
+        {
+          "label": "Register User",
+          "route": "/users",
+          "icon": "user-plus"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-task-creation"
+  },
+  {
+    "id": "user-registration-page-1768494900000-abc123",
+    "name": "User Registration Page",
+    "title": "Create Your Account",
+    "description": "Page for creating new user accounts",
+    "route": "/register",
+    "type": "auth",
+    "platform": "both",
+    "forms": [
+      "user-registration-form-1768494814460-mxoiy6"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Create Your Account",
+              "variant": "h1",
+              "align": "center"
+            },
+            "style": {
+              "marginBottom": "8px",
+              "color": "#1a202c"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Join us today and get started",
+              "variant": "body1",
+              "align": "center"
+            },
+            "style": {
+              "marginBottom": "32px",
+              "color": "#718096"
+            }
+          }
+        ],
+        "style": {
+          "padding": "32px 16px 16px 16px",
+          "backgroundColor": "#ffffff"
+        }
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Registration Form",
+              "elevation": 2
+            },
+            "style": {
+              "maxWidth": "480px",
+              "margin": "0 auto",
+              "padding": "32px",
+              "borderRadius": "12px",
+              "shadow": "lg",
+              "backgroundColor": "#ffffff"
+            },
+            "components": [
+              {
+                "type": "form",
+                "config": {
+                  "submitLabel": "Create Account",
+                  "submitIcon": "user-plus",
+                  "submitVariant": "primary"
+                },
+                "formRef": "user-registration-form-1768494814460-mxoiy6",
+                "style": {
+                  "width": "100%"
+                }
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Already have an account? <a href='/login'>Sign in</a>",
+              "variant": "body2",
+              "align": "center"
+            },
+            "style": {
+              "marginTop": "24px",
+              "color": "#718096"
+            }
+          }
+        ],
+        "style": {
+          "padding": "24px 16px",
+          "backgroundColor": "#f7fafc",
+          "minHeight": "calc(100vh - 200px)"
+        }
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "By registering, you agree to our Terms of Service and Privacy Policy",
+              "variant": "caption",
+              "align": "center"
+            },
+            "style": {
+              "color": "#a0aec0"
+            }
+          }
+        ],
+        "style": {
+          "padding": "24px 16px",
+          "backgroundColor": "#ffffff",
+          "borderTop": "1px solid #e2e8f0"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "cancel": {
+          "type": "navigate",
+          "target": "/users"
+        }
+      },
+      "menu": [
+        {
+          "label": "Home",
+          "route": "/users",
+          "icon": "home"
+        },
+        {
+          "label": "User List",
+          "route": "/user-list",
+          "icon": "users"
+        },
+        {
+          "label": "Tasks",
+          "route": "/task-list",
+          "icon": "check-square"
+        },
+        {
+          "label": "Sign In",
+          "route": "/login",
+          "icon": "log-in"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": false
+    },
+    "workflowId": "workflow-task-creation"
+  },
+  {
+    "id": "task-list-view-1768494900000-abc123",
+    "name": "Task List View",
+    "title": "Tasks",
+    "description": "Main page displaying all tasks with status",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "create-task-form-1768494778184-a6q3ix",
+      "task-assignment-form-1768494858973-gz3183"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Tasks",
+              "variant": "h1"
+            },
+            "style": {
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "color": "#1a202c"
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Create Task",
+              "variant": "primary",
+              "icon": "plus",
+              "action": "openForm"
+            },
+            "formRef": "create-task-form-1768494778184-a6q3ix",
+            "style": {
+              "backgroundColor": "#3b82f6",
+              "color": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "12px 24px",
+              "fontWeight": "600",
+              "shadow": "md",
+              "hoverElevation": true
+            }
+          }
+        ],
+        "style": {
+          "display": "flex",
+          "justifyContent": "space-between",
+          "alignItems": "center",
+          "padding": "24px 32px",
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e5e7eb"
+        }
+      },
+      {
+        "id": "filters",
+        "type": "filter-bar",
+        "components": [
+          {
+            "type": "filter-group",
+            "config": {
+              "filters": [
+                {
+                  "type": "select",
+                  "label": "Status",
+                  "field": "status",
+                  "options": [
+                    {
+                      "label": "All",
+                      "value": ""
+                    },
+                    {
+                      "label": "Pending",
+                      "value": "pending"
+                    },
+                    {
+                      "label": "In Progress",
+                      "value": "in_progress"
+                    },
+                    {
+                      "label": "Completed",
+                      "value": "completed"
+                    }
+                  ]
+                },
+                {
+                  "type": "select",
+                  "label": "Priority",
+                  "field": "priority",
+                  "options": [
+                    {
+                      "label": "All",
+                      "value": ""
+                    },
+                    {
+                      "label": "High",
+                      "value": "high"
+                    },
+                    {
+                      "label": "Medium",
+                      "value": "medium"
+                    },
+                    {
+                      "label": "Low",
+                      "value": "low"
+                    }
+                  ]
+                }
+              ]
+            },
+            "style": {
+              "padding": "16px 32px",
+              "backgroundColor": "#f9fafb",
+              "borderRadius": "8px"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "card-grid",
+        "layout": "grid-3",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "{{task.title}}",
+              "description": "{{task.description}}",
+              "badge": {
+                "text": "{{task.status}}",
+                "color": "{{task.status === 'completed' ? 'success' : task.status === 'in_progress' ? 'warning' : 'default'}}"
+              },
+              "metadata": [
+                {
+                  "label": "Priority",
+                  "value": "{{task.priority}}",
+                  "icon": "flag"
+                },
+                {
+                  "label": "Due Date",
+                  "value": "{{task.dueDate}}",
+                  "icon": "calendar"
+                },
+                {
+                  "label": "Assigned To",
+                  "value": "{{task.assignedUser.name}}",
+                  "icon": "user"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "icon": "eye",
+                  "action": "view"
+                },
+                {
+                  "label": "Assign",
+                  "icon": "user-plus",
+                  "action": "assign"
+                },
+                {
+                  "label": "Complete",
+                  "icon": "check",
+                  "action": "complete"
+                }
+              ]
+            },
+            "dataBinding": "Task.query",
+            "style": {
+              "backgroundColor": "#ffffff",
+              "borderRadius": "12px",
+              "padding": "20px",
+              "shadow": "md",
+              "hoverElevation": true,
+              "border": "1px solid #e5e7eb",
+              "transition": "all 0.3s ease"
+            }
+          }
+        ],
+        "style": {
+          "padding": "32px",
+          "gap": "24px",
+          "gridTemplateColumns": "repeat(auto-fill, minmax(320px, 1fr))"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/tasks/:id"
+        },
+        "assign": {
+          "type": "openForm",
+          "formId": "task-assignment-form-1768494858973-gz3183"
+        },
+        "complete": {
+          "type": "openForm",
+          "formId": "task-completion-action-1768494796431-5xbst6"
+        },
+        "openForm": {
+          "type": "openForm",
+          "formId": "create-task-form-1768494778184-a6q3ix"
+        }
+      },
+      "menu": [
+        {
+          "label": "Tasks",
+          "route": "/tasks",
+          "icon": "check-square"
+        },
+        {
+          "label": "Create Task",
+          "route": "/create-task",
+          "icon": "plus"
+        },
+        {
+          "label": "Users",
+          "route": "/users",
+          "icon": "users"
+        },
+        {
+          "label": "Register User",
+          "route": "/user-registration",
+          "icon": "user-plus"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-task-creation"
+  }
+]

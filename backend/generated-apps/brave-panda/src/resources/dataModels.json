@@ -1,230 +1,1389 @@
 [
   {
-    "id": "customer",
-    "name": "Customer",
-    "description": "Stores customer information and contact details for order processing and management",
+    "id": "employee",
+    "name": "Employee",
+    "description": "Employee user profile with basic information",
     "fields": [
       {
-        "name": "customerId",
+        "name": "id",
         "type": "string",
-        "description": "Unique identifier for the customer",
+        "description": "Unique identifier for the employee",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "Employee's first name",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "fullName",
+        "name": "lastName",
         "type": "string",
-        "description": "Customer's full name",
+        "description": "Employee's last name",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "email",
         "type": "string",
-        "description": "Customer's email address for communication and account identification",
+        "description": "Employee's work email address",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "phone",
+        "name": "department",
         "type": "string",
-        "description": "Customer's primary contact phone number",
+        "description": "Department where the employee works",
         "required": false,
         "defaultValue": null
       },
       {
-        "name": "shippingAddress",
+        "name": "position",
         "type": "string",
-        "description": "Customer's default shipping address",
+        "description": "Employee's job title or position",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "hireDate",
+        "type": "date",
+        "description": "Date when the employee was hired",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "isActive",
         "type": "boolean",
-        "description": "Indicates if the customer account is active",
+        "description": "Whether the employee is currently active",
         "required": true,
         "defaultValue": true
-      },
-      {
-        "name": "createdAt",
-        "type": "date",
-        "description": "Timestamp when the customer record was created",
-        "required": true,
-        "defaultValue": null
       }
     ],
     "relationships": [],
-    "indexes": [
-      "customerId",
-      "email"
-    ],
-    "constraints": {
-      "unique": [
-        "customerId",
-        "email"
-      ],
-      "email_format": "Must be valid email format"
-    },
-    "workflowId": "workflow_1735002847123"
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "user-registration-workflow"
   },
   {
-    "id": "product",
-    "name": "Product",
-    "description": "Stores product catalog information including SKU, pricing, and inventory levels for order processing and availability checks",
+    "id": "role",
+    "name": "Role",
+    "description": "User roles for access control",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the product",
+        "description": "Unique identifier for the role",
         "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "sku",
-        "type": "string",
-        "description": "Stock Keeping Unit - unique product code for inventory tracking",
-        "required": true,
+        "primaryKey": true,
         "defaultValue": null
       },
       {
         "name": "name",
         "type": "string",
-        "description": "Product name or title",
+        "description": "Role name (e.g., Admin, Manager, User)",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "description",
         "type": "string",
-        "description": "Detailed product description",
+        "description": "Description of the role and its purpose",
         "required": false,
         "defaultValue": null
       },
       {
-        "name": "price",
-        "type": "number",
-        "description": "Current selling price of the product",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "inventoryQuantity",
-        "type": "number",
-        "description": "Current available stock quantity",
-        "required": true,
-        "defaultValue": 0
+        "name": "permissions",
+        "type": "array",
+        "description": "List of permissions assigned to this role",
+        "required": false,
+        "defaultValue": []
       },
       {
         "name": "isActive",
         "type": "boolean",
-        "description": "Indicates if product is currently available for purchase",
+        "description": "Whether the role is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the role was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp when the role was last updated",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "name"
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ]
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "leave-type",
+    "name": "LeaveType",
+    "description": "Types of leave available in the system",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the leave type",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the leave type (e.g., Annual Leave, Sick Leave)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "code",
+        "type": "string",
+        "description": "Short code for the leave type (e.g., AL, SL, ML)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the leave type",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "defaultDaysAllowed",
+        "type": "number",
+        "description": "Default number of days allowed per year for this leave type",
+        "required": false,
+        "defaultValue": 0
+      },
+      {
+        "name": "isPaid",
+        "type": "boolean",
+        "description": "Indicates whether this leave type is paid or unpaid",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates whether this leave type is currently active",
         "required": true,
         "defaultValue": true
       }
     ],
     "relationships": [],
     "indexes": [
-      "sku",
-      "isActive"
+      {
+        "name": "idx_leave_type_code",
+        "fields": [
+          "code"
+        ],
+        "unique": true
+      }
     ],
     "constraints": {
       "unique": [
-        "sku"
+        "code"
       ],
       "check": [
-        "price >= 0",
-        "inventoryQuantity >= 0"
+        "defaultDaysAllowed >= 0"
       ]
     },
-    "workflowId": "workflow_1735002847123"
+    "workflowId": "user-registration-workflow"
   },
   {
-    "id": "order",
-    "name": "Order",
-    "description": "Central data model tracking orders through the complete fulfillment lifecycle from placement to delivery",
+    "id": "approval",
+    "name": "Approval",
+    "description": "Tracks approval status and decision for leave requests",
     "fields": [
       {
-        "name": "orderId",
+        "name": "id",
         "type": "string",
-        "description": "Unique identifier for the order",
+        "description": "Unique identifier for the approval record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaveRequestId",
+        "type": "string",
+        "description": "Reference to the leave request being approved",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "customerId",
+        "name": "approverId",
         "type": "string",
-        "description": "Reference to the customer who placed the order",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "orderDate",
-        "type": "date",
-        "description": "Timestamp when the order was placed",
+        "description": "Reference to the employee who approved or rejected the request",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "status",
         "type": "string",
-        "description": "Current workflow status (pending, confirmed, shipped, delivered, cancelled)",
+        "description": "Approval status (pending, approved, rejected)",
         "required": true,
         "defaultValue": "pending"
       },
       {
-        "name": "totalAmount",
-        "type": "number",
-        "description": "Total order value including all line items and fees",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "paymentStatus",
+        "name": "comments",
         "type": "string",
-        "description": "Payment processing status (pending, paid, failed, refunded)",
-        "required": true,
-        "defaultValue": "pending"
-      },
-      {
-        "name": "shippingAddress",
-        "type": "string",
-        "description": "Delivery address for order fulfillment",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "trackingNumber",
-        "type": "string",
-        "description": "Shipping carrier tracking identifier",
+        "description": "Optional comments or reason for the decision",
         "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "decisionDate",
+        "type": "date",
+        "description": "Date and time when the approval decision was made",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the approval record was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Employee",
+        "foreignKey": "approverId",
+        "description": "Links to the approver employee"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "leaveRequestId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "pending",
+          "approved",
+          "rejected"
+        ]
+      }
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "leave-balance",
+    "name": "LeaveBalance",
+    "description": "Current leave balance for each employee by leave type",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the leave balance record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee who owns this leave balance",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaveTypeId",
+        "type": "string",
+        "description": "Reference to the type of leave (vacation, sick, personal, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "totalAllotted",
+        "type": "number",
+        "description": "Total number of leave days allotted for the period",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "used",
+        "type": "number",
+        "description": "Number of leave days already used",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "available",
+        "type": "number",
+        "description": "Number of leave days currently available (totalAllotted - used)",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "periodStartDate",
+        "type": "date",
+        "description": "Start date of the leave balance period",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "periodEndDate",
+        "type": "date",
+        "description": "End date of the leave balance period",
+        "required": true,
         "defaultValue": null
       }
     ],
     "relationships": [
       {
         "type": "manyToOne",
-        "relatedModel": "Customer",
-        "foreignKey": "customerId",
-        "description": "Each order belongs to one customer"
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId",
+        "description": "Each leave balance belongs to one employee"
       },
       {
-        "type": "oneToMany",
-        "relatedModel": "OrderLineItem",
-        "foreignKey": "orderId",
-        "description": "Each order contains multiple line items linking to products"
+        "type": "manyToOne",
+        "relatedModel": "LeaveType",
+        "foreignKey": "leaveTypeId",
+        "description": "Each leave balance is associated with one leave type"
       }
     ],
     "indexes": [
       {
         "fields": [
-          "orderId"
+          "employeeId",
+          "leaveTypeId"
+        ],
+        "unique": true,
+        "description": "Ensure one balance record per employee per leave type per period"
+      },
+      {
+        "fields": [
+          "employeeId"
+        ],
+        "unique": false,
+        "description": "Quick lookup of all leave balances for an employee"
+      }
+    ],
+    "constraints": {
+      "uniqueEmployeeLeaveType": "An employee can have only one balance record per leave type per period",
+      "availableCalculation": "Available balance must equal totalAllotted minus used"
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Notification records for leave workflow events",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee receiving the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "approvalId",
+        "type": "string",
+        "description": "Reference to the related approval/leave request",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "message",
+        "type": "string",
+        "description": "Notification message content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of notification (e.g., SUBMITTED, APPROVED, REJECTED, REMINDER)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isRead",
+        "type": "boolean",
+        "description": "Indicates whether the notification has been read",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the notification was created",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId",
+        "description": "Notification belongs to an employee"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "Approval",
+        "foreignKey": "approvalId",
+        "description": "Notification relates to an approval record"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "employeeId",
+          "isRead"
+        ],
+        "description": "Index for querying unread notifications by employee"
+      },
+      {
+        "fields": [
+          "createdAt"
+        ],
+        "description": "Index for sorting notifications by date"
+      }
+    ],
+    "constraints": {
+      "type": {
+        "enum": [
+          "SUBMITTED",
+          "APPROVED",
+          "REJECTED",
+          "REMINDER",
+          "CANCELLED"
+        ]
+      }
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "email-template",
+    "name": "EmailTemplate",
+    "description": "Configurable email templates for notifications",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the email template",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Template name for identification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "description": "Email subject line with variable placeholders",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "body",
+        "type": "text",
+        "description": "Email body content with variable placeholders",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "templateType",
+        "type": "string",
+        "description": "Type of notification (leave_request, approval, rejection, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the template is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Last modification timestamp",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_template_type",
+        "fields": [
+          "templateType"
+        ]
+      },
+      {
+        "name": "idx_is_active",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name",
+        "templateType"
+      ]
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "dashboard-widget",
+    "name": "DashboardWidget",
+    "description": "Configuration for dashboard widgets displaying leave metrics",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the widget",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Display title of the widget",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "widgetType",
+        "type": "string",
+        "description": "Type of widget (e.g., chart, table, summary, calendar)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "metricType",
+        "type": "string",
+        "description": "Leave metric to display (e.g., balance, pending_approvals, team_calendar)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "roleId",
+        "type": "string",
+        "description": "Role that can view this widget (null for all roles)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "position",
+        "type": "number",
+        "description": "Display order position on dashboard",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the widget is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "configuration",
+        "type": "json",
+        "description": "Additional widget-specific settings and parameters",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Role",
+        "foreignKey": "roleId",
+        "description": "Widget visibility restricted to specific role"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "roleId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "position"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "isActive"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "widgetType": "Must be one of: chart, table, summary, calendar, metric",
+      "position": "Must be a positive integer"
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "leave-calendar",
+    "name": "LeaveCalendar",
+    "description": "Calendar view data for team leave visualization",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for calendar entry",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to employee on leave",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaveTypeId",
+        "type": "string",
+        "description": "Reference to type of leave",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "startDate",
+        "type": "date",
+        "description": "Leave start date",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "endDate",
+        "type": "date",
+        "description": "Leave end date",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Leave status (pending, approved, rejected)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "isAllDay",
+        "type": "boolean",
+        "description": "Whether leave is for full day or partial",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "LeaveType",
+        "foreignKey": "leaveTypeId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "startDate",
+          "endDate"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "employeeId"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "status": [
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled"
+      ]
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "report",
+    "name": "Report",
+    "description": "Saved report configurations and generated reports",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the report",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the report",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of report (e.g., leave_summary, attendance, balance)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "configuration",
+        "type": "json",
+        "description": "Report parameters and filters configuration",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "createdBy",
+        "type": "string",
+        "description": "Employee ID who created the report",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "generatedAt",
+        "type": "date",
+        "description": "Timestamp when the report was generated",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileUrl",
+        "type": "string",
+        "description": "URL or path to the generated report file",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Report generation status (pending, completed, failed)",
+        "required": true,
+        "defaultValue": "pending"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "createdBy",
+        "description": "Report creator"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "createdBy"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "type"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "generatedAt"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "type": [
+        "leave_summary",
+        "attendance",
+        "balance",
+        "approval_history",
+        "custom"
+      ],
+      "status": [
+        "pending",
+        "completed",
+        "failed"
+      ]
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "leave-type",
+    "name": "LeaveType",
+    "description": "Defines types of leave available in the system",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the leave type",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the leave type (e.g., Annual Leave, Sick Leave)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "code",
+        "type": "string",
+        "description": "Short code for the leave type (e.g., AL, SL, ML)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the leave type",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isPaid",
+        "type": "boolean",
+        "description": "Indicates whether this leave type is paid or unpaid",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "requiresApproval",
+        "type": "boolean",
+        "description": "Indicates whether this leave type requires manager approval",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates whether this leave type is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "defaultAllowance",
+        "type": "number",
+        "description": "Default number of days allocated per year for this leave type",
+        "required": false,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_leave_type_code",
+        "fields": [
+          "code"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_leave_type_active",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "code"
+      ],
+      "check": [
+        "defaultAllowance >= 0"
+      ]
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "system-settings",
+    "name": "SystemSettings",
+    "description": "Global system configuration settings",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for system settings",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "settingKey",
+        "type": "string",
+        "description": "Unique key identifier for the setting (e.g., 'max_leave_days', 'approval_required')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "settingValue",
+        "type": "string",
+        "description": "Value of the setting stored as string (can be parsed based on valueType)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "valueType",
+        "type": "string",
+        "description": "Data type of the setting value (string, number, boolean, json)",
+        "required": true,
+        "defaultValue": "string"
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "description": "Category grouping for settings (e.g., 'leave', 'notification', 'security', 'general')",
+        "required": true,
+        "defaultValue": "general"
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Human-readable description of what this setting controls",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isEditable",
+        "type": "boolean",
+        "description": "Whether this setting can be modified through the UI",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp of last modification",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_setting_key",
+        "fields": [
+          "settingKey"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_category",
+        "fields": [
+          "category"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "uniqueSettingKey": "settingKey must be unique across all system settings",
+      "validValueType": "valueType must be one of: string, number, boolean, json"
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "holiday-calendar",
+    "name": "HolidayCalendar",
+    "description": "Public holidays and non-working days",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the holiday",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the holiday",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "date",
+        "type": "date",
+        "description": "Date of the holiday",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isRecurring",
+        "type": "boolean",
+        "description": "Whether the holiday recurs annually",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "country",
+        "type": "string",
+        "description": "Country or region where the holiday applies",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of holiday (public, company, regional)",
+        "required": true,
+        "defaultValue": "public"
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the holiday is currently active",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_holiday_date",
+        "fields": [
+          "date"
+        ]
+      },
+      {
+        "name": "idx_holiday_country",
+        "fields": [
+          "country"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name",
+        "date",
+        "country"
+      ]
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "manager",
+    "name": "Manager",
+    "description": "Manager profile extending employee with team information",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the manager",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee record",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "departmentName",
+        "type": "string",
+        "description": "Name of the department managed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "teamSize",
+        "type": "number",
+        "description": "Number of direct reports",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "canApproveLeave",
+        "type": "boolean",
+        "description": "Whether manager has leave approval authority",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "maxApprovalDays",
+        "type": "number",
+        "description": "Maximum leave days manager can approve",
+        "required": false,
+        "defaultValue": 30
+      },
+      {
+        "name": "assignedDate",
+        "type": "date",
+        "description": "Date when manager role was assigned",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "model": "Employee",
+        "foreignKey": "employeeId"
+      },
+      {
+        "type": "hasMany",
+        "model": "Approval",
+        "foreignKey": "managerId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "employeeId"
         ],
         "unique": true
       },
       {
         "fields": [
-          "customerId"
+          "departmentName"
+        ]
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "employeeId"
+      ],
+      "check": [
+        "teamSize >= 0",
+        "maxApprovalDays > 0"
+      ]
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "hruser",
+    "name": "HRUser",
+    "description": "HR user profile with administrative privileges for managing leave requests and employee data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for HR user",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to associated employee record",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "accessLevel",
+        "type": "string",
+        "description": "Level of HR access (admin, standard, readonly)",
+        "required": true,
+        "defaultValue": "standard"
+      },
+      {
+        "name": "department",
+        "type": "string",
+        "description": "HR department or division assignment",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the HR user account is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "lastLoginAt",
+        "type": "date",
+        "description": "Timestamp of last login to the system",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "model": "Employee",
+        "foreignKey": "employeeId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "employeeId"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "accessLevel": {
+        "enum": [
+          "admin",
+          "standard",
+          "readonly"
+        ]
+      }
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "leave-request",
+    "name": "LeaveRequest",
+    "description": "Employee leave request records",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the leave request",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee submitting the leave request",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaveTypeId",
+        "type": "string",
+        "description": "Reference to the type of leave being requested",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "startDate",
+        "type": "date",
+        "description": "Start date of the leave period",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "endDate",
+        "type": "date",
+        "description": "End date of the leave period",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the request (pending, approved, rejected, cancelled)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "reason",
+        "type": "string",
+        "description": "Employee's reason for requesting leave",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the request was created",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "LeaveType",
+        "foreignKey": "leaveTypeId"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "Approval",
+        "foreignKey": "leaveRequestId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "employeeId"
         ]
       },
       {
@@ -234,26 +1393,742 @@
       },
       {
         "fields": [
-          "orderDate"
+          "startDate",
+          "endDate"
         ]
       }
     ],
     "constraints": {
       "statusValues": [
         "pending",
-        "confirmed",
-        "shipped",
-        "delivered",
+        "approved",
+        "rejected",
         "cancelled"
       ],
-      "paymentStatusValues": [
-        "pending",
-        "paid",
-        "failed",
-        "refunded"
-      ],
-      "totalAmountMin": 0
+      "dateValidation": "endDate must be greater than or equal to startDate"
     },
-    "workflowId": "workflow_1735002847123"
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "request-status",
+    "name": "RequestStatus",
+    "description": "Status tracking for leave requests",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the request status",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaveRequestId",
+        "type": "string",
+        "description": "Reference to the associated leave request",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status (pending, approved, rejected, cancelled, withdrawn)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "changedBy",
+        "type": "string",
+        "description": "ID of the user who changed the status",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changedAt",
+        "type": "date",
+        "description": "Timestamp when the status was changed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "comments",
+        "type": "string",
+        "description": "Optional comments or notes about the status change",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "previousStatus",
+        "type": "string",
+        "description": "Previous status before this change",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "LeaveRequest",
+        "foreignKey": "leaveRequestId",
+        "description": "Each status entry belongs to one leave request"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "changedBy",
+        "description": "Each status change is made by one employee"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "leaveRequestId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "changedAt"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "statusValues": [
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled",
+        "withdrawn"
+      ]
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "approval-history",
+    "name": "ApprovalHistory",
+    "description": "Maintains audit trail of all approval actions and state changes",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the approval history record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaveRequestId",
+        "type": "string",
+        "description": "Reference to the leave request being approved",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "approvalId",
+        "type": "string",
+        "description": "Reference to the approval record",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "actionBy",
+        "type": "string",
+        "description": "Employee ID of the person who performed the action",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "action",
+        "type": "string",
+        "description": "Type of action performed (approved, rejected, pending, cancelled)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "comments",
+        "type": "string",
+        "description": "Comments or notes provided with the action",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "timestamp",
+        "type": "date",
+        "description": "Date and time when the action was performed",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "LeaveRequest",
+        "foreignKey": "leaveRequestId",
+        "description": "Links to the leave request"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Approval",
+        "foreignKey": "approvalId",
+        "description": "Links to the approval record"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "actionBy",
+        "description": "Links to the employee who performed the action"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "leaveRequestId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "approvalId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "timestamp"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "action": {
+        "enum": [
+          "approved",
+          "rejected",
+          "pending",
+          "cancelled",
+          "submitted"
+        ]
+      }
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "approval-comment",
+    "name": "ApprovalComment",
+    "description": "Stores comments and notes added during approval process",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the approval comment",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "approvalHistoryId",
+        "type": "string",
+        "description": "Reference to the approval history record",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "commentText",
+        "type": "string",
+        "description": "The actual comment or note content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "commentedBy",
+        "type": "string",
+        "description": "Employee ID of the person who added the comment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "commentedAt",
+        "type": "date",
+        "description": "Timestamp when the comment was added",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isInternal",
+        "type": "boolean",
+        "description": "Flag indicating if comment is internal (visible only to approvers/HR)",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "ApprovalHistory",
+        "foreignKey": "approvalHistoryId",
+        "description": "Links comment to specific approval history record"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "commentedBy",
+        "description": "Links comment to the employee who created it"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_approval_history",
+        "fields": [
+          "approvalHistoryId"
+        ]
+      },
+      {
+        "name": "idx_commented_at",
+        "fields": [
+          "commentedAt"
+        ]
+      }
+    ],
+    "constraints": {
+      "commentText": {
+        "maxLength": 2000
+      }
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "leave-accrual",
+    "name": "LeaveAccrual",
+    "description": "Leave accrual records and rules for employees",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the leave accrual record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee this accrual belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaveTypeId",
+        "type": "string",
+        "description": "Reference to the type of leave being accrued",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "accrualDate",
+        "type": "date",
+        "description": "Date when the leave was accrued",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "accrualAmount",
+        "type": "number",
+        "description": "Number of leave days/hours accrued",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "accrualPeriod",
+        "type": "string",
+        "description": "Period for which leave was accrued (e.g., monthly, quarterly, annually)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "notes",
+        "type": "string",
+        "description": "Additional notes or comments about the accrual",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId",
+        "description": "Each accrual belongs to one employee"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "LeaveType",
+        "foreignKey": "leaveTypeId",
+        "description": "Each accrual is for a specific leave type"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "employeeId",
+          "accrualDate"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "leaveTypeId"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "accrualAmount": "Must be greater than 0",
+      "accrualPeriod": "Valid values: daily, weekly, monthly, quarterly, annually"
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "balance-history",
+    "name": "BalanceHistory",
+    "description": "Historical record of all balance changes",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the balance history record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "employeeId",
+        "type": "string",
+        "description": "Reference to the employee whose balance changed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaveTypeId",
+        "type": "string",
+        "description": "Reference to the type of leave affected",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changeAmount",
+        "type": "number",
+        "description": "Amount of balance change (positive for additions, negative for deductions)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "previousBalance",
+        "type": "number",
+        "description": "Balance before the change",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "newBalance",
+        "type": "number",
+        "description": "Balance after the change",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changeReason",
+        "type": "string",
+        "description": "Reason for balance change (e.g., 'Leave Approved', 'Accrual', 'Manual Adjustment')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changeDate",
+        "type": "date",
+        "description": "Date and time when the balance change occurred",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Employee",
+        "foreignKey": "employeeId",
+        "description": "Balance history belongs to an employee"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "LeaveType",
+        "foreignKey": "leaveTypeId",
+        "description": "Balance history is associated with a leave type"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "employeeId",
+          "changeDate"
+        ],
+        "description": "Index for querying balance history by employee and date"
+      },
+      {
+        "fields": [
+          "leaveTypeId"
+        ],
+        "description": "Index for querying balance history by leave type"
+      }
+    ],
+    "constraints": {
+      "uniqueConstraints": [],
+      "checkConstraints": []
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "notification-log",
+    "name": "NotificationLog",
+    "description": "Audit log for all notification activities",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification log entry",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "notificationId",
+        "type": "string",
+        "description": "Reference to the notification that was sent",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientId",
+        "type": "string",
+        "description": "ID of the employee who received the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Delivery status (sent, delivered, failed, read)",
+        "required": true,
+        "defaultValue": "sent"
+      },
+      {
+        "name": "channel",
+        "type": "string",
+        "description": "Notification channel used (email, sms, in-app, push)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sentAt",
+        "type": "date",
+        "description": "Timestamp when the notification was sent",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "errorMessage",
+        "type": "string",
+        "description": "Error details if notification delivery failed",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "leave-policy",
+    "name": "LeavePolicy",
+    "description": "Leave policies and rules configuration for different leave types and employee groups",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the leave policy",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "policyName",
+        "type": "string",
+        "description": "Name of the leave policy",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "leaveTypeId",
+        "type": "string",
+        "description": "Reference to the leave type this policy applies to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "maxDaysAllowed",
+        "type": "number",
+        "description": "Maximum number of days allowed per year",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "carryForwardAllowed",
+        "type": "boolean",
+        "description": "Whether unused leave can be carried forward to next year",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "requiresApproval",
+        "type": "boolean",
+        "description": "Whether leave requests under this policy require approval",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this policy is currently active",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "LeaveType",
+        "foreignKey": "leaveTypeId",
+        "description": "Each policy is associated with a specific leave type"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "leaveTypeId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "isActive"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "maxDaysAllowed": "Must be greater than 0",
+      "policyName": "Must be unique per leave type"
+    },
+    "workflowId": "user-registration-workflow"
+  },
+  {
+    "id": "user-role",
+    "name": "UserRole",
+    "description": "Association between users and roles",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user-role association",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user (Employee, Manager, or HRUser)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "roleId",
+        "type": "string",
+        "description": "Reference to the role assigned to the user",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedDate",
+        "type": "date",
+        "description": "Date when the role was assigned to the user",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "expiryDate",
+        "type": "date",
+        "description": "Optional expiry date for temporary role assignments",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the role assignment is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "assignedBy",
+        "type": "string",
+        "description": "Reference to the user who assigned this role",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Role",
+        "foreignKey": "roleId",
+        "description": "Each user-role association belongs to one role"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId",
+          "roleId"
+        ],
+        "unique": true,
+        "description": "Ensure a user cannot have the same role assigned multiple times"
+      },
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": false,
+        "description": "Index for quick lookup of all roles for a user"
+      },
+      {
+        "fields": [
+          "roleId"
+        ],
+        "unique": false,
+        "description": "Index for quick lookup of all users with a specific role"
+      }
+    ],
+    "constraints": {
+      "uniqueUserRole": "A user can only have one active assignment of the same role at a time",
+      "validDateRange": "Expiry date must be greater than assigned date if specified"
+    },
+    "workflowId": "user-registration-workflow"
   }
 ]

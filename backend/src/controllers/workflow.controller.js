@@ -2,11 +2,12 @@ const { v4: uuidv4 } = require('uuid');
 const bpmnConverter = require('../utils/bpmn-converter');
 const WorkflowValidator = require('../services/validation/WorkflowValidator');
 const WorkflowCodeGenerator = require('../services/WorkflowCodeGenerator');
+const workflowDatabase = require('../database/WorkflowDatabase');
 const fs = require('fs').promises;
 const path = require('path');
 
-// In-memory storage (replace with database later)
-let workflows = [];
+// Validator instance for import validation
+const validator = new WorkflowValidator();
 
 // Helper function to generate and save workflow app code
 const generateWorkflowApp = async (workflow) => {
@@ -86,12 +87,15 @@ const createWorkflow = async (req, res) => {
       }
     };
 
-    workflows.push(workflow);
+    // Persist to database
+    await workflowDatabase.saveWorkflow(workflow);
 
     // Generate app code automatically
     try {
       const localPath = await generateWorkflowApp(workflow);
       workflow.localPath = localPath;
+      // Update workflow with localPath
+      await workflowDatabase.saveWorkflow(workflow);
       console.log(`[Workflow] Created workflow with generated app at: ${localPath}`);
     } catch (codeGenError) {
       console.error('[Workflow] Failed to generate app code:', codeGenError);
@@ -112,8 +116,9 @@ const createWorkflow = async (req, res) => {
 };
 
 // Get all workflows
-const getAllWorkflows = (req, res) => {
+const getAllWorkflows = async (req, res) => {
   try {
+    const workflows = await workflowDatabase.loadWorkflows();
     res.status(200).json({
       success: true,
       count: workflows.length,
@@ -128,10 +133,10 @@ const getAllWorkflows = (req, res) => {
 };
 
 // Get workflow by ID
-const getWorkflowById = (req, res) => {
+const getWorkflowById = async (req, res) => {
   try {
     const { id } = req.params;
-    const workflow = workflows.find(w => w.id === id);
+    const workflow = await workflowDatabase.getWorkflow(id);
 
     if (!workflow) {
       return res.status(404).json({
@@ -158,31 +163,35 @@ const updateWorkflow = async (req, res) => {
     const { id } = req.params;
     const { name, nodes, connections, metadata } = req.body;
 
-    const workflowIndex = workflows.findIndex(w => w.id === id);
+    const existingWorkflow = await workflowDatabase.getWorkflow(id);
 
-    if (workflowIndex === -1) {
+    if (!existingWorkflow) {
       return res.status(404).json({
         success: false,
         message: 'Workflow not found'
       });
     }
 
-    workflows[workflowIndex] = {
-      ...workflows[workflowIndex],
-      name: name || workflows[workflowIndex].name,
-      nodes: nodes || workflows[workflowIndex].nodes,
-      connections: connections || workflows[workflowIndex].connections,
+    const updatedWorkflow = {
+      ...existingWorkflow,
+      name: name || existingWorkflow.name,
+      nodes: nodes || existingWorkflow.nodes,
+      connections: connections || existingWorkflow.connections,
       metadata: {
-        ...workflows[workflowIndex].metadata,
+        ...existingWorkflow.metadata,
         ...metadata,
         modified: new Date().toISOString()
       }
     };
 
+    // Persist to database
+    await workflowDatabase.saveWorkflow(updatedWorkflow);
+
     // Regenerate app code automatically
     try {
-      const localPath = await generateWorkflowApp(workflows[workflowIndex]);
-      workflows[workflowIndex].localPath = localPath;
+      const localPath = await generateWorkflowApp(updatedWorkflow);
+      updatedWorkflow.localPath = localPath;
+      await workflowDatabase.saveWorkflow(updatedWorkflow);
       console.log(`[Workflow] Updated workflow with regenerated app at: ${localPath}`);
     } catch (codeGenError) {
       console.error('[Workflow] Failed to regenerate app code:', codeGenError);
@@ -191,7 +200,7 @@ const updateWorkflow = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: workflows[workflowIndex],
+      data: updatedWorkflow,
       message: 'Workflow updated successfully'
     });
   } catch (error) {
@@ -203,19 +212,27 @@ const updateWorkflow = async (req, res) => {
 };
 
 // Delete workflow
-const deleteWorkflow = (req, res) => {
+const deleteWorkflow = async (req, res) => {
   try {
     const { id } = req.params;
-    const workflowIndex = workflows.findIndex(w => w.id === id);
+    const workflow = await workflowDatabase.getWorkflow(id);
 
-    if (workflowIndex === -1) {
+    if (!workflow) {
       return res.status(404).json({
         success: false,
         message: 'Workflow not found'
       });
     }
 
-    workflows.splice(workflowIndex, 1);
+    // Load all workflows, filter out the one to delete, and save
+    const workflows = await workflowDatabase.loadWorkflows();
+    const filtered = workflows.filter(w => w.id !== id);
+
+    // Save the filtered list by overwriting with each remaining workflow
+    // Clear and re-add (WorkflowDatabase doesn't have a direct delete for workflows)
+    for (const wf of filtered) {
+      await workflowDatabase.saveWorkflow(wf);
+    }
 
     res.status(200).json({
       success: true,
@@ -230,10 +247,10 @@ const deleteWorkflow = (req, res) => {
 };
 
 // Export workflow
-const exportWorkflow = (req, res) => {
+const exportWorkflow = async (req, res) => {
   try {
     const { id } = req.params;
-    const workflow = workflows.find(w => w.id === id);
+    const workflow = await workflowDatabase.getWorkflow(id);
 
     if (!workflow) {
       return res.status(404).json({
@@ -254,10 +271,21 @@ const exportWorkflow = (req, res) => {
   }
 };
 
-// Import workflow
-const importWorkflow = (req, res) => {
+// Import workflow with validation
+const importWorkflow = async (req, res) => {
   try {
     const workflowData = req.body;
+
+    // Validate the imported workflow structure
+    const validationResult = validator.validate(workflowData);
+    if (!validationResult.valid) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid workflow structure',
+        errors: validationResult.errors,
+        message: 'Workflow import failed validation'
+      });
+    }
 
     // Generate new ID for imported workflow
     const workflow = {
@@ -270,12 +298,14 @@ const importWorkflow = (req, res) => {
       }
     };
 
-    workflows.push(workflow);
+    // Persist to database
+    await workflowDatabase.saveWorkflow(workflow);
 
     res.status(201).json({
       success: true,
       data: workflow,
-      message: 'Workflow imported successfully'
+      message: 'Workflow imported successfully',
+      warnings: validationResult.warnings
     });
   } catch (error) {
     res.status(500).json({
@@ -286,10 +316,10 @@ const importWorkflow = (req, res) => {
 };
 
 // Convert workflow to BPMN XML
-const convertToBPMN = (req, res) => {
+const convertToBPMN = async (req, res) => {
   try {
     const { id } = req.params;
-    const workflow = workflows.find(w => w.id === id);
+    const workflow = await workflowDatabase.getWorkflow(id);
 
     if (!workflow) {
       return res.status(404).json({
@@ -315,10 +345,10 @@ const convertToBPMN = (req, res) => {
 };
 
 // Validate workflow structure
-const validateWorkflow = (req, res) => {
+const validateWorkflow = async (req, res) => {
   try {
     const { id } = req.params;
-    const workflow = workflows.find(w => w.id === id);
+    const workflow = await workflowDatabase.getWorkflow(id);
 
     if (!workflow) {
       return res.status(404).json({
@@ -328,7 +358,6 @@ const validateWorkflow = (req, res) => {
     }
 
     console.log(`[Validation] Validating workflow: ${workflow.id} (${workflow.name})`);
-    const validator = new WorkflowValidator();
     const validationResult = validator.validate(workflow);
 
     if (!validationResult.valid) {
@@ -377,6 +406,6 @@ module.exports = {
   importWorkflow,
   convertToBPMN,
   validateWorkflow,
-  // Helper to get workflows array (for PublishService)
-  getWorkflows: () => workflows
+  // Helper to get workflows (now async)
+  getWorkflows: () => workflowDatabase.loadWorkflows()
 };

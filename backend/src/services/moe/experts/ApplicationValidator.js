@@ -707,7 +707,23 @@ class ApplicationValidator {
           if (section.components) {
             section.components.forEach(component => {
               if (component.dataBinding) {
-                const modelName = component.dataBinding.split('.')[0];
+                // Ensure dataBinding is a string before calling split
+                let bindingStr = component.dataBinding;
+                if (typeof bindingStr !== 'string') {
+                  if (typeof bindingStr === 'object' && bindingStr !== null) {
+                    if (bindingStr.model) {
+                      bindingStr = bindingStr.model;
+                    } else if (Array.isArray(bindingStr) && bindingStr.length > 0) {
+                      bindingStr = String(bindingStr[0]);
+                    } else {
+                      return; // Skip invalid dataBinding
+                    }
+                  } else {
+                    return; // Skip non-string, non-object dataBinding
+                  }
+                }
+
+                const modelName = bindingStr.split('.')[0];
                 if (!modelNames.has(modelName)) {
                   result.issues.push({
                     pageId: page.id,
@@ -1083,12 +1099,36 @@ class ApplicationValidator {
 
               // Fix data model references
               if (component.dataBinding) {
-                const modelName = component.dataBinding.split('.')[0];
+                // Ensure dataBinding is a string before calling split
+                let bindingStr = component.dataBinding;
+                if (typeof bindingStr !== 'string') {
+                  // Handle object format like {model: 'Ticket', field: 'status'}
+                  if (typeof bindingStr === 'object' && bindingStr !== null) {
+                    if (bindingStr.model) {
+                      bindingStr = `${bindingStr.model}${bindingStr.field ? '.' + bindingStr.field : ''}`;
+                      component.dataBinding = bindingStr;
+                    } else if (Array.isArray(bindingStr)) {
+                      bindingStr = bindingStr[0] || '';
+                      component.dataBinding = bindingStr;
+                    } else {
+                      // Can't parse, remove it
+                      fixes.details.push(`Removed invalid dataBinding type (${typeof component.dataBinding}) from page "${page.name}"`);
+                      delete component.dataBinding;
+                      fixes.pagesFixed++;
+                      return;
+                    }
+                  } else {
+                    delete component.dataBinding;
+                    return;
+                  }
+                }
+
+                const modelName = bindingStr.split('.')[0];
                 const matchingDm = dataModels.find(dm =>
                   dm.name?.toLowerCase() === modelName?.toLowerCase()
                 );
                 if (!matchingDm) {
-                  fixes.details.push(`Cleared invalid dataBinding "${component.dataBinding}" from page "${page.name}"`);
+                  fixes.details.push(`Cleared invalid dataBinding "${bindingStr}" from page "${page.name}"`);
                   delete component.dataBinding;
                   fixes.pagesFixed++;
                 }

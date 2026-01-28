@@ -1,377 +1,138 @@
 [
   {
-    "id": "parking-ticket",
-    "name": "ParkingTicket",
-    "description": "Stores parking ticket information including violation details, vehicle data, and payment status",
-    "fields": [
-      {
-        "name": "ticketNumber",
-        "type": "string",
-        "description": "Unique ticket identifier",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "licensePlate",
-        "type": "string",
-        "description": "Vehicle license plate number",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "violationType",
-        "type": "string",
-        "description": "Type of parking violation (e.g., expired meter, no parking zone)",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "fineAmount",
-        "type": "number",
-        "description": "Fine amount in dollars",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "issuedAt",
-        "type": "date",
-        "description": "Date and time when ticket was issued",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "location",
-        "type": "string",
-        "description": "Street address or location where violation occurred",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "status",
-        "type": "string",
-        "description": "Current ticket status (issued, paid, appealed, dismissed)",
-        "required": true,
-        "defaultValue": "issued"
-      },
-      {
-        "name": "officerId",
-        "type": "string",
-        "description": "ID of officer who issued the ticket",
-        "required": true,
-        "defaultValue": null
-      }
-    ],
-    "relationships": [],
-    "indexes": [],
-    "constraints": {},
-    "workflowId": "workflow_1735669200"
-  },
-  {
-    "id": "user",
-    "name": "User",
-    "description": "Store user profiles for parking officers, administrators, and violators with authentication and role-based access",
+    "id": "contact",
+    "name": "Contact",
+    "description": "Contact entity with personal and company information",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the user",
+        "description": "Unique identifier for the contact",
         "required": true,
         "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "Contact's first name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "description": "Contact's last name",
+        "required": true,
         "defaultValue": null
       },
       {
         "name": "email",
         "type": "string",
-        "description": "User's email address for authentication and communication",
+        "description": "Contact's email address",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "role",
+        "name": "phone",
         "type": "string",
-        "description": "User role: officer, admin, or violator",
-        "required": true,
-        "defaultValue": "violator"
-      },
-      {
-        "name": "fullName",
-        "type": "string",
-        "description": "User's full legal name",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "phoneNumber",
-        "type": "string",
-        "description": "Contact phone number",
+        "description": "Contact's phone number",
         "required": false,
         "defaultValue": null
       },
       {
-        "name": "badgeNumber",
+        "name": "company",
         "type": "string",
-        "description": "Badge number for parking officers (null for other roles)",
+        "description": "Company name where the contact works",
         "required": false,
         "defaultValue": null
       },
       {
-        "name": "isActive",
-        "type": "boolean",
-        "description": "Whether the user account is active",
-        "required": true,
-        "defaultValue": true
+        "name": "jobTitle",
+        "type": "string",
+        "description": "Contact's job title or position",
+        "required": false,
+        "defaultValue": null
       },
       {
-        "name": "lastLoginAt",
+        "name": "createdAt",
         "type": "date",
-        "description": "Timestamp of the user's last login",
-        "required": false,
-        "defaultValue": null
+        "description": "Timestamp when the contact was created",
+        "required": true,
+        "defaultValue": "now()"
       }
     ],
-    "relationships": [
-      {
-        "type": "oneToMany",
-        "relatedModel": "ParkingTicket",
-        "foreignKey": "issuedByUserId",
-        "description": "Tickets issued by this officer"
-      }
-    ],
-    "indexes": [
-      {
-        "fields": [
-          "email"
-        ],
-        "unique": true
-      },
-      {
-        "fields": [
-          "role"
-        ]
-      },
-      {
-        "fields": [
-          "badgeNumber"
-        ],
-        "unique": true
-      }
-    ],
-    "constraints": {
-      "email": "Must be valid email format",
-      "role": "Must be one of: officer, admin, violator",
-      "badgeNumber": "Required for officers, null for other roles"
-    },
-    "workflowId": "workflow_1735669200"
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "wf-add-new-contact"
   },
   {
-    "id": "payment",
-    "name": "Payment",
-    "description": "Records payment transactions for parking tickets including amount, method, status, and confirmation details",
+    "id": "contact",
+    "name": "Contact",
+    "description": "Contact entity with personal and company information",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the payment transaction",
+        "description": "Unique identifier for the contact",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "ticketId",
+        "name": "firstName",
         "type": "string",
-        "description": "Reference to the associated parking ticket",
+        "description": "Contact's first name",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "amount",
-        "type": "number",
-        "description": "Payment amount in currency units",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "paymentMethod",
+        "name": "lastName",
         "type": "string",
-        "description": "Method of payment (credit_card, debit_card, cash, check, online)",
+        "description": "Contact's last name",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "transactionDate",
+        "name": "email",
+        "type": "string",
+        "description": "Contact's email address",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "description": "Contact's phone number",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "company",
+        "type": "string",
+        "description": "Company name where contact works",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "position",
+        "type": "string",
+        "description": "Job title or position at company",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
         "type": "date",
-        "description": "Date and time when the payment was processed",
+        "description": "Timestamp when contact was created",
         "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "status",
-        "type": "string",
-        "description": "Payment status (completed, pending, failed, refunded)",
-        "required": true,
-        "defaultValue": "pending"
-      },
-      {
-        "name": "confirmationNumber",
-        "type": "string",
-        "description": "Unique confirmation number for the payment transaction",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "userId",
-        "type": "string",
-        "description": "Reference to the user who made the payment",
-        "required": false,
-        "defaultValue": null
+        "defaultValue": "now()"
       }
     ],
-    "relationships": [
-      {
-        "type": "many-to-one",
-        "relatedModel": "ParkingTicket",
-        "foreignKey": "ticketId",
-        "description": "Each payment is associated with one parking ticket"
-      },
-      {
-        "type": "many-to-one",
-        "relatedModel": "User",
-        "foreignKey": "userId",
-        "description": "Each payment is made by one user"
-      }
-    ],
-    "indexes": [
-      {
-        "fields": [
-          "ticketId"
-        ],
-        "unique": false
-      },
-      {
-        "fields": [
-          "confirmationNumber"
-        ],
-        "unique": true
-      },
-      {
-        "fields": [
-          "transactionDate"
-        ],
-        "unique": false
-      }
-    ],
-    "constraints": {
-      "amount": "Must be greater than 0",
-      "paymentMethod": "Must be one of: credit_card, debit_card, cash, check, online",
-      "status": "Must be one of: completed, pending, failed, refunded"
-    },
-    "workflowId": "workflow_1735669200"
-  },
-  {
-    "id": "appeal",
-    "name": "Appeal",
-    "description": "Manages ticket appeals and dispute resolution process for parking tickets",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for the appeal",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "ticketId",
-        "type": "string",
-        "description": "Reference to the parking ticket being appealed",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "reason",
-        "type": "string",
-        "description": "Detailed explanation for the appeal submission",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "submissionDate",
-        "type": "date",
-        "description": "Date and time when the appeal was submitted",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "status",
-        "type": "string",
-        "description": "Current review status (pending, under_review, approved, denied)",
-        "required": true,
-        "defaultValue": "pending"
-      },
-      {
-        "name": "decisionOutcome",
-        "type": "string",
-        "description": "Final decision on the appeal (approved, denied, partially_approved)",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "reviewerNotes",
-        "type": "string",
-        "description": "Notes and comments from the reviewer regarding the decision",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "decisionDate",
-        "type": "date",
-        "description": "Date when the final decision was made",
-        "required": false,
-        "defaultValue": null
-      }
-    ],
-    "relationships": [
-      {
-        "type": "many-to-one",
-        "relatedModel": "ParkingTicket",
-        "foreignKey": "ticketId",
-        "description": "Each appeal is associated with one parking ticket"
-      }
-    ],
-    "indexes": [
-      {
-        "fields": [
-          "ticketId"
-        ],
-        "unique": false
-      },
-      {
-        "fields": [
-          "status"
-        ],
-        "unique": false
-      },
-      {
-        "fields": [
-          "submissionDate"
-        ],
-        "unique": false
-      }
-    ],
-    "constraints": {
-      "status": [
-        "pending",
-        "under_review",
-        "approved",
-        "denied"
-      ],
-      "decisionOutcome": [
-        "approved",
-        "denied",
-        "partially_approved"
-      ]
-    },
-    "workflowId": "workflow_1735669200"
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "wf-add-new-contact"
   }
 ]

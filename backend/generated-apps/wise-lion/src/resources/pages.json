@@ -1,1 +1,3321 @@
-[]
+[
+  {
+    "id": "vehiclelookuppage-1765340700000-vl8k2p",
+    "name": "VehicleLookupPage",
+    "title": "Vehicle Lookup",
+    "description": "Search page allowing lookup of tickets by license plate, vehicle make, model, or color with results list and quick access to ticket details",
+    "route": "/vehicle-lookup",
+    "type": "list",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Vehicle Lookup",
+              "variant": "h1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "2rem",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "0.5rem"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Search for parking tickets by vehicle information",
+              "variant": "body1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "1rem",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "1.5rem"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Search Criteria",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "1.5rem",
+                "marginBottom": "1.5rem",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "components": [
+              {
+                "type": "input",
+                "config": {
+                  "label": "License Plate",
+                  "placeholder": "Enter license plate number",
+                  "name": "licensePlate",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "padding": "0.5rem",
+                    "borderRadius": "4px",
+                    "border": "1px solid #d1d5db",
+                    "marginBottom": "1rem"
+                  }
+                }
+              },
+              {
+                "type": "input",
+                "config": {
+                  "label": "Vehicle Make",
+                  "placeholder": "e.g., Toyota, Honda, Ford",
+                  "name": "vehicleMake",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "padding": "0.5rem",
+                    "borderRadius": "4px",
+                    "border": "1px solid #d1d5db",
+                    "marginBottom": "1rem"
+                  }
+                }
+              },
+              {
+                "type": "input",
+                "config": {
+                  "label": "Vehicle Model",
+                  "placeholder": "e.g., Camry, Civic, F-150",
+                  "name": "vehicleModel",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "padding": "0.5rem",
+                    "borderRadius": "4px",
+                    "border": "1px solid #d1d5db",
+                    "marginBottom": "1rem"
+                  }
+                }
+              },
+              {
+                "type": "input",
+                "config": {
+                  "label": "Vehicle Color",
+                  "placeholder": "e.g., Red, Blue, Silver",
+                  "name": "vehicleColor",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "padding": "0.5rem",
+                    "borderRadius": "4px",
+                    "border": "1px solid #d1d5db",
+                    "marginBottom": "1rem"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Search Tickets",
+                  "variant": "primary",
+                  "action": "search",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "0.875rem",
+                    "fontWeight": "600",
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "0.625rem 1.25rem",
+                    "borderRadius": "6px",
+                    "border": "none",
+                    "cursor": "pointer",
+                    "transition": "background-color 0.2s"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Search Results",
+              "columns": [
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket #",
+                  "sortable": true
+                },
+                {
+                  "key": "licensePlate",
+                  "label": "License Plate",
+                  "sortable": true
+                },
+                {
+                  "key": "vehicleMake",
+                  "label": "Make",
+                  "sortable": true
+                },
+                {
+                  "key": "vehicleModel",
+                  "label": "Model",
+                  "sortable": true
+                },
+                {
+                  "key": "vehicleColor",
+                  "label": "Color",
+                  "sortable": true
+                },
+                {
+                  "key": "issueDate",
+                  "label": "Issue Date",
+                  "sortable": true,
+                  "format": "date"
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "type": "action"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "type": "view",
+                  "icon": "eye"
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "searchable": false,
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "0.875rem",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "overflow": "hidden",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "ParkingTicket.query"
+          }
+        ]
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Need help? Contact support for assistance with vehicle lookups.",
+              "variant": "body2",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "0.875rem",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginTop": "2rem"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "search": {
+          "type": "query",
+          "target": "ParkingTicket"
+        }
+      },
+      "menu": [
+        {
+          "label": "Violator Portal",
+          "route": "/violator-portal"
+        },
+        {
+          "label": "Ticket List",
+          "route": "/ticket-list"
+        },
+        {
+          "label": "Payment Submission",
+          "route": "/payment-submission"
+        },
+        {
+          "label": "Appeal Submission",
+          "route": "/appeal-submission"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "list",
+      "displaysForms": [],
+      "displaysDataModels": [
+        "ParkingTicket"
+      ],
+      "navigationFlow": {
+        "previousPage": "ViolatorPortal",
+        "nextPage": "TicketDetailsPage"
+      }
+    },
+    "_specName": "VehicleLookupPage",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "appealconfirmationpage-1765340700000-xk9p2m",
+    "name": "AppealConfirmationPage",
+    "title": "Appeal Submitted Successfully",
+    "description": "Confirmation page showing appeal submission success, reference number, expected review timeline, and next steps information",
+    "route": "/appeal-confirmation",
+    "type": "confirmation",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Appeal Submitted Successfully",
+              "variant": "h1",
+              "align": "center",
+              "color": "#2C3E50",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "✓",
+              "variant": "display",
+              "align": "center",
+              "color": "#27AE60",
+              "fontSize": "64px",
+              "fontWeight": "700",
+              "marginBottom": "16px"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Appeal Reference Information",
+              "backgroundColor": "#FFFFFF",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "marginBottom": "24px"
+            },
+            "dataBinding": "Appeal.single",
+            "content": {
+              "fields": [
+                {
+                  "label": "Appeal Reference Number",
+                  "value": "{{Appeal.appealId}}",
+                  "fontWeight": "700",
+                  "fontSize": "18px",
+                  "color": "#2C3E50"
+                },
+                {
+                  "label": "Ticket Number",
+                  "value": "{{ParkingTicket.ticketNumber}}",
+                  "fontSize": "16px",
+                  "color": "#34495E"
+                },
+                {
+                  "label": "Submission Date",
+                  "value": "{{Appeal.submissionDate}}",
+                  "fontSize": "16px",
+                  "color": "#34495E"
+                },
+                {
+                  "label": "Appeal Status",
+                  "value": "{{Appeal.status}}",
+                  "badge": true,
+                  "badgeColor": "#3498DB",
+                  "fontSize": "16px"
+                }
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "What Happens Next",
+              "backgroundColor": "#EBF5FB",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "marginBottom": "24px",
+              "borderLeft": "4px solid #3498DB"
+            },
+            "content": {
+              "items": [
+                {
+                  "icon": "📋",
+                  "title": "Review Process",
+                  "description": "Your appeal will be reviewed by our administrative team within 5-7 business days.",
+                  "fontSize": "16px",
+                  "color": "#2C3E50",
+                  "marginBottom": "16px"
+                },
+                {
+                  "icon": "📧",
+                  "title": "Email Notification",
+                  "description": "You will receive an email notification once a decision has been made on your appeal.",
+                  "fontSize": "16px",
+                  "color": "#2C3E50",
+                  "marginBottom": "16px"
+                },
+                {
+                  "icon": "🔍",
+                  "title": "Track Your Appeal",
+                  "description": "You can check the status of your appeal anytime through the Violator Portal using your reference number.",
+                  "fontSize": "16px",
+                  "color": "#2C3E50",
+                  "marginBottom": "16px"
+                },
+                {
+                  "icon": "⏰",
+                  "title": "Payment Hold",
+                  "description": "Your payment deadline is automatically extended while your appeal is under review.",
+                  "fontSize": "16px",
+                  "color": "#2C3E50"
+                }
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Important Information",
+              "backgroundColor": "#FEF5E7",
+              "borderRadius": "8px",
+              "padding": "20px",
+              "marginBottom": "24px",
+              "borderLeft": "4px solid #F39C12"
+            },
+            "content": {
+              "text": "Please save your appeal reference number for future correspondence. If your appeal is denied, you will need to pay the full ticket amount within 10 days of the decision date to avoid additional penalties.",
+              "fontSize": "15px",
+              "color": "#7D6608",
+              "lineHeight": "1.6"
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Return to Violator Portal",
+              "variant": "primary",
+              "size": "large",
+              "fullWidth": true,
+              "backgroundColor": "#3498DB",
+              "color": "#FFFFFF",
+              "fontSize": "16px",
+              "fontWeight": "600",
+              "padding": "14px 28px",
+              "borderRadius": "6px",
+              "border": "none",
+              "hoverBackgroundColor": "#2980B9",
+              "action": "navigate",
+              "target": "/violator-portal"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "return": {
+          "type": "navigate",
+          "target": "/violator-portal"
+        }
+      },
+      "menu": [
+        {
+          "label": "Violator Portal",
+          "route": "/violator-portal"
+        },
+        {
+          "label": "Ticket Details",
+          "route": "/ticket-details"
+        },
+        {
+          "label": "Payment Submission",
+          "route": "/payment-submission"
+        },
+        {
+          "label": "Appeal Submission",
+          "route": "/appeal-submission"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": "AppealHandlingWorkflow",
+      "pageType": "detail",
+      "displaysForms": [],
+      "displaysDataModels": [
+        "Appeal",
+        "ParkingTicket"
+      ],
+      "navigationFlow": {
+        "previousPage": "AppealSubmissionPage",
+        "nextPage": "ViolatorPortal"
+      }
+    },
+    "_specName": "AppealConfirmationPage",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "officerdashboard-1765340700000-abc123",
+    "name": "OfficerDashboard",
+    "title": "Officer Dashboard",
+    "description": "Dashboard page for enforcement officers showing issued tickets, statistics, quick ticket creation access, and recent activity with filtering and search capabilities",
+    "route": "/officer-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "ticketcreationform-1765340637463-gf9vlk"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Officer Dashboard",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Officer.currentUser.name}} - Badge #{{Officer.currentUser.badgeNumber}}",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Ticket Statistics",
+              "layout": "grid",
+              "columns": 4,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "ParkingTicket.aggregateByOfficer",
+            "content": [
+              {
+                "type": "metric",
+                "label": "Today's Tickets",
+                "value": "{{ParkingTicket.countToday}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#2563eb"
+                }
+              },
+              {
+                "type": "metric",
+                "label": "This Week",
+                "value": "{{ParkingTicket.countWeek}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#059669"
+                }
+              },
+              {
+                "type": "metric",
+                "label": "Pending Appeals",
+                "value": "{{Appeal.countPending}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#d97706"
+                }
+              },
+              {
+                "type": "metric",
+                "label": "Total Issued",
+                "value": "{{ParkingTicket.countTotal}}",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "32px",
+                  "fontWeight": "700",
+                  "color": "#1a1a1a"
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "+ Issue New Ticket",
+              "variant": "primary",
+              "size": "large",
+              "action": "openForm",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 32px",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "24px",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease",
+                "hover": {
+                  "backgroundColor": "#1d4ed8",
+                  "transform": "translateY(-1px)",
+                  "boxShadow": "0 4px 12px rgba(37, 99, 235, 0.3)"
+                }
+              }
+            },
+            "formRef": "ticketcreationform-1765340637463-gf9vlk"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Recent Tickets",
+              "searchable": true,
+              "filterable": true,
+              "sortable": true,
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "border": "1px solid #e5e5e5"
+              },
+              "headerStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "backgroundColor": "#f9fafb",
+                "padding": "12px 16px",
+                "borderBottom": "2px solid #e5e5e5"
+              },
+              "rowStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#333333",
+                "padding": "12px 16px",
+                "borderBottom": "1px solid #f3f4f6",
+                "hover": {
+                  "backgroundColor": "#f9fafb"
+                }
+              },
+              "columns": [
+                {
+                  "field": "ticketNumber",
+                  "header": "Ticket #",
+                  "sortable": true,
+                  "width": "120px"
+                },
+                {
+                  "field": "licensePlate",
+                  "header": "License Plate",
+                  "sortable": true,
+                  "width": "130px"
+                },
+                {
+                  "field": "violationType.name",
+                  "header": "Violation",
+                  "sortable": true,
+                  "width": "180px"
+                },
+                {
+                  "field": "location",
+                  "header": "Location",
+                  "sortable": true,
+                  "width": "200px"
+                },
+                {
+                  "field": "issueDate",
+                  "header": "Date/Time",
+                  "sortable": true,
+                  "format": "datetime",
+                  "width": "150px"
+                },
+                {
+                  "field": "status",
+                  "header": "Status",
+                  "sortable": true,
+                  "width": "120px",
+                  "badge": true,
+                  "badgeColors": {
+                    "Issued": "#059669",
+                    "Paid": "#2563eb",
+                    "Appealed": "#d97706",
+                    "Overdue": "#dc2626"
+                  }
+                },
+                {
+                  "field": "amount",
+                  "header": "Amount",
+                  "sortable": true,
+                  "format": "currency",
+                  "width": "100px"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View Details",
+                  "icon": "eye",
+                  "action": "view",
+                  "style": {
+                    "color": "#2563eb",
+                    "fontWeight": "600",
+                    "cursor": "pointer",
+                    "hover": {
+                      "textDecoration": "underline"
+                    }
+                  }
+                }
+              ],
+              "filters": [
+                {
+                  "field": "status",
+                  "type": "select",
+                  "options": [
+                    "All",
+                    "Issued",
+                    "Paid",
+                    "Appealed",
+                    "Overdue"
+                  ]
+                },
+                {
+                  "field": "issueDate",
+                  "type": "dateRange",
+                  "label": "Date Range"
+                },
+                {
+                  "field": "violationType",
+                  "type": "select",
+                  "label": "Violation Type"
+                }
+              ]
+            },
+            "dataBinding": "ParkingTicket.query",
+            "queryParams": {
+              "filter": {
+                "officerId": "{{Officer.currentUser.id}}"
+              },
+              "sort": {
+                "issueDate": "desc"
+              },
+              "limit": 10
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "layout": "horizontal",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "marginTop": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "content": [
+              {
+                "type": "button",
+                "text": "Vehicle Lookup",
+                "icon": "search",
+                "action": "navigate",
+                "target": "/vehicle-lookup",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "backgroundColor": "#f3f4f6",
+                  "color": "#1a1a1a",
+                  "padding": "10px 20px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #e5e5e5",
+                  "marginRight": "12px",
+                  "cursor": "pointer",
+                  "hover": {
+                    "backgroundColor": "#e5e7eb"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "text": "View All Tickets",
+                "icon": "list",
+                "action": "navigate",
+                "target": "/ticket-list",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "backgroundColor": "#f3f4f6",
+                  "color": "#1a1a1a",
+                  "padding": "10px 20px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #e5e5e5",
+                  "marginRight": "12px",
+                  "cursor": "pointer",
+                  "hover": {
+                    "backgroundColor": "#e5e7eb"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "text": "Reports",
+                "icon": "chart",
+                "action": "navigate",
+                "target": "/reports",
+                "style": {
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "backgroundColor": "#f3f4f6",
+                  "color": "#1a1a1a",
+                  "padding": "10px 20px",
+                  "borderRadius": "8px",
+                  "border": "1px solid #e5e5e5",
+                  "cursor": "pointer",
+                  "hover": {
+                    "backgroundColor": "#e5e7eb"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "openForm": {
+          "type": "modal",
+          "formRef": "ticketcreationform-1765340637463-gf9vlk"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/officer-dashboard",
+          "icon": "dashboard",
+          "active": true
+        },
+        {
+          "label": "Issue Ticket",
+          "route": "/officer-dashboard",
+          "icon": "plus",
+          "action": "openForm"
+        },
+        {
+          "label": "Vehicle Lookup",
+          "route": "/vehicle-lookup",
+          "icon": "search"
+        },
+        {
+          "label": "All Tickets",
+          "route": "/ticket-list",
+          "icon": "list"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "chart"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": "TicketIssuanceWorkflow",
+      "pageType": "dashboard",
+      "displaysForms": [
+        "TicketCreationForm"
+      ],
+      "displaysDataModels": [
+        "ParkingTicket",
+        "Officer"
+      ],
+      "navigationFlow": {
+        "previousPage": null,
+        "nextPage": "TicketDetailsPage"
+      }
+    },
+    "_specName": "OfficerDashboard",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "violatorportal-1765340700000-abc123",
+    "name": "ViolatorPortal",
+    "title": "Parking Ticket Portal",
+    "description": "Public-facing portal page where violators can search tickets by license plate, view ticket details, access payment submission, and file appeals",
+    "route": "/violator-portal",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "ticketdetailsviewform-1765340564509-oyu3k2",
+      "paymentsubmissionform-1765340592649-jwdd7d",
+      "appealsubmissionform-1765340615138-n5cd8l"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Parking Ticket Portal",
+              "variant": "h1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Search your ticket by license plate to view details, make payments, or file an appeal",
+              "variant": "body1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Search Your Ticket",
+              "description": "Enter your license plate number to find your parking tickets",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 2px 4px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "input",
+                "config": {
+                  "label": "License Plate Number",
+                  "placeholder": "Enter license plate (e.g., ABC1234)",
+                  "required": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "padding": "12px",
+                    "borderRadius": "4px",
+                    "border": "1px solid #e0e0e0",
+                    "marginBottom": "16px"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Search Tickets",
+                  "variant": "primary",
+                  "action": "search",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "12px 24px",
+                    "borderRadius": "4px",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Your Tickets",
+              "description": "View and manage your parking tickets",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 2px 4px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "ParkingTicket.query",
+            "components": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "field": "ticketNumber",
+                      "header": "Ticket #",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "field": "issueDate",
+                      "header": "Issue Date",
+                      "sortable": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#666666"
+                      }
+                    },
+                    {
+                      "field": "violationType",
+                      "header": "Violation",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#666666"
+                      }
+                    },
+                    {
+                      "field": "amount",
+                      "header": "Amount",
+                      "format": "currency",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "field": "status",
+                      "header": "Status",
+                      "badge": true,
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "12px",
+                        "fontWeight": "600",
+                        "padding": "4px 12px",
+                        "borderRadius": "12px"
+                      }
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "View Details",
+                      "action": "view",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "color": "#2563eb",
+                        "textDecoration": "none"
+                      }
+                    }
+                  ],
+                  "emptyMessage": "No tickets found. Enter your license plate to search.",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "width": "100%",
+                    "borderCollapse": "collapse"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "style": {
+                "backgroundColor": "#f9fafb",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.05)"
+              }
+            },
+            "components": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 3,
+                  "gap": "16px",
+                  "responsive": true
+                },
+                "components": [
+                  {
+                    "type": "button",
+                    "config": {
+                      "label": "Pay Ticket",
+                      "variant": "secondary",
+                      "icon": "payment",
+                      "action": "navigate",
+                      "target": "/payment-submission",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "backgroundColor": "#ffffff",
+                        "color": "#2563eb",
+                        "padding": "12px 20px",
+                        "borderRadius": "4px",
+                        "border": "1px solid #2563eb",
+                        "cursor": "pointer"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "label": "File Appeal",
+                      "variant": "secondary",
+                      "icon": "appeal",
+                      "action": "navigate",
+                      "target": "/appeal-submission",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "backgroundColor": "#ffffff",
+                        "color": "#2563eb",
+                        "padding": "12px 20px",
+                        "borderRadius": "4px",
+                        "border": "1px solid #2563eb",
+                        "cursor": "pointer"
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "config": {
+                      "label": "View History",
+                      "variant": "secondary",
+                      "icon": "history",
+                      "action": "navigate",
+                      "target": "/ticket-list",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "600",
+                        "backgroundColor": "#ffffff",
+                        "color": "#2563eb",
+                        "padding": "12px 20px",
+                        "borderRadius": "4px",
+                        "border": "1px solid #2563eb",
+                        "cursor": "pointer"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "search": {
+          "type": "filter",
+          "target": "ParkingTicket.query"
+        },
+        "navigate": {
+          "type": "navigate"
+        }
+      },
+      "menu": [
+        {
+          "label": "Home",
+          "route": "/violator-portal"
+        },
+        {
+          "label": "Vehicle Lookup",
+          "route": "/vehicle-lookup"
+        },
+        {
+          "label": "Payment Submission",
+          "route": "/payment-submission"
+        },
+        {
+          "label": "Appeal Submission",
+          "route": "/appeal-submission"
+        },
+        {
+          "label": "Ticket History",
+          "route": "/ticket-list"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "dashboard",
+      "displaysForms": [
+        "TicketDetailsViewForm",
+        "PaymentSubmissionForm",
+        "AppealSubmissionForm"
+      ],
+      "displaysDataModels": [
+        "ParkingTicket"
+      ],
+      "navigationFlow": {
+        "previousPage": null,
+        "nextPage": "TicketDetailsPage"
+      }
+    },
+    "_specName": "ViolatorPortal",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "ticketdetailspage-1765340700000-abc123",
+    "name": "TicketDetailsPage",
+    "title": "Ticket Details",
+    "description": "Detail page showing complete ticket information including vehicle details, violation information, payment status, appeal status, and action buttons for payment or appeal submission",
+    "route": "/ticket-details/:ticketId",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "ticketdetailsviewform-1765340564509-oyu3k2"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Parking Ticket Details",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "{{ParkingTicket.ticketNumber}}",
+              "variant": "subtitle",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "500",
+                "color": "#666666"
+              }
+            },
+            "dataBinding": "ParkingTicket.single"
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Ticket Information",
+              "mode": "view",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "ticketdetailsviewform-1765340564509-oyu3k2",
+            "dataBinding": "ParkingTicket.single"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Payment Status",
+              "content": "{{Payment.status}} - Amount: ${{Payment.amount}}",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "20px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "marginBottom": "16px",
+                "borderLeft": "4px solid #2563eb"
+              }
+            },
+            "dataBinding": "Payment.query"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Appeal Status",
+              "content": "{{Appeal.status}} - Submitted: {{Appeal.submissionDate}}",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "20px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "marginBottom": "24px",
+                "borderLeft": "4px solid #7c3aed"
+              }
+            },
+            "dataBinding": "Appeal.query"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Make Payment",
+              "variant": "primary",
+              "action": "navigate",
+              "style": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 32px",
+                "borderRadius": "8px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "border": "none",
+                "marginRight": "12px",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Submit Appeal",
+              "variant": "secondary",
+              "action": "navigate",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "color": "#2563eb",
+                "padding": "12px 32px",
+                "borderRadius": "8px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "border": "2px solid #2563eb",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "payment": {
+          "type": "navigate",
+          "target": "/payment-submission"
+        },
+        "appeal": {
+          "type": "navigate",
+          "target": "/appeal-submission"
+        },
+        "back": {
+          "type": "navigate",
+          "target": "/violator-portal"
+        }
+      },
+      "menu": [
+        {
+          "label": "Violator Portal",
+          "route": "/violator-portal"
+        },
+        {
+          "label": "Vehicle Lookup",
+          "route": "/vehicle-lookup"
+        },
+        {
+          "label": "Payment Submission",
+          "route": "/payment-submission"
+        },
+        {
+          "label": "Appeal Submission",
+          "route": "/appeal-submission"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "detail",
+      "displaysForms": [
+        "TicketDetailsViewForm"
+      ],
+      "displaysDataModels": [
+        "ParkingTicket",
+        "Payment",
+        "Appeal"
+      ],
+      "navigationFlow": {
+        "previousPage": "ViolatorPortal",
+        "nextPage": "PaymentSubmissionPage"
+      }
+    },
+    "_specName": "TicketDetailsPage",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "paymentsubmissionpage-1765340800000-pmt9x2",
+    "name": "PaymentSubmissionPage",
+    "title": "Submit Payment",
+    "description": "Page containing payment submission form with payment gateway integration, ticket summary, and payment confirmation display",
+    "route": "/payment-submission",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "paymentsubmissionform-1765340592649-jwdd7d"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Submit Payment",
+              "variant": "h1",
+              "style": {
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Complete your payment securely using our payment gateway",
+              "variant": "body1",
+              "style": {
+                "fontSize": "14px",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Ticket Summary",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"
+              }
+            },
+            "dataBinding": "ParkingTicket.detail"
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Payment Information",
+              "submitLabel": "Process Payment",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"
+              }
+            },
+            "formRef": "paymentsubmissionform-1765340592649-jwdd7d",
+            "dataBinding": "Payment.create"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/payment-confirmation"
+        }
+      },
+      "menu": [
+        {
+          "label": "Ticket Details",
+          "route": "/ticket-details"
+        },
+        {
+          "label": "My Tickets",
+          "route": "/ticket-list"
+        },
+        {
+          "label": "Violator Portal",
+          "route": "/violator-portal"
+        },
+        {
+          "label": "Submit Appeal",
+          "route": "/appeal-submission"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": "PaymentProcessingWorkflow",
+      "pageType": "form",
+      "displaysForms": [
+        "PaymentSubmissionForm"
+      ],
+      "displaysDataModels": [
+        "Payment",
+        "ParkingTicket"
+      ],
+      "navigationFlow": {
+        "previousPage": "TicketDetailsPage",
+        "nextPage": "PaymentConfirmationPage"
+      }
+    },
+    "_specName": "PaymentSubmissionPage",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "paymentconfirmationpage-1765340700000-xyz123",
+    "name": "PaymentConfirmationPage",
+    "title": "Payment Confirmation",
+    "description": "Confirmation page showing payment success, transaction details, receipt download option, and updated ticket status",
+    "route": "/payment-confirmation",
+    "type": "confirmation",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Payment Successful",
+              "variant": "h1",
+              "align": "center",
+              "color": "#10b981",
+              "fontSize": "2rem",
+              "fontWeight": "700",
+              "marginBottom": "0.5rem"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Your payment has been processed successfully",
+              "variant": "body1",
+              "align": "center",
+              "color": "#6b7280",
+              "fontSize": "1rem",
+              "marginBottom": "2rem"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Transaction Details",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "1.5rem",
+              "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+              "marginBottom": "1.5rem"
+            },
+            "dataBinding": "Payment.single",
+            "content": {
+              "fields": [
+                {
+                  "label": "Transaction ID",
+                  "value": "{{Payment.transactionId}}",
+                  "fontWeight": "600"
+                },
+                {
+                  "label": "Payment Date",
+                  "value": "{{Payment.paymentDate}}",
+                  "format": "date"
+                },
+                {
+                  "label": "Amount Paid",
+                  "value": "{{Payment.amount}}",
+                  "format": "currency",
+                  "color": "#10b981",
+                  "fontSize": "1.25rem",
+                  "fontWeight": "700"
+                },
+                {
+                  "label": "Payment Method",
+                  "value": "{{Payment.paymentMethod}}"
+                },
+                {
+                  "label": "Status",
+                  "value": "{{Payment.status}}",
+                  "badge": true,
+                  "badgeColor": "#10b981"
+                }
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Ticket Information",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "1.5rem",
+              "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+              "marginBottom": "1.5rem"
+            },
+            "dataBinding": "ParkingTicket.single",
+            "content": {
+              "fields": [
+                {
+                  "label": "Ticket Number",
+                  "value": "{{ParkingTicket.ticketNumber}}",
+                  "fontWeight": "600"
+                },
+                {
+                  "label": "License Plate",
+                  "value": "{{ParkingTicket.licensePlate}}"
+                },
+                {
+                  "label": "Violation Type",
+                  "value": "{{ParkingTicket.violationType}}"
+                },
+                {
+                  "label": "Issue Date",
+                  "value": "{{ParkingTicket.issueDate}}",
+                  "format": "date"
+                },
+                {
+                  "label": "Ticket Status",
+                  "value": "{{ParkingTicket.status}}",
+                  "badge": true,
+                  "badgeColor": "#10b981"
+                }
+              ]
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Receipt",
+              "backgroundColor": "#f9fafb",
+              "borderRadius": "8px",
+              "padding": "1.5rem",
+              "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+              "marginBottom": "1.5rem"
+            },
+            "dataBinding": "Receipt.single",
+            "content": {
+              "fields": [
+                {
+                  "label": "Receipt Number",
+                  "value": "{{Receipt.receiptNumber}}",
+                  "fontWeight": "600"
+                },
+                {
+                  "label": "Issued Date",
+                  "value": "{{Receipt.issuedDate}}",
+                  "format": "datetime"
+                }
+              ]
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Download Receipt",
+              "variant": "contained",
+              "color": "#2563eb",
+              "backgroundColor": "#2563eb",
+              "hoverBackgroundColor": "#1d4ed8",
+              "textColor": "#ffffff",
+              "borderRadius": "6px",
+              "padding": "0.75rem 1.5rem",
+              "fontSize": "1rem",
+              "fontWeight": "600",
+              "width": "100%",
+              "marginBottom": "1rem",
+              "icon": "download"
+            },
+            "action": {
+              "type": "download",
+              "target": "Receipt.pdf"
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Return to Portal",
+              "variant": "outlined",
+              "color": "#6b7280",
+              "borderColor": "#d1d5db",
+              "textColor": "#374151",
+              "hoverBackgroundColor": "#f3f4f6",
+              "borderRadius": "6px",
+              "padding": "0.75rem 1.5rem",
+              "fontSize": "1rem",
+              "fontWeight": "600",
+              "width": "100%"
+            },
+            "action": {
+              "type": "navigate",
+              "target": "/violator-portal"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "download": {
+          "type": "download",
+          "target": "Receipt.pdf"
+        },
+        "return": {
+          "type": "navigate",
+          "target": "/violator-portal"
+        }
+      },
+      "menu": [
+        {
+          "label": "Violator Portal",
+          "route": "/violator-portal"
+        },
+        {
+          "label": "Ticket Details",
+          "route": "/ticket-details"
+        },
+        {
+          "label": "Vehicle Lookup",
+          "route": "/vehicle-lookup"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": "PaymentProcessingWorkflow",
+      "pageType": "detail",
+      "displaysForms": [],
+      "displaysDataModels": [
+        "Payment",
+        "Receipt",
+        "ParkingTicket"
+      ],
+      "navigationFlow": {
+        "previousPage": "PaymentSubmissionPage",
+        "nextPage": "ViolatorPortal"
+      }
+    },
+    "_specName": "PaymentConfirmationPage",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "appealsubmissionpage-1765340700000-xyz123",
+    "name": "AppealSubmissionPage",
+    "title": "Submit Appeal",
+    "description": "Page containing appeal submission form with ticket summary, reason selection, description input, and document upload functionality",
+    "route": "/appeal-submission",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "appealsubmissionform-1765340615138-n5cd8l"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Submit Appeal",
+              "variant": "h1",
+              "align": "left",
+              "color": "#1a1a1a",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Review your ticket details and submit your appeal with supporting documentation",
+              "variant": "body1",
+              "align": "left",
+              "color": "#666666",
+              "fontSize": "16px",
+              "fontWeight": "400",
+              "marginBottom": "24px"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Ticket Summary",
+              "backgroundColor": "#f8f9fa",
+              "padding": "24px",
+              "borderRadius": "8px",
+              "border": "1px solid #e0e0e0",
+              "marginBottom": "24px",
+              "elevation": 0
+            },
+            "dataBinding": "ParkingTicket.current",
+            "content": {
+              "fields": [
+                {
+                  "label": "Ticket Number",
+                  "value": "{{ticketNumber}}",
+                  "fontWeight": "600"
+                },
+                {
+                  "label": "Violation Type",
+                  "value": "{{violationType}}",
+                  "fontWeight": "400"
+                },
+                {
+                  "label": "Issue Date",
+                  "value": "{{issueDate}}",
+                  "fontWeight": "400"
+                },
+                {
+                  "label": "Fine Amount",
+                  "value": "${{fineAmount}}",
+                  "fontWeight": "600",
+                  "color": "#d32f2f"
+                }
+              ]
+            }
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Appeal Information",
+              "submitLabel": "Submit Appeal",
+              "cancelLabel": "Cancel",
+              "backgroundColor": "#ffffff",
+              "padding": "32px",
+              "borderRadius": "8px",
+              "border": "1px solid #e0e0e0",
+              "elevation": 1
+            },
+            "formRef": "appealsubmissionform-1765340615138-n5cd8l",
+            "dataBinding": "Appeal.create"
+          }
+        ]
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Note: Appeals must be submitted within 30 days of ticket issuance. You will receive a notification once your appeal has been reviewed.",
+              "variant": "caption",
+              "align": "center",
+              "color": "#666666",
+              "fontSize": "14px",
+              "fontWeight": "400",
+              "fontStyle": "italic",
+              "padding": "16px"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/appeal-confirmation"
+        }
+      },
+      "menu": [
+        {
+          "label": "Violator Portal",
+          "route": "/violator-portal"
+        },
+        {
+          "label": "Ticket Details",
+          "route": "/ticket-details"
+        },
+        {
+          "label": "Payment Submission",
+          "route": "/payment-submission"
+        },
+        {
+          "label": "Vehicle Lookup",
+          "route": "/vehicle-lookup"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": "AppealHandlingWorkflow",
+      "pageType": "form",
+      "displaysForms": [
+        "AppealSubmissionForm"
+      ],
+      "displaysDataModels": [
+        "Appeal",
+        "ParkingTicket"
+      ],
+      "navigationFlow": {
+        "previousPage": "TicketDetailsPage",
+        "nextPage": "AppealConfirmationPage"
+      }
+    },
+    "_specName": "AppealSubmissionPage",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "paymentreviewpage-1765340700000-pr8x9m",
+    "name": "PaymentReviewPage",
+    "title": "Payment Review",
+    "description": "Administrative page displaying payment details, transaction information, gateway responses, and review form for confirmation or flagging",
+    "route": "/admin/payment-review/:paymentId",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "paymentreviewform-1765340659270-k4s85d"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Payment Review",
+              "variant": "h1",
+              "color": "#1a1a1a",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Review payment transaction details and approve or flag for investigation",
+              "variant": "body1",
+              "color": "#666666",
+              "fontSize": "16px",
+              "fontWeight": "400"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Payment Information",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "marginBottom": "24px"
+            },
+            "dataBinding": "Payment.findById",
+            "content": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 2,
+                  "gap": "16px"
+                },
+                "items": [
+                  {
+                    "label": "Payment ID",
+                    "value": "{{Payment.paymentId}}",
+                    "fontWeight": "600"
+                  },
+                  {
+                    "label": "Amount",
+                    "value": "{{Payment.amount}}",
+                    "fontWeight": "600",
+                    "color": "#2563eb"
+                  },
+                  {
+                    "label": "Payment Method",
+                    "value": "{{Payment.paymentMethod}}"
+                  },
+                  {
+                    "label": "Transaction Date",
+                    "value": "{{Payment.transactionDate}}"
+                  },
+                  {
+                    "label": "Status",
+                    "value": "{{Payment.status}}",
+                    "badge": true
+                  },
+                  {
+                    "label": "Gateway Response",
+                    "value": "{{Payment.gatewayResponse}}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Associated Ticket Details",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "marginBottom": "24px"
+            },
+            "dataBinding": "ParkingTicket.findById",
+            "content": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 2,
+                  "gap": "16px"
+                },
+                "items": [
+                  {
+                    "label": "Ticket Number",
+                    "value": "{{ParkingTicket.ticketNumber}}",
+                    "fontWeight": "600"
+                  },
+                  {
+                    "label": "License Plate",
+                    "value": "{{ParkingTicket.licensePlate}}"
+                  },
+                  {
+                    "label": "Violation Type",
+                    "value": "{{ParkingTicket.violationType}}"
+                  },
+                  {
+                    "label": "Fine Amount",
+                    "value": "{{ParkingTicket.fineAmount}}",
+                    "color": "#dc2626"
+                  },
+                  {
+                    "label": "Issue Date",
+                    "value": "{{ParkingTicket.issueDate}}"
+                  },
+                  {
+                    "label": "Ticket Status",
+                    "value": "{{ParkingTicket.status}}",
+                    "badge": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Review Decision",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)"
+            },
+            "formRef": "paymentreviewform-1765340659270-k4s85d",
+            "dataBinding": "Payment.findById"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {},
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/admin/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Ticket List",
+          "route": "/admin/tickets",
+          "icon": "list"
+        },
+        {
+          "label": "Appeal Review",
+          "route": "/admin/appeal-review",
+          "icon": "gavel"
+        },
+        {
+          "label": "Reports",
+          "route": "/admin/reports",
+          "icon": "analytics"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": "PaymentProcessingWorkflow",
+      "pageType": "form",
+      "displaysForms": [
+        "PaymentReviewForm"
+      ],
+      "displaysDataModels": [
+        "Payment",
+        "ParkingTicket"
+      ],
+      "navigationFlow": {
+        "previousPage": "AdministratorDashboard",
+        "nextPage": "AdministratorDashboard"
+      }
+    },
+    "_specName": "PaymentReviewPage",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "appealreviewpage-1765340695432-xr9p2m",
+    "name": "AppealReviewPage",
+    "title": "Review Appeal",
+    "description": "Administrative page displaying appeal details, supporting documents, ticket information, and review form for approval or rejection decisions",
+    "route": "/appeal-review/:appealId",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "appealreviewform-1765340677829-82c5ql"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Appeal Review",
+              "variant": "h1",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "color": "#1a1a1a",
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Review appeal details and make a decision",
+              "variant": "body1",
+              "fontSize": "16px",
+              "fontWeight": "400",
+              "color": "#666666",
+              "marginBottom": "24px"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Ticket Information",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "marginBottom": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "fields": [
+                {
+                  "label": "Ticket Number",
+                  "value": "{{ParkingTicket.ticketNumber}}",
+                  "fontWeight": "600"
+                },
+                {
+                  "label": "Violation Type",
+                  "value": "{{ParkingTicket.violationType}}",
+                  "fontWeight": "400"
+                },
+                {
+                  "label": "Issue Date",
+                  "value": "{{ParkingTicket.issueDate}}",
+                  "fontWeight": "400"
+                },
+                {
+                  "label": "Fine Amount",
+                  "value": "${{ParkingTicket.fineAmount}}",
+                  "fontWeight": "600",
+                  "color": "#d32f2f"
+                },
+                {
+                  "label": "Vehicle",
+                  "value": "{{ParkingTicket.licensePlate}}",
+                  "fontWeight": "400"
+                }
+              ]
+            },
+            "dataBinding": "ParkingTicket.findById"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Appeal Details",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "marginBottom": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "fields": [
+                {
+                  "label": "Appeal ID",
+                  "value": "{{Appeal.appealId}}",
+                  "fontWeight": "600"
+                },
+                {
+                  "label": "Submitted Date",
+                  "value": "{{Appeal.submittedDate}}",
+                  "fontWeight": "400"
+                },
+                {
+                  "label": "Status",
+                  "value": "{{Appeal.status}}",
+                  "fontWeight": "600",
+                  "color": "#ff9800"
+                },
+                {
+                  "label": "Reason",
+                  "value": "{{Appeal.reason}}",
+                  "fontWeight": "400",
+                  "display": "block",
+                  "marginTop": "12px"
+                },
+                {
+                  "label": "Supporting Documents",
+                  "value": "{{Appeal.documents}}",
+                  "type": "file-list",
+                  "fontWeight": "400"
+                }
+              ]
+            },
+            "dataBinding": "Appeal.findById"
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Review Decision",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "padding": "24px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "submitButtonText": "Submit Decision",
+              "submitButtonColor": "#1976d2",
+              "submitButtonHoverColor": "#1565c0",
+              "cancelButtonText": "Cancel",
+              "cancelButtonColor": "#757575"
+            },
+            "formRef": "appealreviewform-1765340677829-82c5ql",
+            "dataBinding": "Appeal.update"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/administrator-dashboard"
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/administrator-dashboard"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/administrator-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Ticket List",
+          "route": "/ticket-list",
+          "icon": "list"
+        },
+        {
+          "label": "Payment Review",
+          "route": "/payment-review",
+          "icon": "payment"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "analytics"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": "AppealHandlingWorkflow",
+      "pageType": "form",
+      "displaysForms": [
+        "AppealReviewForm"
+      ],
+      "displaysDataModels": [
+        "Appeal",
+        "ParkingTicket"
+      ],
+      "navigationFlow": {
+        "previousPage": "AdministratorDashboard",
+        "nextPage": "AdministratorDashboard"
+      }
+    },
+    "_specName": "AppealReviewPage",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "ticketlistpage-1765340700000-abc123",
+    "name": "TicketListPage",
+    "title": "All Parking Tickets",
+    "description": "List page showing all tickets with filtering by status, date range, officer, violation type, and search by license plate or ticket number",
+    "route": "/tickets",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "ticketcreationform-1765340637463-gf9vlk"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Parking Tickets",
+              "variant": "h1",
+              "color": "#1a1a1a",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Search, filter, and manage all parking tickets in the system",
+              "variant": "body1",
+              "color": "#666666",
+              "fontSize": "16px",
+              "marginBottom": "24px"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Search & Filter",
+              "backgroundColor": "#ffffff",
+              "padding": "24px",
+              "borderRadius": "8px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "marginBottom": "24px"
+            },
+            "components": [
+              {
+                "type": "search",
+                "config": {
+                  "placeholder": "Search by license plate or ticket number...",
+                  "fields": [
+                    "licensePlate",
+                    "ticketNumber"
+                  ],
+                  "backgroundColor": "#f5f5f5",
+                  "borderRadius": "4px",
+                  "padding": "12px",
+                  "fontSize": "14px"
+                }
+              },
+              {
+                "type": "filter",
+                "config": {
+                  "filters": [
+                    {
+                      "field": "status",
+                      "label": "Status",
+                      "type": "select",
+                      "options": [
+                        "Issued",
+                        "Paid",
+                        "Appealed",
+                        "Overdue",
+                        "Dismissed"
+                      ]
+                    },
+                    {
+                      "field": "officerId",
+                      "label": "Officer",
+                      "type": "select",
+                      "dataSource": "Officer"
+                    },
+                    {
+                      "field": "violationTypeId",
+                      "label": "Violation Type",
+                      "type": "select",
+                      "dataSource": "ViolationType"
+                    },
+                    {
+                      "field": "issueDate",
+                      "label": "Date Range",
+                      "type": "dateRange"
+                    }
+                  ],
+                  "layout": "horizontal",
+                  "spacing": "16px"
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Issue New Ticket",
+              "variant": "primary",
+              "backgroundColor": "#2563eb",
+              "color": "#ffffff",
+              "padding": "12px 24px",
+              "borderRadius": "4px",
+              "fontSize": "14px",
+              "fontWeight": "600",
+              "marginBottom": "16px",
+              "action": "create"
+            },
+            "formRef": "ticketcreationform-1765340637463-gf9vlk"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Tickets",
+              "columns": [
+                {
+                  "field": "ticketNumber",
+                  "header": "Ticket #",
+                  "sortable": true,
+                  "width": "120px"
+                },
+                {
+                  "field": "licensePlate",
+                  "header": "License Plate",
+                  "sortable": true,
+                  "width": "130px"
+                },
+                {
+                  "field": "violationType.name",
+                  "header": "Violation",
+                  "sortable": true,
+                  "width": "180px"
+                },
+                {
+                  "field": "issueDate",
+                  "header": "Issue Date",
+                  "sortable": true,
+                  "type": "date",
+                  "format": "MM/DD/YYYY",
+                  "width": "120px"
+                },
+                {
+                  "field": "officer.name",
+                  "header": "Officer",
+                  "sortable": true,
+                  "width": "150px"
+                },
+                {
+                  "field": "fineAmount",
+                  "header": "Fine Amount",
+                  "sortable": true,
+                  "type": "currency",
+                  "width": "120px"
+                },
+                {
+                  "field": "status",
+                  "header": "Status",
+                  "sortable": true,
+                  "type": "badge",
+                  "width": "110px",
+                  "statusColors": {
+                    "Issued": "#fbbf24",
+                    "Paid": "#10b981",
+                    "Appealed": "#3b82f6",
+                    "Overdue": "#ef4444",
+                    "Dismissed": "#6b7280"
+                  }
+                },
+                {
+                  "field": "actions",
+                  "header": "Actions",
+                  "type": "actions",
+                  "width": "100px",
+                  "actions": [
+                    {
+                      "label": "View",
+                      "icon": "eye",
+                      "action": "view"
+                    }
+                  ]
+                }
+              ],
+              "pagination": true,
+              "pageSize": 25,
+              "pageSizeOptions": [
+                10,
+                25,
+                50,
+                100
+              ],
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+              "headerBackgroundColor": "#f9fafb",
+              "headerColor": "#1a1a1a",
+              "headerFontWeight": "600",
+              "rowHoverColor": "#f9fafb",
+              "borderColor": "#e5e7eb"
+            },
+            "dataBinding": "ParkingTicket.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {},
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/officer-dashboard"
+        },
+        {
+          "label": "Vehicle Lookup",
+          "route": "/vehicle-lookup"
+        },
+        {
+          "label": "All Tickets",
+          "route": "/tickets"
+        },
+        {
+          "label": "Payment Review",
+          "route": "/payment-review"
+        },
+        {
+          "label": "Appeal Review",
+          "route": "/appeal-review"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports"
+        },
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "list",
+      "displaysForms": [],
+      "displaysDataModels": [
+        "ParkingTicket",
+        "Officer",
+        "ViolationType"
+      ],
+      "navigationFlow": {
+        "previousPage": "OfficerDashboard",
+        "nextPage": "TicketDetailsPage"
+      }
+    },
+    "_specName": "TicketListPage",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "administratordashboard-1765340700000-adm1n",
+    "name": "AdministratorDashboard",
+    "title": "Administrator Dashboard",
+    "description": "Dashboard page for administrative staff showing pending payments, pending appeals, recent transactions, statistics, and quick access to review tasks",
+    "route": "/administrator-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "paymentreviewform-1765340659270-k4s85d",
+      "appealreviewform-1765340677829-82c5ql"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Administrator Dashboard",
+              "variant": "h1",
+              "color": "#1a1a1a",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "marginBottom": "8px"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage payments, appeals, and system operations",
+              "variant": "subtitle",
+              "color": "#666666",
+              "fontSize": "16px",
+              "fontWeight": "400"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "System Overview",
+              "layout": "grid",
+              "columns": 4,
+              "backgroundColor": "#ffffff",
+              "borderRadius": "12px",
+              "padding": "24px",
+              "boxShadow": "0 2px 8px rgba(0,0,0,0.1)",
+              "metrics": [
+                {
+                  "label": "Pending Payments",
+                  "value": "{{Payment.query.filter(status='pending').count()}}",
+                  "color": "#FF6B35",
+                  "icon": "payment",
+                  "trend": "+12%"
+                },
+                {
+                  "label": "Pending Appeals",
+                  "value": "{{Appeal.query.filter(status='pending').count()}}",
+                  "color": "#F7931E",
+                  "icon": "gavel",
+                  "trend": "+5%"
+                },
+                {
+                  "label": "Active Tickets",
+                  "value": "{{ParkingTicket.query.filter(status='unpaid').count()}}",
+                  "color": "#4A90E2",
+                  "icon": "ticket",
+                  "trend": "-3%"
+                },
+                {
+                  "label": "Today's Revenue",
+                  "value": "${{Payment.query.filter(status='completed', date=today).sum(amount)}}",
+                  "color": "#7CB342",
+                  "icon": "dollar",
+                  "trend": "+8%"
+                }
+              ]
+            }
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Pending Payment Reviews",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "12px",
+              "padding": "24px",
+              "boxShadow": "0 2px 8px rgba(0,0,0,0.1)",
+              "columns": [
+                {
+                  "key": "paymentId",
+                  "label": "Payment ID",
+                  "sortable": true,
+                  "fontWeight": "600"
+                },
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket Number",
+                  "sortable": true
+                },
+                {
+                  "key": "amount",
+                  "label": "Amount",
+                  "format": "currency",
+                  "color": "#1a1a1a"
+                },
+                {
+                  "key": "paymentDate",
+                  "label": "Payment Date",
+                  "format": "date",
+                  "sortable": true
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "badge": true,
+                  "badgeColors": {
+                    "pending": "#FF6B35",
+                    "verified": "#7CB342",
+                    "rejected": "#E53935"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Review",
+                  "type": "primary",
+                  "backgroundColor": "#4A90E2",
+                  "color": "#ffffff",
+                  "borderRadius": "8px",
+                  "action": "view"
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "searchable": true,
+              "searchPlaceholder": "Search by Payment ID or Ticket Number..."
+            },
+            "dataBinding": "Payment.query.filter(status='pending').orderBy(paymentDate, 'desc')"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Pending Appeal Reviews",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "12px",
+              "padding": "24px",
+              "boxShadow": "0 2px 8px rgba(0,0,0,0.1)",
+              "columns": [
+                {
+                  "key": "appealId",
+                  "label": "Appeal ID",
+                  "sortable": true,
+                  "fontWeight": "600"
+                },
+                {
+                  "key": "ticketNumber",
+                  "label": "Ticket Number",
+                  "sortable": true
+                },
+                {
+                  "key": "reason",
+                  "label": "Reason",
+                  "truncate": 50
+                },
+                {
+                  "key": "submittedDate",
+                  "label": "Submitted",
+                  "format": "date",
+                  "sortable": true
+                },
+                {
+                  "key": "priority",
+                  "label": "Priority",
+                  "badge": true,
+                  "badgeColors": {
+                    "high": "#E53935",
+                    "medium": "#F7931E",
+                    "low": "#7CB342"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Review",
+                  "type": "primary",
+                  "backgroundColor": "#4A90E2",
+                  "color": "#ffffff",
+                  "borderRadius": "8px",
+                  "action": "view"
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "searchable": true,
+              "searchPlaceholder": "Search by Appeal ID or Ticket Number..."
+            },
+            "dataBinding": "Appeal.query.filter(status='pending').orderBy(submittedDate, 'desc')"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Recent Activity",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "12px",
+              "padding": "24px",
+              "boxShadow": "0 2px 8px rgba(0,0,0,0.1)",
+              "layout": "list",
+              "maxHeight": "400px",
+              "overflow": "auto",
+              "items": "{{AuditLog.query.orderBy(timestamp, 'desc').limit(15)}}",
+              "itemTemplate": {
+                "icon": "{{item.action}}",
+                "iconColor": "#4A90E2",
+                "title": "{{item.description}}",
+                "subtitle": "{{item.performedBy}} • {{item.timestamp}}",
+                "fontSize": "14px",
+                "color": "#1a1a1a",
+                "subtitleColor": "#666666"
+              }
+            },
+            "dataBinding": "AuditLog.query.orderBy(timestamp, 'desc').limit(15)"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {},
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/administrator-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Payment Review",
+          "route": "/payment-review",
+          "icon": "payment"
+        },
+        {
+          "label": "Appeal Review",
+          "route": "/appeal-review",
+          "icon": "gavel"
+        },
+        {
+          "label": "Ticket List",
+          "route": "/ticket-list",
+          "icon": "list"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "chart"
+        },
+        {
+          "label": "Officer Dashboard",
+          "route": "/officer-dashboard",
+          "icon": "badge"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "dashboard",
+      "displaysForms": [
+        "PaymentReviewForm",
+        "AppealReviewForm"
+      ],
+      "displaysDataModels": [
+        "Payment",
+        "Appeal",
+        "ParkingTicket"
+      ],
+      "navigationFlow": {
+        "previousPage": null,
+        "nextPage": "PaymentReviewPage"
+      }
+    },
+    "_specName": "AdministratorDashboard",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "reportspage-1765340700000-rpt9x2",
+    "name": "ReportsPage",
+    "title": "Analytics & Reports",
+    "description": "Reporting page showing ticket statistics, revenue reports, violation type distribution, officer performance, payment trends, and appeal statistics with date range filtering and export capabilities",
+    "route": "/reports",
+    "type": "report",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Analytics & Reports",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Comprehensive analytics and performance metrics",
+              "variant": "subtitle",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          },
+          {
+            "type": "filter",
+            "config": {
+              "filters": [
+                {
+                  "field": "dateRange",
+                  "label": "Date Range",
+                  "type": "dateRange",
+                  "defaultValue": "last30days"
+                },
+                {
+                  "field": "reportType",
+                  "label": "Report Type",
+                  "type": "select",
+                  "options": [
+                    "All Reports",
+                    "Revenue",
+                    "Violations",
+                    "Officers",
+                    "Appeals"
+                  ]
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Export PDF",
+                  "type": "export",
+                  "format": "pdf",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "none"
+                  }
+                },
+                {
+                  "label": "Export Excel",
+                  "type": "export",
+                  "format": "xlsx",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#ffffff",
+                    "color": "#2563eb",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #2563eb"
+                  }
+                }
+              ],
+              "style": {
+                "backgroundColor": "#f8fafc",
+                "padding": "20px",
+                "borderRadius": "12px",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "metrics",
+            "config": {
+              "title": "Key Performance Indicators",
+              "metrics": [
+                {
+                  "label": "Total Revenue",
+                  "value": "{{Payment.aggregate.sum.amount}}",
+                  "format": "currency",
+                  "trend": "+12.5%",
+                  "trendDirection": "up",
+                  "icon": "dollar"
+                },
+                {
+                  "label": "Tickets Issued",
+                  "value": "{{ParkingTicket.count}}",
+                  "format": "number",
+                  "trend": "+8.3%",
+                  "trendDirection": "up",
+                  "icon": "ticket"
+                },
+                {
+                  "label": "Payment Rate",
+                  "value": "{{Payment.count / ParkingTicket.count * 100}}",
+                  "format": "percentage",
+                  "trend": "+5.2%",
+                  "trendDirection": "up",
+                  "icon": "percent"
+                },
+                {
+                  "label": "Appeals Filed",
+                  "value": "{{Appeal.count}}",
+                  "format": "number",
+                  "trend": "-3.1%",
+                  "trendDirection": "down",
+                  "icon": "gavel"
+                }
+              ],
+              "style": {
+                "display": "grid",
+                "gridTemplateColumns": "repeat(auto-fit, minmax(250px, 1fr))",
+                "gap": "20px",
+                "marginBottom": "32px"
+              },
+              "cardStyle": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "ParkingTicket.query"
+          },
+          {
+            "type": "chart",
+            "config": {
+              "title": "Revenue Trends",
+              "chartType": "line",
+              "xAxis": "date",
+              "yAxis": "amount",
+              "datasets": [
+                {
+                  "label": "Daily Revenue",
+                  "color": "#2563eb",
+                  "aggregation": "sum"
+                },
+                {
+                  "label": "Cumulative Revenue",
+                  "color": "#10b981",
+                  "aggregation": "cumulative"
+                }
+              ],
+              "height": 300,
+              "showLegend": true,
+              "showGrid": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "Payment.query"
+          },
+          {
+            "type": "chart",
+            "config": {
+              "title": "Violation Type Distribution",
+              "chartType": "pie",
+              "labelField": "violationType.name",
+              "valueField": "count",
+              "showPercentages": true,
+              "height": 300,
+              "colors": [
+                "#2563eb",
+                "#10b981",
+                "#f59e0b",
+                "#ef4444",
+                "#8b5cf6",
+                "#ec4899"
+              ],
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "ParkingTicket.groupBy.violationType"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Officer Performance",
+              "columns": [
+                {
+                  "key": "officer.name",
+                  "label": "Officer Name",
+                  "sortable": true
+                },
+                {
+                  "key": "ticketsIssued",
+                  "label": "Tickets Issued",
+                  "sortable": true,
+                  "align": "center"
+                },
+                {
+                  "key": "revenueGenerated",
+                  "label": "Revenue Generated",
+                  "sortable": true,
+                  "format": "currency",
+                  "align": "right"
+                },
+                {
+                  "key": "appealsAgainst",
+                  "label": "Appeals",
+                  "sortable": true,
+                  "align": "center"
+                },
+                {
+                  "key": "successRate",
+                  "label": "Success Rate",
+                  "sortable": true,
+                  "format": "percentage",
+                  "align": "center"
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "searchable": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "overflow": "hidden",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              },
+              "headerStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "backgroundColor": "#f8fafc",
+                "padding": "16px"
+              },
+              "rowStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#4b5563",
+                "padding": "16px",
+                "borderBottom": "1px solid #e5e7eb"
+              }
+            },
+            "dataBinding": "Officer.query"
+          },
+          {
+            "type": "chart",
+            "config": {
+              "title": "Appeal Statistics",
+              "chartType": "bar",
+              "xAxis": "status",
+              "yAxis": "count",
+              "datasets": [
+                {
+                  "label": "Appeals by Status",
+                  "color": "#2563eb"
+                }
+              ],
+              "height": 250,
+              "horizontal": true,
+              "showValues": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "marginBottom": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "Appeal.groupBy.status"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "export": {
+          "type": "export",
+          "formats": [
+            "pdf",
+            "xlsx",
+            "csv"
+          ]
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/administrator-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Ticket List",
+          "route": "/ticket-list",
+          "icon": "list"
+        },
+        {
+          "label": "Payment Review",
+          "route": "/payment-review",
+          "icon": "payment"
+        },
+        {
+          "label": "Appeal Review",
+          "route": "/appeal-review",
+          "icon": "gavel"
+        },
+        {
+          "label": "Reports",
+          "route": "/reports",
+          "icon": "chart",
+          "active": true
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "report",
+      "displaysForms": [],
+      "displaysDataModels": [
+        "ParkingTicket",
+        "Payment",
+        "Appeal",
+        "Officer"
+      ],
+      "navigationFlow": {
+        "previousPage": "AdministratorDashboard",
+        "nextPage": null
+      }
+    },
+    "_specName": "ReportsPage",
+    "workflowId": "notification-workflow-001"
+  }
+]

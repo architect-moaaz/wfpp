@@ -1,0 +1,203 @@
+[
+  {
+    "id": "rule_error_detected_validation",
+    "name": "Error Detected Rule",
+    "description": "Validate user input and ensure data quality when error is detected in chat session",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ErrorLog.errorMessage",
+          "operator": "isNull",
+          "value": "false"
+        },
+        {
+          "field": "ChatSession.sessionId",
+          "operator": "isNull",
+          "value": "false"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "ErrorLog.errorType",
+          "value": "required",
+          "message": "Error type must be specified"
+        },
+        {
+          "type": "setVariable",
+          "field": "ErrorLog.timestamp",
+          "value": "{{currentDateTime}}",
+          "message": "Error timestamp recorded"
+        },
+        {
+          "type": "logMessage",
+          "field": "ErrorLog.errorMessage",
+          "value": "ERROR",
+          "message": "Error detected in chat session: {{ChatSession.sessionId}}"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "error-handling-workflow",
+    "workflowId": "error-handling-workflow",
+    "application_id": "app_1765964714990"
+  },
+  {
+    "id": "rule_check_error_type",
+    "name": "Check Error Type Rule",
+    "description": "Evaluate error type to determine appropriate workflow path for handling",
+    "type": "decision",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ErrorLog.errorType",
+          "operator": "in",
+          "value": [
+            "NETWORK_ERROR",
+            "API_TIMEOUT",
+            "VALIDATION_ERROR",
+            "SYSTEM_ERROR"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "ErrorLog.errorCategory",
+          "value": "{{ErrorLog.errorType}}",
+          "message": "Error category determined"
+        },
+        {
+          "type": "setVariable",
+          "field": "workflow.nextStep",
+          "value": "checkRetryEligibility",
+          "message": "Route to retry eligibility check"
+        },
+        {
+          "type": "logMessage",
+          "field": "ErrorLog.errorType",
+          "value": "INFO",
+          "message": "Error type identified: {{ErrorLog.errorType}}"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "error-handling-workflow",
+    "workflowId": "error-handling-workflow",
+    "application_id": "app_1765964714990"
+  },
+  {
+    "id": "rule_retry_eligible",
+    "name": "Retry Eligible? Rule",
+    "description": "Determine if error is eligible for automatic retry based on retry count and error type",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ErrorLog.retryCount",
+          "operator": "lessThan",
+          "value": "3"
+        },
+        {
+          "field": "ErrorLog.errorType",
+          "operator": "in",
+          "value": [
+            "NETWORK_ERROR",
+            "API_TIMEOUT"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "ErrorLog.retryEligible",
+          "value": "true",
+          "message": "Error is eligible for retry"
+        },
+        {
+          "type": "setVariable",
+          "field": "ErrorLog.retryCount",
+          "value": "{{ErrorLog.retryCount + 1}}",
+          "message": "Increment retry counter"
+        },
+        {
+          "type": "setVariable",
+          "field": "workflow.nextStep",
+          "value": "retryOperation",
+          "message": "Route to retry operation"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "error-handling-workflow",
+    "workflowId": "error-handling-workflow",
+    "application_id": "app_1765964714990"
+  },
+  {
+    "id": "rule_critical_error_check",
+    "name": "Critical Error? Rule",
+    "description": "Identify critical errors that require immediate notification and workflow termination",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ErrorLog.errorType",
+          "operator": "equals",
+          "value": "SYSTEM_ERROR"
+        },
+        {
+          "field": "ErrorLog.retryCount",
+          "operator": "greaterThan",
+          "value": "2"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "ErrorLog.isCritical",
+          "value": "true",
+          "message": "Error marked as critical"
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.email",
+          "value": "CRITICAL_ERROR",
+          "message": "We're experiencing technical difficulties. Our team has been notified and is working to resolve the issue."
+        },
+        {
+          "type": "logMessage",
+          "field": "ErrorLog.errorMessage",
+          "value": "CRITICAL",
+          "message": "Critical error detected for session: {{ChatSession.sessionId}}"
+        },
+        {
+          "type": "stopWorkflow",
+          "field": "workflow.status",
+          "value": "TERMINATED",
+          "message": "Workflow terminated due to critical error"
+        }
+      ]
+    },
+    "node_id": "decision-3",
+    "workflow_id": "error-handling-workflow",
+    "workflowId": "error-handling-workflow",
+    "application_id": "app_1765964714990"
+  }
+]

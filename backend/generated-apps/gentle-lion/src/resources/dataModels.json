@@ -1,177 +1,217 @@
 [
   {
-    "id": "app_1764273422518_inventory-item",
-    "name": "InventoryItem",
-    "config": {},
+    "id": "task-model",
+    "name": "Task",
+    "description": "Core task entity with all task properties",
     "fields": [
       {
         "name": "id",
         "type": "string",
+        "description": "Unique identifier for the task",
         "required": true,
-        "description": "Unique identifier for the inventory item",
+        "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "productId",
+        "name": "title",
         "type": "string",
+        "description": "Title or name of the task",
         "required": true,
-        "description": "Reference to the product in the catalog",
         "defaultValue": null
       },
       {
-        "name": "quantityAvailable",
-        "type": "number",
-        "required": true,
-        "description": "Current available stock quantity for sale",
-        "defaultValue": 0
-      },
-      {
-        "name": "quantityReserved",
-        "type": "number",
-        "required": true,
-        "description": "Quantity reserved for pending orders awaiting fulfillment",
-        "defaultValue": 0
-      },
-      {
-        "name": "isAvailable",
-        "type": "boolean",
-        "required": true,
-        "description": "Indicates if the product is currently available for ordering",
-        "defaultValue": true
-      },
-      {
-        "name": "lastSyncedAt",
-        "type": "date",
-        "required": true,
-        "description": "Timestamp of last synchronization with external inventory management system",
-        "defaultValue": null
-      },
-      {
-        "name": "reorderThreshold",
-        "type": "number",
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the task",
         "required": false,
-        "description": "Minimum quantity level that triggers reorder alerts",
-        "defaultValue": 10
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the task (e.g., pending, in-progress, completed)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the task (e.g., low, medium, high)",
+        "required": false,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Due date for task completion",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the task was created",
+        "required": true,
+        "defaultValue": "now"
+      },
+      {
+        "name": "completedAt",
+        "type": "date",
+        "description": "Timestamp when the task was completed",
+        "required": false,
+        "defaultValue": null
       }
     ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "wf-create-task-001"
+  },
+  {
+    "id": "task-model",
+    "name": "Task",
+    "description": "Task entity with status tracking for managing work items",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the task",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Title or name of the task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the task",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the task (e.g., pending, in-progress, completed, cancelled)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the task (e.g., low, medium, high)",
+        "required": false,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Due date for task completion",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the task was created",
+        "required": true,
+        "defaultValue": "now"
+      },
+      {
+        "name": "completedAt",
+        "type": "date",
+        "description": "Timestamp when the task was completed",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "wf-create-task-001"
+  },
+  {
+    "id": "status",
+    "name": "Status",
+    "description": "Task status enumeration",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the status",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Display name of the status",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "code",
+        "type": "string",
+        "description": "Unique code for the status (e.g., TODO, IN_PROGRESS, DONE)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of what this status represents",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "description": "Color code for UI display (e.g., hex color)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "order",
+        "type": "number",
+        "description": "Sort order for displaying statuses",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this status is currently active and available for use",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [],
     "indexes": [
       {
+        "name": "idx_status_code",
         "fields": [
-          "productId"
+          "code"
         ],
         "unique": true
       },
       {
+        "name": "idx_status_order",
         "fields": [
-          "isAvailable",
-          "quantityAvailable"
+          "order"
         ]
       }
     ],
-    "metadata": {},
     "constraints": {
-      "quantityReserved": "Must be >= 0",
-      "reorderThreshold": "Must be >= 0",
-      "quantityAvailable": "Must be >= 0"
-    },
-    "description": "Manages product inventory with stock levels, reserved quantities, and availability status for order fulfillment",
-    "relationships": [
-      {
-        "type": "one-to-many",
-        "description": "An inventory item can be referenced by multiple orders",
-        "relatedModel": "Order"
-      }
-    ]
-  },
-  {
-    "id": "app_1764273422518_order-data-model",
-    "name": "Order",
-    "config": {},
-    "fields": [
-      {
-        "name": "orderId",
-        "type": "string",
-        "required": true,
-        "description": "Unique identifier for the order",
-        "defaultValue": null
-      },
-      {
-        "name": "customerId",
-        "type": "string",
-        "required": true,
-        "description": "Reference to the customer who placed the order",
-        "defaultValue": null
-      },
-      {
-        "name": "orderDate",
-        "type": "date",
-        "required": true,
-        "description": "Timestamp when the order was submitted",
-        "defaultValue": null
-      },
-      {
-        "name": "totalAmount",
-        "type": "number",
-        "required": true,
-        "description": "Total order value including taxes and shipping",
-        "defaultValue": null
-      },
-      {
-        "name": "paymentStatus",
-        "type": "string",
-        "required": true,
-        "description": "Current payment status (pending, verified, failed, refunded)",
-        "defaultValue": "pending"
-      },
-      {
-        "name": "fulfillmentStatus",
-        "type": "string",
-        "required": true,
-        "description": "Current fulfillment stage (submitted, approved, allocated, shipped, delivered, cancelled)",
-        "defaultValue": "submitted"
-      },
-      {
-        "name": "shippingAddress",
-        "type": "string",
-        "required": true,
-        "description": "Delivery address for order fulfillment",
-        "defaultValue": null
-      },
-      {
-        "name": "trackingNumber",
-        "type": "string",
-        "required": false,
-        "description": "Shipping carrier tracking number for delivery monitoring",
-        "defaultValue": null
-      }
-    ],
-    "indexes": [
-      "orderId",
-      "customerId",
-      "orderDate",
-      "fulfillmentStatus"
-    ],
-    "metadata": {},
-    "constraints": {
-      "uniqueFields": [
-        "orderId"
-      ],
-      "paymentStatusValues": [
-        "pending",
-        "verified",
-        "failed",
-        "refunded"
-      ],
-      "fulfillmentStatusValues": [
-        "submitted",
-        "approved",
-        "allocated",
-        "shipped",
-        "delivered",
-        "cancelled"
+      "unique": [
+        "code"
       ]
     },
-    "description": "Central data model capturing order lifecycle from submission through delivery, including customer details, payment status, and fulfillment tracking",
-    "relationships": []
+    "workflowId": "wf-create-task-001"
   }
 ]

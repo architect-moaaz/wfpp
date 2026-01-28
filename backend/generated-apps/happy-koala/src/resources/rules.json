@@ -1,0 +1,139 @@
+[
+  {
+    "id": "rule_start_user_validation",
+    "name": "Start User Management Validation Rule",
+    "description": "Validates user input data quality when creating or updating user records",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.email",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "User.email",
+          "value": "",
+          "message": "Email address is required for user management"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "User validation failed: missing email",
+          "message": "Validation error logged"
+        },
+        {
+          "type": "stopWorkflow",
+          "field": "workflowStatus",
+          "value": "stopped",
+          "message": "Workflow stopped due to validation failure"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "user-management-workflow-001",
+    "workflowId": "user-management-workflow-001",
+    "application_id": "app_1765308847338"
+  },
+  {
+    "id": "rule_determine_action_type",
+    "name": "Determine Action Type Decision Rule",
+    "description": "Routes workflow based on ticket priority to determine appropriate handling path",
+    "type": "decision",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.priority",
+          "operator": "in",
+          "value": [
+            "high",
+            "critical"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "escalation",
+          "message": "Route to escalation path for high priority tickets"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Notification.recipient",
+          "value": "manager@company.com",
+          "message": "High priority ticket requires immediate attention"
+        },
+        {
+          "type": "updateData",
+          "field": "Ticket.assignedTo",
+          "value": "seniorSupport",
+          "message": "Assign to senior support team"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "user-management-workflow-001",
+    "workflowId": "user-management-workflow-001",
+    "application_id": "app_1765308847338"
+  },
+  {
+    "id": "rule_approval_decision",
+    "name": "Approval Decision Rule",
+    "description": "Evaluates ticket resolution approval based on SLA compliance and customer satisfaction",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.status",
+          "operator": "equals",
+          "value": "resolved"
+        },
+        {
+          "field": "SLA.breached",
+          "operator": "equals",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "approvalStatus",
+          "value": "approved",
+          "message": "Ticket resolution approved - SLA met"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Notification.recipient",
+          "value": "User.email",
+          "message": "Your ticket has been resolved and closed successfully"
+        },
+        {
+          "type": "updateData",
+          "field": "Ticket.closedDate",
+          "value": "{{currentTimestamp}}",
+          "message": "Set ticket closure timestamp"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "user-management-workflow-001",
+    "workflowId": "user-management-workflow-001",
+    "application_id": "app_1765308847338"
+  }
+]

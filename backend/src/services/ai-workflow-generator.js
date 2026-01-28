@@ -1739,6 +1739,14 @@ For scriptTask nodes, you MUST include valid, executable JavaScript code in the 
           }
         });
 
+        // Add applicationId to forms before saving
+        if (applicationId) {
+          result.workflow.forms = result.workflow.forms.map(form => ({
+            ...form,
+            applicationId
+          }));
+        }
+
         await formDatabase.saveForms(result.workflow.forms);
         console.log(`[MoE] Saved ${result.workflow.forms.length} forms to database with unique IDs`);
 
@@ -1784,7 +1792,10 @@ For scriptTask nodes, you MUST include valid, executable JavaScript code in the 
           userRequirements
         });
 
-        const stubForms = generatedForms;
+        // Add applicationId to stub forms before saving
+        const stubForms = applicationId
+          ? generatedForms.map(form => ({ ...form, applicationId }))
+          : generatedForms;
         generatedForms.forEach(form => existingFormIds.add(form.id));
 
         // Save stub forms to database
@@ -1808,6 +1819,14 @@ For scriptTask nodes, you MUST include valid, executable JavaScript code in the 
       }
 
       if (result.workflow.dataModels && result.workflow.dataModels.length > 0) {
+        // Add applicationId to data models before saving
+        if (applicationId) {
+          result.workflow.dataModels = result.workflow.dataModels.map(model => ({
+            ...model,
+            applicationId
+          }));
+        }
+
         await dataModelDatabase.saveDataModels(result.workflow.dataModels);
         console.log(`[MoE] Saved ${result.workflow.dataModels.length} data models to database`);
 
@@ -1825,6 +1844,14 @@ For scriptTask nodes, you MUST include valid, executable JavaScript code in the 
       }
 
       if (result.workflow.pages && result.workflow.pages.length > 0) {
+        // Add applicationId to pages before saving
+        if (applicationId) {
+          result.workflow.pages = result.workflow.pages.map(page => ({
+            ...page,
+            applicationId
+          }));
+        }
+
         await pageDatabase.savePages(result.workflow.pages);
         console.log(`[MoE] Saved ${result.workflow.pages.length} pages to database`);
 
@@ -1841,8 +1868,9 @@ For scriptTask nodes, you MUST include valid, executable JavaScript code in the 
         }
       }
 
-      // Also add workflow to application resources if applicationId is provided
+      // Add applicationId to workflow before saving to application resources
       if (applicationId && result.workflow) {
+        result.workflow.applicationId = applicationId;
         try {
           await applicationService.addWorkflow(applicationId, result.workflow);
           console.log(`[MoE] Added workflow to application ${applicationId} resources`);

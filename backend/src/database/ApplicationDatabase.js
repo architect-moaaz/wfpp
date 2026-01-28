@@ -28,7 +28,143 @@ class ApplicationDatabase {
   }
 
   /**
-   * Load all applications with their resources
+   * List all applications with resource counts (lightweight, fast)
+   * Use this for the applications list endpoint
+   */
+  async listApplications() {
+    await this.initialize();
+
+    try {
+      const result = await db.query(`
+        SELECT
+          a.id,
+          a.name,
+          a.description,
+          a.type,
+          a.domain,
+          a.industry,
+          a.version,
+          a.status,
+          a.icon,
+          a.theme,
+          a.created_at,
+          a.updated_at,
+          a.metadata,
+          COALESCE(a.workflow_count, 0) as workflow_count,
+          COALESCE(a.form_count, 0) as form_count,
+          COALESCE(a.model_count, 0) as model_count,
+          COALESCE(a.page_count, 0) as page_count
+        FROM k1.applications a
+        ORDER BY a.created_at DESC
+      `);
+
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        type: row.type,
+        domain: row.domain,
+        industry: row.industry,
+        version: row.version,
+        status: row.status,
+        icon: row.icon,
+        theme: row.theme,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        metadata: row.metadata,
+        resourceCounts: {
+          workflows: parseInt(row.workflow_count) || 0,
+          forms: parseInt(row.form_count) || 0,
+          dataModels: parseInt(row.model_count) || 0,
+          pages: parseInt(row.page_count) || 0
+        }
+      }));
+    } catch (error) {
+      console.error('[ApplicationDatabase] Failed to list applications:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get lightweight form context for a specific application
+   * Returns just form IDs, data models, and app name - used for workflow form validation
+   */
+  async getFormContext(applicationId) {
+    await this.initialize();
+
+    try {
+      const [appResult, formsResult, dataModelsResult] = await Promise.all([
+        db.query('SELECT name FROM k1.applications WHERE id = $1', [applicationId]),
+        db.query('SELECT id FROM k1.forms WHERE application_id = $1', [applicationId]),
+        db.query('SELECT id, name, fields FROM k1.data_models WHERE application_id = $1', [applicationId])
+      ]);
+
+      if (appResult.rows.length === 0) {
+        return null;
+      }
+
+      return {
+        name: appResult.rows[0].name,
+        formIds: formsResult.rows.map(r => r.id),
+        dataModels: dataModelsResult.rows.map(r => ({
+          id: r.id,
+          name: r.name,
+          fields: r.fields
+        }))
+      };
+    } catch (error) {
+      console.error('[ApplicationDatabase] Failed to get form context:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add workflow without returning full application (fast version)
+   * Returns only the workflow that was added
+   */
+  async addWorkflowFast(applicationId, workflow) {
+    await this.initialize();
+
+    const client = await db.getClient();
+
+    try {
+      await client.query('BEGIN');
+
+      // Check if application exists and get name
+      const checkResult = await client.query('SELECT id, name FROM k1.applications WHERE id = $1', [applicationId]);
+      if (checkResult.rows.length === 0) {
+        throw new Error(`Application not found: ${applicationId}`);
+      }
+
+      // Insert the workflow
+      await this.insertWorkflow(client, applicationId, workflow);
+
+      // Update workflow count
+      await client.query(`
+        UPDATE k1.applications
+        SET workflow_count = workflow_count + 1
+        WHERE id = $1
+      `, [applicationId]);
+
+      await client.query('COMMIT');
+
+      return {
+        success: true,
+        appName: checkResult.rows[0].name,
+        workflowId: workflow.id
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('[ApplicationDatabase] Failed to add workflow fast:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Load all applications with their resources (DEPRECATED - use listApplications for listings)
+   * Only use this when you need full resource details for all apps
    */
   async loadApplications() {
     await this.initialize();
@@ -403,6 +539,38 @@ class ApplicationDatabase {
     // DO NOT prepend applicationId - keep IDs consistent with references
     const pageId = page.id || `page_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+    // DEBUG: Log incoming page data to trace navigation flow
+    console.log('[ApplicationDatabase.insertPage] Page:', page.name, {
+      hasNavigation: !!page.navigation,
+      navigationKeys: page.navigation ? Object.keys(page.navigation) : [],
+      hasSections: !!page.sections,
+      sectionsCount: page.sections?.length || 0,
+      type: page.type,
+      platform: page.platform
+    });
+
+    // Map PageExpert output to database schema
+    // PageExpert generates: sections, navigation, type, platform
+    // Database expects: components, layout, metadata
+
+    // Use sections as components if components is empty (PageExpert compatibility)
+    const components = page.components?.length > 0 ? page.components : (page.sections || []);
+
+    // Build layout with type from page
+    const layout = {
+      ...(page.layout || {}),
+      type: page.type || page.layout?.type || 'default'
+    };
+
+    // Build metadata with navigation and other page data for UI
+    const metadata = {
+      ...(page.metadata || {}),
+      navigation: page.navigation || page.metadata?.navigation || null,
+      pageType: page.type || null,
+      platform: page.platform || 'both',
+      sections: page.sections || null // Store sections in metadata for PageFlowCanvas
+    };
+
     await client.query(`
       INSERT INTO k1.pages (
         id, application_id, name, title, description, route, components, layout,
@@ -429,14 +597,14 @@ class ApplicationDatabase {
       page.title || '',
       page.description || '',
       page.route || '',
-      JSON.stringify(page.components || []),
-      JSON.stringify(page.layout || {}),
+      JSON.stringify(components),
+      JSON.stringify(layout),
       JSON.stringify(page.forms || []),
       JSON.stringify(page.workflows || []),
       JSON.stringify(page.dataSources || []),
       JSON.stringify(page.config || {}),
       JSON.stringify(page.styling || {}),
-      JSON.stringify(page.metadata || {}),
+      JSON.stringify(metadata),
       page.createdAt || new Date().toISOString(),
       new Date().toISOString()
     ]);
@@ -669,107 +837,94 @@ class ApplicationDatabase {
   }
 
   /**
-   * Find an application by ID
+   * Find an application by ID (optimized with parallel queries)
    */
   async findById(id) {
     await this.initialize();
 
     try {
-      const result = await db.query(`
-        SELECT
-          a.*,
-          COALESCE(
-            json_agg(
-              DISTINCT jsonb_build_object(
-                'id', w.id,
-                'name', w.name,
-                'description', w.description,
-                'version', w.version,
-                'nodes', w.nodes,
-                'edges', w.edges,
-                'connections', w.connections,
-                'metadata', w.metadata,
-                'is_active', w.is_active,
-                'created_at', w.created_at,
-                'updated_at', w.updated_at
-              )
-            ) FILTER (WHERE w.id IS NOT NULL),
-            '[]'
-          ) as workflows,
-          COALESCE(
-            json_agg(
-              DISTINCT jsonb_build_object(
-                'id', f.id,
-                'name', f.name,
-                'description', f.description,
-                'fields', f.fields,
-                'layout', f.layout,
-                'validation', f.validation,
-                'data_model_id', f.data_model_id,
-                'config', f.config,
-                'styling', f.styling,
-                'metadata', f.metadata,
-                'title', f.title,
-                'formType', f.form_type,
-                'nodeId', f.node_id,
-                'steps', f.steps,
-                'gridLayout', f.grid_layout
-              )
-            ) FILTER (WHERE f.id IS NOT NULL),
-            '[]'
-          ) as forms,
-          COALESCE(
-            json_agg(
-              DISTINCT jsonb_build_object(
-                'id', dm.id,
-                'name', dm.name,
-                'description', dm.description,
-                'fields', dm.fields,
-                'relationships', dm.relationships,
-                'indexes', dm.indexes,
-                'constraints', dm.constraints,
-                'config', dm.config,
-                'metadata', dm.metadata
-              )
-            ) FILTER (WHERE dm.id IS NOT NULL),
-            '[]'
-          ) as data_models,
-          COALESCE(
-            json_agg(
-              DISTINCT jsonb_build_object(
-                'id', p.id,
-                'name', p.name,
-                'title', p.title,
-                'description', p.description,
-                'route', p.route,
-                'components', p.components,
-                'layout', p.layout,
-                'forms', p.forms,
-                'workflows', p.workflows,
-                'data_sources', p.data_sources,
-                'config', p.config,
-                'styling', p.styling,
-                'metadata', p.metadata
-              )
-            ) FILTER (WHERE p.id IS NOT NULL),
-            '[]'
-          ) as pages,
-          row_to_json(m.*) as mobile_ui
-        FROM k1.applications a
-        LEFT JOIN k1.workflows w ON a.id = w.application_id
-        LEFT JOIN k1.forms f ON a.id = f.application_id
-        LEFT JOIN k1.data_models dm ON a.id = dm.application_id
-        LEFT JOIN k1.pages p ON a.id = p.application_id
-        LEFT JOIN k1.mobile_ui m ON a.id = m.application_id
-        WHERE a.id = $1
-        GROUP BY a.id, m.id
-      `, [id]);
+      // Run all queries in parallel for better performance
+      const [appResult, workflowsResult, formsResult, dataModelsResult, pagesResult, mobileUIResult] = await Promise.all([
+        db.query('SELECT * FROM k1.applications WHERE id = $1', [id]),
+        db.query('SELECT * FROM k1.workflows WHERE application_id = $1', [id]),
+        db.query('SELECT * FROM k1.forms WHERE application_id = $1', [id]),
+        db.query('SELECT * FROM k1.data_models WHERE application_id = $1', [id]),
+        db.query('SELECT * FROM k1.pages WHERE application_id = $1', [id]),
+        db.query('SELECT * FROM k1.mobile_ui WHERE application_id = $1 LIMIT 1', [id])
+      ]);
 
-      if (result.rows.length === 0) {
+      if (appResult.rows.length === 0) {
         return null;
       }
 
-      const row = result.rows[0];
+      const row = appResult.rows[0];
+
+      // Transform workflows
+      const workflows = workflowsResult.rows.map(w => ({
+        id: w.id,
+        name: w.name,
+        description: w.description,
+        version: w.version,
+        nodes: w.nodes,
+        edges: w.edges,
+        connections: w.connections,
+        metadata: w.metadata,
+        is_active: w.is_active,
+        created_at: w.created_at,
+        updated_at: w.updated_at
+      }));
+
+      // Transform forms
+      const forms = formsResult.rows.map(f => ({
+        id: f.id,
+        name: f.name,
+        description: f.description,
+        fields: f.fields,
+        layout: f.layout,
+        validation: f.validation,
+        data_model_id: f.data_model_id,
+        config: f.config,
+        styling: f.styling,
+        metadata: f.metadata,
+        title: f.title,
+        formType: f.form_type,
+        nodeId: f.node_id,
+        steps: f.steps,
+        gridLayout: f.grid_layout
+      }));
+
+      // Transform data models
+      const dataModels = dataModelsResult.rows.map(dm => ({
+        id: dm.id,
+        name: dm.name,
+        description: dm.description,
+        fields: dm.fields,
+        relationships: dm.relationships,
+        indexes: dm.indexes,
+        constraints: dm.constraints,
+        config: dm.config,
+        metadata: dm.metadata
+      }));
+
+      // Transform pages
+      const pages = pagesResult.rows.map(p => ({
+        id: p.id,
+        name: p.name,
+        title: p.title,
+        description: p.description,
+        route: p.route,
+        components: p.components,
+        layout: p.layout,
+        forms: p.forms,
+        workflows: p.workflows,
+        data_sources: p.data_sources,
+        config: p.config,
+        styling: p.styling,
+        metadata: p.metadata
+      }));
+
+      // Mobile UI (single record or null)
+      const mobileUI = mobileUIResult.rows.length > 0 ? mobileUIResult.rows[0] : null;
 
       return {
         id: row.id,
@@ -785,11 +940,11 @@ class ApplicationDatabase {
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         resources: {
-          workflows: row.workflows,
-          forms: row.forms,
-          dataModels: row.data_models,
-          pages: row.pages,
-          mobileUI: row.mobile_ui
+          workflows,
+          forms,
+          dataModels,
+          pages,
+          mobileUI
         },
         metadata: row.metadata
       };
@@ -849,10 +1004,10 @@ class ApplicationDatabase {
   }
 
   /**
-   * Get all applications
+   * Get all applications (lightweight listing)
    */
   async getAll() {
-    return await this.loadApplications();
+    return await this.listApplications();
   }
 
   /**

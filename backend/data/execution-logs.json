@@ -44,6 +44,36 @@
       "fixMethod": "ai",
       "executionTime": 5242,
       "retryCount": 1
+    },
+    {
+      "id": "log_1765364262348_a79gi5r1m",
+      "timestamp": "2025-12-10T10:57:42.348Z",
+      "workflowId": "leave-management-workflow",
+      "instanceId": "instance_1765364195053_ee0r0j5vh",
+      "nodeId": "scriptTask-1",
+      "nodeType": "scriptTask",
+      "taskLabel": "Check Conflicts",
+      "status": "fixed",
+      "originalScript": "checkLeaveConflicts(teamMember, dateRange, projects)",
+      "fixedScript": "// Check for conflicts with existing team leaves, project deadlines, and milestones\nconst teamMember = getField(processData, 'formData.employeeName') || 'Unknown';\nconst startDate = getField(processData, 'formData.startDate') || getField(processData, 'startDate');\nconst endDate = getField(processData, 'formData.endDate') || getField(processData, 'endDate');\nconst leaveType = getField(processData, 'formData.leaveType') || getField(processData, 'leaveType');\nconst totalDays = getField(processData, 'formData.totalDays');\n\n// Create date range object\nconst dateRange = {\n  start: startDate,\n  end: endDate,\n  totalDays: totalDays\n};\n\n// Initialize conflicts array\nlet conflicts = [];\n\n// Check for weekend conflicts\nconst startDateObj = new Date(startDate);\nconst endDateObj = new Date(endDate);\nconst dayOfWeek = startDateObj.getDay();\nif (dayOfWeek === 0 || dayOfWeek === 6) {\n  addToArray(conflicts, 'conflicts', {\n    type: 'weekend',\n    message: 'Leave request includes weekend days',\n    severity: 'low'\n  });\n}\n\n// Check for holiday conflicts (basic check for common holidays)\nconst currentDate = getCurrentDate();\nconst currentYear = new Date(currentDate).getFullYear();\nconst holidays = [\n  `${currentYear}-01-01`, // New Year\n  `${currentYear}-12-25`, // Christmas\n  `${currentYear}-07-04`  // Independence Day\n];\n\nholidays.forEach(holiday => {\n  if (startDate <= holiday && endDate >= holiday) {\n    addToArray(conflicts, 'conflicts', {\n      type: 'holiday',\n      message: `Leave overlaps with holiday: ${holiday}`,\n      severity: 'medium'\n    });\n  }\n});\n\n// Check for minimum notice period\nconst requestDate = new Date(getField(processData, 'startTime') || getCurrentDate());\nconst leaveStartDate = new Date(startDate);\nconst daysDifference = Math.ceil((leaveStartDate - requestDate) / (1000 * 60 * 60 * 24));\n\nif (daysDifference < 7 && leaveType !== 'Medical Leave') {\n  addToArray(conflicts, 'conflicts', {\n    type: 'notice',\n    message: 'Insufficient notice period (less than 7 days)',\n    severity: 'high'\n  });\n}\n\n// Check available balance\nconst availableBalance = getField(processData, 'availableBalance') || 0;\nif (totalDays > availableBalance) {\n  addToArray(conflicts, 'conflicts', {\n    type: 'balance',\n    message: `Insufficient leave balance. Requested: ${totalDays}, Available: ${availableBalance}`,\n    severity: 'high'\n  });\n}\n\n// Create result object\nconst result = {\n  teamMember: teamMember,\n  dateRange: dateRange,\n  leaveType: leaveType,\n  conflicts: getField(conflicts, 'conflicts') || [],\n  hasConflicts: (getField(conflicts, 'conflicts') || []).length > 0,\n  conflictSummary: formatString('Found {count} potential conflicts for {member}', {\n    count: (getField(conflicts, 'conflicts') || []).length,\n    member: teamMember\n  }),\n  checkDate: getCurrentDate(),\n  status: (getField(conflicts, 'conflicts') || []).some(c => c.severity === 'high') ? 'blocked' : 'approved'\n};\n\nlog('Conflict check completed for:', teamMember, 'Result:', result.status);\n\nresult",
+      "fixMethod": "ai",
+      "executionTime": 15440,
+      "retryCount": 1
+    },
+    {
+      "id": "log_1767009080327_btzg6v1ro",
+      "timestamp": "2025-12-29T11:51:20.327Z",
+      "workflowId": "workflow_1767009025228",
+      "instanceId": "instance_1767009080257_vk92o0c10",
+      "nodeId": "node_0",
+      "nodeType": "scriptTask",
+      "taskLabel": "Script Task",
+      "status": "success",
+      "originalScript": "return { executed: true };",
+      "fixedScript": null,
+      "fixMethod": null,
+      "executionTime": 1,
+      "retryCount": 0
     }
   ],
   "fixes": [
@@ -91,6 +121,21 @@
       },
       "successCount": 1,
       "lastUsed": "2025-12-06T19:10:50.761Z"
+    },
+    {
+      "id": "fix_1765364262351_yxxbbn8ls",
+      "timestamp": "2025-12-10T10:57:42.351Z",
+      "errorType": "ReferenceError",
+      "errorMessage": "checkLeaveConflicts is not defined",
+      "errorPattern": "checkLeaveConflicts is not defined",
+      "originalScript": "checkLeaveConflicts(teamMember, dateRange, projects)",
+      "fixedScript": "// Check for conflicts with existing team leaves, project deadlines, and milestones\nconst teamMember = getField(processData, 'formData.employeeName') || 'Unknown';\nconst startDate = getField(processData, 'formData.startDate') || getField(processData, 'startDate');\nconst endDate = getField(processData, 'formData.endDate') || getField(processData, 'endDate');\nconst leaveType = getField(processData, 'formData.leaveType') || getField(processData, 'leaveType');\nconst totalDays = getField(processData, 'formData.totalDays');\n\n// Create date range object\nconst dateRange = {\n  start: startDate,\n  end: endDate,\n  totalDays: totalDays\n};\n\n// Initialize conflicts array\nlet conflicts = [];\n\n// Check for weekend conflicts\nconst startDateObj = new Date(startDate);\nconst endDateObj = new Date(endDate);\nconst dayOfWeek = startDateObj.getDay();\nif (dayOfWeek === 0 || dayOfWeek === 6) {\n  addToArray(conflicts, 'conflicts', {\n    type: 'weekend',\n    message: 'Leave request includes weekend days',\n    severity: 'low'\n  });\n}\n\n// Check for holiday conflicts (basic check for common holidays)\nconst currentDate = getCurrentDate();\nconst currentYear = new Date(currentDate).getFullYear();\nconst holidays = [\n  `${currentYear}-01-01`, // New Year\n  `${currentYear}-12-25`, // Christmas\n  `${currentYear}-07-04`  // Independence Day\n];\n\nholidays.forEach(holiday => {\n  if (startDate <= holiday && endDate >= holiday) {\n    addToArray(conflicts, 'conflicts', {\n      type: 'holiday',\n      message: `Leave overlaps with holiday: ${holiday}`,\n      severity: 'medium'\n    });\n  }\n});\n\n// Check for minimum notice period\nconst requestDate = new Date(getField(processData, 'startTime') || getCurrentDate());\nconst leaveStartDate = new Date(startDate);\nconst daysDifference = Math.ceil((leaveStartDate - requestDate) / (1000 * 60 * 60 * 24));\n\nif (daysDifference < 7 && leaveType !== 'Medical Leave') {\n  addToArray(conflicts, 'conflicts', {\n    type: 'notice',\n    message: 'Insufficient notice period (less than 7 days)',\n    severity: 'high'\n  });\n}\n\n// Check available balance\nconst availableBalance = getField(processData, 'availableBalance') || 0;\nif (totalDays > availableBalance) {\n  addToArray(conflicts, 'conflicts', {\n    type: 'balance',\n    message: `Insufficient leave balance. Requested: ${totalDays}, Available: ${availableBalance}`,\n    severity: 'high'\n  });\n}\n\n// Create result object\nconst result = {\n  teamMember: teamMember,\n  dateRange: dateRange,\n  leaveType: leaveType,\n  conflicts: getField(conflicts, 'conflicts') || [],\n  hasConflicts: (getField(conflicts, 'conflicts') || []).length > 0,\n  conflictSummary: formatString('Found {count} potential conflicts for {member}', {\n    count: (getField(conflicts, 'conflicts') || []).length,\n    member: teamMember\n  }),\n  checkDate: getCurrentDate(),\n  status: (getField(conflicts, 'conflicts') || []).some(c => c.severity === 'high') ? 'blocked' : 'approved'\n};\n\nlog('Conflict check completed for:', teamMember, 'Result:', result.status);\n\nresult",
+      "taskContext": {
+        "label": "Check Conflicts",
+        "description": "Check for conflicts with existing team leaves, project deadlines, and milestones"
+      },
+      "successCount": 1,
+      "lastUsed": "2025-12-10T10:57:42.351Z"
     }
   ],
   "patterns": []

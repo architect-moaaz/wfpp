@@ -35,7 +35,7 @@ module.exports = {
   },
 
   app: {
-    name: process.env.APP_NAME || 'silly_eagle',
+    name: process.env.APP_NAME || 'silly-eagle',
     version: process.env.APP_VERSION || '1.0.0'
   }
 };

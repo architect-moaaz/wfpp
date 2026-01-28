@@ -1,21 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Grid, List, Filter, Plus, MoreVertical, TrendingUp,
-  AlertTriangle, Activity, Users, Clock
+  AlertTriangle, Activity, Users, Clock, Rocket, Settings
 } from 'lucide-react';
 import './ApplicationsDashboard.css';
 import { useWorkflow } from '../../context/WorkflowContext';
+import { DeploymentDashboard } from '../Deployment';
+import ApplicationSettings from './ApplicationSettings';
 
 const ApplicationsDashboard = () => {
-  const { setCurrentApplication, setActiveSidebar } = useWorkflow();
+  const { setCurrentApplication, setActiveSidebar, setCurrentWorkflow, setConnectedForms, setDataModels, setConnectedPages } = useWorkflow();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [currentPage, setCurrentPage] = useState(1);
+  const [deploymentApp, setDeploymentApp] = useState(null);
+  const [settingsApp, setSettingsApp] = useState(null);
+  const [showDeployDropdown, setShowDeployDropdown] = useState(false);
+  const deployDropdownRef = useRef(null);
   const appsPerPage = 8;
 
   useEffect(() => {
     fetchApplications();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (deployDropdownRef.current && !deployDropdownRef.current.contains(event.target)) {
+        setShowDeployDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const fetchApplications = async () => {
@@ -61,8 +78,15 @@ const ApplicationsDashboard = () => {
       const data = await response.json();
 
       if (data.success) {
+        // Clear all previous state when creating a new app
+        setCurrentWorkflow(null);
+        setConnectedForms([]);
+        setDataModels([]);
+        setConnectedPages([]);
         setCurrentApplication(data.application);
         setActiveSidebar('workflows');
+        // Refresh the applications list
+        fetchApplications();
       }
     } catch (error) {
       console.error('Failed to create application:', error);
@@ -134,6 +158,34 @@ const ApplicationsDashboard = () => {
             <Filter size={18} />
             Filter
           </button>
+          <div className="deploy-dropdown-container" ref={deployDropdownRef}>
+            <button
+              className="deploy-header-btn"
+              onClick={() => setShowDeployDropdown(!showDeployDropdown)}
+              disabled={applications.length === 0}
+            >
+              <Rocket size={18} />
+              Deploy
+            </button>
+            {showDeployDropdown && (
+              <div className="deploy-dropdown">
+                <div className="deploy-dropdown-header">Select Application</div>
+                {applications.map(app => (
+                  <div
+                    key={app.id}
+                    className="deploy-dropdown-item"
+                    onClick={() => {
+                      setDeploymentApp(app);
+                      setShowDeployDropdown(false);
+                    }}
+                  >
+                    <span className="dropdown-app-icon">{app.name.substring(0, 2).toUpperCase()}</span>
+                    <span className="dropdown-app-name">{app.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <button className="new-app-btn" onClick={handleCreateNew}>
             <Plus size={18} />
             New App
@@ -190,9 +242,32 @@ const ApplicationsDashboard = () => {
         </div>
       </div>
 
+      {deploymentApp && (
+        <div className="deployment-modal-overlay">
+          <DeploymentDashboard
+            application={deploymentApp}
+            onClose={() => setDeploymentApp(null)}
+          />
+        </div>
+      )}
+
+      {settingsApp && (
+        <div className="deployment-modal-overlay">
+          <ApplicationSettings
+            application={settingsApp}
+            onClose={() => setSettingsApp(null)}
+          />
+        </div>
+      )}
+
       <div className={`apps-grid ${viewMode}`}>
         {currentApps.map(app => (
-          <AppCard key={app.id} app={app} onRefresh={fetchApplications} />
+          <AppCard
+            key={app.id}
+            app={app}
+            onRefresh={fetchApplications}
+            onOpenSettings={() => setSettingsApp(app)}
+          />
         ))}
 
         {currentApps.length < appsPerPage && (
@@ -235,9 +310,8 @@ const ApplicationsDashboard = () => {
   );
 };
 
-const AppCard = ({ app, onRefresh }) => {
+const AppCard = ({ app, onRefresh, onOpenSettings }) => {
   const { setCurrentApplication, setConnectedForms, setDataModels, setConnectedPages, setCurrentWorkflow, setActiveSidebar } = useWorkflow();
-  const [showMenu, setShowMenu] = useState(false);
 
   const getStatusInfo = (status) => {
     const statusMap = {
@@ -280,26 +354,37 @@ const AppCard = ({ app, onRefresh }) => {
   const updatedTime = getUpdatedTime();
 
   const handleLoadApp = async () => {
+    console.log('[AppCard] handleLoadApp called for app:', app.id, app.name);
     try {
       const response = await fetch(`http://localhost:5000/api/applications/${app.id}`);
       const data = await response.json();
+      console.log('[AppCard] API response:', data.success, data.application?.name);
 
       if (data.success && data.application) {
         const application = data.application;
         setCurrentApplication(application);
 
+        // Clear all previous state first, then set new data
         const workflows = application.resources?.workflows || [];
+        console.log('[AppCard] Setting workflows:', workflows.length);
         if (workflows.length > 0 && workflows[0]) {
           setCurrentWorkflow(workflows[0]);
+        } else {
+          setCurrentWorkflow(null); // Clear workflow when none exist
         }
 
         setConnectedForms(application.resources?.forms || []);
         setDataModels(application.resources?.dataModels || []);
         setConnectedPages(application.resources?.pages || []);
+        console.log('[AppCard] Setting activeSidebar to workflows');
         setActiveSidebar('workflows');
+      } else {
+        console.error('[AppCard] API returned unsuccessful:', data);
+        alert('Failed to load application: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Failed to load application:', error);
+      alert('Failed to load application: ' + error.message);
     }
   };
 
@@ -311,16 +396,17 @@ const AppCard = ({ app, onRefresh }) => {
         </div>
         <div className="app-title">
           <h3>{app.name}</h3>
-          <p className="app-env">{environment} • v{app.version || '2.4.0'}</p>
+          <p className="app-env">{environment}{app.version ? ` • v${app.version}` : ''}</p>
         </div>
         <button
-          className="menu-btn"
+          className="menu-btn settings-btn"
           onClick={(e) => {
             e.stopPropagation();
-            setShowMenu(!showMenu);
+            onOpenSettings();
           }}
+          title="Settings"
         >
-          <MoreVertical size={18} />
+          <Settings size={18} />
         </button>
       </div>
 

@@ -1,365 +1,138 @@
 [
   {
-    "id": "app_1764401384600_book",
-    "name": "Book",
-    "config": {},
+    "id": "contact",
+    "name": "Contact",
+    "description": "Core contact entity storing contact information",
     "fields": [
       {
-        "name": "isbn",
+        "name": "id",
         "type": "string",
+        "description": "Unique identifier for the contact",
         "required": true,
-        "description": "International Standard Book Number - unique identifier for the book",
+        "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "title",
+        "name": "firstName",
         "type": "string",
+        "description": "Contact's first name",
         "required": true,
-        "description": "The title of the book",
         "defaultValue": null
       },
       {
-        "name": "author",
+        "name": "lastName",
         "type": "string",
+        "description": "Contact's last name",
         "required": true,
-        "description": "The author(s) of the book",
-        "defaultValue": null
-      },
-      {
-        "name": "category",
-        "type": "string",
-        "required": true,
-        "description": "Genre or category classification (e.g., Fiction, Science, History)",
-        "defaultValue": null
-      },
-      {
-        "name": "availabilityStatus",
-        "type": "string",
-        "required": true,
-        "description": "Current status of the book: 'available', 'checked_out', or 'reserved'",
-        "defaultValue": "available"
-      },
-      {
-        "name": "publicationYear",
-        "type": "number",
-        "required": false,
-        "description": "Year the book was published",
-        "defaultValue": null
-      },
-      {
-        "name": "dateAdded",
-        "type": "date",
-        "required": true,
-        "description": "Date when the book was added to the library collection",
-        "defaultValue": null
-      }
-    ],
-    "indexes": [
-      "isbn",
-      "availabilityStatus"
-    ],
-    "metadata": {},
-    "constraints": {
-      "enum": {
-        "availabilityStatus": [
-          "available",
-          "checked_out",
-          "reserved"
-        ]
-      },
-      "unique": [
-        "isbn"
-      ]
-    },
-    "description": "Represents books in the library collection with details like title, author, ISBN, category, and current availability status",
-    "relationships": []
-  },
-  {
-    "id": "app_1764401384600_member",
-    "name": "Member",
-    "config": {},
-    "fields": [
-      {
-        "name": "membershipId",
-        "type": "string",
-        "required": true,
-        "description": "Unique membership identification number",
-        "defaultValue": null
-      },
-      {
-        "name": "fullName",
-        "type": "string",
-        "required": true,
-        "description": "Full name of the library member",
         "defaultValue": null
       },
       {
         "name": "email",
         "type": "string",
+        "description": "Primary email address",
         "required": true,
-        "description": "Email address for member communication",
         "defaultValue": null
       },
       {
         "name": "phone",
         "type": "string",
+        "description": "Primary phone number",
         "required": false,
-        "description": "Contact phone number",
         "defaultValue": null
       },
       {
-        "name": "membershipStatus",
+        "name": "company",
         "type": "string",
-        "required": true,
-        "description": "Current status of membership (active, suspended, expired)",
-        "defaultValue": "active"
-      },
-      {
-        "name": "joinDate",
-        "type": "date",
-        "required": true,
-        "description": "Date when member joined the library",
+        "description": "Associated company or organization",
+        "required": false,
         "defaultValue": null
       },
       {
-        "name": "expiryDate",
-        "type": "date",
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the contact is currently active",
         "required": true,
-        "description": "Date when membership expires",
-        "defaultValue": null
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when contact was created",
+        "required": true,
+        "defaultValue": "now()"
       }
     ],
-    "indexes": [
-      "membershipId",
-      "email"
-    ],
-    "metadata": {},
-    "constraints": {
-      "uniqueFields": [
-        "membershipId",
-        "email"
-      ],
-      "membershipStatus": [
-        "active",
-        "suspended",
-        "expired"
-      ]
-    },
-    "description": "Represents library members with personal details, contact information, and membership status",
-    "relationships": []
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "workflow-create-new-contact"
   },
   {
-    "id": "app_1764401384600_reservation",
-    "name": "Reservation",
-    "config": {},
+    "id": "contact",
+    "name": "Contact",
+    "description": "Contact entity for storing contact information",
     "fields": [
       {
         "name": "id",
         "type": "string",
+        "description": "Unique identifier for the contact",
         "required": true,
-        "description": "Unique identifier for the reservation",
+        "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "bookId",
+        "name": "firstName",
         "type": "string",
+        "description": "Contact's first name",
         "required": true,
-        "description": "Reference to the reserved book",
         "defaultValue": null
       },
       {
-        "name": "memberId",
+        "name": "lastName",
         "type": "string",
+        "description": "Contact's last name",
         "required": true,
-        "description": "Reference to the member making the reservation",
         "defaultValue": null
       },
       {
-        "name": "reservationDate",
-        "type": "date",
-        "required": true,
-        "description": "Date and time when the reservation was placed",
-        "defaultValue": null
-      },
-      {
-        "name": "queuePosition",
-        "type": "number",
-        "required": true,
-        "description": "Position in the reservation queue for this book",
-        "defaultValue": null
-      },
-      {
-        "name": "status",
+        "name": "email",
         "type": "string",
+        "description": "Contact's email address",
         "required": true,
-        "description": "Current status of reservation (pending, ready, fulfilled, cancelled, expired)",
-        "defaultValue": "pending"
+        "defaultValue": null
       },
       {
-        "name": "expiryDate",
-        "type": "date",
+        "name": "phone",
+        "type": "string",
+        "description": "Contact's phone number",
         "required": false,
-        "description": "Date when the reservation expires if not picked up (when status is ready)",
         "defaultValue": null
-      }
-    ],
-    "indexes": [
-      {
-        "fields": [
-          "bookId",
-          "queuePosition"
-        ],
-        "unique": false,
-        "description": "Optimize queue position lookups for specific books"
       },
       {
-        "fields": [
-          "memberId",
-          "status"
-        ],
-        "unique": false,
-        "description": "Quickly retrieve member's active reservations"
-      },
-      {
-        "fields": [
-          "status",
-          "expiryDate"
-        ],
-        "unique": false,
-        "description": "Identify expired reservations for cleanup"
-      }
-    ],
-    "metadata": {},
-    "constraints": {
-      "validStatus": "Status must be one of: pending, ready, fulfilled, cancelled, expired",
-      "queuePositionPositive": "Queue position must be a positive integer",
-      "uniqueActiveReservation": "A member cannot have multiple active reservations for the same book"
-    },
-    "description": "Manages book reservations for items currently unavailable, tracking queue position and priority order",
-    "relationships": [
-      {
-        "type": "many-to-one",
-        "entity": "Book",
-        "foreignKey": "bookId",
-        "description": "Each reservation is for one book"
-      },
-      {
-        "type": "many-to-one",
-        "entity": "Member",
-        "foreignKey": "memberId",
-        "description": "Each reservation belongs to one member"
-      }
-    ]
-  },
-  {
-    "id": "app_1764401384600_transaction",
-    "name": "Transaction",
-    "config": {},
-    "fields": [
-      {
-        "name": "id",
+        "name": "company",
         "type": "string",
-        "required": true,
-        "description": "Unique identifier for the transaction",
-        "defaultValue": null
-      },
-      {
-        "name": "memberId",
-        "type": "string",
-        "required": true,
-        "description": "Reference to the member who borrowed the book",
-        "defaultValue": null
-      },
-      {
-        "name": "bookId",
-        "type": "string",
-        "required": true,
-        "description": "Reference to the borrowed book",
-        "defaultValue": null
-      },
-      {
-        "name": "checkoutDate",
-        "type": "date",
-        "required": true,
-        "description": "Date when the book was checked out",
-        "defaultValue": null
-      },
-      {
-        "name": "dueDate",
-        "type": "date",
-        "required": true,
-        "description": "Date when the book is due for return",
-        "defaultValue": null
-      },
-      {
-        "name": "returnDate",
-        "type": "date",
+        "description": "Company or organization name",
         "required": false,
-        "description": "Actual date when the book was returned (null if not yet returned)",
         "defaultValue": null
       },
       {
-        "name": "lateFee",
-        "type": "number",
-        "required": false,
-        "description": "Calculated late fee amount in currency units",
-        "defaultValue": 0
-      },
-      {
-        "name": "status",
-        "type": "string",
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the contact is active",
         "required": true,
-        "description": "Current status of the transaction (checked_out, returned, overdue)",
-        "defaultValue": "checked_out"
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the contact was created",
+        "required": true,
+        "defaultValue": "now"
       }
     ],
-    "indexes": [
-      {
-        "fields": [
-          "memberId"
-        ],
-        "description": "Index for quick lookup of member transaction history"
-      },
-      {
-        "fields": [
-          "bookId"
-        ],
-        "description": "Index for tracking book borrowing history"
-      },
-      {
-        "fields": [
-          "status"
-        ],
-        "description": "Index for filtering transactions by status"
-      },
-      {
-        "fields": [
-          "dueDate"
-        ],
-        "description": "Index for identifying overdue books"
-      }
-    ],
-    "metadata": {},
-    "constraints": {
-      "validStatus": "status must be one of: checked_out, returned, overdue",
-      "nonNegativeFee": "lateFee must be greater than or equal to 0",
-      "checkoutBeforeDue": "checkoutDate must be before dueDate",
-      "returnAfterCheckout": "returnDate must be after checkoutDate if set"
-    },
-    "description": "Records book borrowing transactions including checkout, returns, and late fees for library members",
-    "relationships": [
-      {
-        "type": "many-to-one",
-        "foreignKey": "memberId",
-        "description": "Each transaction belongs to one member",
-        "relatedModel": "Member"
-      },
-      {
-        "type": "many-to-one",
-        "foreignKey": "bookId",
-        "description": "Each transaction is associated with one book",
-        "relatedModel": "Book"
-      }
-    ]
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "workflow-create-new-contact"
   }
 ]

@@ -166,37 +166,134 @@ I am an expert in **cross-platform mobile UI** for React Native and Flutter with
       });
     }
 
-    const prompt = `Generate cross-platform mobile UI for: "${userRequirements}"
+    // Limit workflow nodes to prevent overly large output
+    const workflowNodes = workflow?.nodes?.slice(0, 10) || [];
+    const workflowSummary = workflowNodes.map(n => ({
+      id: n.id,
+      type: n.type,
+      label: n.data?.label || n.data?.name
+    }));
 
-Workflow:
-${JSON.stringify(workflow?.nodes, null, 2)}
+    const prompt = `Generate mobile UI screens for: "${userRequirements}"
 
-Create mobile UI with:
-1. Screen for each workflow step
-2. Cross-platform components (React Native)
-3. Platform-aware adaptations
-4. Navigation structure
-5. Touch-friendly interactions
+Workflow steps (summarized):
+${JSON.stringify(workflowSummary, null, 2)}
 
-IMPORTANT: Return ONLY valid JSON with proper syntax. Ensure all commas, brackets, and braces are correct.`;
+Create a CONCISE mobile UI with:
+1. One screen per main workflow step (max 5 screens)
+2. Simple component hierarchy (avoid deep nesting)
+3. Essential components only
+
+CRITICAL: Keep the response SHORT. Use minimal props. Return ONLY this JSON structure:
+{
+  "screens": [
+    {
+      "id": "screen_1",
+      "name": "ScreenName",
+      "type": "list|detail|form",
+      "components": [
+        { "type": "header", "props": { "text": "Title" } },
+        { "type": "textinput", "props": { "label": "Field", "name": "field1" } },
+        { "type": "button", "props": { "title": "Submit" } }
+      ]
+    }
+  ],
+  "navigation": { "type": "stack", "screens": ["Screen1", "Screen2"] }
+}`;
 
     const messages = [{
       role: 'user',
       content: prompt
     }];
 
-    // Use self-healing execution with AI correction for JSON errors
-    const result = await this.executeWithSelfHealing(messages, onThinking);
+    try {
+      // Use self-healing execution with AI correction for JSON errors
+      const result = await this.executeWithSelfHealing(messages, onThinking);
 
-    if (onThinking) {
-      onThinking({
-        agent: this.name,
-        step: 'Mobile UI Complete',
-        content: `Generated ${result.screens?.length || 0} cross-platform screen(s)`
+      if (onThinking) {
+        onThinking({
+          agent: this.name,
+          step: 'Mobile UI Complete',
+          content: `Generated ${result.screens?.length || 0} cross-platform screen(s)`
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error(`[${this.name}] Failed to generate mobile UI, returning fallback:`, error.message);
+
+      if (onThinking) {
+        onThinking({
+          agent: this.name,
+          step: 'Using Fallback UI',
+          content: 'JSON parsing failed, generating basic mobile UI from workflow'
+        });
+      }
+
+      // Return a fallback mobile UI based on workflow
+      return this.generateFallbackUI(workflow, userRequirements);
+    }
+  }
+
+  /**
+   * Generate fallback mobile UI when AI response parsing fails
+   */
+  generateFallbackUI(workflow, userRequirements) {
+    const screens = [];
+    const nodes = workflow?.nodes || [];
+
+    // Create a screen for each workflow node (up to 5)
+    for (let i = 0; i < Math.min(nodes.length, 5); i++) {
+      const node = nodes[i];
+      const screenName = node.data?.label || node.data?.name || `Screen${i + 1}`;
+
+      screens.push({
+        id: `screen_${node.id || i}`,
+        name: screenName.replace(/\s+/g, ''),
+        type: node.type === 'formTask' ? 'form' : 'detail',
+        components: [
+          {
+            type: 'header',
+            props: { text: screenName }
+          },
+          {
+            type: 'text',
+            props: { text: `${screenName} content` }
+          },
+          {
+            type: 'button',
+            props: { title: 'Continue', primary: true }
+          }
+        ]
       });
     }
 
-    return result;
+    // If no workflow nodes, create a default screen
+    if (screens.length === 0) {
+      screens.push({
+        id: 'screen_main',
+        name: 'Main',
+        type: 'detail',
+        components: [
+          {
+            type: 'header',
+            props: { text: userRequirements?.substring(0, 50) || 'Application' }
+          },
+          {
+            type: 'text',
+            props: { text: 'Welcome to your application' }
+          }
+        ]
+      });
+    }
+
+    return {
+      screens,
+      navigation: {
+        type: screens.length > 3 ? 'tab' : 'stack',
+        screens: screens.map(s => s.name)
+      }
+    };
   }
 }
 

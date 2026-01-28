@@ -54,8 +54,28 @@ const PageFlowCanvas = ({ onBack }) => {
   }, [connectedPages, currentWorkflow]);
 
   const convertPagesToFlow = (pagesData) => {
+    // Normalize page data - handle both PageExpert output and database storage formats
+    const normalizedPages = pagesData.map(page => {
+      // Extract sections from either top level or metadata.sections
+      const sections = page.sections || page.metadata?.sections || page.components || [];
+      // Extract navigation from either top level or metadata.navigation
+      const navigation = page.navigation || page.metadata?.navigation || {};
+      // Extract type from either top level, layout.type, or metadata.pageType
+      const pageType = page.type || page.layout?.type || page.metadata?.pageType || 'default';
+      // Extract platform from either top level or metadata.platform
+      const platform = page.platform || page.metadata?.platform || 'both';
+
+      return {
+        ...page,
+        sections,
+        navigation,
+        type: pageType,
+        platform
+      };
+    });
+
     // Create nodes from pages
-    const flowNodes = pagesData.map((page, index) => ({
+    const flowNodes = normalizedPages.map((page, index) => ({
       id: page.id,
       type: 'pageNode',
       position: {
@@ -105,12 +125,12 @@ const PageFlowCanvas = ({ onBack }) => {
       let normalizedTarget = targetRoute.replace(/\{\{[^}]+\}\}/g, ':id');
 
       // 1. Try exact match first
-      let found = pagesData.find(p => p.route === normalizedTarget);
+      let found = normalizedPages.find(p => p.route === normalizedTarget);
       if (found) return found;
 
       // 2. Try matching base paths (without parameters)
       const targetBase = normalizedTarget.split('/').filter(s => !s.startsWith(':')).join('/');
-      found = pagesData.find(p => {
+      found = normalizedPages.find(p => {
         const pageBase = p.route.split('/').filter(s => !s.startsWith(':')).join('/');
         return pageBase === targetBase;
       });
@@ -118,7 +138,7 @@ const PageFlowCanvas = ({ onBack }) => {
 
       // 3. Try fuzzy matching for similar routes
       const targetParts = targetBase.split('/').filter(Boolean);
-      found = pagesData.find(p => {
+      found = normalizedPages.find(p => {
         const pageParts = p.route.split('/').filter(s => !s.startsWith(':')).filter(Boolean);
         // Check if routes are similar (accounting for singular/plural, etc.)
         if (targetParts.length === 0 || pageParts.length === 0) return false;
@@ -137,10 +157,10 @@ const PageFlowCanvas = ({ onBack }) => {
       return found;
     };
 
-    console.log('[PageFlowCanvas] Processing', pagesData.length, 'pages for navigation extraction');
-    console.log('[PageFlowCanvas] Page routes:', pagesData.map(p => p.route));
+    console.log('[PageFlowCanvas] Processing', normalizedPages.length, 'pages for navigation extraction');
+    console.log('[PageFlowCanvas] Page routes:', normalizedPages.map(p => p.route));
 
-    pagesData.forEach((page) => {
+    normalizedPages.forEach((page) => {
       // Debug: log navigation structure
       if (page.navigation) {
         console.log('[PageFlowCanvas] Page', page.route, 'has navigation:', page.navigation);

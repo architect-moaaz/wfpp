@@ -1,0 +1,262 @@
+[
+  {
+    "id": "notify-task-update-workflow",
+    "name": "Notify Task Update",
+    "description": "Sends notifications to relevant users when a task is updated or its status changes, respecting user notification preferences",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start-1",
+        "type": "startProcess",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "label": "Task Update Triggered",
+          "formId": "registration-form-1767699704603-ufti21",
+          "formName": "Registration Form",
+          "description": "Workflow starts when a task is updated"
+        }
+      },
+      {
+        "id": "dataProcess-1",
+        "type": "dataProcess",
+        "position": {
+          "x": 250,
+          "y": 100
+        },
+        "data": {
+          "label": "Fetch Task Details",
+          "description": "Retrieve complete task information including assignees, watchers, and project details"
+        }
+      },
+      {
+        "id": "dataProcess-2",
+        "type": "dataProcess",
+        "position": {
+          "x": 400,
+          "y": 100
+        },
+        "data": {
+          "label": "Identify Recipients",
+          "description": "Determine who should be notified: task assignee, creator, watchers, and project members"
+        }
+      },
+      {
+        "id": "dataProcess-3",
+        "type": "dataProcess",
+        "position": {
+          "x": 550,
+          "y": 100
+        },
+        "data": {
+          "label": "Check Notification Preferences",
+          "description": "Filter recipients based on their notification preferences for this update type"
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "decision",
+        "position": {
+          "x": 700,
+          "y": 100
+        },
+        "data": {
+          "label": "Any Recipients?",
+          "description": "Check if there are any users to notify after preference filtering"
+        }
+      },
+      {
+        "id": "dataProcess-4",
+        "type": "dataProcess",
+        "position": {
+          "x": 850,
+          "y": 200
+        },
+        "data": {
+          "label": "Generate Notification Content",
+          "description": "Create personalized notification message based on update type and task details"
+        }
+      },
+      {
+        "id": "notification-1",
+        "type": "notification",
+        "position": {
+          "x": 1000,
+          "y": 200
+        },
+        "data": {
+          "label": "Send Notifications",
+          "description": "Send notifications via configured channels (email, push, in-app)"
+        }
+      },
+      {
+        "id": "scriptTask-1",
+        "type": "scriptTask",
+        "position": {
+          "x": 1150,
+          "y": 200
+        },
+        "data": {
+          "label": "Log Notification Event",
+          "description": "Record notification delivery in the Notification data model for audit trail"
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "endProcess",
+        "position": {
+          "x": 1300,
+          "y": 150
+        },
+        "data": {
+          "label": "Notifications Sent",
+          "description": "Workflow completed successfully"
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "endProcess",
+        "position": {
+          "x": 850,
+          "y": 50
+        },
+        "data": {
+          "label": "No Notifications Required",
+          "description": "Workflow ended - no recipients to notify"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "start-1",
+        "target": "dataProcess-1"
+      },
+      {
+        "id": "edge-2",
+        "source": "dataProcess-1",
+        "target": "dataProcess-2"
+      },
+      {
+        "id": "edge-3",
+        "source": "dataProcess-2",
+        "target": "dataProcess-3"
+      },
+      {
+        "id": "edge-4",
+        "source": "dataProcess-3",
+        "target": "decision-1"
+      },
+      {
+        "id": "edge-5",
+        "source": "decision-1",
+        "target": "dataProcess-4"
+      },
+      {
+        "id": "edge-6",
+        "source": "decision-1",
+        "target": "end-2"
+      },
+      {
+        "id": "edge-7",
+        "source": "dataProcess-4",
+        "target": "notification-1"
+      },
+      {
+        "id": "edge-8",
+        "source": "notification-1",
+        "target": "scriptTask-1"
+      },
+      {
+        "id": "edge-9",
+        "source": "scriptTask-1",
+        "target": "end-1"
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge-1",
+        "label": "",
+        "source": "start-1",
+        "target": "dataProcess-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-2",
+        "label": "",
+        "source": "dataProcess-1",
+        "target": "dataProcess-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-3",
+        "label": "",
+        "source": "dataProcess-2",
+        "target": "dataProcess-3",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-4",
+        "label": "",
+        "source": "dataProcess-3",
+        "target": "decision-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-5",
+        "label": "Yes",
+        "source": "decision-1",
+        "target": "dataProcess-4",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-6",
+        "label": "No",
+        "source": "decision-1",
+        "target": "end-2",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-7",
+        "label": "",
+        "source": "dataProcess-4",
+        "target": "notification-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-8",
+        "label": "",
+        "source": "notification-1",
+        "target": "scriptTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-9",
+        "label": "",
+        "source": "scriptTask-1",
+        "target": "end-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      }
+    ],
+    "metadata": {
+      "category": "automation",
+      "complexity": "medium"
+    },
+    "is_active": true,
+    "created_at": "2026-01-06T11:47:32.012Z",
+    "updated_at": "2026-01-06T12:29:41.395Z",
+    "updatedAt": "2026-01-07T04:47:07.637Z"
+  }
+]

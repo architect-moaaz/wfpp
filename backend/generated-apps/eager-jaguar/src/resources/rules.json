@@ -1,0 +1,251 @@
+[
+  {
+    "id": "rule_start_process_validation",
+    "name": "Start Process Validation Rule",
+    "description": "Validates required fields when creating a new task",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.title",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "task.title",
+          "message": "Task title is required and cannot be empty"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "workflow-create-task",
+    "workflowId": "workflow-create-task",
+    "application_id": "app_1768636754264"
+  },
+  {
+    "id": "rule_submit_task_validation",
+    "name": "Submit Task Details Validation Rule",
+    "description": "Validates task description length and due date",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.description",
+          "operator": "lessThan",
+          "value": 10
+        },
+        {
+          "field": "task.dueDate",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "task.description",
+          "message": "Task description must be at least 10 characters"
+        },
+        {
+          "type": "validateField",
+          "field": "task.dueDate",
+          "message": "Due date is required for task submission"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "workflow-create-task",
+    "workflowId": "workflow-create-task",
+    "application_id": "app_1768636754264"
+  },
+  {
+    "id": "rule_validate_task_data",
+    "name": "Validate Task Data Rule",
+    "description": "Ensures task data meets business requirements",
+    "type": "validation",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.estimatedHours",
+          "operator": "greaterThan",
+          "value": 160
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "task.estimatedHours",
+          "message": "Estimated hours cannot exceed 160 hours (1 month)"
+        },
+        {
+          "type": "logMessage",
+          "message": "Task validation failed: Estimated hours exceeded maximum limit"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "workflow-create-task",
+    "workflowId": "workflow-create-task",
+    "application_id": "app_1768636754264"
+  },
+  {
+    "id": "rule_check_priority_level",
+    "name": "Check Priority Level Rule",
+    "description": "Routes task based on priority level for approval",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.priority",
+          "operator": "in",
+          "value": [
+            "High",
+            "Critical"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "requiresApproval",
+          "value": true
+        },
+        {
+          "type": "sendNotification",
+          "message": "High priority task requires manager approval"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "workflow-create-task",
+    "workflowId": "workflow-create-task",
+    "application_id": "app_1768636754264"
+  },
+  {
+    "id": "rule_manager_approval_validation",
+    "name": "Manager Approval Validation Rule",
+    "description": "Validates manager approval comments and decision",
+    "type": "validation",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approval.comments",
+          "operator": "isNull",
+          "value": true
+        },
+        {
+          "field": "approval.decision",
+          "operator": "equals",
+          "value": "Rejected"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "approval.comments",
+          "message": "Comments are required when rejecting a task"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "workflow-create-task",
+    "workflowId": "workflow-create-task",
+    "application_id": "app_1768636754264"
+  },
+  {
+    "id": "rule_approval_decision",
+    "name": "Approval Decision Rule",
+    "description": "Routes workflow based on manager approval decision",
+    "type": "decision",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approval.decision",
+          "operator": "equals",
+          "value": "Approved"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "task.status",
+          "value": "Approved"
+        },
+        {
+          "type": "sendNotification",
+          "message": "Task has been approved and is ready for assignment"
+        },
+        {
+          "type": "updateData",
+          "field": "task.approvedDate",
+          "value": "{{currentDate}}"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "workflow-create-task",
+    "workflowId": "workflow-create-task",
+    "application_id": "app_1768636754264"
+  },
+  {
+    "id": "rule_revise_task_validation",
+    "name": "Revise Task Details Validation Rule",
+    "description": "Validates revised task details after rejection",
+    "type": "validation",
+    "priority": 7,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.revisionNotes",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "task.revisionNotes",
+          "message": "Revision notes are required when resubmitting a rejected task"
+        },
+        {
+          "type": "logMessage",
+          "message": "Task revision validation failed: Missing revision notes"
+        }
+      ]
+    },
+    "node_id": "userTask-3",
+    "workflow_id": "workflow-create-task",
+    "workflowId": "workflow-create-task",
+    "application_id": "app_1768636754264"
+  }
+]

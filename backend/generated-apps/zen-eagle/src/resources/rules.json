@@ -1,0 +1,210 @@
+[
+  {
+    "id": "rule_start_process",
+    "name": "Start Rule",
+    "description": "Validate user input when initiating leave calculation process",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "LeaveRequest.startDate",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "LeaveRequest.startDate",
+          "value": null,
+          "message": "Start date is required to calculate leave days"
+        },
+        {
+          "type": "stopWorkflow",
+          "field": "workflowStatus",
+          "value": "stopped",
+          "message": "Workflow stopped due to missing required fields"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "wf-calculate-leave-days",
+    "workflowId": "wf-calculate-leave-days",
+    "application_id": "app_1768478396826"
+  },
+  {
+    "id": "rule_validate_date_range",
+    "name": "Validate Date Range Rule",
+    "description": "Validate that end date is after start date and dates are not in the past",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "LeaveRequest.endDate",
+          "operator": "lessThan",
+          "value": "LeaveRequest.startDate"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "invalid",
+          "message": "Date range validation failed"
+        },
+        {
+          "type": "validateField",
+          "field": "LeaveRequest.endDate",
+          "value": "error",
+          "message": "End date must be after start date"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "error",
+          "message": "Invalid date range detected for leave request"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "wf-calculate-leave-days",
+    "workflowId": "wf-calculate-leave-days",
+    "application_id": "app_1768478396826"
+  },
+  {
+    "id": "rule_dates_valid_decision",
+    "name": "Dates Valid? Rule",
+    "description": "Determine workflow path based on date validation results",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validationStatus",
+          "operator": "equals",
+          "value": "valid"
+        },
+        {
+          "field": "LeaveRequest.startDate",
+          "operator": "greaterThan",
+          "value": "currentDate"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "proceedToCalculation",
+          "message": "Dates are valid, proceed to leave calculation"
+        },
+        {
+          "type": "logMessage",
+          "field": "processLog",
+          "value": "info",
+          "message": "Date validation passed, continuing workflow"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "wf-calculate-leave-days",
+    "workflowId": "wf-calculate-leave-days",
+    "application_id": "app_1768478396826"
+  },
+  {
+    "id": "rule_include_holidays_decision",
+    "name": "Include Holidays? Rule",
+    "description": "Determine if holidays should be excluded from leave day calculation",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "LeaveType.excludeHolidays",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "calculationMethod",
+          "value": "excludeHolidays",
+          "message": "Holidays will be excluded from leave calculation"
+        },
+        {
+          "type": "executeScript",
+          "field": "calculateLeaveDays",
+          "value": "excludeHolidaysScript",
+          "message": "Execute calculation script excluding public holidays"
+        },
+        {
+          "type": "logMessage",
+          "field": "calculationLog",
+          "value": "info",
+          "message": "Calculating leave days with holidays excluded"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "wf-calculate-leave-days",
+    "workflowId": "wf-calculate-leave-days",
+    "application_id": "app_1768478396826"
+  },
+  {
+    "id": "rule_review_invalid_dates",
+    "name": "Review Invalid Dates Rule",
+    "description": "Handle invalid date scenarios and prompt user for correction",
+    "type": "notification",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validationStatus",
+          "operator": "equals",
+          "value": "invalid"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "sendNotification",
+          "field": "Employee.email",
+          "value": "dateValidationError",
+          "message": "Your leave request contains invalid dates. Please review and correct the date range."
+        },
+        {
+          "type": "setVariable",
+          "field": "LeaveRequest.status",
+          "value": "pendingCorrection",
+          "message": "Leave request status set to pending correction"
+        },
+        {
+          "type": "updateData",
+          "field": "StatusLog",
+          "value": "invalidDatesDetected",
+          "message": "Status log updated with invalid date error"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "wf-calculate-leave-days",
+    "workflowId": "wf-calculate-leave-days",
+    "application_id": "app_1768478396826"
+  }
+]

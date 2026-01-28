@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import {
   GitBranch, ArrowRight, Plus, Trash2, X, Zap, Workflow,
-  Save, AlertCircle
+  Save, AlertCircle, Loader
 } from 'lucide-react';
 import { useWorkflow } from '../../context/WorkflowContext';
 import './WorkflowConnectionEditor.css';
+
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const WorkflowConnectionEditor = ({ onClose }) => {
   const { currentApplication, setCurrentApplication } = useWorkflow();
@@ -15,6 +17,7 @@ const WorkflowConnectionEditor = ({ onClose }) => {
   );
   const [editingConnection, setEditingConnection] = useState(null);
   const [errors, setErrors] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleAddConnection = () => {
     const newConnection = {
@@ -97,10 +100,12 @@ const WorkflowConnectionEditor = ({ onClose }) => {
     return newErrors.length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateConnections()) {
       return;
     }
+
+    setIsSaving(true);
 
     // Update workflows with event configurations based on connections
     const updatedWorkflows = workflows.map(wf => {
@@ -157,8 +162,33 @@ const WorkflowConnectionEditor = ({ onClose }) => {
       }
     };
 
+    // Update local context first
     setCurrentApplication(updatedApplication);
-    if (onClose) onClose();
+
+    // Persist to backend
+    try {
+      const response = await fetch(
+        `${API_BASE}/api/applications/${currentApplication.id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedApplication)
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to save connections');
+      }
+
+      console.log('[WorkflowConnectionEditor] Connections saved successfully');
+      if (onClose) onClose();
+    } catch (error) {
+      console.error('[WorkflowConnectionEditor] Failed to persist connections:', error);
+      setErrors([`Failed to save: ${error.message}`]);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const getWorkflowName = (idOrName) => {
@@ -174,9 +204,9 @@ const WorkflowConnectionEditor = ({ onClose }) => {
           <h3>Workflow Connections</h3>
         </div>
         <div className="header-actions">
-          <button className="save-btn" onClick={handleSave}>
-            <Save size={16} />
-            Save
+          <button className="save-btn" onClick={handleSave} disabled={isSaving}>
+            {isSaving ? <Loader size={16} className="spinning" /> : <Save size={16} />}
+            {isSaving ? 'Saving...' : 'Save'}
           </button>
           {onClose && (
             <button className="close-btn" onClick={onClose}>

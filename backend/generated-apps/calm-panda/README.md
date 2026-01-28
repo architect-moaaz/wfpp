@@ -167,6 +167,6 @@ For issues or questions, refer to the main Workflow Platform documentation.
 
 ---
 
-**Generated**: 2025-12-01T18:39:04.694Z
+**Generated**: 2025-12-10T10:19:01.789Z
 **Platform Version**: 1.0.0
 **Application Version**: 1.0.0

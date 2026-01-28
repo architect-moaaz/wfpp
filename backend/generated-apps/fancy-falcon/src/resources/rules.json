@@ -1,1 +1,246 @@
-[]
+[
+  {
+    "id": "rule_start_priority_validation",
+    "name": "Start Priority Management Rule",
+    "description": "Validate that priority name is provided and unique before starting priority management workflow",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Priority.name",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Priority.name",
+          "value": null,
+          "message": "Priority name is required to start the priority management process"
+        },
+        {
+          "type": "logMessage",
+          "field": "system.log",
+          "value": "Priority validation failed - missing name",
+          "message": "Validation error logged"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "priority-management-workflow",
+    "workflowId": "priority-management-workflow",
+    "application_id": "app_1766609802317"
+  },
+  {
+    "id": "rule_configure_priority_validation",
+    "name": "Configure Priority Details Rule",
+    "description": "Validate priority level is within acceptable range (1-5) and response time is positive",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Priority.level",
+          "operator": "greaterThan",
+          "value": 5
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Priority.level",
+          "value": null,
+          "message": "Priority level must be between 1 and 5"
+        },
+        {
+          "type": "validateField",
+          "field": "Priority.responseTime",
+          "value": "positive",
+          "message": "Response time must be a positive number"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "priority-management-workflow",
+    "workflowId": "priority-management-workflow",
+    "application_id": "app_1766609802317"
+  },
+  {
+    "id": "rule_priority_data_validation",
+    "name": "Validate Priority Data Rule",
+    "description": "Ensure priority has valid name, level, and associated SLA timeframes before proceeding",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Priority.name",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "Priority.level",
+          "operator": "in",
+          "value": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "validation.status",
+          "value": "passed",
+          "message": "Priority data validation successful"
+        },
+        {
+          "type": "logMessage",
+          "field": "system.log",
+          "value": "Priority data validated successfully",
+          "message": "Validation passed"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "priority-management-workflow",
+    "workflowId": "priority-management-workflow",
+    "application_id": "app_1766609802317"
+  },
+  {
+    "id": "rule_validation_decision",
+    "name": "Validation Passed? Rule",
+    "description": "Route workflow based on validation status - proceed to SLA configuration or return to priority details",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validation.status",
+          "operator": "equals",
+          "value": "passed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.nextStep",
+          "value": "configureSLA",
+          "message": "Proceed to SLA configuration"
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.email",
+          "value": "Priority validation successful",
+          "message": "Your priority configuration has been validated and is ready for SLA setup"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "priority-management-workflow",
+    "workflowId": "priority-management-workflow",
+    "application_id": "app_1766609802317"
+  },
+  {
+    "id": "rule_sla_timeframes_validation",
+    "name": "Configure SLA Timeframes Rule",
+    "description": "Validate SLA response and resolution times are positive and resolution time exceeds response time",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "SLATracking.responseTime",
+          "operator": "greaterThan",
+          "value": 0
+        },
+        {
+          "field": "SLATracking.resolutionTime",
+          "operator": "lessThan",
+          "value": "SLATracking.responseTime"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "SLATracking.resolutionTime",
+          "value": null,
+          "message": "Resolution time must be greater than response time"
+        },
+        {
+          "type": "validateField",
+          "field": "SLATracking.responseTime",
+          "value": "positive",
+          "message": "Response time must be a positive value in minutes"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "priority-management-workflow",
+    "workflowId": "priority-management-workflow",
+    "application_id": "app_1766609802317"
+  },
+  {
+    "id": "rule_escalation_rules_validation",
+    "name": "Define Escalation Rules Rule",
+    "description": "Validate escalation threshold is set and assigned queue exists before finalizing priority configuration",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Priority.escalationThreshold",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Priority.escalationThreshold",
+          "value": null,
+          "message": "Escalation threshold must be defined for this priority level"
+        },
+        {
+          "type": "validateField",
+          "field": "Queue.id",
+          "value": "exists",
+          "message": "Valid escalation queue must be assigned"
+        },
+        {
+          "type": "logMessage",
+          "field": "system.log",
+          "value": "Escalation rules validation completed",
+          "message": "Escalation configuration validated"
+        }
+      ]
+    },
+    "node_id": "userTask-3",
+    "workflow_id": "priority-management-workflow",
+    "workflowId": "priority-management-workflow",
+    "application_id": "app_1766609802317"
+  }
+]

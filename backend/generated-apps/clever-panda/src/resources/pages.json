@@ -1,12 +1,16 @@
 [
   {
-    "id": "officer-dashboard",
-    "name": "OfficerDashboard",
-    "title": "Officer Dashboard",
-    "description": "Dashboard for parking officers to issue tickets, view activity, and search existing tickets",
-    "route": "/officer-dashboard",
-    "type": "dashboard",
+    "id": "contact-list-page-1767695400000-main",
+    "name": "Contact List Page",
+    "title": "Contacts",
+    "description": "Main page displaying all contacts with search and filter functionality",
+    "route": "/contacts",
+    "type": "list",
     "platform": "both",
+    "forms": [
+      "add-contact-form-1767695348711-l26cr3",
+      "delete-confirmation-dialog-1767695386473-v6limw"
+    ],
     "sections": [
       {
         "id": "header",
@@ -15,22 +19,228 @@
           {
             "type": "text",
             "config": {
-              "text": "Officer Dashboard",
+              "text": "Contacts",
               "variant": "h1",
-              "color": "#1a1a1a",
-              "fontSize": "32px",
-              "fontWeight": "700",
-              "marginBottom": "8px"
+              "style": {
+                "fontSize": "32px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
             }
           },
           {
             "type": "text",
             "config": {
-              "text": "Issue tickets and manage your daily activity",
+              "text": "Manage and organize your business contacts",
               "variant": "body1",
-              "color": "#666666",
-              "fontSize": "16px",
-              "fontWeight": "400"
+              "style": {
+                "fontSize": "16px",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "search",
+            "config": {
+              "placeholder": "Search contacts by name, email, or company...",
+              "style": {
+                "marginBottom": "24px",
+                "padding": "12px 16px",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "fontSize": "16px"
+              }
+            },
+            "dataBinding": "Contact.search"
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Add New Contact",
+              "variant": "primary",
+              "style": {
+                "backgroundColor": "#007bff",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "fontSize": "16px",
+                "fontWeight": "500",
+                "marginBottom": "24px",
+                "border": "none"
+              }
+            },
+            "formRef": "add-contact-form-1767695348711-l26cr3"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "All Contacts",
+              "columns": [
+                {
+                  "field": "name",
+                  "header": "Name",
+                  "sortable": true,
+                  "style": {
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "field": "email",
+                  "header": "Email",
+                  "sortable": true,
+                  "style": {
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "field": "phone",
+                  "header": "Phone",
+                  "sortable": false,
+                  "style": {
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "field": "company",
+                  "header": "Company",
+                  "sortable": true,
+                  "style": {
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "field": "actions",
+                  "header": "Actions",
+                  "sortable": false
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "type": "view",
+                  "style": {
+                    "color": "#007bff",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "label": "Edit",
+                  "type": "edit",
+                  "style": {
+                    "color": "#28a745",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "label": "Delete",
+                  "type": "delete",
+                  "style": {
+                    "color": "#dc3545",
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "padding": "24px"
+              }
+            },
+            "dataBinding": "Contact.list"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "delete": {
+          "type": "openDialog",
+          "target": "delete-confirmation-dialog-1767695386473-v6limw"
+        },
+        "add": {
+          "type": "openForm",
+          "target": "add-contact-form-1767695348711-l26cr3"
+        }
+      },
+      "menu": [
+        {
+          "label": "Contact List",
+          "route": "/contacts"
+        },
+        {
+          "label": "Contact Directory",
+          "route": "/contact-directory"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-add-new-contact"
+  },
+  {
+    "id": "contact-details-page-1767695400000-xyz123",
+    "name": "Contact Details Page",
+    "title": "Contact Details",
+    "description": "Page showing detailed information for a single contact",
+    "route": "/contact/:id",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "edit-contact-form-1767695367310-h1yubb",
+      "delete-confirmation-dialog-1767695386473-v6limw"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Contact Details",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Back to Contacts",
+              "variant": "text",
+              "action": "navigate",
+              "target": "/contact-list",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "color": "#0066cc",
+                "backgroundColor": "transparent",
+                "border": "none",
+                "padding": "8px 16px",
+                "borderRadius": "6px"
+              }
             }
           }
         ]
@@ -42,159 +252,156 @@
           {
             "type": "card",
             "config": {
-              "title": "Daily Activity Summary",
-              "backgroundColor": "#ffffff",
-              "borderRadius": "8px",
-              "padding": "24px",
-              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
-              "metrics": [
-                {
-                  "label": "Tickets Issued Today",
-                  "value": "{{ParkingTicket.query.filter(issuedBy=currentUser.id, issuedDate=today).count}}",
-                  "color": "#0066cc"
-                },
-                {
-                  "label": "Total This Week",
-                  "value": "{{ParkingTicket.query.filter(issuedBy=currentUser.id, issuedDate>=weekStart).count}}",
-                  "color": "#00aa44"
-                },
-                {
-                  "label": "Pending Appeals",
-                  "value": "{{Appeal.query.filter(ticketIssuedBy=currentUser.id, status='pending').count}}",
-                  "color": "#ff9900"
+              "title": "Contact Information",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "border": "1px solid #e0e0e0",
+                "borderRadius": "8px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Contact.findById",
+            "children": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "{{Contact.name}}",
+                  "variant": "h2",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "24px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a",
+                    "marginBottom": "16px"
+                  }
                 }
-              ]
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Email: {{Contact.email}}",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "400",
+                    "color": "#4a4a4a",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Phone: {{Contact.phone}}",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "400",
+                    "color": "#4a4a4a",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Company: {{Contact.company}}",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "16px",
+                    "fontWeight": "400",
+                    "color": "#4a4a4a",
+                    "marginBottom": "24px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Edit Contact",
+              "variant": "primary",
+              "action": "openForm",
+              "formRef": "edit-contact-form-1767695367310-h1yubb",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "500",
+                "color": "#ffffff",
+                "backgroundColor": "#0066cc",
+                "border": "none",
+                "padding": "12px 24px",
+                "borderRadius": "6px",
+                "marginRight": "12px"
+              }
             }
           },
           {
             "type": "button",
             "config": {
-              "text": "Issue New Ticket",
-              "variant": "primary",
-              "backgroundColor": "#0066cc",
-              "color": "#ffffff",
-              "fontSize": "16px",
-              "fontWeight": "600",
-              "padding": "12px 24px",
-              "borderRadius": "6px",
-              "width": "100%",
-              "marginBottom": "24px"
-            },
-            "formRef": "ticket-issuance-form",
-            "action": "openForm"
-          },
-          {
-            "type": "table",
-            "config": {
-              "title": "My Recent Tickets",
-              "backgroundColor": "#ffffff",
-              "borderRadius": "8px",
-              "padding": "24px",
-              "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
-              "columns": [
-                {
-                  "field": "ticketNumber",
-                  "header": "Ticket #",
-                  "sortable": true,
-                  "fontWeight": "600",
-                  "color": "#1a1a1a"
-                },
-                {
-                  "field": "vehiclePlate",
-                  "header": "License Plate",
-                  "sortable": true,
-                  "color": "#1a1a1a"
-                },
-                {
-                  "field": "violation",
-                  "header": "Violation",
-                  "sortable": true,
-                  "color": "#1a1a1a"
-                },
-                {
-                  "field": "location",
-                  "header": "Location",
-                  "sortable": false,
-                  "color": "#666666"
-                },
-                {
-                  "field": "issuedDate",
-                  "header": "Date Issued",
-                  "sortable": true,
-                  "format": "date",
-                  "color": "#666666"
-                },
-                {
-                  "field": "status",
-                  "header": "Status",
-                  "sortable": true,
-                  "badge": true,
-                  "statusColors": {
-                    "unpaid": "#ff9900",
-                    "paid": "#00aa44",
-                    "appealed": "#0066cc",
-                    "voided": "#cc0000"
-                  }
-                }
-              ],
-              "searchable": true,
-              "searchPlaceholder": "Search by ticket #, plate, or location...",
-              "pagination": true,
-              "pageSize": 20,
-              "rowsPerPageOptions": [
-                10,
-                20,
-                50
-              ],
-              "emptyMessage": "No tickets issued yet"
-            },
-            "dataBinding": "ParkingTicket.query.filter(issuedBy=currentUser.id).orderBy(issuedDate, desc)"
+              "label": "Delete Contact",
+              "variant": "danger",
+              "action": "openForm",
+              "formRef": "delete-confirmation-dialog-1767695386473-v6limw",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "500",
+                "color": "#ffffff",
+                "backgroundColor": "#dc3545",
+                "border": "none",
+                "padding": "12px 24px",
+                "borderRadius": "6px"
+              }
+            }
           }
         ]
       }
     ],
     "navigation": {
       "onAction": {
-        "view": {
-          "type": "navigate",
-          "target": "/ticket-details"
+        "edit": {
+          "type": "openForm",
+          "formId": "edit-contact-form-1767695367310-h1yubb"
         },
-        "openForm": {
-          "type": "modal",
-          "target": "ticket-issuance-form"
+        "delete": {
+          "type": "openForm",
+          "formId": "delete-confirmation-dialog-1767695386473-v6limw"
         }
       },
       "menu": [
         {
-          "label": "Officer Dashboard",
-          "route": "/officer-dashboard",
-          "icon": "dashboard"
+          "label": "Contact List",
+          "route": "/contact-list"
         },
         {
-          "label": "Admin Dashboard",
-          "route": "/admin-dashboard",
-          "icon": "admin",
-          "requiredRole": "admin"
+          "label": "Contact Directory",
+          "route": "/contact-directory"
         }
       ]
     },
-    "layout": {
-      "type": "single-column",
-      "responsive": true,
-      "spacing": "normal",
-      "maxWidth": "1200px",
-      "mobileOptimized": true
+    "pageAssociation": {
+      "requiresAuth": true
     },
-    "workflowId": "workflow_1735669200"
+    "workflowId": "wf-add-new-contact"
   },
   {
-    "id": "admin-dashboard",
-    "name": "AdminDashboard",
-    "title": "Administrative Dashboard",
-    "description": "Comprehensive administrative interface with analytics, reporting tools, ticket management, appeal review queue, user management, and system configuration",
-    "route": "/admin/dashboard",
-    "type": "dashboard",
+    "id": "contact-directory-page-1767695400000-main",
+    "name": "Contact Directory Page",
+    "title": "Contact Directory",
+    "description": "Main page displaying contact list with search and filter capabilities",
+    "route": "/contacts",
+    "type": "list",
     "platform": "both",
+    "forms": [
+      "add-contact-form-1767695348711-l26cr3"
+    ],
     "sections": [
       {
         "id": "header",
@@ -203,7 +410,7 @@
           {
             "type": "text",
             "config": {
-              "text": "Administrative Dashboard",
+              "text": "Contact Directory",
               "variant": "h1",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
@@ -217,8 +424,8 @@
           {
             "type": "text",
             "config": {
-              "text": "Comprehensive oversight and reporting capabilities",
-              "variant": "subtitle",
+              "text": "Manage and search your business contacts",
+              "variant": "body1",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
                 "fontSize": "16px",
@@ -235,336 +442,124 @@
         "type": "main",
         "components": [
           {
-            "type": "card",
+            "type": "search",
             "config": {
-              "title": "Key Metrics Overview",
-              "layout": "grid",
-              "columns": 4,
+              "placeholder": "Search contacts by name, email, or company...",
               "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "padding": "12px 16px",
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
                 "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e5e5",
                 "marginBottom": "24px"
-              },
-              "metrics": [
-                {
-                  "label": "Total Tickets Issued",
-                  "value": "{{ParkingTicket.count()}}",
-                  "icon": "ticket",
-                  "color": "#2563eb",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#666666"
-                  }
-                },
-                {
-                  "label": "Pending Appeals",
-                  "value": "{{Appeal.count({status: 'pending'})}}",
-                  "icon": "gavel",
-                  "color": "#f59e0b",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#666666"
-                  }
-                },
-                {
-                  "label": "Total Revenue",
-                  "value": "${{Payment.sum('amount')}}",
-                  "icon": "dollar",
-                  "color": "#10b981",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#666666"
-                  }
-                },
-                {
-                  "label": "Active Officers",
-                  "value": "{{User.count({role: 'officer', status: 'active'})}}",
-                  "icon": "users",
-                  "color": "#8b5cf6",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#666666"
-                  }
-                }
-              ]
-            }
+              }
+            },
+            "dataBinding": "Contact.search"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Add New Contact",
+              "variant": "primary",
+              "action": "openForm",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "border": "none",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "add-contact-form-1767695348711-l26cr3"
           },
           {
             "type": "table",
             "config": {
-              "title": "Appeal Review Queue",
+              "title": "All Contacts",
               "columns": [
                 {
-                  "key": "ticketNumber",
-                  "label": "Ticket #",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#1a1a1a"
-                  }
+                  "field": "name",
+                  "header": "Name",
+                  "sortable": true
                 },
                 {
-                  "key": "submittedDate",
-                  "label": "Submitted",
-                  "type": "date",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "400",
-                    "color": "#666666"
-                  }
+                  "field": "email",
+                  "header": "Email",
+                  "sortable": true
                 },
                 {
-                  "key": "reason",
-                  "label": "Appeal Reason",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "400",
-                    "color": "#1a1a1a"
-                  }
+                  "field": "phone",
+                  "header": "Phone",
+                  "sortable": false
                 },
                 {
-                  "key": "amount",
-                  "label": "Amount",
-                  "type": "currency",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "600",
-                    "color": "#1a1a1a"
-                  }
+                  "field": "company",
+                  "header": "Company",
+                  "sortable": true
                 },
                 {
-                  "key": "priority",
-                  "label": "Priority",
-                  "type": "badge",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "12px",
-                    "fontWeight": "500",
-                    "padding": "4px 12px",
-                    "borderRadius": "6px"
-                  }
-                }
-              ],
-              "actions": [
-                {
-                  "label": "Review",
-                  "type": "primary",
-                  "action": "view",
-                  "style": {
-                    "backgroundColor": "#2563eb",
-                    "color": "#ffffff",
-                    "borderRadius": "8px",
-                    "padding": "8px 16px",
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "border": "none",
-                    "cursor": "pointer"
-                  }
+                  "field": "actions",
+                  "header": "Actions",
+                  "sortable": false
                 }
               ],
               "pagination": true,
-              "pageSize": 10,
+              "pageSize": 20,
+              "selectable": false,
               "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
                 "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e5e5",
-                "marginBottom": "24px"
+                "borderRadius": "8px",
+                "border": "1px solid #e0e0e0",
+                "padding": "16px"
+              },
+              "headerStyle": {
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "backgroundColor": "#f9fafb",
+                "padding": "12px 16px"
+              },
+              "rowStyle": {
+                "padding": "12px 16px",
+                "borderBottom": "1px solid #f0f0f0"
               }
             },
-            "dataBinding": "Appeal.query({status: 'pending'}).sort({submittedDate: 'desc'})"
-          },
-          {
-            "type": "card",
-            "config": {
-              "title": "Recent Tickets & Violations",
-              "layout": "list",
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e5e5",
-                "marginBottom": "24px"
-              },
-              "items": [
-                {
-                  "label": "Violation Trends",
-                  "description": "View violation patterns and hotspots",
-                  "action": "viewTrends",
-                  "icon": "chart",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#1a1a1a",
-                    "padding": "12px",
-                    "borderBottom": "1px solid #f3f4f6"
-                  }
-                },
-                {
-                  "label": "Revenue Tracking",
-                  "description": "Monitor payment collection and outstanding balances",
-                  "action": "viewRevenue",
-                  "icon": "dollar-sign",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#1a1a1a",
-                    "padding": "12px",
-                    "borderBottom": "1px solid #f3f4f6"
-                  }
-                },
-                {
-                  "label": "Export Reports",
-                  "description": "Generate and download comprehensive reports",
-                  "action": "exportReports",
-                  "icon": "download",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#1a1a1a",
-                    "padding": "12px"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "type": "card",
-            "config": {
-              "title": "System Management",
-              "layout": "grid",
-              "columns": 2,
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e5e5"
-              },
-              "actions": [
-                {
-                  "label": "User Management",
-                  "description": "Manage officers and system users",
-                  "icon": "users",
-                  "action": "manageUsers",
-                  "style": {
-                    "backgroundColor": "#f9fafb",
-                    "borderRadius": "8px",
-                    "padding": "16px",
-                    "border": "1px solid #e5e5e5",
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#1a1a1a",
-                    "cursor": "pointer"
-                  }
-                },
-                {
-                  "label": "System Configuration",
-                  "description": "Configure system settings and parameters",
-                  "icon": "settings",
-                  "action": "systemConfig",
-                  "style": {
-                    "backgroundColor": "#f9fafb",
-                    "borderRadius": "8px",
-                    "padding": "16px",
-                    "border": "1px solid #e5e5e5",
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#1a1a1a",
-                    "cursor": "pointer"
-                  }
-                }
-              ]
-            }
+            "dataBinding": "Contact.list"
           }
         ]
       }
     ],
     "navigation": {
       "onAction": {
-        "view": {
+        "add": {
           "type": "navigate",
-          "target": "/admin/appeals/{{id}}"
-        },
-        "viewTrends": {
-          "type": "navigate",
-          "target": "/admin/reports/violations"
-        },
-        "viewRevenue": {
-          "type": "navigate",
-          "target": "/admin/reports/revenue"
-        },
-        "exportReports": {
-          "type": "action",
-          "handler": "exportReport"
-        },
-        "manageUsers": {
-          "type": "navigate",
-          "target": "/admin/users"
-        },
-        "systemConfig": {
-          "type": "navigate",
-          "target": "/admin/settings"
+          "target": "/contacts"
         }
       },
       "menu": [
         {
-          "label": "Admin Dashboard",
-          "route": "/admin/dashboard",
-          "icon": "dashboard"
+          "label": "Contact Directory",
+          "route": "/contacts"
         },
         {
-          "label": "Officer Dashboard",
-          "route": "/officer/dashboard",
-          "icon": "badge"
+          "label": "Contact List",
+          "route": "/contact-list"
         },
         {
-          "label": "Reports",
-          "route": "/admin/reports",
-          "icon": "chart"
-        },
-        {
-          "label": "User Management",
-          "route": "/admin/users",
-          "icon": "users"
-        },
-        {
-          "label": "Settings",
-          "route": "/admin/settings",
-          "icon": "settings"
+          "label": "Contact Details",
+          "route": "/contact-details"
         }
       ]
     },
-    "layout": {
-      "type": "dashboard",
-      "responsive": true,
-      "spacing": "normal"
+    "pageAssociation": {
+      "requiresAuth": true
     },
-    "workflowId": "workflow_1735669200"
+    "workflowId": "wf-add-new-contact"
   }
 ]

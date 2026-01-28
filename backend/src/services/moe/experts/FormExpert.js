@@ -4,6 +4,7 @@
  */
 
 const Anthropic = require('@anthropic-ai/sdk');
+const { generateSmartFormLayout, detectFormType, FORM_TYPE_LAYOUTS } = require('../../../utils/smart-layout');
 
 class FormExpert {
   constructor() {
@@ -11,6 +12,56 @@ class FormExpert {
     this.anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY
     });
+
+    // Shadcn component mapping for form fields
+    this.shadcnFieldMap = {
+      text: { component: 'Input', imports: ['Input', 'Label'], props: { type: 'text' } },
+      email: { component: 'Input', imports: ['Input', 'Label'], props: { type: 'email' } },
+      password: { component: 'Input', imports: ['Input', 'Label'], props: { type: 'password' } },
+      number: { component: 'Input', imports: ['Input', 'Label'], props: { type: 'number' } },
+      phone: { component: 'Input', imports: ['Input', 'Label'], props: { type: 'tel' } },
+      url: { component: 'Input', imports: ['Input', 'Label'], props: { type: 'url' } },
+      textarea: { component: 'Textarea', imports: ['Textarea', 'Label'] },
+      select: { component: 'Select', imports: ['Select', 'SelectTrigger', 'SelectValue', 'SelectContent', 'SelectItem', 'Label'] },
+      multiselect: { component: 'Command', imports: ['Command', 'CommandInput', 'CommandList', 'CommandEmpty', 'CommandGroup', 'CommandItem', 'Popover', 'PopoverTrigger', 'PopoverContent', 'Badge'] },
+      checkbox: { component: 'Checkbox', imports: ['Checkbox', 'Label'] },
+      'checkbox-group': { component: 'Checkbox', imports: ['Checkbox', 'Label'], multiple: true },
+      radio: { component: 'RadioGroup', imports: ['RadioGroup', 'RadioGroupItem', 'Label'] },
+      toggle: { component: 'Switch', imports: ['Switch', 'Label'] },
+      date: { component: 'DatePicker', imports: ['Popover', 'PopoverTrigger', 'PopoverContent', 'Calendar', 'Button'], pattern: 'date-picker' },
+      'date-range': { component: 'DateRangePicker', imports: ['Popover', 'PopoverTrigger', 'PopoverContent', 'Calendar', 'Button'], pattern: 'date-range' },
+      time: { component: 'Input', imports: ['Input', 'Label'], props: { type: 'time' } },
+      datetime: { component: 'DateTimePicker', imports: ['Popover', 'PopoverTrigger', 'PopoverContent', 'Calendar', 'Button', 'Input'] },
+      slider: { component: 'Slider', imports: ['Slider', 'Label'] },
+      file: { component: 'Input', imports: ['Input', 'Label'], props: { type: 'file' } },
+      color: { component: 'ColorPicker', imports: ['Popover', 'PopoverTrigger', 'PopoverContent', 'Input', 'Button'] },
+      rating: { component: 'Custom', imports: ['Button'], pattern: 'star-rating' },
+      tags: { component: 'Custom', imports: ['Badge', 'Input', 'Button'], pattern: 'tag-input' },
+      autocomplete: { component: 'Command', imports: ['Command', 'CommandInput', 'CommandList', 'CommandEmpty', 'CommandGroup', 'CommandItem', 'Popover', 'PopoverTrigger', 'PopoverContent'] }
+    };
+  }
+
+  /**
+   * Get Shadcn component info for a field type
+   */
+  getShadcnComponentInfo(fieldType) {
+    return this.shadcnFieldMap[fieldType] || this.shadcnFieldMap.text;
+  }
+
+  /**
+   * Get all required Shadcn imports for a form's fields
+   */
+  getRequiredShadcnImports(fields) {
+    const imports = new Set(['Form', 'FormItem', 'FormLabel', 'FormControl', 'FormDescription', 'FormMessage']);
+
+    fields.forEach(field => {
+      const componentInfo = this.getShadcnComponentInfo(field.type);
+      if (componentInfo?.imports) {
+        componentInfo.imports.forEach(imp => imports.add(imp));
+      }
+    });
+
+    return Array.from(imports);
   }
 
   /**
@@ -89,10 +140,13 @@ class FormExpert {
     const formText = response.content[0].text;
     const form = this.parseForm(formText);
 
-    // POST-PROCESS: Add gridLayout if missing
+    // POST-PROCESS: Add gridLayout using SMART LAYOUT if missing
     if (!form.gridLayout && form.fields) {
-      console.log(`[FormExpert] Auto-generating gridLayout for form: ${form.name}`);
-      form.gridLayout = this.generateGridLayout(form.fields, componentPlan.designSystem);
+      console.log(`[FormExpert] Auto-generating SMART gridLayout for form: ${form.name}`);
+      const smartLayout = this.getSmartLayoutInfo(form.fields, spec, componentPlan.designSystem);
+      form.gridLayout = smartLayout.gridLayout;
+      form.layout = smartLayout.layout; // Also update layout type
+      form._smartLayoutInfo = smartLayout.designRecommendations;
     }
 
     // Preserve formAssociation metadata for later linking by ComponentOrchestrator
@@ -108,9 +162,9 @@ class FormExpert {
   /**
    * Generate multiple forms in one call (for parallel strategy)
    */
-  async generateBatch(specs, componentPlan) {
+  async generateBatch(specs, componentPlan, existingComponents = {}) {
     if (specs.length === 0) return [];
-    if (specs.length === 1) return [await this.generateSingle(specs[0], componentPlan, {})];
+    if (specs.length === 1) return [await this.generateSingle(specs[0], componentPlan, existingComponents)];
 
     console.log(`[FormExpert] Generating ${specs.length} forms in batch...`);
     specs.forEach(spec => {
@@ -119,7 +173,7 @@ class FormExpert {
       }
     });
 
-    const prompt = this.buildBatchPrompt(specs, componentPlan);
+    const prompt = this.buildBatchPrompt(specs, componentPlan, existingComponents);
 
     const response = await this.executeWithNetworkRetry(async () => {
       return await this.anthropic.messages.create({
@@ -145,19 +199,15 @@ class FormExpert {
       specsByName.set(normalizedName, spec);
     });
 
-    // POST-PROCESS: Add gridLayout if missing and attach formAssociation
+    // POST-PROCESS: Add SMART gridLayout if missing and attach formAssociation
     const processedForms = forms.map((form, index) => {
-      if (!form.gridLayout && form.fields) {
-        console.log(`[FormExpert] Auto-generating gridLayout for form: ${form.name}`);
-        form.gridLayout = this.generateGridLayout(form.fields, componentPlan.designSystem);
-      }
-
-      // Try to match this form to its original spec to get formAssociation
+      // Find the matching spec for this form
       let matchedSpec = null;
-
-      // First try exact name match
       if (form.name) {
         matchedSpec = specsByName.get(form.name.toLowerCase());
+      }
+      if (!matchedSpec && index < specs.length) {
+        matchedSpec = specs[index];
       }
 
       // Try matching by ID prefix (form IDs start with spec name)
@@ -170,9 +220,12 @@ class FormExpert {
         }
       }
 
-      // Fall back to index-based matching if same count
-      if (!matchedSpec && index < specs.length) {
-        matchedSpec = specs[index];
+      if (!form.gridLayout && form.fields) {
+        console.log(`[FormExpert] Auto-generating SMART gridLayout for form: ${form.name}`);
+        const smartLayout = this.getSmartLayoutInfo(form.fields, matchedSpec || {}, componentPlan.designSystem);
+        form.gridLayout = smartLayout.gridLayout;
+        form.layout = smartLayout.layout; // Also update layout type
+        form._smartLayoutInfo = smartLayout.designRecommendations;
       }
 
       // Attach formAssociation metadata if found
@@ -219,6 +272,36 @@ class FormExpert {
 
     // Extract form association context from spec (for plan-based workflow linking)
     const formAssociation = spec.formAssociation || {};
+
+    // Find associated workflow and its inputVariables
+    let workflowInputVariables = [];
+    let associatedWorkflow = null;
+    if (formAssociation.forWorkflow && existingComponents.workflows) {
+      associatedWorkflow = existingComponents.workflows.find(
+        w => w.name?.toLowerCase() === formAssociation.forWorkflow.toLowerCase()
+      );
+      if (associatedWorkflow && associatedWorkflow.inputVariables) {
+        workflowInputVariables = associatedWorkflow.inputVariables;
+        console.log(`[FormExpert] Found ${workflowInputVariables.length} input variables from workflow "${associatedWorkflow.name}"`);
+      }
+    }
+
+    // Build workflow variables context for the prompt
+    const workflowVariablesContext = workflowInputVariables.length > 0 ? `
+**WORKFLOW PROCESS VARIABLES (CRITICAL - Form fields MUST bind to these)**:
+The workflow "${associatedWorkflow.name}" has defined the following process variables.
+Your form fields MUST use matching "name" properties to bind to these variables:
+
+${workflowInputVariables.map(v => `- ${v.name} (${v.type}${v.required ? ', required' : ''})${v.description ? ': ' + v.description : ''}`).join('\n')}
+
+CRITICAL REQUIREMENTS:
+1. Each form field's "name" property MUST exactly match a workflow variable name above
+2. Field types should be compatible with the variable types (e.g., "number" type for number variables)
+3. Required workflow variables should have required form fields
+4. You may add additional fields if needed, but prioritize the workflow variables
+5. Each field must include "bindToVariable": "<variable_name>" to explicitly link to the workflow variable
+` : '';
+
     const workflowContext = formAssociation.forWorkflow ? `
 **WORKFLOW CONTEXT (This form will be attached to a specific workflow node)**:
 - Target Workflow: ${formAssociation.forWorkflow}
@@ -226,7 +309,7 @@ class FormExpert {
 - Target Node Label: ${formAssociation.forNodeLabel || 'N/A'}
 - Associated Data Model: ${formAssociation.dataModel || 'N/A'}
 ${spec.fieldHints && spec.fieldHints.length > 0 ? `- Suggested Fields: ${spec.fieldHints.join(', ')}` : ''}
-
+${workflowVariablesContext}
 IMPORTANT: Design this form specifically for the "${formAssociation.forNodeType || 'user task'}" workflow node.
 ${formAssociation.forNodeType === 'startProcess' ? '- This is a START form - collect initial data to kick off the workflow process.' : ''}
 ${formAssociation.forNodeType === 'userTask' ? '- This is a USER TASK form - collect data needed for this specific step in the process.' : ''}
@@ -251,6 +334,43 @@ Requirements:
 - Add validation rules where necessary
 - Use clear labels and helpful placeholders
 ${designSystem ? '- CRITICAL: Apply the design system specifications above to ALL styling properties' : ''}
+
+**MODERN FORM DESIGN REQUIREMENTS**:
+
+1. **Floating Labels**: Set "labelPosition": "floating" for text, email, number, and password inputs
+   - Creates a clean, modern appearance with labels that animate on focus
+
+2. **Smart Field Pairing**: Group related fields horizontally on the same row:
+   - firstName + lastName together (x: 0, w: 12) and (x: 12, w: 12)
+   - city + state + zip on same row
+   - email + phone together
+   - startDate + endDate together
+   - password + confirmPassword together
+
+3. **Visual Sections**: Group fields into logical sections with headers:
+   "layout": {
+     "sections": [
+       { "id": "personal", "title": "Personal Information", "icon": "user", "fieldIds": ["firstName", "lastName", "email"] },
+       { "id": "address", "title": "Address", "icon": "map-pin", "fieldIds": ["street", "city", "state", "zip"] }
+     ]
+   }
+
+4. **Inline Validation Config**: Include validation with user-friendly messages:
+   "validation": {
+     "mode": "onBlur",
+     "showInline": true,
+     "showIcon": true
+   }
+   And per-field: "errorMessage": "Please enter a valid email address"
+
+5. **Input Style**: Use "inputStyle": "outlined" for Material-style inputs with borders
+
+6. **CRITICAL - Select/Radio Options Format**:
+   - ALWAYS use object format with "label" and "value" properties
+   - NEVER use empty strings for value
+   - Example: "options": [{"label": "Option 1", "value": "opt1"}, {"label": "Option 2", "value": "opt2"}]
+   - For select fields: REQUIRED format is [{"label": "Display Text", "value": "actual_value"}]
+   - For radio fields: REQUIRED format is [{"label": "Display Text", "value": "actual_value"}]
 
 **CRITICAL - Layout Grid Coordinates (Based on Design System)**:
 You MUST generate a "gridLayout" array with positioning for EACH field using these Design System specifications:
@@ -302,14 +422,18 @@ Return ONLY valid JSON in this format:
       "label": "Field Label",
       "placeholder": "Placeholder text",
       "required": true|false,
+      "labelPosition": "floating|top|left",
+      "inputStyle": "outlined|filled|standard",
       "validation": {
         "min": 0,
         "max": 100,
         "pattern": "regex-pattern",
         "message": "Validation error message"
       },
-      "options": ["option1", "option2"],
-      "defaultValue": null
+      "errorMessage": "User-friendly validation error",
+      "options": [{"label": "Option 1", "value": "option1"}, {"label": "Option 2", "value": "option2"}],
+      "defaultValue": null,
+      "bindToVariable": "variableName"
     }
   ],
   "gridLayout": [
@@ -329,6 +453,8 @@ Return ONLY valid JSON in this format:
       {
         "id": "section-id",
         "title": "Section Title",
+        "description": "Optional section description",
+        "icon": "user|mail|map-pin|calendar|lock|file",
         "fieldIds": ["field1", "field2"]
       }
     ]
@@ -339,7 +465,9 @@ Return ONLY valid JSON in this format:
   },
   "validation": {
     "mode": "onSubmit|onChange|onBlur",
-    "showErrors": true
+    "showErrors": true,
+    "showInline": true,
+    "showIcon": true
   },
   "styling": {
     "colors": {
@@ -383,14 +511,14 @@ Return ONLY valid JSON in this format:
 }`;
   }
 
-  buildBatchPrompt(specs, componentPlan) {
+  buildBatchPrompt(specs, componentPlan, existingComponents = {}) {
     // Generate unique IDs for each form spec
     const specsWithIds = specs.map(s => ({
       ...s,
       uniqueId: `${s.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
     }));
 
-    // Build spec list with workflow association context
+    // Build spec list with workflow association context and process variables
     const specList = specsWithIds.map(s => {
       let specLine = `- ${s.name} (ID: ${s.uniqueId}): ${s.purpose}`;
       if (s.formAssociation && s.formAssociation.forWorkflow) {
@@ -402,6 +530,19 @@ Return ONLY valid JSON in this format:
         }
         if (s.fieldHints && s.fieldHints.length > 0) {
           specLine += `\n    - Suggested Fields: ${s.fieldHints.join(', ')}`;
+        }
+
+        // Find associated workflow and its inputVariables
+        if (existingComponents.workflows) {
+          const associatedWorkflow = existingComponents.workflows.find(
+            w => w.name?.toLowerCase() === s.formAssociation.forWorkflow.toLowerCase()
+          );
+          if (associatedWorkflow && associatedWorkflow.inputVariables && associatedWorkflow.inputVariables.length > 0) {
+            specLine += `\n    - **PROCESS VARIABLES (form fields MUST bind to these)**:`;
+            associatedWorkflow.inputVariables.forEach(v => {
+              specLine += `\n      * ${v.name} (${v.type}${v.required ? ', required' : ''})${v.description ? ': ' + v.description : ''}`;
+            });
+          }
         }
       }
       return specLine;
@@ -428,6 +569,7 @@ Return ONLY valid JSON in this format:
 
     // Check if any forms have workflow associations
     const hasWorkflowContext = specsWithIds.some(s => s.formAssociation?.forWorkflow);
+    const hasProcessVariables = existingComponents.workflows?.some(w => w.inputVariables?.length > 0);
     const workflowGuidance = hasWorkflowContext ? `
 **WORKFLOW CONTEXT - IMPORTANT**:
 Each form listed above has a target workflow and node. Design each form specifically for its workflow context:
@@ -435,7 +577,15 @@ Each form listed above has a target workflow and node. Design each form specific
 - USER TASK forms: Collect data needed for that specific step. May include review fields, approval fields, additional data fields, etc.
 - Forms for the SAME workflow should be coherent and build on each other (e.g., a review form should reference data from the start form).
 - Forms for DIFFERENT workflows should be distinct and appropriate for their specific process.
-` : '';
+${hasProcessVariables ? `
+**CRITICAL - PROCESS VARIABLE BINDING**:
+When a form lists "PROCESS VARIABLES", you MUST:
+1. Create form fields with "name" properties that EXACTLY match the variable names
+2. Use compatible field types (e.g., "number" input for number variables, "email" for email strings)
+3. Mark fields as required if the variable is required
+4. Include "bindToVariable": "<variable_name>" in each field to explicitly link it
+5. You may add additional fields beyond the process variables if needed for the form's purpose
+` : ''}` : '';
 
     return `Generate ${specs.length} forms for: ${componentPlan.overview.name}
 
@@ -452,6 +602,7 @@ Requirements for EACH form:
 - Use clear labels and helpful placeholders
 - Each form should be UNIQUE and tailored to its specific workflow node
 - CRITICAL: Use the EXACT ID provided above for each form (e.g., first form uses ${specsWithIds[0].uniqueId})
+- **CRITICAL - Select/Radio Options**: ALWAYS use [{"label": "Display Text", "value": "actual_value"}] format. NEVER use empty strings for value.
 ${designSystem ? '- CRITICAL: Apply the design system specifications above to ALL styling properties' : ''}
 
 **CRITICAL - Layout Grid Coordinates for EACH Form (Based on Design System)**:
@@ -555,46 +706,30 @@ Return ONLY valid JSON array:
   }
 
   /**
-   * Generate gridLayout from form fields based on design system
-   * This ensures reliable grid coordinates even when LLM doesn't follow prompts
+   * Generate gridLayout from form fields using SMART LAYOUT SYSTEM
+   * Intelligently determines columns based on form type and field types
    */
-  generateGridLayout(fields, designSystem) {
+  generateGridLayout(fields, designSystem, formSpec = {}) {
     if (!fields || fields.length === 0) return [];
 
-    const layoutColumns = designSystem?.layout?.columns?.desktop || 1;
-    const gridWidth = 24; // react-grid-layout standard
-    const standardFieldHeight = 8; // Grid units for standard fields
-    const textareaFieldHeight = 12; // Grid units for textarea fields
+    // Use smart layout system for intelligent grid generation
+    const smartLayout = generateSmartFormLayout(formSpec, fields, designSystem);
 
-    let currentY = 0;
-
-    return fields.map((field, index) => {
-      // Calculate width based on layout columns
-      const w = layoutColumns === 1 ? 24 : Math.floor(gridWidth / layoutColumns);
-
-      // Calculate height based on field type
-      const h = field.type === 'textarea' ? textareaFieldHeight : standardFieldHeight;
-
-      // Calculate x position (column)
-      const x = layoutColumns === 1 ? 0 : (index % layoutColumns) * w;
-
-      // Calculate y position (row)
-      const y = layoutColumns === 1 ? currentY : Math.floor(index / layoutColumns) * standardFieldHeight;
-
-      if (layoutColumns === 1) {
-        currentY += h;
-      }
-
-      return {
-        i: field.id || field.name,
-        x,
-        y,
-        w,
-        h,
-        minW: 6,
-        minH: 6
-      };
+    console.log(`[FormExpert] Smart layout generated:`, {
+      formType: smartLayout.formType,
+      columns: smartLayout.designRecommendations.columns,
+      pattern: smartLayout.designRecommendations.pattern,
+      hasSections: smartLayout.designRecommendations.hasSections
     });
+
+    return smartLayout.gridLayout;
+  }
+
+  /**
+   * Get smart layout info for a form (can be used by other experts)
+   */
+  getSmartLayoutInfo(fields, formSpec = {}, designSystem = {}) {
+    return generateSmartFormLayout(formSpec, fields, designSystem);
   }
 
   parseForm(text) {

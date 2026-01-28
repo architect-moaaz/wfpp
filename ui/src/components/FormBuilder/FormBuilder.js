@@ -1,18 +1,25 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
-import { Save, Eye, Code, Settings, Trash2, Copy, ArrowLeft } from 'lucide-react';
+import { Save, Eye, Code, Settings, Trash2, Copy, ArrowLeft, X, Monitor, Tablet, Smartphone } from 'lucide-react';
 import ComponentPalette from './ComponentPalette';
 import PropertiesPanel from './PropertiesPanel';
 import FormComponentRenderer from './FormComponentRenderer';
+import { DesignSystemProvider, generateCSSVariables } from './DesignSystemContext';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import './FormBuilder.css';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
+const FormBuilder = ({ formId, initialForm, applicationId, onSave, onClose }) => {
   const [formName, setFormName] = useState(initialForm?.name || initialForm?.title || 'New Form');
   const [formDescription, setFormDescription] = useState(initialForm?.description || '');
+
+  // Get design system from form (if provided by DesignExpert) or use default
+  const designSystem = initialForm?.designSystem || initialForm?.designAnalysis?.designSystem || null;
+
+  // Generate CSS variables from design system
+  const cssVariables = useMemo(() => generateCSSVariables(designSystem), [designSystem]);
 
   // Handle both 'components' (FormBuilder format) and 'fields' (backend format)
   // Convert backend fields to FormBuilder components if needed
@@ -78,6 +85,15 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
     initialLayout = generateLayoutForComponents(initialComponents);
   }
 
+  // Fix layout items to ensure w >= minW and h >= minH (prevents react-grid-layout errors)
+  initialLayout = initialLayout.map(item => ({
+    ...item,
+    w: Math.max(item.w || 24, 6),  // Ensure width is at least minW (6)
+    h: Math.max(item.h || 8, 6),   // Ensure height is at least minH (6)
+    minW: 6,
+    minH: 6
+  }));
+
   // Debug logging
   if (initialForm) {
     console.log('[FormBuilder] Loading form:', {
@@ -97,7 +113,8 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
   const [components, setComponents] = useState(initialComponents);
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [layout, setLayout] = useState(initialLayout);
-  const [previewMode, setPreviewMode] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState('desktop');
   const [showCode, setShowCode] = useState(false);
   const layoutRef = useRef(null);
 
@@ -222,31 +239,59 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
 
   // Save form
   const handleSave = async () => {
+    // Convert components to fields format expected by the API
+    const fields = components.map(comp => ({
+      id: comp.id,
+      type: comp.type,
+      fieldName: comp.fieldName,
+      name: comp.fieldName,
+      label: comp.properties?.label || comp.fieldName,
+      processVariable: comp.processVariable,
+      required: comp.required || false,
+      placeholder: comp.properties?.placeholder,
+      description: comp.properties?.description,
+      tooltip: comp.properties?.tooltip,
+      options: comp.properties?.options,
+      validation: comp.properties?.validation,
+      properties: comp.properties
+    }));
+
+    const savedFormId = formId || generateId();
     const formData = {
-      id: formId || generateId(),
+      id: savedFormId,
       name: formName,
+      title: formName,
       description: formDescription,
-      components,
+      fields,
+      components, // Keep components for FormBuilder compatibility
       layout,
+      gridLayout: layout, // Also save as gridLayout
+      applicationId, // Include applicationId so backend can update PostgreSQL
       version: '1.0',
       updatedAt: new Date().toISOString()
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/form-builder/forms', {
+      // Save to forms API (will update both file-based and PostgreSQL if applicationId provided)
+      const response = await fetch('http://localhost:5000/api/forms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
       const data = await response.json();
-      if (data.success) {
-        alert('Form saved successfully!');
-        if (onSave) onSave(data.form);
+      if (!data.success) {
+        console.error('Failed to save form:', data.error);
+        alert('Failed to save form: ' + (data.error || 'Unknown error'));
+        return;
       }
+
+      console.log('[FormBuilder] Form saved successfully:', savedFormId);
+      alert('Form saved successfully!');
+      if (onSave) onSave(formData);
     } catch (error) {
       console.error('Failed to save form:', error);
-      alert('Failed to save form');
+      alert('Failed to save form: ' + error.message);
     }
   };
 
@@ -261,12 +306,13 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
   };
 
   return (
-    <div className="form-builder">
-      {/* Header */}
-      <div className="form-builder-header">
+    <DesignSystemProvider designSystem={designSystem}>
+      <div className="form-builder" style={cssVariables}>
+        {/* Header */}
+        <div className="form-builder-header">
         <div className="header-left">
           {onClose && (
-            <button className="action-btn" onClick={onClose} title="Back to Forms">
+            <button className="back-btn" onClick={onClose} title="Back to Forms">
               <ArrowLeft size={18} />
             </button>
           )}
@@ -287,9 +333,9 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
         </div>
         <div className="header-actions">
           <button
-            className={`action-btn ${previewMode ? 'active' : ''}`}
-            onClick={() => setPreviewMode(!previewMode)}
-            title="Preview"
+            className="action-btn"
+            onClick={() => setShowPreview(true)}
+            title="Preview Form"
           >
             <Eye size={18} />
             Preview
@@ -312,9 +358,7 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
       {/* Main Content */}
       <div className="form-builder-content">
         {/* Component Palette */}
-        {!previewMode && (
-          <ComponentPalette onDropComponent={handleDropComponent} />
-        )}
+        <ComponentPalette onDropComponent={handleDropComponent} />
 
         {/* Canvas */}
         <div className="form-canvas">
@@ -341,10 +385,11 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
                   cols={{ lg: 24, md: 20, sm: 12, xs: 8 }}
                   rowHeight={20}
                   onLayoutChange={handleLayoutChange}
-                  isDraggable={!previewMode}
-                  isResizable={!previewMode}
+                  isDraggable={true}
+                  isResizable={true}
                   compactType="vertical"
                   preventCollision={false}
+                  draggableHandle=".component-drag-handle"
                 >
                   {components.map(component => {
                     // Safety check: ensure layout is an array before calling .find()
@@ -359,8 +404,13 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
                         }`}
                         onClick={() => handleSelectComponent(component.id)}
                       >
-                        {!previewMode && (
-                          <div className="component-toolbar">
+                        <div className="component-toolbar" onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectComponent(component.id);
+                          }}>
+                            <div className="component-drag-handle" title="Drag to move">
+                              <span className="drag-dots">⋮⋮</span>
+                            </div>
                             <span className="component-label">{component.fieldName}</span>
                             <div className="component-actions">
                               <button
@@ -385,10 +435,9 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
                               </button>
                             </div>
                           </div>
-                        )}
                         <FormComponentRenderer
                           component={component}
-                          previewMode={previewMode}
+                          previewMode={false}
                         />
                       </div>
                     );
@@ -400,7 +449,7 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
         </div>
 
         {/* Properties Panel */}
-        {!previewMode && selectedComponent && (
+        {selectedComponent && (
           <PropertiesPanel
             component={selectedComponent}
             onUpdate={handleUpdateProperties}
@@ -408,7 +457,90 @@ const FormBuilder = ({ formId, initialForm, onSave, onClose }) => {
           />
         )}
       </div>
-    </div>
+      </div>
+
+      {/* Preview Modal */}
+      {showPreview && (
+        <div className="form-preview-overlay" onClick={() => setShowPreview(false)}>
+          <div className="form-preview-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="form-preview-header">
+              <h3>Form Preview - {formName || 'Untitled Form'}</h3>
+              <div className="form-preview-actions">
+                <div className="form-preview-devices">
+                  <button
+                    className={`device-btn ${previewDevice === 'desktop' ? 'active' : ''}`}
+                    onClick={() => setPreviewDevice('desktop')}
+                    title="Desktop"
+                  >
+                    <Monitor size={18} />
+                  </button>
+                  <button
+                    className={`device-btn ${previewDevice === 'tablet' ? 'active' : ''}`}
+                    onClick={() => setPreviewDevice('tablet')}
+                    title="Tablet"
+                  >
+                    <Tablet size={18} />
+                  </button>
+                  <button
+                    className={`device-btn ${previewDevice === 'mobile' ? 'active' : ''}`}
+                    onClick={() => setPreviewDevice('mobile')}
+                    title="Mobile"
+                  >
+                    <Smartphone size={18} />
+                  </button>
+                </div>
+                <button className="form-preview-close" onClick={() => setShowPreview(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            <div className="form-preview-content">
+              <div
+                className={`form-preview-frame form-preview-${previewDevice}`}
+                style={{
+                  width: previewDevice === 'desktop' ? '100%' : previewDevice === 'tablet' ? '768px' : '375px',
+                  margin: '0 auto',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '8px',
+                  boxShadow: previewDevice !== 'desktop' ? '0 4px 24px rgba(0,0,0,0.15)' : 'none',
+                  overflow: 'hidden'
+                }}
+              >
+                <div className="form-preview-form">
+                  {formName && (
+                    <div className="form-preview-title">
+                      <h2>{formName}</h2>
+                      {formDescription && <p>{formDescription}</p>}
+                    </div>
+                  )}
+                  <div className="form-preview-fields">
+                    {components.length === 0 ? (
+                      <div className="form-preview-empty">
+                        <p>No fields added to this form yet.</p>
+                      </div>
+                    ) : (
+                      components.map((component) => (
+                        <div key={component.id} className="form-preview-field">
+                          <FormComponentRenderer
+                            component={component}
+                            previewMode={true}
+                          />
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  {components.length > 0 && (
+                    <div className="form-preview-submit">
+                      <button className="form-submit-btn">Submit</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </DesignSystemProvider>
   );
 };
 

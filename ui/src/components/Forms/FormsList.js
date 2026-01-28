@@ -153,7 +153,26 @@ const FormsList = () => {
   };
 
   if (showEditor) {
-    return <FormBuilder initialForm={selectedForm} formId={selectedForm?.id} onClose={handleEditorClose} />;
+    return (
+      <FormBuilder
+        initialForm={selectedForm}
+        formId={selectedForm?.id}
+        applicationId={currentApplication?.id}
+        onClose={handleEditorClose}
+        onSave={(savedForm) => {
+          // Update the local forms list with the saved form
+          setForms(prevForms => {
+            const existingIndex = prevForms.findIndex(f => f.id === savedForm.id);
+            if (existingIndex >= 0) {
+              const updated = [...prevForms];
+              updated[existingIndex] = savedForm;
+              return updated;
+            }
+            return [...prevForms, savedForm];
+          });
+        }}
+      />
+    );
   }
 
   return (

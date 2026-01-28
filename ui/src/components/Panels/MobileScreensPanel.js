@@ -1,17 +1,100 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './MobileScreensPanel.css';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Smartphone, Monitor, Tablet, Network } from 'lucide-react';
+import { Smartphone, Monitor, Tablet, Network, QrCode, Copy, Check, ExternalLink } from 'lucide-react';
 import MobileFlowCanvas from '../MobileFlow/MobileFlowCanvas';
 
+// Simple QR Code component using SVG
+const QRCodeDisplay = ({ value, size = 150 }) => {
+  // Simple QR code pattern generator (for demo - in production use qrcode.react)
+  const moduleCount = 21;
+  const moduleSize = size / moduleCount;
+
+  // Generate a simple pattern based on the value hash
+  const generatePattern = (val) => {
+    const pattern = [];
+    let hash = 0;
+    for (let i = 0; i < val.length; i++) {
+      hash = ((hash << 5) - hash) + val.charCodeAt(i);
+      hash = hash & hash;
+    }
+
+    // Create a pseudo-random pattern based on hash
+    for (let row = 0; row < moduleCount; row++) {
+      pattern[row] = [];
+      for (let col = 0; col < moduleCount; col++) {
+        // Always fill finder patterns (corners)
+        const isFinderPattern =
+          (row < 7 && col < 7) ||
+          (row < 7 && col >= moduleCount - 7) ||
+          (row >= moduleCount - 7 && col < 7);
+
+        if (isFinderPattern) {
+          // Create finder pattern
+          const inOuter = row < 7 && col < 7
+            ? (row === 0 || row === 6 || col === 0 || col === 6)
+            : row < 7 && col >= moduleCount - 7
+              ? (row === 0 || row === 6 || col === moduleCount - 7 || col === moduleCount - 1)
+              : (row === moduleCount - 7 || row === moduleCount - 1 || col === 0 || col === 6);
+
+          const inInner = row < 7 && col < 7
+            ? (row >= 2 && row <= 4 && col >= 2 && col <= 4)
+            : row < 7 && col >= moduleCount - 7
+              ? (row >= 2 && row <= 4 && col >= moduleCount - 5 && col <= moduleCount - 3)
+              : (row >= moduleCount - 5 && row <= moduleCount - 3 && col >= 2 && col <= 4);
+
+          pattern[row][col] = inOuter || inInner;
+        } else {
+          // Data area - pseudo-random based on hash
+          const seed = (hash + row * 31 + col * 17) % 100;
+          pattern[row][col] = seed < 45;
+        }
+      }
+    }
+    return pattern;
+  };
+
+  const pattern = generatePattern(value);
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <rect width={size} height={size} fill="white" />
+      {pattern.map((row, rowIndex) =>
+        row.map((cell, colIndex) =>
+          cell ? (
+            <rect
+              key={`${rowIndex}-${colIndex}`}
+              x={colIndex * moduleSize}
+              y={rowIndex * moduleSize}
+              width={moduleSize}
+              height={moduleSize}
+              fill="#1a1a1a"
+            />
+          ) : null
+        )
+      )}
+    </svg>
+  );
+};
+
 const MobileScreensPanel = () => {
-  const { currentWorkflow } = useWorkflow();
+  const { currentWorkflow, currentApplication } = useWorkflow();
   const [selectedScreen, setSelectedScreen] = useState(0);
   const [deviceFrame, setDeviceFrame] = useState('ios'); // ios, android, tablet
-  const [viewMode, setViewMode] = useState('preview'); // 'preview' or 'flow'
+  const [viewMode, setViewMode] = useState('preview'); // 'preview', 'flow', or 'expo'
+  const [copied, setCopied] = useState(false);
+  const [serverIP, setServerIP] = useState('');
+
+  // Get local network IP for Expo connection
+  useEffect(() => {
+    // Try to get the server URL from environment or use localhost
+    const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    setServerIP(backendUrl.replace('http://', '').replace('/api', '').split(':')[0]);
+  }, []);
 
   const mobileUI = currentWorkflow?.mobileUI;
   const screens = mobileUI?.screens || [];
+  const appId = currentApplication?.id || currentWorkflow?.applicationId || 'demo_app';
 
   if (screens.length === 0) {
     return (
@@ -528,9 +611,182 @@ const MobileScreensPanel = () => {
     setViewMode('preview');
   };
 
+  // Copy app connection info to clipboard
+  const copyConnectionInfo = () => {
+    const connectionInfo = `Server: http://${serverIP}:5000/api\nApp ID: ${appId}`;
+    navigator.clipboard.writeText(connectionInfo);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Render Expo Go preview section
+  const renderExpoPreview = () => {
+    const expoUrl = `workflowpp://connect?server=${serverIP}&port=5000&appId=${appId}`;
+
+    return (
+      <div className="expo-preview-panel">
+        <button
+          className="back-btn"
+          onClick={() => setViewMode('preview')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            border: '1px solid #e5e7eb',
+            borderRadius: '6px',
+            background: '#fff',
+            cursor: 'pointer',
+            marginBottom: '24px'
+          }}
+        >
+          Back to Preview
+        </button>
+
+        <div style={{ textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+            borderRadius: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px'
+          }}>
+            <QrCode size={40} color="#fff" />
+          </div>
+
+          <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '8px', color: '#111827' }}>
+            Preview on Device
+          </h2>
+          <p style={{ color: '#6b7280', marginBottom: '32px' }}>
+            Connect with Expo Go to preview your app on a real device
+          </p>
+
+          {/* QR Code */}
+          <div style={{
+            background: '#fff',
+            padding: '24px',
+            borderRadius: '12px',
+            border: '1px solid #e5e7eb',
+            marginBottom: '24px'
+          }}>
+            <QRCodeDisplay value={expoUrl} size={180} />
+            <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '16px' }}>
+              Scan with Expo Go app
+            </p>
+          </div>
+
+          {/* Connection Details */}
+          <div style={{
+            background: '#f9fafb',
+            padding: '20px',
+            borderRadius: '12px',
+            textAlign: 'left',
+            marginBottom: '24px'
+          }}>
+            <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '16px', color: '#374151' }}>
+              Manual Connection
+            </h4>
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ fontSize: '12px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+                Server URL
+              </label>
+              <div style={{
+                background: '#fff',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #e5e7eb',
+                fontFamily: 'monospace',
+                fontSize: '13px'
+              }}>
+                http://{serverIP}:5000/api
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '12px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+                App ID
+              </label>
+              <div style={{
+                background: '#fff',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #e5e7eb',
+                fontFamily: 'monospace',
+                fontSize: '13px'
+              }}>
+                {appId}
+              </div>
+            </div>
+
+            <button
+              onClick={copyConnectionInfo}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                background: '#fff',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: copied ? '#16a34a' : '#374151'
+              }}
+            >
+              {copied ? <Check size={16} /> : <Copy size={16} />}
+              {copied ? 'Copied!' : 'Copy Connection Info'}
+            </button>
+          </div>
+
+          {/* Instructions */}
+          <div style={{
+            background: '#eff6ff',
+            padding: '16px',
+            borderRadius: '8px',
+            textAlign: 'left'
+          }}>
+            <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#1e40af' }}>
+              Getting Started
+            </h4>
+            <ol style={{ fontSize: '13px', color: '#3b82f6', paddingLeft: '20px', margin: 0 }}>
+              <li style={{ marginBottom: '6px' }}>Install Expo Go on your device</li>
+              <li style={{ marginBottom: '6px' }}>Run <code style={{ background: '#dbeafe', padding: '2px 6px', borderRadius: '4px' }}>cd mobile && npx expo start</code></li>
+              <li style={{ marginBottom: '6px' }}>Scan QR code or enter connection details</li>
+              <li>Your app will load automatically!</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // If in flow view, show the MobileFlowCanvas
   if (viewMode === 'flow') {
     return <MobileFlowCanvas onBack={handleBackFromFlow} />;
+  }
+
+  // If in expo view, show the Expo preview panel
+  if (viewMode === 'expo') {
+    return (
+      <div className="mobile-screens-panel">
+        <div className="panel-header">
+          <div>
+            <h2>Mobile Screens</h2>
+            <p className="panel-subtitle">Expo Go Preview</p>
+          </div>
+        </div>
+        <div className="panel-content" style={{ justifyContent: 'center', padding: '40px' }}>
+          {renderExpoPreview()}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -543,6 +799,26 @@ const MobileScreensPanel = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button
+            className="btn-view-flow"
+            onClick={() => setViewMode('expo')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            <ExternalLink size={16} />
+            Expo Go
+          </button>
           <button
             className="btn-view-flow"
             onClick={() => setViewMode('flow')}

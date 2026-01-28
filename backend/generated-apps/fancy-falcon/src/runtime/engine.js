@@ -384,32 +384,315 @@ Fix the script to accomplish the original intent while:
   }
 
   async executeServiceTask(node, context) {
-    // Implement service task execution
-    const serviceType = node.data?.serviceType;
+    const taskData = node.data || {};
+    const serviceType = taskData.serviceType;
+
+    logger.info(`[RuntimeEngine] Executing service task: ${serviceType}`);
 
     switch (serviceType) {
       case 'http':
-        return await this.executeHttpService(node.data, context);
+        return await this.executeHttpService(taskData, context);
       case 'database':
-        return await this.executeDatabaseService(node.data, context);
+        return await this.executeDatabaseService(taskData, context);
+      case 'email':
+        return await this.executeEmailService(taskData, context);
+      case 'transform':
+        return await this.executeTransformService(taskData, context);
       default:
+        logger.warn(`[RuntimeEngine] Unknown service type: ${serviceType}`);
         return context.data;
     }
   }
 
   async executeHttpService(config, context) {
-    // HTTP service implementation
-    return context.data;
+    const axios = require('axios');
+
+    const { url, method = 'GET', headers = {}, body, outputVariable } = config;
+
+    // Interpolate variables in URL and body
+    const interpolatedUrl = this.interpolateString(url, context.data);
+    const interpolatedBody = body ? this.interpolateObject(body, context.data) : undefined;
+    const interpolatedHeaders = this.interpolateObject(headers, context.data);
+
+    try {
+      logger.info(`[RuntimeEngine] HTTP ${method} ${interpolatedUrl}`);
+
+      const response = await axios({
+        method: method.toUpperCase(),
+        url: interpolatedUrl,
+        headers: interpolatedHeaders,
+        data: interpolatedBody,
+        timeout: config.timeout || 30000
+      });
+
+      // Store response in context
+      const result = { ...context.data };
+      if (outputVariable) {
+        result[outputVariable] = response.data;
+      }
+      result._lastHttpResponse = {
+        status: response.status,
+        headers: response.headers,
+        data: response.data
+      };
+
+      return result;
+    } catch (error) {
+      logger.error(`[RuntimeEngine] HTTP request failed: ${error.message}`);
+
+      if (config.onError === 'continue') {
+        return {
+          ...context.data,
+          _httpError: { message: error.message, code: error.code }
+        };
+      }
+      throw error;
+    }
   }
 
   async executeDatabaseService(config, context) {
-    // Database service implementation
-    return context.data;
+    const database = require('../database');
+
+    const { operation, table, query, data: recordData, outputVariable } = config;
+
+    try {
+      let result;
+
+      switch (operation) {
+        case 'select':
+          const selectQuery = this.interpolateString(query || `SELECT * FROM ${table}`, context.data);
+          result = await database.query(selectQuery);
+          break;
+
+        case 'insert':
+          const insertData = this.interpolateObject(recordData, context.data);
+          const columns = Object.keys(insertData);
+          const values = Object.values(insertData);
+          const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+          result = await database.query(
+            `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders}) RETURNING *`,
+            values
+          );
+          break;
+
+        case 'update':
+          const updateData = this.interpolateObject(recordData, context.data);
+          const whereClause = this.interpolateString(config.where, context.data);
+          const setClause = Object.keys(updateData).map((k, i) => `${k} = $${i + 1}`).join(', ');
+          result = await database.query(
+            `UPDATE ${table} SET ${setClause} WHERE ${whereClause} RETURNING *`,
+            Object.values(updateData)
+          );
+          break;
+
+        case 'delete':
+          const deleteWhere = this.interpolateString(config.where, context.data);
+          result = await database.query(`DELETE FROM ${table} WHERE ${deleteWhere}`);
+          break;
+
+        default:
+          const customQuery = this.interpolateString(query, context.data);
+          result = await database.query(customQuery);
+      }
+
+      const updatedData = { ...context.data };
+      if (outputVariable) {
+        updatedData[outputVariable] = result.rows;
+      }
+      updatedData._lastDbResult = result.rows;
+
+      return updatedData;
+    } catch (error) {
+      logger.error(`[RuntimeEngine] Database operation failed: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async executeEmailService(config, context) {
+    const emailService = require('../services/EmailService');
+    const { to, subject, body, template, variables } = config;
+
+    // Interpolate email fields
+    const emailData = {
+      to: this.interpolateString(to, context.data),
+      subject: this.interpolateString(subject, context.data),
+      body: this.interpolateString(body, context.data),
+      template,
+      variables: { ...context.data, ...(variables || {}) }
+    };
+
+    logger.info(`[RuntimeEngine] Sending email to: ${emailData.to}`);
+
+    // Use EmailService for actual delivery
+    const result = await emailService.send(emailData);
+
+    return {
+      ...context.data,
+      _lastEmail: {
+        ...emailData,
+        sentAt: new Date().toISOString(),
+        success: result.success,
+        emailId: result.emailId,
+        provider: result.provider
+      }
+    };
+  }
+
+  async executeTransformService(config, context) {
+    const { transformations } = config;
+
+    let result = { ...context.data };
+
+    if (Array.isArray(transformations)) {
+      for (const transform of transformations) {
+        const { type, source, target, expression } = transform;
+
+        switch (type) {
+          case 'copy':
+            result[target] = this.getNestedValue(result, source);
+            break;
+
+          case 'calculate':
+            result[target] = this.evaluateExpression(expression, result);
+            break;
+
+          case 'format':
+            result[target] = this.interpolateString(expression, result);
+            break;
+
+          case 'map':
+            const sourceArray = this.getNestedValue(result, source) || [];
+            result[target] = sourceArray.map(item =>
+              this.interpolateObject(transform.mapTemplate, { ...result, _item: item })
+            );
+            break;
+
+          default:
+            logger.warn(`[RuntimeEngine] Unknown transform type: ${type}`);
+        }
+      }
+    }
+
+    return result;
   }
 
   async evaluateGateway(node, context) {
-    // Evaluate gateway conditions
-    return null;
+    const { edges = [], nodes = [] } = context.workflow || this.workflows.find(w => w.id === context.workflowId) || {};
+
+    // Find outgoing edges from this gateway
+    const outgoing = edges.filter(e => e.source === node.id);
+
+    if (outgoing.length === 0) {
+      logger.warn(`[RuntimeEngine] Gateway ${node.id} has no outgoing edges`);
+      return null;
+    }
+
+    // For exclusive gateway, evaluate conditions in order
+    if (node.type === 'exclusiveGateway') {
+      for (const edge of outgoing) {
+        const condition = edge.data?.condition || edge.label;
+
+        if (!condition || condition === 'default') {
+          continue; // Skip default path for now
+        }
+
+        if (this.evaluateCondition(condition, context.data)) {
+          logger.info(`[RuntimeEngine] Gateway condition matched: ${condition}`);
+          return edge.target;
+        }
+      }
+
+      // If no conditions matched, use default path
+      const defaultEdge = outgoing.find(e =>
+        !e.data?.condition || e.data?.condition === 'default' || e.label === 'default'
+      );
+
+      if (defaultEdge) {
+        logger.info(`[RuntimeEngine] Using default gateway path`);
+        return defaultEdge.target;
+      }
+
+      // Fallback to first edge
+      return outgoing[0]?.target;
+    }
+
+    // For parallel gateway, return all targets (handled by workflow engine)
+    if (node.type === 'parallelGateway') {
+      return outgoing.map(e => e.target);
+    }
+
+    return outgoing[0]?.target;
+  }
+
+  evaluateCondition(condition, data) {
+    try {
+      // Replace {{var}} and ${var} with actual values
+      let expr = condition
+        .replace(/\{\{([^}]+)\}\}/g, (match, varName) => {
+          const value = this.getNestedValue(data, varName.trim());
+          return JSON.stringify(value);
+        })
+        .replace(/\$\{([^}]+)\}/g, (match, varName) => {
+          const value = this.getNestedValue(data, varName.trim());
+          return JSON.stringify(value);
+        });
+
+      // Safe evaluation with data context
+      const fn = new Function('data', `with(data) { return ${expr}; }`);
+      return fn(data);
+    } catch (error) {
+      logger.error(`[RuntimeEngine] Condition evaluation failed: ${error.message}`);
+      return false;
+    }
+  }
+
+  // Helper: Interpolate string with {{var}} syntax
+  interpolateString(str, data) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/\{\{([^}]+)\}\}/g, (match, varName) => {
+      const value = this.getNestedValue(data, varName.trim());
+      return value !== undefined ? value : match;
+    });
+  }
+
+  // Helper: Interpolate object values
+  interpolateObject(obj, data) {
+    if (!obj || typeof obj !== 'object') return obj;
+
+    const result = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (typeof value === 'string') {
+        result[key] = this.interpolateString(value, data);
+      } else if (typeof value === 'object' && value !== null) {
+        result[key] = this.interpolateObject(value, data);
+      } else {
+        result[key] = value;
+      }
+    }
+    return result;
+  }
+
+  // Helper: Get nested value from object
+  getNestedValue(obj, path) {
+    if (!path || !obj) return undefined;
+    const keys = path.split('.');
+    let value = obj;
+    for (const key of keys) {
+      if (value === null || value === undefined) return undefined;
+      value = value[key];
+    }
+    return value;
+  }
+
+  // Helper: Evaluate simple expression
+  evaluateExpression(expr, data) {
+    try {
+      const interpolated = this.interpolateString(expr, data);
+      return new Function('data', `with(data) { return ${interpolated}; }`)(data);
+    } catch (error) {
+      logger.error(`[RuntimeEngine] Expression evaluation failed: ${error.message}`);
+      return null;
+    }
   }
 
   async startWorkflow(workflowId, input = {}) {
@@ -424,13 +707,110 @@ Fix the script to accomplish the original intent while:
       input
     });
 
+    // Store in memory for quick access during execution
     this.instances.set(instance.id, instance);
+
+    // Persist to database
+    await this.persistInstance(instance);
+
     logger.info(`Started workflow instance: ${instance.id}`);
 
     // Execute workflow
     await this.executeWorkflow(instance);
 
     return instance;
+  }
+
+  async persistInstance(instance) {
+    try {
+      const database = require('../database');
+      const config = require('../config');
+
+      if (!config.database.enabled) {
+        return; // Skip if database is disabled
+      }
+
+      await database.query(`
+        INSERT INTO workflow_instances (id, workflow_id, status, input, data, current_node_id, created_at, updated_at, completed_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ON CONFLICT (id) DO UPDATE SET
+          status = EXCLUDED.status,
+          data = EXCLUDED.data,
+          current_node_id = EXCLUDED.current_node_id,
+          updated_at = NOW(),
+          completed_at = EXCLUDED.completed_at
+      `, [
+        instance.id,
+        instance.workflowId,
+        instance.status,
+        JSON.stringify(instance.input),
+        JSON.stringify(instance.data),
+        instance.currentNodeId,
+        instance.createdAt,
+        new Date(),
+        instance.completedAt
+      ]);
+    } catch (error) {
+      logger.error(`Failed to persist instance ${instance.id}:`, error.message);
+      // Don't throw - allow workflow to continue even if persistence fails
+    }
+  }
+
+  async loadInstanceFromDB(instanceId) {
+    try {
+      const database = require('../database');
+      const config = require('../config');
+
+      if (!config.database.enabled) {
+        return null;
+      }
+
+      const result = await database.query(
+        'SELECT * FROM workflow_instances WHERE id = $1',
+        [instanceId]
+      );
+
+      if (result.rows.length === 0) {
+        return null;
+      }
+
+      const row = result.rows[0];
+      const workflow = this.workflows.find(w => w.id === row.workflow_id);
+
+      return new WorkflowInstance({
+        id: row.id,
+        workflowId: row.workflow_id,
+        workflow: workflow,
+        status: row.status,
+        input: row.input,
+        data: row.data,
+        currentNodeId: row.current_node_id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        completedAt: row.completed_at
+      });
+    } catch (error) {
+      logger.error(`Failed to load instance ${instanceId}:`, error.message);
+      return null;
+    }
+  }
+
+  async recordWorkflowHistory(instance, nodeId, action, data) {
+    try {
+      const database = require('../database');
+      const config = require('../config');
+
+      if (!config.database.enabled) {
+        return;
+      }
+
+      await database.query(`
+        INSERT INTO workflow_history (instance_id, node_id, action, data, created_at)
+        VALUES ($1, $2, $3, $4, NOW())
+      `, [instance.id, nodeId, action, JSON.stringify(data)]);
+    } catch (error) {
+      logger.error(`Failed to record history for ${instance.id}:`, error.message);
+    }
   }
 
   async executeWorkflow(instance) {
@@ -451,6 +831,7 @@ Fix the script to accomplish the original intent while:
     }
 
     instance.currentNodeId = nodeId;
+    instance.updatedAt = new Date();
 
     const executor = this.nodeExecutors[node.type];
     if (!executor) {
@@ -463,28 +844,52 @@ Fix the script to accomplish the original intent while:
       data: instance.data,
       input: instance.input,
       workflowId: instance.workflowId,
-      instanceId: instance.id
+      instanceId: instance.id,
+      workflow: instance.workflow
     };
 
-    const result = await executor(node, context);
+    // Record node entry in history
+    await this.recordWorkflowHistory(instance, nodeId, 'enter', { nodeType: node.type });
 
-    if (result.status === 'completed') {
-      instance.data = result.data;
+    try {
+      const result = await executor(node, context);
 
-      // Find next node
-      const nextNodeId = result.nextNode || this.getNextNode(instance, nodeId);
+      // Record node completion in history
+      await this.recordWorkflowHistory(instance, nodeId, result.status, { data: result.data });
 
-      if (nextNodeId) {
-        await this.executeNode(instance, nextNodeId);
-      } else {
-        // Workflow complete
-        instance.status = 'completed';
-        instance.completedAt = new Date();
-        logger.info(`Workflow instance completed: ${instance.id}`);
+      if (result.status === 'completed') {
+        instance.data = result.data;
+
+        // Persist state after node completion
+        await this.persistInstance(instance);
+
+        // Find next node
+        const nextNodeId = result.nextNode || this.getNextNode(instance, nodeId);
+
+        if (nextNodeId) {
+          await this.executeNode(instance, nextNodeId);
+        } else {
+          // Workflow complete
+          instance.status = 'completed';
+          instance.completedAt = new Date();
+          await this.persistInstance(instance);
+          logger.info(`Workflow instance completed: ${instance.id}`);
+        }
+      } else if (result.status === 'waiting') {
+        instance.status = 'waiting';
+        await this.persistInstance(instance);
+        logger.info(`Workflow instance waiting: ${instance.id}`);
       }
-    } else if (result.status === 'waiting') {
-      instance.status = 'waiting';
-      logger.info(`Workflow instance waiting: ${instance.id}`);
+    } catch (error) {
+      // Record error in history
+      await this.recordWorkflowHistory(instance, nodeId, 'error', { error: error.message });
+
+      instance.status = 'failed';
+      instance.data = { ...instance.data, _error: error.message };
+      await this.persistInstance(instance);
+
+      logger.error(`Workflow instance ${instance.id} failed at node ${nodeId}: ${error.message}`);
+      throw error;
     }
   }
 
@@ -495,21 +900,107 @@ Fix the script to accomplish the original intent while:
   }
 
   async resumeWorkflow(instanceId, data) {
-    const instance = this.instances.get(instanceId);
+    let instance = this.instances.get(instanceId);
+
+    // Try to load from database if not in memory
+    if (!instance) {
+      instance = await this.loadInstanceFromDB(instanceId);
+      if (instance) {
+        this.instances.set(instanceId, instance);
+      }
+    }
+
     if (!instance) {
       throw new Error(`Instance not found: ${instanceId}`);
     }
 
     instance.data = { ...instance.data, ...data };
+    instance.updatedAt = new Date();
+
+    // Persist updated state
+    await this.persistInstance(instance);
+
     await this.executeNode(instance, instance.currentNodeId);
   }
 
-  getInstance(instanceId) {
-    return this.instances.get(instanceId);
+  async getInstance(instanceId) {
+    // Check memory first
+    let instance = this.instances.get(instanceId);
+
+    // Fallback to database
+    if (!instance) {
+      instance = await this.loadInstanceFromDB(instanceId);
+      if (instance) {
+        this.instances.set(instanceId, instance);
+      }
+    }
+
+    return instance;
   }
 
-  getAllInstances() {
-    return Array.from(this.instances.values());
+  async getAllInstances(filters = {}) {
+    try {
+      const database = require('../database');
+      const config = require('../config');
+
+      if (!config.database.enabled) {
+        return Array.from(this.instances.values());
+      }
+
+      let query = 'SELECT * FROM workflow_instances';
+      const params = [];
+      const conditions = [];
+
+      if (filters.status) {
+        params.push(filters.status);
+        conditions.push(`status = $${params.length}`);
+      }
+
+      if (filters.workflowId) {
+        params.push(filters.workflowId);
+        conditions.push(`workflow_id = $${params.length}`);
+      }
+
+      if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
+      }
+
+      query += ' ORDER BY created_at DESC';
+
+      if (filters.limit) {
+        params.push(filters.limit);
+        query += ` LIMIT $${params.length}`;
+      }
+
+      const result = await database.query(query, params);
+
+      return result.rows.map(row => {
+        const workflow = this.workflows.find(w => w.id === row.workflow_id);
+        return new WorkflowInstance({
+          id: row.id,
+          workflowId: row.workflow_id,
+          workflow: workflow,
+          status: row.status,
+          input: row.input,
+          data: row.data,
+          currentNodeId: row.current_node_id,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          completedAt: row.completed_at
+        });
+      });
+    } catch (error) {
+      logger.error('Failed to get all instances:', error.message);
+      return Array.from(this.instances.values());
+    }
+  }
+
+  async getInstancesByStatus(status) {
+    return this.getAllInstances({ status });
+  }
+
+  async getInstancesByWorkflow(workflowId) {
+    return this.getAllInstances({ workflowId });
   }
 }
 

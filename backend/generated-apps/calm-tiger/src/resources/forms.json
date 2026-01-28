@@ -1,193 +1,1710 @@
 [
   {
-    "id": "payment-processing-form",
-    "name": "PaymentProcessingForm",
-    "steps": [],
-    "title": "Payment Processing",
-    "config": {},
+    "id": "ticketassignmentform-1766578120999-chge0z",
+    "name": "TicketAssignmentForm",
+    "title": "Assign Ticket to Agent",
+    "description": "Review ticket details and assign to an appropriate support agent based on category, workload, and expertise",
     "fields": [
       {
-        "id": "order-id",
-        "name": "orderId",
+        "id": "ticketId",
+        "name": "ticketId",
         "type": "text",
-        "label": "Order ID",
+        "label": "Ticket ID",
+        "placeholder": "Auto-generated",
         "required": true,
+        "defaultValue": null,
         "validation": {
-          "message": "Please enter a valid order ID (e.g., ORD-12345)",
-          "pattern": "^ORD-[0-9]{5,}$"
-        },
-        "placeholder": "ORD-12345",
-        "defaultValue": null
+          "pattern": "^TKT-[0-9]{6}$",
+          "message": "Invalid ticket ID format"
+        }
       },
       {
-        "id": "payment-method",
-        "name": "paymentMethod",
+        "id": "title",
+        "name": "title",
+        "type": "text",
+        "label": "Ticket Title",
+        "placeholder": "Brief description of the issue",
+        "required": true,
+        "defaultValue": null,
+        "validation": {
+          "min": 5,
+          "max": 150,
+          "message": "Title must be between 5 and 150 characters"
+        }
+      },
+      {
+        "id": "category",
+        "name": "category",
         "type": "select",
-        "label": "Payment Method",
+        "label": "Category",
+        "placeholder": "Select ticket category",
+        "required": true,
         "options": [
-          "Credit Card",
-          "Debit Card",
-          "PayPal",
-          "Bank Transfer"
+          "Hardware Issue",
+          "Software Issue",
+          "Network Problem",
+          "Account Access",
+          "Email Support",
+          "Application Error",
+          "Security Incident",
+          "General Inquiry"
         ],
-        "required": true,
-        "placeholder": "Select payment method",
-        "defaultValue": "Credit Card"
-      },
-      {
-        "id": "card-number",
-        "name": "cardNumber",
-        "type": "text",
-        "label": "Card Number",
-        "required": true,
-        "validation": {
-          "message": "Please enter a valid card number (13-19 digits)",
-          "pattern": "^[0-9]{13,19}$"
-        },
-        "placeholder": "1234 5678 9012 3456",
         "defaultValue": null
       },
       {
-        "id": "card-expiry",
-        "name": "cardExpiry",
-        "type": "text",
-        "label": "Expiry Date",
+        "id": "priority",
+        "name": "priority",
+        "type": "select",
+        "label": "Priority Level",
+        "placeholder": "Adjust priority if needed",
         "required": true,
-        "validation": {
-          "message": "Please enter a valid expiry date (MM/YY)",
-          "pattern": "^(0[1-9]|1[0-2])\\/([0-9]{2})$"
-        },
-        "placeholder": "MM/YY",
+        "options": [
+          "Critical",
+          "High",
+          "Medium",
+          "Low"
+        ],
+        "defaultValue": "Medium"
+      },
+      {
+        "id": "assignedAgentId",
+        "name": "assignedAgentId",
+        "type": "select",
+        "label": "Assign to Agent",
+        "placeholder": "Select support agent",
+        "required": true,
+        "options": [
+          "John Smith (Hardware - 3 active)",
+          "Sarah Johnson (Software - 5 active)",
+          "Mike Chen (Network - 2 active)",
+          "Emily Davis (Security - 4 active)",
+          "Robert Wilson (General - 6 active)"
+        ],
         "defaultValue": null
       },
       {
-        "id": "card-cvv",
-        "name": "cardCvv",
-        "type": "text",
-        "label": "CVV",
+        "id": "estimatedResolutionTime",
+        "name": "estimatedResolutionTime",
+        "type": "select",
+        "label": "Estimated Resolution Time",
+        "placeholder": "Select timeframe",
         "required": true,
-        "validation": {
-          "message": "Please enter a valid CVV (3-4 digits)",
-          "pattern": "^[0-9]{3,4}$"
-        },
-        "placeholder": "123",
-        "defaultValue": null
+        "options": [
+          "1 hour",
+          "4 hours",
+          "1 day",
+          "2-3 days",
+          "1 week",
+          "2+ weeks"
+        ],
+        "defaultValue": "1 day"
       },
       {
-        "id": "payment-amount",
-        "name": "paymentAmount",
-        "type": "number",
-        "label": "Payment Amount",
-        "required": true,
-        "validation": {
-          "min": 0.01,
-          "message": "Payment amount must be greater than 0"
-        },
-        "placeholder": "0.00",
-        "defaultValue": null
-      },
-      {
-        "id": "billing-email",
-        "name": "billingEmail",
-        "type": "email",
-        "label": "Billing Email",
-        "required": true,
-        "validation": {
-          "message": "Please enter a valid email address",
-          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
-        },
-        "placeholder": "customer@example.com",
-        "defaultValue": null
-      },
-      {
-        "id": "save-payment-info",
-        "name": "savePaymentInfo",
-        "type": "checkbox",
-        "label": "Save payment information for future orders",
+        "id": "assignmentNotes",
+        "name": "assignmentNotes",
+        "type": "textarea",
+        "label": "Assignment Notes",
+        "placeholder": "Add any relevant notes for the assigned agent (optional context, special instructions, etc.)",
         "required": false,
-        "placeholder": "",
-        "defaultValue": false
+        "defaultValue": null,
+        "validation": {
+          "max": 500,
+          "message": "Notes cannot exceed 500 characters"
+        }
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "ticketId",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "title",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "category",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "priority",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "assignedAgentId",
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "estimatedResolutionTime",
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "assignmentNotes",
+        "x": 0,
+        "y": 24,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
       }
     ],
     "layout": {
-      "type": "single-column",
+      "type": "two-column",
       "sections": [
         {
-          "id": "order-section",
-          "title": "Order Information",
+          "id": "ticket-details",
+          "title": "Ticket Details",
           "fieldIds": [
-            "order-id",
-            "payment-amount"
+            "ticketId",
+            "title",
+            "category",
+            "priority"
           ]
         },
         {
-          "id": "payment-section",
-          "title": "Payment Details",
+          "id": "assignment-details",
+          "title": "Assignment Details",
           "fieldIds": [
-            "payment-method",
-            "card-number",
-            "card-expiry",
-            "card-cvv"
-          ]
-        },
-        {
-          "id": "billing-section",
-          "title": "Billing Information",
-          "fieldIds": [
-            "billing-email",
-            "save-payment-info"
+            "assignedAgentId",
+            "estimatedResolutionTime",
+            "assignmentNotes"
           ]
         }
       ]
     },
-    "nodeId": null,
+    "submitButton": {
+      "label": "Assign Ticket",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
     "styling": {
       "colors": {
-        "text": "#1e293b",
-        "border": "#e2e8f0",
         "primary": "#2563eb",
         "secondary": "#64748b",
-        "background": "#ffffff"
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
       },
       "spacing": {
-        "fieldGap": "20px",
+        "fieldGap": "16px",
         "sectionGap": "32px",
-        "inputPadding": "12px 16px"
+        "inputPadding": "10px 12px"
       },
       "components": {
         "input": {
-          "height": "44px",
+          "borderRadius": "6px",
           "borderWidth": "1px",
-          "borderRadius": "8px"
+          "height": "40px"
         },
         "button": {
           "primary": {
+            "background": "#2563eb",
             "color": "#ffffff",
-            "padding": "12px 24px",
-            "background": "#2563eb"
+            "padding": "10px 24px"
           }
-        }
-      },
-      "typography": {
-        "fontSize": {
-          "input": "16px",
-          "label": "14px"
-        },
-        "fontFamily": "Inter, system-ui, sans-serif",
-        "fontWeight": {
-          "input": "400",
-          "label": "500"
         }
       }
     },
-    "formType": null,
-    "metadata": {},
-    "gridLayout": [],
+    "_formAssociation": {
+      "forWorkflow": "TicketLifecycleWorkflow",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Assign Ticket to Agent",
+      "dataModel": "Ticket"
+    },
+    "_specName": "TicketAssignmentForm",
+    "dataModelId": "user-model",
+    "dataModelName": "User",
+    "validationRules": [
+      {
+        "id": "rule_estimated_resolution_time",
+        "name": "EstimatedResolutionTimeRule",
+        "ruleType": "calculation",
+        "triggerEvent": "onChange",
+        "affectedFields": [
+          "priority",
+          "category",
+          "estimatedResolutionTime"
+        ]
+      }
+    ],
+    "workflowId": "ticket-escalation-workflow"
+  },
+  {
+    "id": "ticketresolutionform-1766578141176-kqtnpl",
+    "name": "TicketResolutionForm",
+    "title": "Resolve Ticket",
+    "description": "Mark ticket as resolved with detailed resolution information and root cause analysis",
+    "fields": [
+      {
+        "id": "ticketId",
+        "name": "ticketId",
+        "type": "text",
+        "label": "Ticket ID",
+        "placeholder": "Auto-populated ticket identifier",
+        "required": true,
+        "validation": {
+          "pattern": "^TKT-[0-9]{6}$",
+          "message": "Invalid ticket ID format"
+        },
+        "defaultValue": null,
+        "disabled": true
+      },
+      {
+        "id": "solutionDescription",
+        "name": "solutionDescription",
+        "type": "textarea",
+        "label": "Solution Description",
+        "placeholder": "Describe the solution implemented to resolve this ticket...",
+        "required": true,
+        "validation": {
+          "min": 20,
+          "max": 1000,
+          "message": "Solution description must be between 20 and 1000 characters"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "rootCause",
+        "name": "rootCause",
+        "type": "select",
+        "label": "Root Cause",
+        "placeholder": "Select root cause category",
+        "required": true,
+        "options": [
+          "User Error",
+          "Software Bug",
+          "Hardware Failure",
+          "Configuration Issue",
+          "Network Problem",
+          "Third-party Service",
+          "Security Issue",
+          "Data Corruption",
+          "Other"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "resolutionCategory",
+        "name": "resolutionCategory",
+        "type": "select",
+        "label": "Resolution Category",
+        "placeholder": "Select resolution type",
+        "required": true,
+        "options": [
+          "Configuration Change",
+          "Software Update",
+          "Hardware Replacement",
+          "User Training",
+          "Workaround Provided",
+          "System Restart",
+          "Permission Adjustment",
+          "Bug Fix Applied",
+          "No Action Required"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "resolutionNotes",
+        "name": "resolutionNotes",
+        "type": "textarea",
+        "label": "Resolution Notes",
+        "placeholder": "Provide detailed notes about the resolution process, steps taken, and any additional context...",
+        "required": true,
+        "validation": {
+          "min": 30,
+          "max": 2000,
+          "message": "Resolution notes must be between 30 and 2000 characters"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "preventiveMeasures",
+        "name": "preventiveMeasures",
+        "type": "textarea",
+        "label": "Preventive Measures",
+        "placeholder": "Describe any preventive measures or recommendations to avoid similar issues in the future...",
+        "required": false,
+        "validation": {
+          "max": 1000,
+          "message": "Preventive measures cannot exceed 1000 characters"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "customerNotification",
+        "name": "customerNotification",
+        "type": "checkbox",
+        "label": "Send Resolution Notification",
+        "placeholder": "",
+        "required": false,
+        "defaultValue": true
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "ticketId",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 12,
+        "minH": 8
+      },
+      {
+        "i": "solutionDescription",
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      },
+      {
+        "i": "rootCause",
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "resolutionCategory",
+        "x": 12,
+        "y": 20,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "resolutionNotes",
+        "x": 0,
+        "y": 28,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      },
+      {
+        "i": "preventiveMeasures",
+        "x": 0,
+        "y": 40,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      },
+      {
+        "i": "customerNotification",
+        "x": 0,
+        "y": 52,
+        "w": 24,
+        "h": 8,
+        "minW": 12,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "ticket-info",
+          "title": "Ticket Information",
+          "fieldIds": [
+            "ticketId"
+          ]
+        },
+        {
+          "id": "resolution-details",
+          "title": "Resolution Details",
+          "fieldIds": [
+            "solutionDescription",
+            "rootCause",
+            "resolutionCategory",
+            "resolutionNotes"
+          ]
+        },
+        {
+          "id": "preventive-actions",
+          "title": "Preventive Actions",
+          "fieldIds": [
+            "preventiveMeasures"
+          ]
+        },
+        {
+          "id": "notification-settings",
+          "title": "Notification",
+          "fieldIds": [
+            "customerNotification"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Mark as Resolved",
+      "position": "right"
+    },
     "validation": {
-      "mode": "onBlur",
+      "mode": "onSubmit",
       "showErrors": true
     },
-    "description": "Securely process your payment for this order",
-    "data_model_id": null
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "TicketLifecycleWorkflow",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Resolve Ticket",
+      "dataModel": "Ticket"
+    },
+    "_specName": "TicketResolutionForm",
+    "dataModelId": "ticket-comment",
+    "dataModelName": "TicketComment",
+    "validationRules": [
+      {
+        "id": "rule_mandatory_fields",
+        "name": "MandatoryFieldsRule",
+        "ruleType": "validation",
+        "triggerEvent": "onSubmit",
+        "affectedFields": [
+          "status",
+          "resolutionNotes",
+          "assignedAgentId"
+        ]
+      }
+    ],
+    "workflowId": "ticket-escalation-workflow"
+  },
+  {
+    "id": "customerfeedbackform-1766578161958-egbm0c",
+    "name": "CustomerFeedbackForm",
+    "title": "Ticket Resolution Confirmation",
+    "description": "Please confirm if your issue has been resolved or provide feedback to reopen the ticket",
+    "fields": [
+      {
+        "id": "ticketId",
+        "name": "ticketId",
+        "type": "text",
+        "label": "Ticket ID",
+        "placeholder": "Ticket reference number",
+        "required": true,
+        "defaultValue": null,
+        "validation": {
+          "pattern": "^[A-Z0-9-]+$",
+          "message": "Invalid ticket ID format"
+        }
+      },
+      {
+        "id": "isResolved",
+        "name": "isResolved",
+        "type": "radio",
+        "label": "Has your issue been resolved?",
+        "placeholder": "",
+        "required": true,
+        "options": [
+          "Yes, my issue is resolved",
+          "No, I need further assistance"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "satisfactionRating",
+        "name": "satisfactionRating",
+        "type": "select",
+        "label": "Satisfaction Rating",
+        "placeholder": "Select your satisfaction level",
+        "required": true,
+        "options": [
+          "Very Satisfied",
+          "Satisfied",
+          "Neutral",
+          "Dissatisfied",
+          "Very Dissatisfied"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "feedbackComments",
+        "name": "feedbackComments",
+        "type": "textarea",
+        "label": "Feedback Comments",
+        "placeholder": "Please share your experience or any additional comments...",
+        "required": false,
+        "validation": {
+          "max": 1000,
+          "message": "Comments must not exceed 1000 characters"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "reopenReason",
+        "name": "reopenReason",
+        "type": "textarea",
+        "label": "Reason for Reopening (if applicable)",
+        "placeholder": "Please describe why the issue is not resolved...",
+        "required": false,
+        "validation": {
+          "max": 500,
+          "message": "Reason must not exceed 500 characters"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "ticketId",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "isResolved",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "satisfactionRating",
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "feedbackComments",
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "reopenReason",
+        "x": 0,
+        "y": 28,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "ticket-info",
+          "title": "Ticket Information",
+          "fieldIds": [
+            "ticketId",
+            "isResolved"
+          ]
+        },
+        {
+          "id": "feedback-section",
+          "title": "Your Feedback",
+          "fieldIds": [
+            "satisfactionRating",
+            "feedbackComments",
+            "reopenReason"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Submit Feedback",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "TicketLifecycleWorkflow",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Customer Confirmation",
+      "dataModel": "Ticket"
+    },
+    "_specName": "CustomerFeedbackForm",
+    "dataModelId": "ticket-comment",
+    "dataModelName": "TicketComment",
+    "workflowId": "ticket-escalation-workflow"
+  },
+  {
+    "id": "ticketreopenform-1766578177532-sitfky",
+    "name": "TicketReopenForm",
+    "title": "Reopen Support Ticket",
+    "description": "Please provide details about why you need to reopen this ticket and what issues remain unresolved.",
+    "fields": [
+      {
+        "id": "ticketId",
+        "name": "ticketId",
+        "type": "text",
+        "label": "Ticket ID",
+        "placeholder": "e.g., TKT-12345",
+        "required": true,
+        "validation": {
+          "pattern": "^TKT-[0-9]{5}$",
+          "message": "Please enter a valid ticket ID (format: TKT-12345)"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "urgency",
+        "name": "urgency",
+        "type": "select",
+        "label": "Urgency Level",
+        "placeholder": "Select urgency level",
+        "required": true,
+        "options": [
+          "Low - Can wait",
+          "Medium - Needs attention soon",
+          "High - Blocking work",
+          "Critical - System down"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "reopenReason",
+        "name": "reopenReason",
+        "type": "select",
+        "label": "Reason for Reopening",
+        "placeholder": "Select the primary reason",
+        "required": true,
+        "options": [
+          "Issue not resolved",
+          "Problem recurred",
+          "Resolution incomplete",
+          "Different issue discovered",
+          "Solution didn't work",
+          "Need additional assistance",
+          "Other"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "additionalDetails",
+        "name": "additionalDetails",
+        "type": "textarea",
+        "label": "Additional Details",
+        "placeholder": "Please describe what issues remain, what you've tried, and any error messages you're seeing...",
+        "required": true,
+        "validation": {
+          "min": 20,
+          "max": 2000,
+          "message": "Please provide at least 20 characters describing the issue"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "previousResolutionTried",
+        "name": "previousResolutionTried",
+        "type": "checkbox",
+        "label": "I have tried the previous resolution steps again",
+        "required": false,
+        "defaultValue": false
+      },
+      {
+        "id": "contactMethod",
+        "name": "contactMethod",
+        "type": "select",
+        "label": "Preferred Contact Method",
+        "placeholder": "How should we reach you?",
+        "required": true,
+        "options": [
+          "Email",
+          "Phone",
+          "In-app notification",
+          "No preference"
+        ],
+        "defaultValue": "Email"
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "ticketId",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "urgency",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "reopenReason",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "contactMethod",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "additionalDetails",
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
+      },
+      {
+        "i": "previousResolutionTried",
+        "x": 0,
+        "y": 28,
+        "w": 24,
+        "h": 8,
+        "minW": 12,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "ticket-info",
+          "title": "Ticket Information",
+          "fieldIds": [
+            "ticketId",
+            "urgency",
+            "reopenReason",
+            "contactMethod"
+          ]
+        },
+        {
+          "id": "issue-details",
+          "title": "Issue Details",
+          "fieldIds": [
+            "additionalDetails",
+            "previousResolutionTried"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Reopen Ticket",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "TicketReopenWorkflow",
+      "forNodeType": "startProcess",
+      "forNodeLabel": "Start - Reopen Ticket",
+      "dataModel": "Ticket"
+    },
+    "_specName": "TicketReopenForm",
+    "validationRules": [
+      {
+        "id": "rule_ticket_reopen_validation",
+        "name": "TicketReopenValidationRule",
+        "ruleType": "validation",
+        "triggerEvent": "onSubmit",
+        "affectedFields": [
+          "status",
+          "closedAt"
+        ]
+      }
+    ],
+    "workflowId": "ticket-escalation-workflow"
+  },
+  {
+    "id": "ticketupdateform-1766578196362-gdctda",
+    "name": "TicketUpdateForm",
+    "title": "Update Ticket Progress",
+    "description": "Update ticket status, add progress notes, and communicate with customers",
+    "fields": [
+      {
+        "id": "ticketId",
+        "name": "ticketId",
+        "type": "text",
+        "label": "Ticket ID",
+        "placeholder": "Auto-populated",
+        "required": true,
+        "disabled": true,
+        "defaultValue": null
+      },
+      {
+        "id": "status",
+        "name": "status",
+        "type": "select",
+        "label": "Status",
+        "placeholder": "Select ticket status",
+        "required": true,
+        "options": [
+          "In Progress",
+          "Pending Customer Response",
+          "Pending Internal Review",
+          "On Hold",
+          "Resolved",
+          "Closed"
+        ],
+        "defaultValue": "In Progress"
+      },
+      {
+        "id": "progressNotes",
+        "name": "progressNotes",
+        "type": "textarea",
+        "label": "Progress Notes",
+        "placeholder": "Describe the work performed, findings, or next steps...",
+        "required": true,
+        "validation": {
+          "min": 10,
+          "max": 2000,
+          "message": "Progress notes must be between 10 and 2000 characters"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "isInternalNote",
+        "name": "isInternalNote",
+        "type": "checkbox",
+        "label": "Internal Note Only",
+        "placeholder": "",
+        "required": false,
+        "defaultValue": false,
+        "helpText": "Check this box if the note should not be visible to the customer"
+      },
+      {
+        "id": "estimatedCompletionTime",
+        "name": "estimatedCompletionTime",
+        "type": "date",
+        "label": "Estimated Completion Date",
+        "placeholder": "Select estimated completion date",
+        "required": false,
+        "validation": {
+          "min": "today",
+          "message": "Completion date must be today or in the future"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "attachments",
+        "name": "attachments",
+        "type": "file",
+        "label": "Supporting Documents",
+        "placeholder": "Upload screenshots, logs, or other supporting files",
+        "required": false,
+        "validation": {
+          "maxSize": 10485760,
+          "allowedTypes": [
+            ".pdf",
+            ".doc",
+            ".docx",
+            ".txt",
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".zip"
+          ],
+          "message": "Maximum file size is 10MB. Allowed types: PDF, DOC, DOCX, TXT, PNG, JPG, ZIP"
+        },
+        "multiple": true,
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "ticketId",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "status",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "progressNotes",
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      },
+      {
+        "i": "isInternalNote",
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "estimatedCompletionTime",
+        "x": 12,
+        "y": 20,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "attachments",
+        "x": 0,
+        "y": 28,
+        "w": 24,
+        "h": 8,
+        "minW": 12,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "ticket-info",
+          "title": "Ticket Information",
+          "fieldIds": [
+            "ticketId",
+            "status"
+          ]
+        },
+        {
+          "id": "progress-details",
+          "title": "Progress Details",
+          "fieldIds": [
+            "progressNotes",
+            "isInternalNote",
+            "estimatedCompletionTime"
+          ]
+        },
+        {
+          "id": "attachments-section",
+          "title": "Supporting Documents",
+          "fieldIds": [
+            "attachments"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Update Ticket",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0",
+        "error": "#dc2626",
+        "success": "#16a34a"
+      },
+      "typography": {
+        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px",
+          "help": "12px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px",
+          "focusBorderColor": "#2563eb",
+          "focusRing": "0 0 0 3px rgba(37, 99, 235, 0.1)"
+        },
+        "textarea": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "minHeight": "100px",
+          "focusBorderColor": "#2563eb",
+          "focusRing": "0 0 0 3px rgba(37, 99, 235, 0.1)"
+        },
+        "select": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px",
+          "focusBorderColor": "#2563eb",
+          "focusRing": "0 0 0 3px rgba(37, 99, 235, 0.1)"
+        },
+        "checkbox": {
+          "size": "18px",
+          "borderRadius": "4px",
+          "borderWidth": "1px",
+          "checkedBackground": "#2563eb",
+          "checkedBorder": "#2563eb"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px",
+            "borderRadius": "6px",
+            "fontWeight": "500",
+            "hoverBackground": "#1d4ed8"
+          },
+          "secondary": {
+            "background": "#f1f5f9",
+            "color": "#475569",
+            "padding": "10px 24px",
+            "borderRadius": "6px",
+            "fontWeight": "500",
+            "hoverBackground": "#e2e8f0"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "TicketLifecycleWorkflow",
+      "forNodeType": "userTask",
+      "forNodeLabel": "Update Ticket Progress",
+      "dataModel": "Ticket"
+    },
+    "_specName": "TicketUpdateForm",
+    "dataModelId": "ticket-attachment",
+    "dataModelName": "TicketAttachment",
+    "validationRules": [
+      {
+        "id": "rule_comment_visibility",
+        "name": "CommentVisibilityRule",
+        "ruleType": "visibility",
+        "triggerEvent": "onLoad",
+        "affectedFields": [
+          "isInternal",
+          "userRole"
+        ]
+      }
+    ],
+    "workflowId": "ticket-escalation-workflow"
+  },
+  {
+    "id": "ticketsubmissionform-1766578218900-px9x49",
+    "name": "TicketSubmissionForm",
+    "title": "Submit Support Ticket",
+    "description": "Please provide details about your issue so we can assist you quickly",
+    "fields": [
+      {
+        "id": "title",
+        "name": "title",
+        "type": "text",
+        "label": "Ticket Title",
+        "placeholder": "Brief summary of your issue",
+        "required": true,
+        "validation": {
+          "min": 5,
+          "max": 100,
+          "message": "Title must be between 5 and 100 characters"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "category",
+        "name": "category",
+        "type": "select",
+        "label": "Category",
+        "placeholder": "Select a category",
+        "required": true,
+        "options": [
+          "Hardware Issue",
+          "Software Issue",
+          "Network Problem",
+          "Access Request",
+          "Account Issue",
+          "Other"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "priority",
+        "name": "priority",
+        "type": "select",
+        "label": "Priority",
+        "placeholder": "Select priority level",
+        "required": true,
+        "options": [
+          "Low",
+          "Medium",
+          "High",
+          "Critical"
+        ],
+        "defaultValue": "Medium"
+      },
+      {
+        "id": "description",
+        "name": "description",
+        "type": "textarea",
+        "label": "Description",
+        "placeholder": "Please describe your issue in detail, including any error messages or steps to reproduce",
+        "required": true,
+        "validation": {
+          "min": 20,
+          "max": 2000,
+          "message": "Description must be between 20 and 2000 characters"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "customerName",
+        "name": "customerName",
+        "type": "text",
+        "label": "Your Name",
+        "placeholder": "Enter your full name",
+        "required": true,
+        "validation": {
+          "min": 2,
+          "max": 100,
+          "message": "Please enter a valid name"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "customerEmail",
+        "name": "customerEmail",
+        "type": "email",
+        "label": "Email Address",
+        "placeholder": "your.email@company.com",
+        "required": true,
+        "validation": {
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2}$",
+          "message": "Please enter a valid email address"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "customerContact",
+        "name": "customerContact",
+        "type": "text",
+        "label": "Phone Number",
+        "placeholder": "+1 (555) 123-4567",
+        "required": false,
+        "validation": {
+          "pattern": "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,9}$",
+          "message": "Please enter a valid phone number"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "attachments",
+        "name": "attachments",
+        "type": "file",
+        "label": "Attachments",
+        "placeholder": "Upload screenshots or relevant files (optional)",
+        "required": false,
+        "validation": {
+          "max": 10485760,
+          "message": "File size must not exceed 10MB"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "title",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 12,
+        "minH": 8
+      },
+      {
+        "i": "category",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "priority",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "description",
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      },
+      {
+        "i": "customerName",
+        "x": 0,
+        "y": 28,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "customerEmail",
+        "x": 12,
+        "y": 28,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "customerContact",
+        "x": 0,
+        "y": 36,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "attachments",
+        "x": 12,
+        "y": 36,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "ticket-details",
+          "title": "Ticket Details",
+          "fieldIds": [
+            "title",
+            "category",
+            "priority",
+            "description"
+          ]
+        },
+        {
+          "id": "contact-information",
+          "title": "Contact Information",
+          "fieldIds": [
+            "customerName",
+            "customerEmail",
+            "customerContact",
+            "attachments"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Submit Ticket",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "forWorkflow": "TicketLifecycleWorkflow",
+      "forNodeType": "startProcess",
+      "forNodeLabel": "Start - Submit Ticket",
+      "dataModel": "Ticket"
+    },
+    "_specName": "TicketSubmissionForm",
+    "dataModelId": "ticket-attachment",
+    "dataModelName": "TicketAttachment",
+    "validationRules": [
+      {
+        "id": "rule_auto_assign_ticket",
+        "name": "AutoAssignTicketRule",
+        "ruleType": "routing",
+        "triggerEvent": "onSubmit",
+        "affectedFields": [
+          "assignedAgentId",
+          "assignedAgentName",
+          "status"
+        ]
+      },
+      {
+        "id": "rule_priority_validation",
+        "name": "PriorityValidationRule",
+        "ruleType": "validation",
+        "triggerEvent": "onSubmit",
+        "affectedFields": [
+          "priority",
+          "category"
+        ]
+      },
+      {
+        "id": "rule_attachment_size_validation",
+        "name": "AttachmentSizeValidationRule",
+        "ruleType": "validation",
+        "triggerEvent": "onChange",
+        "affectedFields": [
+          "fileName",
+          "fileSize",
+          "fileType"
+        ]
+      },
+      {
+        "id": "rule_duplicate_ticket_detection",
+        "name": "DuplicateTicketDetectionRule",
+        "ruleType": "validation",
+        "triggerEvent": "onSubmit",
+        "affectedFields": [
+          "title",
+          "description",
+          "customerId"
+        ]
+      }
+    ],
+    "workflowId": "ticket-escalation-workflow"
+  },
+  {
+    "id": "form_auto_start_escalation_check_1766579567985",
+    "name": "Start Escalation Check Form",
+    "description": "Auto-generated form for Start Escalation Check",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1766579567985",
+        "title": "Start Escalation Check",
+        "fields": [
+          {
+            "id": "field_1766579567985_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1766579567985_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1766579567985_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "dataModelId": "dm_ticket_1766579567982",
+    "dataModelName": "Ticket",
+    "_autoGenerated": true,
+    "_forWorkflow": "TicketEscalationWorkflow",
+    "_forNode": "start-1",
+    "workflowId": "ticket-escalation-workflow"
+  },
+  {
+    "id": "form_auto_manager_assignment_1766579567985",
+    "name": "Manager Assignment Form",
+    "description": "Auto-generated form for Manager Assignment",
+    "type": "simple",
+    "sections": [
+      {
+        "id": "section_1766579567985",
+        "title": "Manager Assignment",
+        "fields": [
+          {
+            "id": "field_1766579567985_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1766579567985_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "dataModelId": "dm_ticket_1766579567982",
+    "dataModelName": "Ticket",
+    "_autoGenerated": true,
+    "_forWorkflow": "TicketLifecycleWorkflow",
+    "_forNode": "userTask-1",
+    "workflowId": "ticket-escalation-workflow"
   }
 ]

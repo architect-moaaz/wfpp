@@ -1,0 +1,259 @@
+[
+  {
+    "id": "rule_start_registration",
+    "name": "Start Registration Rule",
+    "description": "Validate user input fields are present and meet minimum requirements at registration start",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "user.email",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "user.fullName",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "user.email",
+          "operator": "contains",
+          "value": "@"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "registrationStatus",
+          "value": "initiated"
+        },
+        {
+          "type": "logMessage",
+          "message": "User registration started successfully"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1767962364554"
+  },
+  {
+    "id": "rule_validate_registration_data",
+    "name": "Validate Registration Data Rule",
+    "description": "Validate user registration data against business rules including email format and role assignment",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "user.role.id",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "user.email",
+          "operator": "contains",
+          "value": "@"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "passed"
+        },
+        {
+          "type": "validateField",
+          "field": "user.email",
+          "message": "Email format validated successfully"
+        },
+        {
+          "type": "logMessage",
+          "message": "Registration data validation completed"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1767962364554"
+  },
+  {
+    "id": "rule_validation_passed_decision",
+    "name": "Validation Passed? Rule",
+    "description": "Determine workflow path based on validation status",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validationStatus",
+          "operator": "equals",
+          "value": "passed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "email_verification"
+        },
+        {
+          "type": "setVariable",
+          "field": "nextStep",
+          "value": "verifyEmail"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1767962364554"
+  },
+  {
+    "id": "rule_verify_email",
+    "name": "Verify Email Rule",
+    "description": "Validate email verification token and update user verification status",
+    "type": "validation",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "emailVerificationToken",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "user.emailVerified",
+          "operator": "equals",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "user.emailVerified",
+          "value": true
+        },
+        {
+          "type": "sendNotification",
+          "field": "user.email",
+          "message": "Your email has been verified successfully"
+        },
+        {
+          "type": "updateData",
+          "field": "user.verifiedAt",
+          "value": "{{currentTimestamp}}"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1767962364554"
+  },
+  {
+    "id": "rule_requires_role_approval_decision",
+    "name": "Requires Role Approval? Rule",
+    "description": "Determine if user role requires admin approval based on role permissions",
+    "type": "decision",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "user.role.name",
+          "operator": "in",
+          "value": [
+            "Manager",
+            "Finance",
+            "Admin"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "requiresApproval",
+          "value": true
+        },
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "admin_approval"
+        },
+        {
+          "type": "setVariable",
+          "field": "user.status",
+          "value": "pending_approval"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1767962364554"
+  },
+  {
+    "id": "rule_admin_role_approval",
+    "name": "Admin Role Approval Rule",
+    "description": "Validate admin approval decision and update user account status accordingly",
+    "type": "validation",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approval.status",
+          "operator": "equals",
+          "value": "approved"
+        },
+        {
+          "field": "approval.approverRole",
+          "operator": "equals",
+          "value": "Admin"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "user.status",
+          "value": "active"
+        },
+        {
+          "type": "sendNotification",
+          "field": "user.email",
+          "message": "Your account has been approved and activated"
+        },
+        {
+          "type": "updateData",
+          "field": "user.approvedAt",
+          "value": "{{currentTimestamp}}"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1767962364554"
+  }
+]

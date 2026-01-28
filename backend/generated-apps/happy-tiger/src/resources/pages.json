@@ -1,14 +1,14 @@
 [
   {
-    "id": "paymenthistorypage-1764936100000-ph9x2k",
-    "name": "PaymentHistoryPage",
-    "title": "Payment History & Financial Records",
-    "description": "Financial reporting page showing payment transactions, revenue summaries, refunds, and payment method breakdowns with export functionality for accounting integration.",
-    "route": "/payment-history",
-    "type": "list",
+    "id": "survey-management-dashboard-1768214600000-abc123",
+    "name": "Survey Management Dashboard",
+    "title": "Survey Management Dashboard",
+    "description": "Main dashboard for managing all surveys with overview statistics and quick actions",
+    "route": "/survey-management-dashboard",
+    "type": "dashboard",
     "platform": "both",
     "forms": [
-      "reportparametersform-1764935906274-sh7y7n"
+      "survey-configuration-form-1768214488212-zxjvsa"
     ],
     "sections": [
       {
@@ -18,7 +18,7 @@
           {
             "type": "text",
             "config": {
-              "text": "Payment History & Financial Records",
+              "text": "Survey Management Dashboard",
               "variant": "h1",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
@@ -32,7 +32,7 @@
           {
             "type": "text",
             "config": {
-              "text": "View payment transactions, revenue summaries, and export financial data for accounting reconciliation",
+              "text": "Manage and monitor all your surveys in one place",
               "variant": "body1",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
@@ -52,417 +52,86 @@
           {
             "type": "card",
             "config": {
-              "title": "Revenue Summary",
+              "title": "Survey Statistics",
+              "layout": "grid",
+              "columns": 4,
               "style": {
                 "backgroundColor": "#ffffff",
                 "borderRadius": "12px",
                 "padding": "24px",
                 "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e5e5",
-                "marginBottom": "24px"
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
               }
             },
-            "dataBinding": "Payment.aggregation",
-            "components": [
-              {
-                "type": "grid",
-                "config": {
-                  "columns": 4,
-                  "gap": "16px",
-                  "items": [
-                    {
-                      "label": "Total Revenue",
-                      "value": "{{Payment.sum(amount)}}",
-                      "format": "currency",
-                      "style": {
-                        "fontFamily": "Inter, system-ui, sans-serif",
-                        "fontSize": "24px",
-                        "fontWeight": "700",
-                        "color": "#10b981"
-                      }
-                    },
-                    {
-                      "label": "Total Transactions",
-                      "value": "{{Payment.count()}}",
-                      "style": {
-                        "fontFamily": "Inter, system-ui, sans-serif",
-                        "fontSize": "24px",
-                        "fontWeight": "700",
-                        "color": "#3b82f6"
-                      }
-                    },
-                    {
-                      "label": "Refunds Issued",
-                      "value": "{{Payment.count(status='refunded')}}",
-                      "style": {
-                        "fontFamily": "Inter, system-ui, sans-serif",
-                        "fontSize": "24px",
-                        "fontWeight": "700",
-                        "color": "#f59e0b"
-                      }
-                    },
-                    {
-                      "label": "Pending Payments",
-                      "value": "{{Payment.count(status='pending')}}",
-                      "style": {
-                        "fontFamily": "Inter, system-ui, sans-serif",
-                        "fontSize": "24px",
-                        "fontWeight": "700",
-                        "color": "#8b5cf6"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
+            "dataBinding": "Analytics.query"
           },
-          {
-            "type": "card",
-            "config": {
-              "title": "Filter & Export",
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e5e5",
-                "marginBottom": "24px"
-              }
-            },
-            "formRef": "reportparametersform-1764935906274-sh7y7n",
-            "components": [
-              {
-                "type": "button",
-                "config": {
-                  "label": "Export to CSV",
-                  "variant": "primary",
-                  "action": "export",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "16px",
-                    "fontWeight": "600",
-                    "backgroundColor": "#3b82f6",
-                    "color": "#ffffff",
-                    "padding": "12px 24px",
-                    "borderRadius": "8px",
-                    "border": "none",
-                    "cursor": "pointer",
-                    "transition": "all 0.2s ease",
-                    "marginRight": "12px"
-                  }
-                }
-              },
-              {
-                "type": "button",
-                "config": {
-                  "label": "Export to Excel",
-                  "variant": "secondary",
-                  "action": "export",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "16px",
-                    "fontWeight": "600",
-                    "backgroundColor": "#ffffff",
-                    "color": "#3b82f6",
-                    "padding": "12px 24px",
-                    "borderRadius": "8px",
-                    "border": "2px solid #3b82f6",
-                    "cursor": "pointer",
-                    "transition": "all 0.2s ease"
-                  }
-                }
-              }
-            ]
-          },
-          {
-            "type": "table",
-            "config": {
-              "title": "Payment Transactions",
-              "searchable": true,
-              "sortable": true,
-              "pagination": true,
-              "pageSize": 25,
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e5e5",
-                "fontFamily": "Inter, system-ui, sans-serif"
-              },
-              "columns": [
-                {
-                  "key": "transactionId",
-                  "label": "Transaction ID",
-                  "sortable": true,
-                  "style": {
-                    "fontWeight": "600",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "ticketNumber",
-                  "label": "Ticket Number",
-                  "sortable": true,
-                  "linkTo": "/ticket-detail/{{ticketId}}",
-                  "style": {
-                    "color": "#3b82f6",
-                    "textDecoration": "underline"
-                  }
-                },
-                {
-                  "key": "paymentDate",
-                  "label": "Date",
-                  "sortable": true,
-                  "format": "date",
-                  "style": {
-                    "color": "#666666"
-                  }
-                },
-                {
-                  "key": "amount",
-                  "label": "Amount",
-                  "sortable": true,
-                  "format": "currency",
-                  "style": {
-                    "fontWeight": "600",
-                    "color": "#10b981"
-                  }
-                },
-                {
-                  "key": "paymentMethod",
-                  "label": "Payment Method",
-                  "sortable": true,
-                  "style": {
-                    "color": "#666666"
-                  }
-                },
-                {
-                  "key": "status",
-                  "label": "Status",
-                  "sortable": true,
-                  "format": "badge",
-                  "style": {
-                    "padding": "4px 12px",
-                    "borderRadius": "16px",
-                    "fontSize": "14px",
-                    "fontWeight": "600"
-                  },
-                  "statusColors": {
-                    "completed": "#10b981",
-                    "pending": "#f59e0b",
-                    "refunded": "#ef4444",
-                    "failed": "#dc2626"
-                  }
-                },
-                {
-                  "key": "actions",
-                  "label": "Actions",
-                  "type": "actions",
-                  "actions": [
-                    {
-                      "label": "View Receipt",
-                      "icon": "receipt",
-                      "action": "view"
-                    },
-                    {
-                      "label": "Download",
-                      "icon": "download",
-                      "action": "download"
-                    }
-                  ]
-                }
-              ]
-            },
-            "dataBinding": "Payment.query",
-            "filters": {
-              "status": "all",
-              "dateRange": "last30days",
-              "paymentMethod": "all"
-            }
-          }
-        ]
-      }
-    ],
-    "navigation": {
-      "onAction": {
-        "view": {
-          "type": "navigate",
-          "target": "/ticket-detail/{{ticketId}}"
-        },
-        "export": {
-          "type": "workflow",
-          "workflow": "GenerateReportWorkflow"
-        }
-      },
-      "menu": [
-        {
-          "label": "Admin Dashboard",
-          "route": "/admin-dashboard"
-        },
-        {
-          "label": "Reports & Analytics",
-          "route": "/reports-analytics"
-        },
-        {
-          "label": "Dispute Management",
-          "route": "/dispute-management"
-        },
-        {
-          "label": "Officer Management",
-          "route": "/officer-management"
-        },
-        {
-          "label": "Citizen Portal",
-          "route": "/citizen-portal"
-        }
-      ]
-    },
-    "workflowId": "workflow_1735227156483"
-  },
-  {
-    "id": "officermanagementpage-1764936100000-mgmt01",
-    "name": "OfficerManagementPage",
-    "title": "Officer Management",
-    "description": "Administrative interface for viewing, creating, updating, and deactivating officer accounts. Includes officer performance metrics and ticket issuance history.",
-    "route": "/officer-management",
-    "type": "list",
-    "platform": "both",
-    "forms": [
-      "officerregistrationform-1764935945557-4kqx50"
-    ],
-    "sections": [
-      {
-        "id": "header",
-        "type": "header",
-        "components": [
-          {
-            "type": "text",
-            "config": {
-              "text": "Officer Management",
-              "variant": "h1",
-              "style": {
-                "fontFamily": "Inter, system-ui, sans-serif",
-                "fontSize": "28px",
-                "fontWeight": "700",
-                "color": "#1a1a1a",
-                "marginBottom": "8px"
-              }
-            }
-          },
-          {
-            "type": "text",
-            "config": {
-              "text": "Manage parking enforcement officer accounts, permissions, and performance metrics",
-              "variant": "body1",
-              "style": {
-                "fontFamily": "Inter, system-ui, sans-serif",
-                "fontSize": "14px",
-                "fontWeight": "400",
-                "color": "#666666",
-                "marginBottom": "24px"
-              }
-            }
-          }
-        ]
-      },
-      {
-        "id": "main",
-        "type": "main",
-        "components": [
           {
             "type": "button",
             "config": {
-              "label": "Add New Officer",
+              "text": "Create New Survey",
               "variant": "primary",
-              "icon": "add",
+              "action": "openForm",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
-                "fontSize": "14px",
+                "fontSize": "16px",
                 "fontWeight": "600",
-                "backgroundColor": "#2563eb",
+                "backgroundColor": "#007bff",
                 "color": "#ffffff",
-                "padding": "10px 20px",
+                "padding": "12px 24px",
                 "borderRadius": "8px",
                 "border": "none",
+                "cursor": "pointer",
                 "marginBottom": "24px",
-                "cursor": "pointer"
+                "transition": "all 0.2s ease"
               }
             },
-            "formRef": "officerregistrationform-1764935945557-4kqx50"
+            "formRef": "survey-configuration-form-1768214488212-zxjvsa"
           },
           {
             "type": "table",
             "config": {
-              "title": "Active Officers",
+              "title": "All Surveys",
               "columns": [
                 {
-                  "key": "badgeNumber",
-                  "label": "Badge #",
+                  "key": "title",
+                  "label": "Survey Title",
                   "sortable": true,
                   "style": {
                     "fontFamily": "Inter, system-ui, sans-serif",
                     "fontSize": "14px",
                     "fontWeight": "600",
                     "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "fullName",
-                  "label": "Officer Name",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "400",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "email",
-                  "label": "Email",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "400",
-                    "color": "#666666"
-                  }
-                },
-                {
-                  "key": "assignedZone",
-                  "label": "Assigned Zone",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "400",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "ticketsIssued",
-                  "label": "Tickets Issued",
-                  "sortable": true,
-                  "align": "center",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "600",
-                    "color": "#2563eb"
                   }
                 },
                 {
                   "key": "status",
                   "label": "Status",
                   "sortable": true,
-                  "type": "badge",
                   "style": {
                     "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "12px",
-                    "fontWeight": "600",
-                    "padding": "4px 12px",
-                    "borderRadius": "12px"
+                    "fontSize": "14px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "key": "responseCount",
+                  "label": "Responses",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "createdAt",
+                  "label": "Created",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
                   }
                 },
                 {
@@ -472,693 +141,219 @@
                   "actions": [
                     "view",
                     "edit",
-                    "deactivate"
+                    "delete"
                   ]
                 }
               ],
               "pagination": true,
-              "pageSize": 15,
+              "pageSize": 10,
               "searchable": true,
               "filterable": true,
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "border": "1px solid #e5e7eb",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
-              }
-            },
-            "dataBinding": "Officer.query"
-          },
-          {
-            "type": "card",
-            "config": {
-              "title": "Officer Performance Summary",
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "border": "1px solid #e5e7eb",
-                "padding": "24px",
-                "marginTop": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
-              },
-              "metrics": [
-                {
-                  "label": "Total Active Officers",
-                  "value": "{{Officer.count({status: 'active'})}}",
-                  "icon": "badge",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "24px",
-                    "fontWeight": "700",
-                    "color": "#2563eb"
-                  }
-                },
-                {
-                  "label": "Avg Tickets/Officer (30d)",
-                  "value": "{{Ticket.avgByOfficer(30)}}",
-                  "icon": "trending_up",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "24px",
-                    "fontWeight": "700",
-                    "color": "#059669"
-                  }
-                },
-                {
-                  "label": "Top Performer",
-                  "value": "{{Officer.topPerformer.name}}",
-                  "icon": "star",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "24px",
-                    "fontWeight": "700",
-                    "color": "#f59e0b"
-                  }
-                },
-                {
-                  "label": "Inactive Officers",
-                  "value": "{{Officer.count({status: 'inactive'})}}",
-                  "icon": "person_off",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "24px",
-                    "fontWeight": "700",
-                    "color": "#dc2626"
-                  }
-                }
-              ]
-            },
-            "dataBinding": "Officer.metrics"
-          }
-        ]
-      }
-    ],
-    "navigation": {
-      "onAction": {
-        "view": {
-          "type": "navigate",
-          "target": "/officer-dashboard"
-        },
-        "edit": {
-          "type": "modal",
-          "formRef": "officerregistrationform-1764935945557-4kqx50"
-        },
-        "deactivate": {
-          "type": "confirm",
-          "message": "Are you sure you want to deactivate this officer?",
-          "onConfirm": {
-            "type": "workflow",
-            "workflow": "TicketStatusUpdateWorkflow"
-          }
-        }
-      },
-      "menu": [
-        {
-          "label": "Admin Dashboard",
-          "route": "/admin-dashboard",
-          "icon": "dashboard"
-        },
-        {
-          "label": "Officer Dashboard",
-          "route": "/officer-dashboard",
-          "icon": "badge"
-        },
-        {
-          "label": "Violation Types",
-          "route": "/violation-type-management",
-          "icon": "gavel"
-        },
-        {
-          "label": "Dispute Management",
-          "route": "/dispute-management",
-          "icon": "balance"
-        },
-        {
-          "label": "Reports & Analytics",
-          "route": "/reports-analytics",
-          "icon": "analytics"
-        },
-        {
-          "label": "Payment History",
-          "route": "/payment-history",
-          "icon": "payment"
-        }
-      ]
-    },
-    "workflowId": "workflow_1735227156483"
-  },
-  {
-    "id": "violationtypemanagementpage-1764936100000-vt8m2p",
-    "name": "ViolationTypeManagementPage",
-    "title": "Violation Type Management",
-    "description": "Administrative interface for maintaining violation type catalog including codes, descriptions, fine amounts, and late fee schedules",
-    "route": "/admin/violation-types",
-    "type": "list",
-    "platform": "both",
-    "forms": [
-      "violationtypemanagementform-1764935965930-7atf3u"
-    ],
-    "sections": [
-      {
-        "id": "header",
-        "type": "header",
-        "components": [
-          {
-            "type": "text",
-            "config": {
-              "text": "Violation Type Management",
-              "variant": "h1",
-              "style": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "28px",
-                "fontWeight": "600",
-                "color": "#1a1a1a",
-                "marginBottom": "8px"
-              }
-            }
-          },
-          {
-            "type": "text",
-            "config": {
-              "text": "Manage violation codes, descriptions, fine amounts, and late fee schedules",
-              "variant": "body1",
-              "style": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "14px",
-                "fontWeight": "400",
-                "color": "#666666",
-                "lineHeight": "1.5"
-              }
-            }
-          }
-        ]
-      },
-      {
-        "id": "main",
-        "type": "main",
-        "components": [
-          {
-            "type": "button",
-            "config": {
-              "label": "Add New Violation Type",
-              "variant": "primary",
-              "icon": "add",
-              "style": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "14px",
-                "fontWeight": "500",
-                "backgroundColor": "#2563eb",
-                "color": "#ffffff",
-                "padding": "10px 20px",
-                "borderRadius": "8px",
-                "border": "none",
-                "marginBottom": "24px",
-                "cursor": "pointer"
-              }
-            },
-            "formRef": "violationtypemanagementform-1764935965930-7atf3u"
-          },
-          {
-            "type": "table",
-            "config": {
-              "title": "Violation Types",
-              "columns": [
-                {
-                  "key": "code",
-                  "label": "Code",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "600",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "description",
-                  "label": "Description",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "400",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "fineAmount",
-                  "label": "Fine Amount",
-                  "sortable": true,
-                  "format": "currency",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "lateFeeSchedule",
-                  "label": "Late Fee Schedule",
-                  "sortable": false,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "400",
-                    "color": "#666666"
-                  }
-                },
-                {
-                  "key": "status",
-                  "label": "Status",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "12px",
-                    "fontWeight": "500",
-                    "padding": "4px 12px",
-                    "borderRadius": "12px",
-                    "backgroundColor": "#ecfdf5",
-                    "color": "#059669"
-                  }
-                },
-                {
-                  "key": "actions",
-                  "label": "Actions",
-                  "sortable": false
-                }
-              ],
-              "actions": [
-                {
-                  "label": "Edit",
-                  "icon": "edit",
-                  "type": "edit",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#2563eb",
-                    "cursor": "pointer"
-                  }
-                },
-                {
-                  "label": "View History",
-                  "icon": "history",
-                  "type": "view",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#666666",
-                    "cursor": "pointer"
-                  }
-                },
-                {
-                  "label": "Delete",
-                  "icon": "delete",
-                  "type": "delete",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#dc2626",
-                    "cursor": "pointer"
-                  }
-                }
-              ],
-              "pagination": true,
-              "pageSize": 20,
-              "searchable": true,
-              "filterable": true,
-              "bulkActions": true,
-              "style": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "border": "1px solid #e5e7eb",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
-              }
-            },
-            "dataBinding": "ViolationType.query"
-          },
-          {
-            "type": "card",
-            "config": {
-              "title": "Bulk Operations",
-              "style": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "backgroundColor": "#f9fafb",
-                "borderRadius": "12px",
-                "border": "1px solid #e5e7eb",
-                "padding": "20px",
-                "marginTop": "24px"
-              },
-              "content": [
-                {
-                  "type": "button",
-                  "label": "Import Violation Types",
-                  "variant": "secondary",
-                  "icon": "upload",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "backgroundColor": "#ffffff",
-                    "color": "#1a1a1a",
-                    "padding": "8px 16px",
-                    "borderRadius": "8px",
-                    "border": "1px solid #d1d5db",
-                    "marginRight": "12px",
-                    "cursor": "pointer"
-                  }
-                },
-                {
-                  "type": "button",
-                  "label": "Export to CSV",
-                  "variant": "secondary",
-                  "icon": "download",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "backgroundColor": "#ffffff",
-                    "color": "#1a1a1a",
-                    "padding": "8px 16px",
-                    "borderRadius": "8px",
-                    "border": "1px solid #d1d5db",
-                    "marginRight": "12px",
-                    "cursor": "pointer"
-                  }
-                },
-                {
-                  "type": "button",
-                  "label": "Bulk Update Fees",
-                  "variant": "secondary",
-                  "icon": "update",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "backgroundColor": "#ffffff",
-                    "color": "#1a1a1a",
-                    "padding": "8px 16px",
-                    "borderRadius": "8px",
-                    "border": "1px solid #d1d5db",
-                    "cursor": "pointer"
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    ],
-    "navigation": {
-      "onAction": {
-        "edit": {
-          "type": "modal",
-          "formRef": "violationtypemanagementform-1764935965930-7atf3u"
-        },
-        "view": {
-          "type": "navigate",
-          "target": "/admin/violation-types/history"
-        },
-        "delete": {
-          "type": "confirm",
-          "message": "Are you sure you want to delete this violation type?"
-        }
-      },
-      "menu": [
-        {
-          "label": "Admin Dashboard",
-          "route": "/admin/dashboard",
-          "icon": "dashboard"
-        },
-        {
-          "label": "Officer Management",
-          "route": "/admin/officers",
-          "icon": "people"
-        },
-        {
-          "label": "Dispute Management",
-          "route": "/admin/disputes",
-          "icon": "gavel"
-        },
-        {
-          "label": "Reports & Analytics",
-          "route": "/admin/reports",
-          "icon": "analytics"
-        },
-        {
-          "label": "Payment History",
-          "route": "/admin/payments",
-          "icon": "payment"
-        }
-      ]
-    },
-    "workflowId": "workflow_1735227156483"
-  },
-  {
-    "id": "disputemanagementpage-1764936100000-dmg9x2",
-    "name": "DisputeManagementPage",
-    "title": "Dispute Management",
-    "description": "Administrative interface for reviewing and processing ticket disputes with filtering and sorting capabilities",
-    "route": "/admin/disputes",
-    "type": "list",
-    "platform": "both",
-    "forms": [
-      "disputereviewform-1764936032997-ah84fi"
-    ],
-    "sections": [
-      {
-        "id": "header",
-        "type": "header",
-        "components": [
-          {
-            "type": "text",
-            "config": {
-              "text": "Dispute Management",
-              "variant": "h1",
-              "style": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "28px",
-                "fontWeight": "700",
-                "color": "#1a1a1a",
-                "marginBottom": "8px"
-              }
-            }
-          },
-          {
-            "type": "text",
-            "config": {
-              "text": "Review and process ticket disputes submitted by citizens",
-              "variant": "body1",
-              "style": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "14px",
-                "fontWeight": "400",
-                "color": "#666666",
-                "lineHeight": "1.5"
-              }
-            }
-          }
-        ]
-      },
-      {
-        "id": "main",
-        "type": "main",
-        "components": [
-          {
-            "type": "card",
-            "config": {
-              "title": "Filter Disputes",
               "style": {
                 "backgroundColor": "#ffffff",
                 "borderRadius": "12px",
                 "padding": "24px",
                 "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "marginBottom": "24px",
-                "border": "1px solid #e5e5e5"
+                "border": "1px solid #e5e5e5",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Survey.query"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/survey-editor/:surveyId"
+        },
+        "create": {
+          "type": "navigate",
+          "target": "/survey-editor/:surveyId"
+        },
+        "viewResponses": {
+          "type": "navigate",
+          "target": "/responses"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/survey-management-dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard",
+          "icon": "admin"
+        },
+        {
+          "label": "Survey Editor",
+          "route": "/survey-editor/:surveyId",
+          "icon": "edit"
+        },
+        {
+          "label": "Question Editor",
+          "route": "/question-editor/:questionId",
+          "icon": "question"
+        },
+        {
+          "label": "Response List",
+          "route": "/responses",
+          "icon": "list"
+        },
+        {
+          "label": "Analytics",
+          "route": "/analytics-report",
+          "icon": "analytics"
+        },
+        {
+          "label": "Export Data",
+          "route": "/export-data",
+          "icon": "download"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notification-history",
+          "icon": "notifications"
+        },
+        {
+          "label": "Settings",
+          "route": "/notification-settings",
+          "icon": "settings"
+        },
+        {
+          "label": "Notification Templates Page",
+          "route": "/notification-templates"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "survey-landing-page-1768214650000-abc123",
+    "name": "Survey Landing Page",
+    "title": "Take Our Survey",
+    "description": "Public page displaying survey introduction and submission form",
+    "route": "/survey/:surveyId",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "survey-submission-form-1768214590350-iy7w3q"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Survey.title}}",
+              "variant": "h1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "2rem",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "0.5rem"
+              }
+            },
+            "dataBinding": "Survey.findById"
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "{{Survey.description}}",
+              "variant": "body1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "1rem",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.6",
+                "marginBottom": "2rem"
+              }
+            },
+            "dataBinding": "Survey.findById"
+          }
+        ],
+        "style": {
+          "padding": "2rem 1rem",
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e5e5e5"
+        }
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Survey Questions",
+              "elevation": 1,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "2rem",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "maxWidth": "800px",
+                "margin": "0 auto"
               }
             },
             "components": [
               {
-                "type": "filter",
+                "type": "form",
                 "config": {
-                  "filters": [
-                    {
-                      "field": "status",
-                      "label": "Status",
-                      "type": "select",
-                      "options": [
-                        {
-                          "label": "All Statuses",
-                          "value": ""
-                        },
-                        {
-                          "label": "Pending Review",
-                          "value": "pending"
-                        },
-                        {
-                          "label": "Under Review",
-                          "value": "under_review"
-                        },
-                        {
-                          "label": "Approved",
-                          "value": "approved"
-                        },
-                        {
-                          "label": "Rejected",
-                          "value": "rejected"
-                        }
-                      ]
-                    },
-                    {
-                      "field": "submittedDate",
-                      "label": "Submission Date",
-                      "type": "dateRange"
-                    },
-                    {
-                      "field": "ticketNumber",
-                      "label": "Ticket Number",
-                      "type": "text"
-                    }
-                  ],
+                  "submitLabel": "Submit Survey",
+                  "cancelLabel": "Clear",
+                  "showCancel": true,
                   "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px"
+                    "fontFamily": "Inter, system-ui, sans-serif"
+                  },
+                  "buttonStyle": {
+                    "primary": {
+                      "backgroundColor": "#2563eb",
+                      "color": "#ffffff",
+                      "padding": "0.75rem 2rem",
+                      "borderRadius": "6px",
+                      "fontSize": "1rem",
+                      "fontWeight": "600",
+                      "border": "none",
+                      "cursor": "pointer",
+                      "transition": "all 0.2s ease"
+                    },
+                    "secondary": {
+                      "backgroundColor": "#f5f5f5",
+                      "color": "#666666",
+                      "padding": "0.75rem 2rem",
+                      "borderRadius": "6px",
+                      "fontSize": "1rem",
+                      "fontWeight": "500",
+                      "border": "1px solid #e5e5e5",
+                      "cursor": "pointer"
+                    }
                   }
-                }
+                },
+                "formRef": "survey-submission-form-1768214590350-iy7w3q",
+                "dataBinding": "Response.create"
               }
             ]
-          },
-          {
-            "type": "table",
-            "config": {
-              "title": "Disputes",
-              "columns": [
-                {
-                  "key": "disputeId",
-                  "label": "Dispute ID",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "600",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "ticketNumber",
-                  "label": "Ticket Number",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "submittedBy",
-                  "label": "Submitted By",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "submittedDate",
-                  "label": "Submission Date",
-                  "sortable": true,
-                  "type": "date",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#666666"
-                  }
-                },
-                {
-                  "key": "status",
-                  "label": "Status",
-                  "sortable": true,
-                  "type": "badge",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "12px",
-                    "fontWeight": "600",
-                    "padding": "4px 12px",
-                    "borderRadius": "12px"
-                  },
-                  "statusColors": {
-                    "pending": {
-                      "bg": "#FEF3C7",
-                      "text": "#92400E"
-                    },
-                    "under_review": {
-                      "bg": "#DBEAFE",
-                      "text": "#1E40AF"
-                    },
-                    "approved": {
-                      "bg": "#D1FAE5",
-                      "text": "#065F46"
-                    },
-                    "rejected": {
-                      "bg": "#FEE2E2",
-                      "text": "#991B1B"
-                    }
-                  }
-                },
-                {
-                  "key": "reason",
-                  "label": "Reason",
-                  "sortable": false,
-                  "truncate": true,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#666666"
-                  }
-                },
-                {
-                  "key": "actions",
-                  "label": "Actions",
-                  "type": "actions",
-                  "actions": [
-                    {
-                      "label": "Review",
-                      "action": "review",
-                      "style": {
-                        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                        "fontSize": "14px",
-                        "fontWeight": "500",
-                        "color": "#2563eb",
-                        "backgroundColor": "transparent",
-                        "border": "none",
-                        "cursor": "pointer"
-                      }
-                    }
-                  ]
-                }
-              ],
-              "pagination": true,
-              "pageSize": 20,
-              "searchable": true,
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e5e5"
-              }
-            },
-            "dataBinding": "Dispute.query",
-            "formRef": "disputereviewform-1764936032997-ah84fi"
           }
-        ]
+        ],
+        "style": {
+          "padding": "2rem 1rem",
+          "backgroundColor": "#f9fafb",
+          "minHeight": "calc(100vh - 200px)"
+        }
       },
       {
         "id": "footer",
@@ -1167,71 +362,238 @@
           {
             "type": "text",
             "config": {
-              "text": "Review disputes carefully and provide detailed explanations for all decisions",
+              "text": "Your responses are confidential and will be used for research purposes only.",
               "variant": "caption",
+              "align": "center",
               "style": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "12px",
-                "fontWeight": "400",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "0.875rem",
                 "color": "#999999",
-                "textAlign": "center",
-                "marginTop": "24px"
+                "fontWeight": "400"
               }
             }
           }
-        ]
+        ],
+        "style": {
+          "padding": "1.5rem",
+          "backgroundColor": "#ffffff",
+          "borderTop": "1px solid #e5e5e5",
+          "textAlign": "center"
+        }
       }
     ],
     "navigation": {
       "onAction": {
-        "review": {
-          "type": "modal",
-          "formRef": "disputereviewform-1764936032997-ah84fi"
-        },
         "submit": {
-          "type": "refresh"
+          "type": "navigate",
+          "target": "/survey-confirmation"
         }
       },
       "menu": [
         {
-          "label": "Admin Dashboard",
-          "route": "/admin/dashboard"
+          "label": "Survey Preview",
+          "route": "/survey-preview/:surveyId"
         },
         {
-          "label": "Ticket Management",
-          "route": "/admin/tickets"
-        },
-        {
-          "label": "Officer Management",
-          "route": "/admin/officers"
-        },
-        {
-          "label": "Violation Types",
-          "route": "/admin/violation-types"
-        },
-        {
-          "label": "Payment History",
-          "route": "/admin/payments"
-        },
-        {
-          "label": "Reports & Analytics",
-          "route": "/admin/reports"
+          "label": "Resume Survey",
+          "route": "/resume-survey"
         }
       ]
     },
-    "workflowId": "workflow_1735227156483"
+    "layout": {
+      "type": "single-column",
+      "responsive": true,
+      "spacing": "normal",
+      "maxWidth": "1200px",
+      "style": {
+        "fontFamily": "Inter, system-ui, sans-serif",
+        "backgroundColor": "#f9fafb"
+      }
+    },
+    "workflows": [
+      "Submit Survey",
+      "Auto-save Response",
+      "Validate Submission",
+      "Notify Admin on Submission"
+    ],
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
   },
   {
-    "id": "officerdashboard-1764936100000-abc123",
-    "name": "OfficerDashboard",
-    "title": "Officer Dashboard",
-    "description": "Dashboard displaying officer's issued tickets, recent activity, pending actions, and performance metrics with quick access to ticket issuance.",
-    "route": "/officer-dashboard",
-    "type": "dashboard",
+    "id": "survey-confirmation-page-1768214607123-abc123",
+    "name": "Survey Confirmation Page",
+    "title": "Thank You",
+    "description": "Thank you page shown after successful survey submission",
+    "route": "/survey-confirmation",
+    "type": "confirmation",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "icon",
+            "config": {
+              "icon": "check-circle",
+              "size": "xlarge",
+              "color": "#10b981",
+              "alignment": "center"
+            }
+          }
+        ],
+        "styling": {
+          "backgroundColor": "#ffffff",
+          "padding": "48px 24px 24px 24px",
+          "textAlign": "center"
+        }
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Thank You for Your Response!",
+              "variant": "h1",
+              "alignment": "center"
+            },
+            "styling": {
+              "fontFamily": "Inter, system-ui, sans-serif",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "color": "#1a1a1a",
+              "marginBottom": "16px"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Your survey response has been successfully submitted. We appreciate you taking the time to share your feedback with us.",
+              "variant": "body",
+              "alignment": "center"
+            },
+            "styling": {
+              "fontFamily": "Inter, system-ui, sans-serif",
+              "fontSize": "16px",
+              "fontWeight": "400",
+              "color": "#666666",
+              "lineHeight": "1.6",
+              "marginBottom": "32px",
+              "maxWidth": "600px",
+              "margin": "0 auto 32px auto"
+            }
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "What's Next?",
+              "content": "Your responses have been recorded and will be reviewed by our team. If you have any questions or concerns, please don't hesitate to contact us."
+            },
+            "styling": {
+              "backgroundColor": "#f8fafc",
+              "borderRadius": "12px",
+              "padding": "24px",
+              "border": "1px solid #e2e8f0",
+              "marginBottom": "32px",
+              "maxWidth": "600px",
+              "margin": "0 auto 32px auto"
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Return to Home",
+              "variant": "primary",
+              "action": "navigate",
+              "target": "/survey-landing"
+            },
+            "styling": {
+              "backgroundColor": "#3b82f6",
+              "color": "#ffffff",
+              "padding": "12px 32px",
+              "borderRadius": "8px",
+              "border": "none",
+              "fontFamily": "Inter, system-ui, sans-serif",
+              "fontSize": "16px",
+              "fontWeight": "600",
+              "cursor": "pointer",
+              "display": "block",
+              "margin": "0 auto",
+              "transition": "all 0.2s ease"
+            }
+          }
+        ],
+        "styling": {
+          "backgroundColor": "#ffffff",
+          "padding": "24px",
+          "maxWidth": "800px",
+          "margin": "0 auto"
+        }
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Need help? Contact support@example.com",
+              "variant": "caption",
+              "alignment": "center"
+            },
+            "styling": {
+              "fontFamily": "Inter, system-ui, sans-serif",
+              "fontSize": "14px",
+              "fontWeight": "400",
+              "color": "#94a3b8",
+              "marginTop": "24px"
+            }
+          }
+        ],
+        "styling": {
+          "backgroundColor": "#ffffff",
+          "padding": "24px",
+          "borderTop": "1px solid #e2e8f0"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {},
+      "menu": [
+        {
+          "label": "Survey Landing",
+          "route": "/survey-landing"
+        },
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Response List",
+          "route": "/response-list"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "notification-history-page-1768214650000-nhp001",
+    "name": "Notification History Page",
+    "title": "Notification History",
+    "description": "View log of all sent notifications",
+    "route": "/notification-history",
+    "type": "list",
     "platform": "both",
     "forms": [
-      "issueticketform-1764936055136-vzv3b9",
-      "ticketsearchform-1764935926576-p54wjh"
+      "notification-template-form-1768214505011-yw4x2f"
     ],
     "sections": [
       {
@@ -1241,38 +603,37 @@
           {
             "type": "text",
             "config": {
-              "text": "Officer Dashboard",
+              "text": "Notification History",
               "variant": "h1",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
-                "fontSize": "28px",
+                "fontSize": "32px",
                 "fontWeight": "700",
-                "color": "#1a1a1a",
+                "color": "#0F172A",
                 "marginBottom": "8px"
               }
             }
           },
           {
-            "type": "button",
+            "type": "text",
             "config": {
-              "label": "Issue New Ticket",
-              "variant": "primary",
-              "action": "openForm",
-              "formRef": "issueticketform-1764936055136-vzv3b9",
+              "text": "Complete log of all notifications sent to respondents",
+              "variant": "body1",
               "style": {
-                "backgroundColor": "#2563eb",
-                "color": "#ffffff",
-                "padding": "10px 20px",
-                "borderRadius": "8px",
-                "border": "none",
                 "fontFamily": "Inter, system-ui, sans-serif",
-                "fontSize": "14px",
-                "fontWeight": "600",
-                "cursor": "pointer"
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#64748B",
+                "lineHeight": "1.5"
               }
             }
           }
-        ]
+        ],
+        "style": {
+          "padding": "32px",
+          "backgroundColor": "#FFFFFF",
+          "borderBottom": "1px solid #E2E8F0"
+        }
       },
       {
         "id": "main",
@@ -1281,269 +642,179 @@
           {
             "type": "card",
             "config": {
-              "title": "Performance Metrics",
-              "layout": "grid",
-              "columns": 4,
+              "title": "Filter Notifications",
               "style": {
-                "backgroundColor": "#ffffff",
+                "backgroundColor": "#FFFFFF",
                 "borderRadius": "12px",
                 "padding": "24px",
+                "marginBottom": "24px",
                 "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e7eb",
-                "marginBottom": "24px"
+                "border": "1px solid #E2E8F0"
               }
             },
-            "dataBinding": "Officer.currentUser",
-            "items": [
+            "components": [
               {
-                "label": "Tickets Issued Today",
-                "value": "{{ticketsIssuedToday}}",
-                "icon": "ticket",
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "color": "#6b7280"
-                }
-              },
-              {
-                "label": "This Week",
-                "value": "{{ticketsIssuedWeek}}",
-                "icon": "calendar",
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "color": "#6b7280"
-                }
-              },
-              {
-                "label": "Pending Disputes",
-                "value": "{{pendingDisputes}}",
-                "icon": "alert",
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "color": "#6b7280"
-                }
-              },
-              {
-                "label": "Total Issued",
-                "value": "{{totalTicketsIssued}}",
-                "icon": "check",
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "color": "#6b7280"
+                "type": "input",
+                "config": {
+                  "label": "Search by recipient or subject",
+                  "placeholder": "Enter email or subject...",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "padding": "10px 16px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #CBD5E1",
+                    "width": "100%"
+                  }
                 }
               }
             ]
           },
           {
-            "type": "form",
-            "config": {
-              "title": "Quick Ticket Search",
-              "inline": true,
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e7eb",
-                "marginBottom": "24px"
-              }
-            },
-            "formRef": "ticketsearchform-1764935926576-p54wjh"
-          },
-          {
             "type": "table",
             "config": {
-              "title": "Recent Tickets Issued",
+              "title": "Sent Notifications",
               "columns": [
                 {
-                  "key": "ticketNumber",
-                  "label": "Ticket #",
+                  "key": "sentAt",
+                  "label": "Date & Time",
                   "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "600",
-                    "color": "#1a1a1a"
-                  }
+                  "format": "datetime"
                 },
                 {
-                  "key": "vehicle.licensePlate",
-                  "label": "License Plate",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#1a1a1a"
-                  }
+                  "key": "recipient",
+                  "label": "Recipient",
+                  "sortable": true
                 },
                 {
-                  "key": "violationType.name",
-                  "label": "Violation",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "location.name",
-                  "label": "Location",
-                  "sortable": false,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "key": "issuedAt",
-                  "label": "Date/Time",
-                  "sortable": true,
-                  "format": "datetime",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#6b7280"
-                  }
+                  "key": "notificationTemplate.subject",
+                  "label": "Subject",
+                  "sortable": true
                 },
                 {
                   "key": "status",
                   "label": "Status",
                   "sortable": true,
-                  "badge": true,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "12px",
-                    "fontWeight": "600"
-                  }
-                }
-              ],
-              "actions": [
+                  "format": "badge"
+                },
                 {
-                  "label": "View",
-                  "type": "navigate",
-                  "target": "/ticket-detail/{{id}}",
-                  "style": {
-                    "color": "#2563eb",
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "600"
-                  }
+                  "key": "notificationTemplate.channel",
+                  "label": "Channel",
+                  "sortable": true
                 }
               ],
               "pagination": true,
-              "pageSize": 10,
+              "pageSize": 20,
+              "searchable": true,
+              "exportable": true,
               "style": {
-                "backgroundColor": "#ffffff",
+                "backgroundColor": "#FFFFFF",
                 "borderRadius": "12px",
                 "padding": "24px",
                 "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e7eb"
+                "border": "1px solid #E2E8F0",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              },
+              "headerStyle": {
+                "backgroundColor": "#F8FAFC",
+                "fontWeight": "600",
+                "fontSize": "14px",
+                "color": "#475569",
+                "padding": "12px 16px",
+                "borderBottom": "2px solid #E2E8F0"
+              },
+              "rowStyle": {
+                "fontSize": "14px",
+                "color": "#1E293B",
+                "padding": "16px",
+                "borderBottom": "1px solid #F1F5F9"
+              },
+              "hoverStyle": {
+                "backgroundColor": "#F8FAFC"
               }
             },
-            "dataBinding": "Ticket.query",
-            "filters": {
-              "officerId": "{{currentUser.id}}",
-              "orderBy": "issuedAt",
-              "orderDirection": "desc",
-              "limit": 10
-            }
-          },
-          {
-            "type": "list",
-            "config": {
-              "title": "Pending Actions",
-              "emptyMessage": "No pending actions",
-              "itemTemplate": {
-                "title": "{{action}}",
-                "subtitle": "Ticket #{{ticketNumber}} - {{vehicle.licensePlate}}",
-                "badge": "{{priority}}",
-                "action": {
-                  "label": "Review",
-                  "type": "navigate",
-                  "target": "/ticket-detail/{{ticketId}}"
+            "dataBinding": "Notification.query",
+            "actions": [
+              {
+                "label": "View Details",
+                "type": "view",
+                "style": {
+                  "backgroundColor": "#3B82F6",
+                  "color": "#FFFFFF",
+                  "padding": "8px 16px",
+                  "borderRadius": "8px",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "none",
+                  "cursor": "pointer"
                 }
               },
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e7eb",
-                "fontFamily": "Inter, system-ui, sans-serif"
+              {
+                "label": "Resend",
+                "type": "custom",
+                "style": {
+                  "backgroundColor": "#FFFFFF",
+                  "color": "#3B82F6",
+                  "padding": "8px 16px",
+                  "borderRadius": "8px",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "border": "1px solid #3B82F6",
+                  "cursor": "pointer"
+                }
               }
-            },
-            "dataBinding": "Dispute.query",
-            "filters": {
-              "status": "pending",
-              "assignedOfficerId": "{{currentUser.id}}",
-              "limit": 5
-            }
+            ]
           }
-        ]
+        ],
+        "style": {
+          "padding": "32px",
+          "backgroundColor": "#F8FAFC",
+          "minHeight": "calc(100vh - 200px)"
+        }
       }
     ],
     "navigation": {
       "onAction": {
-        "view": {
+        "create": {
           "type": "navigate",
-          "target": "/ticket-detail"
-        },
-        "issueTicket": {
-          "type": "openForm",
-          "formId": "issueticketform-1764936055136-vzv3b9"
-        },
-        "search": {
-          "type": "navigate",
-          "target": "/ticket-detail"
+          "target": "/notification-templates"
         }
       },
       "menu": [
         {
-          "label": "Officer Dashboard",
-          "route": "/officer-dashboard",
-          "icon": "dashboard"
-        },
-        {
-          "label": "Issue Ticket",
-          "route": "/issue-ticket",
-          "icon": "add"
-        },
-        {
-          "label": "Dispute Management",
-          "route": "/dispute-management",
-          "icon": "gavel"
-        },
-        {
-          "label": "Reports & Analytics",
-          "route": "/reports-analytics",
-          "icon": "chart"
-        },
-        {
-          "label": "Officer Management",
-          "route": "/officer-management",
-          "icon": "people"
-        },
-        {
           "label": "Admin Dashboard",
-          "route": "/admin-dashboard",
-          "icon": "settings"
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Notification Settings",
+          "route": "/notification-settings"
+        },
+        {
+          "label": "Notification Templates",
+          "route": "/notification-templates"
+        },
+        {
+          "label": "Survey Management",
+          "route": "/survey-management-dashboard"
+        },
+        {
+          "label": "Analytics",
+          "route": "/analytics-report"
         }
       ]
     },
-    "workflowId": "workflow_1735227156483"
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
   },
   {
-    "id": "admindashboard-1764936100000-admin",
-    "name": "AdminDashboard",
-    "title": "Administrator Dashboard",
-    "description": "Comprehensive administrative dashboard showing system metrics, pending disputes, overdue tickets, revenue statistics, and quick access to management functions.",
-    "route": "/admin/dashboard",
-    "type": "dashboard",
+    "id": "response-detail-view-1768214612000-abc123",
+    "name": "Response Detail View",
+    "title": "Response Details",
+    "description": "Detailed view of individual survey response with answers and respondent information",
+    "route": "/response/:id",
+    "type": "detail",
     "platform": "both",
     "forms": [],
     "sections": [
@@ -1554,7 +825,893 @@
           {
             "type": "text",
             "config": {
-              "text": "Administrator Dashboard",
+              "text": "Response Details",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "breadcrumb",
+            "config": {
+              "items": [
+                {
+                  "label": "Admin Dashboard",
+                  "route": "/admin-dashboard"
+                },
+                {
+                  "label": "Responses",
+                  "route": "/response-list-view"
+                },
+                {
+                  "label": "Details",
+                  "route": "#"
+                }
+              ],
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#666666"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Respondent Information",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Response.findById",
+            "content": [
+              {
+                "type": "keyValue",
+                "config": {
+                  "pairs": [
+                    {
+                      "key": "Name",
+                      "value": "{{Respondent.name}}"
+                    },
+                    {
+                      "key": "Email",
+                      "value": "{{Respondent.email}}"
+                    },
+                    {
+                      "key": "Submitted",
+                      "value": "{{Response.submittedAt}}"
+                    },
+                    {
+                      "key": "Status",
+                      "value": "{{Response.status}}"
+                    }
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "lineHeight": "1.6",
+                    "color": "#1a1a1a"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Survey Answers",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Answer.query",
+            "content": [
+              {
+                "type": "list",
+                "config": {
+                  "itemTemplate": {
+                    "question": "{{Question.text}}",
+                    "answer": "{{Answer.value}}",
+                    "type": "{{QuestionType.name}}"
+                  },
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#1a1a1a",
+                    "gap": "16px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "buttonGroup",
+            "config": {
+              "buttons": [
+                {
+                  "label": "Export Response",
+                  "variant": "primary",
+                  "action": "export",
+                  "style": {
+                    "backgroundColor": "#0066cc",
+                    "color": "#ffffff",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "border": "none",
+                    "cursor": "pointer"
+                  }
+                },
+                {
+                  "label": "Back to List",
+                  "variant": "secondary",
+                  "action": "back",
+                  "style": {
+                    "backgroundColor": "#f5f5f5",
+                    "color": "#1a1a1a",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "border": "1px solid #e5e5e5",
+                    "cursor": "pointer"
+                  }
+                }
+              ],
+              "alignment": "left",
+              "spacing": "12px"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "back": {
+          "type": "navigate",
+          "target": "/responses"
+        },
+        "export": {
+          "type": "workflow",
+          "workflow": "Export Data"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Response List",
+          "route": "/responses"
+        },
+        {
+          "label": "Analytics",
+          "route": "/analytics-report"
+        },
+        {
+          "label": "Export Data",
+          "route": "/export-data"
+        },
+        {
+          "label": "Survey Management",
+          "route": "/survey-management-dashboard"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "question-editor-page-1768214600000-qe8x9z",
+    "name": "Question Editor",
+    "title": "Edit Question",
+    "description": "Modal or page for editing individual questions with question builder form",
+    "route": "/question-editor/:questionId",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "question-builder-form-1768214557412-dpjac4"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Edit Question",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "28px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Modify question details, type, and configuration",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Question Details",
+              "submitLabel": "Save Changes",
+              "cancelLabel": "Cancel",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "formRef": "question-builder-form-1768214557412-dpjac4",
+            "dataBinding": "Question.findById"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Delete Question",
+              "variant": "outlined",
+              "color": "error",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "padding": "10px 20px",
+                "borderRadius": "8px",
+                "border": "1px solid #dc2626",
+                "color": "#dc2626",
+                "backgroundColor": "transparent",
+                "marginTop": "16px"
+              }
+            },
+            "action": {
+              "type": "workflow",
+              "workflow": "Configure Questions"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/survey-editor/:surveyId"
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/survey-editor/:surveyId"
+        }
+      },
+      "menu": [
+        {
+          "label": "Survey Editor",
+          "route": "/survey-editor/:surveyId"
+        },
+        {
+          "label": "Survey Preview",
+          "route": "/survey-preview/:surveyId"
+        },
+        {
+          "label": "Survey Management",
+          "route": "/survey-management-dashboard"
+        },
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "survey-preview-page-1768214650000-abc123",
+    "name": "Survey Preview",
+    "title": "Survey Preview",
+    "description": "Preview page showing how survey appears to respondents",
+    "route": "/survey-preview/:surveyId",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "survey-submission-form-1768214590350-iy7w3q"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Survey Preview",
+              "variant": "h1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "This is how your survey will appear to respondents",
+              "variant": "body1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "24px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "{{Survey.title}}",
+              "subtitle": "{{Survey.description}}",
+              "elevation": 2,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "32px",
+                "marginBottom": "24px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Survey.findById"
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Survey Questions",
+              "submitLabel": "Preview Submit",
+              "disabled": true,
+              "showValidation": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "32px",
+                "marginBottom": "24px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "formRef": "survey-submission-form-1768214590350-iy7w3q",
+            "dataBinding": "Question.query"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Back to Editor",
+              "variant": "outlined",
+              "size": "large",
+              "fullWidth": false,
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "padding": "12px 32px",
+                "borderRadius": "8px",
+                "backgroundColor": "transparent",
+                "color": "#2563eb",
+                "border": "2px solid #2563eb",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "back": {
+          "type": "navigate",
+          "target": "/survey-editor/:surveyId"
+        },
+        "close": {
+          "type": "navigate",
+          "target": "/survey-management-dashboard"
+        }
+      },
+      "menu": [
+        {
+          "label": "Survey Editor",
+          "route": "/survey-editor/:surveyId"
+        },
+        {
+          "label": "Survey Management",
+          "route": "/survey-management-dashboard"
+        },
+        {
+          "label": "Question Editor",
+          "route": "/question-editor/:questionId"
+        },
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Analytics Report",
+          "route": "/analytics-report"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "resume-survey-page-1768214650000-abc123",
+    "name": "Resume Survey Page",
+    "title": "Resume Your Survey",
+    "description": "Page for respondents to continue a saved draft survey response",
+    "route": "/resume-survey",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "survey-submission-form-1768214590350-iy7w3q"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Resume Your Survey",
+              "variant": "h1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Continue where you left off. Your progress has been saved.",
+              "variant": "body1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ],
+        "style": {
+          "backgroundColor": "#ffffff",
+          "padding": "32px 24px",
+          "borderBottom": "1px solid #e5e5e5"
+        }
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Saved Draft Information",
+              "style": {
+                "backgroundColor": "#f8f9fa",
+                "padding": "24px",
+                "borderRadius": "8px",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "dataBinding": "Response.query",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "Survey: {{Survey.title}}",
+                  "variant": "body1",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Last saved: {{Response.updatedAt}}",
+                  "variant": "body2",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666",
+                    "marginBottom": "8px"
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Progress: {{Response.completionPercentage}}% complete",
+                  "variant": "body2",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Continue Survey",
+              "submitLabel": "Save & Continue",
+              "cancelLabel": "Save Draft",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "8px",
+                "border": "1px solid #e5e5e5",
+                "fontFamily": "Inter, system-ui, sans-serif"
+              }
+            },
+            "formRef": "survey-submission-form-1768214590350-iy7w3q",
+            "dataBinding": "Response.query"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Discard Draft",
+              "variant": "text",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "color": "#dc3545",
+                "backgroundColor": "transparent",
+                "border": "none",
+                "padding": "8px 16px",
+                "borderRadius": "6px",
+                "cursor": "pointer",
+                "marginTop": "16px",
+                "textAlign": "center"
+              }
+            },
+            "action": {
+              "type": "workflow",
+              "workflow": "Auto-save Response",
+              "params": {
+                "action": "delete"
+              }
+            }
+          }
+        ],
+        "style": {
+          "backgroundColor": "#ffffff",
+          "padding": "32px 24px",
+          "maxWidth": "800px",
+          "margin": "0 auto"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/survey-confirmation"
+        }
+      },
+      "menu": [
+        {
+          "label": "Survey Landing",
+          "route": "/survey-landing"
+        },
+        {
+          "label": "Help",
+          "route": "/help"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "notification-templates-page-1768214650000-abc123",
+    "name": "Notification Templates Page",
+    "title": "Notification Templates",
+    "description": "Manage notification email templates",
+    "route": "/notification-templates",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "notification-template-form-1768214505011-yw4x2f"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Notification Templates",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Create and manage email templates for survey notifications",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Create New Template",
+              "variant": "primary",
+              "action": "openForm",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "marginBottom": "24px",
+                "cursor": "pointer"
+              }
+            },
+            "formRef": "notification-template-form-1768214505011-yw4x2f"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Email Templates",
+              "columns": [
+                {
+                  "key": "name",
+                  "label": "Template Name",
+                  "sortable": true
+                },
+                {
+                  "key": "subject",
+                  "label": "Email Subject",
+                  "sortable": true
+                },
+                {
+                  "key": "type",
+                  "label": "Type",
+                  "sortable": true
+                },
+                {
+                  "key": "isActive",
+                  "label": "Status",
+                  "sortable": true,
+                  "format": "badge"
+                },
+                {
+                  "key": "updatedAt",
+                  "label": "Last Modified",
+                  "sortable": true,
+                  "format": "date"
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "sortable": false
+                }
+              ],
+              "actions": [
+                {
+                  "label": "Edit",
+                  "type": "edit",
+                  "icon": "edit"
+                },
+                {
+                  "label": "Preview",
+                  "type": "view",
+                  "icon": "eye"
+                },
+                {
+                  "label": "Delete",
+                  "type": "delete",
+                  "icon": "trash",
+                  "confirm": true
+                }
+              ],
+              "pagination": true,
+              "pageSize": 10,
+              "searchable": true,
+              "searchPlaceholder": "Search templates...",
+              "style": {
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e7eb",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "NotificationTemplate.query",
+            "formRef": "notification-template-form-1768214505011-yw4x2f"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "edit": {
+          "type": "openForm",
+          "formRef": "notification-template-form-1768214505011-yw4x2f"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/notification-history"
+        },
+        "create": {
+          "type": "openForm",
+          "formRef": "notification-template-form-1768214505011-yw4x2f"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Surveys",
+          "route": "/survey-management-dashboard"
+        },
+        {
+          "label": "Notification Settings",
+          "route": "/notification-settings"
+        },
+        {
+          "label": "Notification History",
+          "route": "/notification-history"
+        },
+        {
+          "label": "Responses",
+          "route": "/response-list"
+        },
+        {
+          "label": "Analytics",
+          "route": "/analytics-report"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "admin-dashboard-1768214600000-adm1n",
+    "name": "Admin Dashboard",
+    "title": "Admin Dashboard",
+    "description": "Main landing page for administrators with overview metrics",
+    "route": "/admin-dashboard",
+    "type": "dashboard",
+    "platform": "both",
+    "forms": [
+      "survey-configuration-form-1768214488212-zxjvsa",
+      "notification-template-form-1768214505011-yw4x2f"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Admin Dashboard",
               "variant": "h1",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
@@ -1568,7 +1725,7 @@
           {
             "type": "text",
             "config": {
-              "text": "System overview and management capabilities",
+              "text": "Overview of surveys, responses, and system activity",
               "variant": "body1",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
@@ -1588,7 +1745,7 @@
           {
             "type": "card",
             "config": {
-              "title": "System Metrics",
+              "title": "Key Metrics",
               "layout": "grid",
               "columns": 4,
               "style": {
@@ -1600,56 +1757,70 @@
                 "marginBottom": "24px"
               }
             },
-            "dataBinding": "Ticket.aggregate",
-            "content": [
+            "dataBinding": "Analytics.query",
+            "items": [
               {
-                "label": "Total Tickets",
-                "value": "{{Ticket.count}}",
-                "icon": "receipt",
-                "color": "#2563eb",
+                "label": "Total Surveys",
+                "value": "{{Survey.count}}",
+                "icon": "survey",
                 "style": {
                   "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#666666"
+                },
+                "valueStyle": {
                   "fontSize": "28px",
                   "fontWeight": "700",
                   "color": "#1a1a1a"
                 }
               },
               {
-                "label": "Pending Disputes",
-                "value": "{{Dispute.count(status='pending')}}",
-                "icon": "gavel",
-                "color": "#dc2626",
-                "alert": true,
+                "label": "Active Surveys",
+                "value": "{{Survey.where(status='active').count}}",
+                "icon": "check_circle",
                 "style": {
                   "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#666666"
+                },
+                "valueStyle": {
                   "fontSize": "28px",
                   "fontWeight": "700",
-                  "color": "#dc2626"
+                  "color": "#10b981"
                 }
               },
               {
-                "label": "Overdue Tickets",
-                "value": "{{Ticket.count(status='overdue')}}",
-                "icon": "warning",
-                "color": "#ea580c",
-                "alert": true,
+                "label": "Total Responses",
+                "value": "{{Response.count}}",
+                "icon": "people",
                 "style": {
                   "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#666666"
+                },
+                "valueStyle": {
                   "fontSize": "28px",
                   "fontWeight": "700",
-                  "color": "#ea580c"
+                  "color": "#1a1a1a"
                 }
               },
               {
-                "label": "Total Revenue",
-                "value": "${{Payment.sum(amount)}}",
-                "icon": "attach_money",
-                "color": "#16a34a",
+                "label": "Pending Notifications",
+                "value": "{{Notification.where(status='pending').count}}",
+                "icon": "notifications",
                 "style": {
                   "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#666666"
+                },
+                "valueStyle": {
                   "fontSize": "28px",
                   "fontWeight": "700",
-                  "color": "#16a34a"
+                  "color": "#f59e0b"
                 }
               }
             ]
@@ -1657,7 +1828,7 @@
           {
             "type": "card",
             "config": {
-              "title": "Items Requiring Attention",
+              "title": "Recent Surveys",
               "style": {
                 "backgroundColor": "#ffffff",
                 "borderRadius": "12px",
@@ -1665,278 +1836,194 @@
                 "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
                 "border": "1px solid #e5e5e5",
                 "marginBottom": "24px"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
               }
             },
-            "content": [
+            "dataBinding": "Survey.orderBy(createdAt, desc).limit(5)",
+            "components": [
               {
-                "type": "alert",
-                "severity": "error",
-                "message": "{{Dispute.count(status='pending')}} disputes pending review",
-                "action": {
-                  "label": "Review Disputes",
-                  "route": "/disputes"
-                },
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "fontWeight": "500",
-                  "backgroundColor": "#fef2f2",
-                  "color": "#991b1b",
-                  "padding": "12px 16px",
-                  "borderRadius": "8px",
-                  "border": "1px solid #fecaca",
-                  "marginBottom": "12px"
-                }
-              },
-              {
-                "type": "alert",
-                "severity": "warning",
-                "message": "{{Ticket.count(status='overdue')}} tickets are overdue",
-                "action": {
-                  "label": "View Overdue",
-                  "route": "/tickets?status=overdue"
-                },
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "fontWeight": "500",
-                  "backgroundColor": "#fff7ed",
-                  "color": "#9a3412",
-                  "padding": "12px 16px",
-                  "borderRadius": "8px",
-                  "border": "1px solid #fed7aa",
-                  "marginBottom": "12px"
-                }
-              },
-              {
-                "type": "alert",
-                "severity": "info",
-                "message": "{{Payment.count(status='pending')}} payments pending processing",
-                "action": {
-                  "label": "Process Payments",
-                  "route": "/payments"
-                },
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "fontWeight": "500",
-                  "backgroundColor": "#eff6ff",
-                  "color": "#1e40af",
-                  "padding": "12px 16px",
-                  "borderRadius": "8px",
-                  "border": "1px solid #bfdbfe"
-                }
-              }
-            ]
-          },
-          {
-            "type": "table",
-            "config": {
-              "title": "Recent Disputes",
-              "columns": [
-                {
-                  "field": "id",
-                  "header": "Dispute ID",
-                  "sortable": true,
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "field": "title",
+                      "header": "Survey Title",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#1a1a1a"
+                      }
+                    },
+                    {
+                      "field": "status",
+                      "header": "Status",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500"
+                      }
+                    },
+                    {
+                      "field": "responseCount",
+                      "header": "Responses",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "400",
+                        "color": "#666666"
+                      }
+                    },
+                    {
+                      "field": "createdAt",
+                      "header": "Created",
+                      "format": "date",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "400",
+                        "color": "#666666"
+                      }
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "View",
+                      "action": "view",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#3b82f6",
+                        "textDecoration": "none"
+                      }
+                    }
+                  ],
                   "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "600",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "field": "ticket.ticketNumber",
-                  "header": "Ticket Number",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "400",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "field": "reason",
-                  "header": "Reason",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "400",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "field": "status",
-                  "header": "Status",
-                  "badge": true,
-                  "style": {
+                    "borderRadius": "8px",
+                    "overflow": "hidden"
+                  },
+                  "headerStyle": {
+                    "backgroundColor": "#f9fafb",
                     "fontFamily": "Inter, system-ui, sans-serif",
                     "fontSize": "12px",
                     "fontWeight": "600",
-                    "padding": "4px 12px",
-                    "borderRadius": "16px",
-                    "backgroundColor": "#fef3c7",
-                    "color": "#92400e"
-                  }
-                },
-                {
-                  "field": "submittedAt",
-                  "header": "Submitted",
-                  "type": "date",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "400",
-                    "color": "#666666"
+                    "color": "#666666",
+                    "textTransform": "uppercase",
+                    "letterSpacing": "0.5px"
                   }
                 }
-              ],
-              "actions": [
-                {
-                  "label": "Review",
-                  "type": "primary",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "600",
-                    "backgroundColor": "#2563eb",
-                    "color": "#ffffff",
-                    "padding": "8px 16px",
-                    "borderRadius": "8px",
-                    "border": "none"
-                  }
-                }
-              ],
-              "pagination": true,
-              "pageSize": 5,
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "border": "1px solid #e5e5e5",
-                "marginBottom": "24px"
               }
-            },
-            "dataBinding": "Dispute.query(status='pending', orderBy='submittedAt:desc', limit=5)"
+            ]
           },
           {
             "type": "card",
             "config": {
               "title": "Quick Actions",
-              "layout": "grid",
-              "columns": 3,
+              "layout": "horizontal",
               "style": {
                 "backgroundColor": "#ffffff",
                 "borderRadius": "12px",
                 "padding": "24px",
                 "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
                 "border": "1px solid #e5e5e5"
+              },
+              "titleStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "18px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "16px"
               }
             },
-            "content": [
+            "components": [
               {
                 "type": "button",
-                "label": "Manage Officers",
-                "icon": "badge",
-                "route": "/admin/officers",
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "fontWeight": "600",
-                  "backgroundColor": "#2563eb",
-                  "color": "#ffffff",
-                  "padding": "12px 24px",
-                  "borderRadius": "8px",
-                  "border": "none",
-                  "width": "100%"
+                "config": {
+                  "label": "Create Survey",
+                  "variant": "primary",
+                  "action": "navigate",
+                  "target": "/survey-editor",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#3b82f6",
+                    "color": "#ffffff",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "none",
+                    "cursor": "pointer",
+                    "marginRight": "12px"
+                  }
                 }
               },
               {
                 "type": "button",
-                "label": "Manage Violations",
-                "icon": "rule",
-                "route": "/admin/violations",
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "fontWeight": "600",
-                  "backgroundColor": "#2563eb",
-                  "color": "#ffffff",
-                  "padding": "12px 24px",
-                  "borderRadius": "8px",
-                  "border": "none",
-                  "width": "100%"
+                "config": {
+                  "label": "View All Responses",
+                  "variant": "secondary",
+                  "action": "navigate",
+                  "target": "/response-list-view",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#ffffff",
+                    "color": "#3b82f6",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #3b82f6",
+                    "cursor": "pointer",
+                    "marginRight": "12px"
+                  }
                 }
               },
               {
                 "type": "button",
-                "label": "View Reports",
-                "icon": "assessment",
-                "route": "/admin/reports",
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "fontWeight": "600",
-                  "backgroundColor": "#2563eb",
-                  "color": "#ffffff",
-                  "padding": "12px 24px",
-                  "borderRadius": "8px",
-                  "border": "none",
-                  "width": "100%"
+                "config": {
+                  "label": "Analytics Reports",
+                  "variant": "secondary",
+                  "action": "navigate",
+                  "target": "/analytics-report-page",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#ffffff",
+                    "color": "#3b82f6",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #3b82f6",
+                    "cursor": "pointer",
+                    "marginRight": "12px"
+                  }
                 }
               },
               {
                 "type": "button",
-                "label": "Review Disputes",
-                "icon": "gavel",
-                "route": "/admin/disputes",
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "fontWeight": "600",
-                  "backgroundColor": "#16a34a",
-                  "color": "#ffffff",
-                  "padding": "12px 24px",
-                  "borderRadius": "8px",
-                  "border": "none",
-                  "width": "100%"
-                }
-              },
-              {
-                "type": "button",
-                "label": "Payment History",
-                "icon": "payment",
-                "route": "/payments/history",
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "fontWeight": "600",
-                  "backgroundColor": "#16a34a",
-                  "color": "#ffffff",
-                  "padding": "12px 24px",
-                  "borderRadius": "8px",
-                  "border": "none",
-                  "width": "100%"
-                }
-              },
-              {
-                "type": "button",
-                "label": "Audit Logs",
-                "icon": "history",
-                "route": "/admin/audit-logs",
-                "style": {
-                  "fontFamily": "Inter, system-ui, sans-serif",
-                  "fontSize": "14px",
-                  "fontWeight": "600",
-                  "backgroundColor": "#16a34a",
-                  "color": "#ffffff",
-                  "padding": "12px 24px",
-                  "borderRadius": "8px",
-                  "border": "none",
-                  "width": "100%"
+                "config": {
+                  "label": "Export Data",
+                  "variant": "secondary",
+                  "action": "navigate",
+                  "target": "/export-data-page",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "backgroundColor": "#ffffff",
+                    "color": "#3b82f6",
+                    "padding": "10px 20px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #3b82f6",
+                    "cursor": "pointer"
+                  }
                 }
               }
             ]
@@ -1946,76 +2033,67 @@
     ],
     "navigation": {
       "onAction": {
-        "view_dispute": {
+        "view": {
           "type": "navigate",
-          "target": "/admin/disputes"
+          "target": "/survey-editor/:surveyId"
         },
-        "view_officers": {
+        "create": {
           "type": "navigate",
-          "target": "/admin/officers"
-        },
-        "view_reports": {
-          "type": "navigate",
-          "target": "/admin/reports"
+          "target": "/survey-editor/:surveyId"
         }
       },
       "menu": [
         {
-          "label": "Admin Dashboard",
-          "route": "/admin/dashboard",
+          "label": "Dashboard",
+          "route": "/admin-dashboard",
           "icon": "dashboard"
         },
         {
-          "label": "Officer Management",
-          "route": "/admin/officers",
-          "icon": "badge"
+          "label": "Survey Management",
+          "route": "/survey-management-dashboard",
+          "icon": "list"
         },
         {
-          "label": "Violation Types",
-          "route": "/admin/violations",
-          "icon": "rule"
+          "label": "Responses",
+          "route": "/responses",
+          "icon": "assignment"
         },
         {
-          "label": "Dispute Management",
-          "route": "/admin/disputes",
-          "icon": "gavel"
+          "label": "Analytics",
+          "route": "/analytics-report",
+          "icon": "analytics"
         },
         {
-          "label": "Reports & Analytics",
-          "route": "/admin/reports",
-          "icon": "assessment"
+          "label": "Notifications",
+          "route": "/notification-history",
+          "icon": "notifications"
         },
         {
-          "label": "Payment History",
-          "route": "/payments/history",
-          "icon": "payment"
+          "label": "Settings",
+          "route": "/notification-settings",
+          "icon": "settings"
         },
         {
-          "label": "Officer Dashboard",
-          "route": "/officer/dashboard",
-          "icon": "local_police"
-        },
-        {
-          "label": "Citizen Portal",
-          "route": "/citizen/portal",
-          "icon": "person"
+          "label": "Notification Templates Page",
+          "route": "/notification-templates"
         }
       ]
     },
-    "workflowId": "workflow_1735227156483"
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
   },
   {
-    "id": "ticketdetailpage-1764936100000-abc123",
-    "name": "TicketDetailPage",
-    "title": "Ticket Details",
-    "description": "Detailed view of individual ticket showing all violation details, vehicle information, payment status, dispute history, and available actions based on user role and ticket status",
-    "route": "/tickets/:id",
-    "type": "detail",
+    "id": "response-list-view-1768214600000-abc123",
+    "name": "Response List View",
+    "title": "Survey Responses",
+    "description": "Paginated list of all survey responses with filtering options",
+    "route": "/responses",
+    "type": "list",
     "platform": "both",
     "forms": [
-      "ticketpaymentform-1764935987536-cmjwfm",
-      "disputesubmissionform-1764936013180-h6wtl2",
-      "disputereviewform-1764936032997-ah84fi"
+      "response-filter-form-1768214522000-oyjo35"
     ],
     "sections": [
       {
@@ -2025,434 +2103,25 @@
           {
             "type": "text",
             "config": {
-              "text": "Ticket #{{Ticket.ticketNumber}}",
+              "text": "Survey Responses",
               "variant": "h1",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
-                "fontSize": "32px",
+                "fontSize": "2rem",
                 "fontWeight": "700",
                 "color": "#1a1a1a",
-                "marginBottom": "8px"
-              }
-            },
-            "dataBinding": "Ticket.findById"
-          },
-          {
-            "type": "badge",
-            "config": {
-              "text": "{{Ticket.status}}",
-              "variant": "status",
-              "style": {
-                "fontFamily": "Inter, system-ui, sans-serif",
-                "fontSize": "14px",
-                "fontWeight": "600",
-                "padding": "6px 16px",
-                "borderRadius": "8px",
-                "backgroundColor": "{{Ticket.status === 'PAID' ? '#10b981' : Ticket.status === 'PENDING' ? '#f59e0b' : Ticket.status === 'DISPUTED' ? '#3b82f6' : '#ef4444'}}",
-                "color": "#ffffff"
-              }
-            },
-            "dataBinding": "Ticket.status"
-          }
-        ]
-      },
-      {
-        "id": "main",
-        "type": "main",
-        "components": [
-          {
-            "type": "card",
-            "config": {
-              "title": "Violation Details",
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "marginBottom": "24px",
-                "border": "1px solid #e5e7eb"
-              },
-              "fields": [
-                {
-                  "label": "Violation Type",
-                  "value": "{{ViolationType.description}}",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#6b7280",
-                    "marginBottom": "4px"
-                  }
-                },
-                {
-                  "label": "Location",
-                  "value": "{{ParkingLocation.address}}",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "16px",
-                    "color": "#1a1a1a",
-                    "fontWeight": "500"
-                  }
-                },
-                {
-                  "label": "Date & Time",
-                  "value": "{{Ticket.issueDate}}",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "label": "Issuing Officer",
-                  "value": "{{Officer.firstName}}, {{Officer.lastName}} ({{Officer.badgeNumber}})",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "label": "Vehicle",
-                  "value": "{{Vehicle.licensePlate}} - {{Vehicle.make}}, {{Vehicle.model}}",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#1a1a1a"
-                  }
-                },
-                {
-                  "label": "Fine Amount",
-                  "value": "${{Ticket.fineAmount}}",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "20px",
-                    "color": "#dc2626",
-                    "fontWeight": "700"
-                  }
-                },
-                {
-                  "label": "Late Fees",
-                  "value": "${{LateFee.amount}}",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "16px",
-                    "color": "#f59e0b",
-                    "fontWeight": "600"
-                  }
-                },
-                {
-                  "label": "Total Due",
-                  "value": "${{Ticket.totalAmount}}",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "24px",
-                    "color": "#1a1a1a",
-                    "fontWeight": "700"
-                  }
-                }
-              ]
-            },
-            "dataBinding": "Ticket.findById"
-          },
-          {
-            "type": "timeline",
-            "config": {
-              "title": "Ticket History",
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "marginBottom": "24px",
-                "border": "1px solid #e5e7eb"
-              },
-              "itemStyle": {
-                "fontFamily": "Inter, system-ui, sans-serif",
-                "fontSize": "14px",
-                "color": "#1a1a1a",
-                "padding": "12px 0",
-                "borderLeft": "2px solid #3b82f6"
-              },
-              "events": [
-                {
-                  "date": "{{AuditLog.timestamp}}",
-                  "action": "{{AuditLog.action}}",
-                  "user": "{{AuditLog.performedBy}}",
-                  "details": "{{AuditLog.details}}"
-                }
-              ]
-            },
-            "dataBinding": "AuditLog.query"
-          },
-          {
-            "type": "card",
-            "config": {
-              "title": "Payment & Dispute Information",
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
-                "marginBottom": "24px",
-                "border": "1px solid #e5e7eb"
-              },
-              "sections": [
-                {
-                  "title": "Payment Status",
-                  "visible": "{{Payment.id}}",
-                  "fields": [
-                    {
-                      "label": "Payment Date",
-                      "value": "{{Payment.paymentDate}}",
-                      "style": {
-                        "fontFamily": "Inter, system-ui, sans-serif",
-                        "fontSize": "14px",
-                        "color": "#1a1a1a"
-                      }
-                    },
-                    {
-                      "label": "Amount Paid",
-                      "value": "${{Payment.amount}}",
-                      "style": {
-                        "fontFamily": "Inter, system-ui, sans-serif",
-                        "fontSize": "16px",
-                        "color": "#10b981",
-                        "fontWeight": "600"
-                      }
-                    },
-                    {
-                      "label": "Payment Method",
-                      "value": "{{Payment.paymentMethod}}",
-                      "style": {
-                        "fontFamily": "Inter, system-ui, sans-serif",
-                        "fontSize": "14px",
-                        "color": "#1a1a1a"
-                      }
-                    }
-                  ]
-                },
-                {
-                  "title": "Dispute Status",
-                  "visible": "{{Dispute.id}}",
-                  "fields": [
-                    {
-                      "label": "Dispute Status",
-                      "value": "{{Dispute.status}}",
-                      "style": {
-                        "fontFamily": "Inter, system-ui, sans-serif",
-                        "fontSize": "14px",
-                        "color": "#3b82f6",
-                        "fontWeight": "600"
-                      }
-                    },
-                    {
-                      "label": "Submitted Date",
-                      "value": "{{Dispute.submittedDate}}",
-                      "style": {
-                        "fontFamily": "Inter, system-ui, sans-serif",
-                        "fontSize": "14px",
-                        "color": "#1a1a1a"
-                      }
-                    },
-                    {
-                      "label": "Reason",
-                      "value": "{{Dispute.reason}}",
-                      "style": {
-                        "fontFamily": "Inter, system-ui, sans-serif",
-                        "fontSize": "14px",
-                        "color": "#1a1a1a"
-                      }
-                    },
-                    {
-                      "label": "Resolution",
-                      "value": "{{Dispute.resolution}}",
-                      "visible": "{{Dispute.status === 'RESOLVED'}}",
-                      "style": {
-                        "fontFamily": "Inter, system-ui, sans-serif",
-                        "fontSize": "14px",
-                        "color": "#1a1a1a"
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            "dataBinding": "Ticket.findById"
-          },
-          {
-            "type": "buttonGroup",
-            "config": {
-              "orientation": "horizontal",
-              "style": {
-                "display": "flex",
-                "gap": "12px",
-                "marginTop": "24px",
-                "flexWrap": "wrap"
-              },
-              "buttons": [
-                {
-                  "label": "Pay Ticket",
-                  "action": "openPaymentForm",
-                  "visible": "{{Ticket.status === 'PENDING' || Ticket.status === 'OVERDUE'}}",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "16px",
-                    "fontWeight": "600",
-                    "padding": "12px 24px",
-                    "borderRadius": "8px",
-                    "backgroundColor": "#3b82f6",
-                    "color": "#ffffff",
-                    "border": "none",
-                    "cursor": "pointer",
-                    "transition": "all 0.2s ease"
-                  },
-                  "formRef": "ticketpaymentform-1764935987536-cmjwfm"
-                },
-                {
-                  "label": "Submit Dispute",
-                  "action": "openDisputeForm",
-                  "visible": "{{Ticket.status === 'PENDING' && !Dispute.id}}",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "16px",
-                    "fontWeight": "600",
-                    "padding": "12px 24px",
-                    "borderRadius": "8px",
-                    "backgroundColor": "#ffffff",
-                    "color": "#3b82f6",
-                    "border": "2px solid #3b82f6",
-                    "cursor": "pointer",
-                    "transition": "all 0.2s ease"
-                  },
-                  "formRef": "disputesubmissionform-1764936013180-h6wtl2"
-                },
-                {
-                  "label": "Review Dispute",
-                  "action": "openReviewForm",
-                  "visible": "{{userRole === 'ADMIN' && Dispute.status === 'PENDING'}}",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "16px",
-                    "fontWeight": "600",
-                    "padding": "12px 24px",
-                    "borderRadius": "8px",
-                    "backgroundColor": "#f59e0b",
-                    "color": "#ffffff",
-                    "border": "none",
-                    "cursor": "pointer",
-                    "transition": "all 0.2s ease"
-                  },
-                  "formRef": "disputereviewform-1764936032997-ah84fi"
-                },
-                {
-                  "label": "View Payment History",
-                  "action": "viewPaymentHistory",
-                  "visible": "{{Payment.id}}",
-                  "style": {
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "16px",
-                    "fontWeight": "600",
-                    "padding": "12px 24px",
-                    "borderRadius": "8px",
-                    "backgroundColor": "#ffffff",
-                    "color": "#6b7280",
-                    "border": "2px solid #e5e7eb",
-                    "cursor": "pointer",
-                    "transition": "all 0.2s ease"
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    ],
-    "navigation": {
-      "onAction": {
-        "openPaymentForm": {
-          "type": "modal",
-          "formRef": "ticketpaymentform-1764935987536-cmjwfm"
-        },
-        "openDisputeForm": {
-          "type": "modal",
-          "formRef": "disputesubmissionform-1764936013180-h6wtl2"
-        },
-        "openReviewForm": {
-          "type": "modal",
-          "formRef": "disputereviewform-1764936032997-ah84fi"
-        },
-        "viewPaymentHistory": {
-          "type": "navigate",
-          "target": "/payment-history"
-        }
-      },
-      "menu": [
-        {
-          "label": "Citizen Portal",
-          "route": "/citizen-portal"
-        },
-        {
-          "label": "Officer Dashboard",
-          "route": "/officer-dashboard"
-        },
-        {
-          "label": "Admin Dashboard",
-          "route": "/admin-dashboard"
-        },
-        {
-          "label": "Payment History",
-          "route": "/payment-history"
-        },
-        {
-          "label": "Dispute Management",
-          "route": "/dispute-management"
-        },
-        {
-          "label": "Reports & Analytics",
-          "route": "/reports-analytics"
-        }
-      ]
-    },
-    "workflowId": "workflow_1735227156483"
-  },
-  {
-    "id": "reportsanalyticspage-1764936100000-rpt001",
-    "name": "ReportsAnalyticsPage",
-    "title": "Reports & Analytics",
-    "description": "Generate and view reports on violations, revenue, and enforcement trends with pre-built templates and custom report builder.",
-    "route": "/reports-analytics",
-    "type": "dashboard",
-    "platform": "both",
-    "forms": [
-      "reportparametersform-1764935906274-sh7y7n"
-    ],
-    "sections": [
-      {
-        "id": "header",
-        "type": "header",
-        "components": [
-          {
-            "type": "text",
-            "config": {
-              "text": "Reports & Analytics",
-              "variant": "h1",
-              "style": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "28px",
-                "fontWeight": "600",
-                "color": "#1a1a1a",
-                "marginBottom": "8px"
+                "marginBottom": "0.5rem"
               }
             }
           },
           {
             "type": "text",
             "config": {
-              "text": "Generate comprehensive reports on violations, revenue, and enforcement trends",
+              "text": "View and filter all survey responses",
               "variant": "body1",
               "style": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "14px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "1rem",
                 "fontWeight": "400",
                 "color": "#666666",
                 "lineHeight": "1.5"
@@ -2466,338 +2135,194 @@
         "type": "main",
         "components": [
           {
-            "type": "card",
+            "type": "form",
             "config": {
-              "title": "Report Parameters",
+              "title": "Filter Responses",
+              "submitLabel": "Apply Filters",
               "style": {
                 "backgroundColor": "#ffffff",
+                "padding": "1.5rem",
                 "borderRadius": "8px",
                 "border": "1px solid #e0e0e0",
-                "padding": "24px",
-                "marginBottom": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
-              },
-              "titleStyle": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "18px",
-                "fontWeight": "600",
-                "color": "#1a1a1a",
-                "marginBottom": "16px"
+                "marginBottom": "1.5rem",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
               }
             },
-            "formRef": "reportparametersform-1764935906274-sh7y7n"
-          },
-          {
-            "type": "card",
-            "config": {
-              "title": "Pre-Built Report Templates",
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "8px",
-                "border": "1px solid #e0e0e0",
-                "padding": "24px",
-                "marginBottom": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
-              },
-              "titleStyle": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "18px",
-                "fontWeight": "600",
-                "color": "#1a1a1a",
-                "marginBottom": "16px"
-              }
-            },
-            "components": [
-              {
-                "type": "button",
-                "config": {
-                  "label": "Violation Trends Report",
-                  "variant": "outlined",
-                  "action": "generateReport",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "padding": "10px 20px",
-                    "borderRadius": "6px",
-                    "border": "1px solid #0066cc",
-                    "color": "#0066cc",
-                    "backgroundColor": "#ffffff",
-                    "marginRight": "12px",
-                    "marginBottom": "12px",
-                    "cursor": "pointer",
-                    "transition": "all 0.2s ease"
-                  }
-                }
-              },
-              {
-                "type": "button",
-                "config": {
-                  "label": "Revenue Analysis",
-                  "variant": "outlined",
-                  "action": "generateReport",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "padding": "10px 20px",
-                    "borderRadius": "6px",
-                    "border": "1px solid #0066cc",
-                    "color": "#0066cc",
-                    "backgroundColor": "#ffffff",
-                    "marginRight": "12px",
-                    "marginBottom": "12px",
-                    "cursor": "pointer",
-                    "transition": "all 0.2s ease"
-                  }
-                }
-              },
-              {
-                "type": "button",
-                "config": {
-                  "label": "Officer Performance",
-                  "variant": "outlined",
-                  "action": "generateReport",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "padding": "10px 20px",
-                    "borderRadius": "6px",
-                    "border": "1px solid #0066cc",
-                    "color": "#0066cc",
-                    "backgroundColor": "#ffffff",
-                    "marginRight": "12px",
-                    "marginBottom": "12px",
-                    "cursor": "pointer",
-                    "transition": "all 0.2s ease"
-                  }
-                }
-              },
-              {
-                "type": "button",
-                "config": {
-                  "label": "Location Statistics",
-                  "variant": "outlined",
-                  "action": "generateReport",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "padding": "10px 20px",
-                    "borderRadius": "6px",
-                    "border": "1px solid #0066cc",
-                    "color": "#0066cc",
-                    "backgroundColor": "#ffffff",
-                    "marginBottom": "12px",
-                    "cursor": "pointer",
-                    "transition": "all 0.2s ease"
-                  }
-                }
-              }
-            ]
-          },
-          {
-            "type": "card",
-            "config": {
-              "title": "Report Results",
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "8px",
-                "border": "1px solid #e0e0e0",
-                "padding": "24px",
-                "marginBottom": "24px",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
-              },
-              "titleStyle": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "18px",
-                "fontWeight": "600",
-                "color": "#1a1a1a",
-                "marginBottom": "16px"
-              }
-            },
-            "components": [
-              {
-                "type": "chart",
-                "config": {
-                  "chartType": "bar",
-                  "title": "Violations by Type",
-                  "xAxis": "Violation Type",
-                  "yAxis": "Count",
-                  "style": {
-                    "height": "300px",
-                    "marginBottom": "24px"
-                  }
-                },
-                "dataBinding": "ViolationType.aggregateByType"
-              },
-              {
-                "type": "chart",
-                "config": {
-                  "chartType": "line",
-                  "title": "Revenue Trend",
-                  "xAxis": "Date",
-                  "yAxis": "Revenue ($)",
-                  "style": {
-                    "height": "300px",
-                    "marginBottom": "24px"
-                  }
-                },
-                "dataBinding": "Payment.aggregateByDate"
-              }
-            ]
+            "formRef": "response-filter-form-1768214522000-oyjo35"
           },
           {
             "type": "table",
             "config": {
-              "title": "Detailed Report Data",
+              "title": "All Responses",
               "columns": [
                 {
-                  "field": "date",
-                  "header": "Date",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "color": "#1a1a1a"
-                  }
+                  "key": "respondent.name",
+                  "label": "Respondent",
+                  "sortable": true
                 },
                 {
-                  "field": "category",
-                  "header": "Category",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#1a1a1a"
-                  }
+                  "key": "survey.title",
+                  "label": "Survey",
+                  "sortable": true
                 },
                 {
-                  "field": "count",
-                  "header": "Count",
+                  "key": "submittedAt",
+                  "label": "Submitted",
                   "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "color": "#1a1a1a"
-                  }
+                  "format": "datetime"
                 },
                 {
-                  "field": "revenue",
-                  "header": "Revenue",
-                  "sortable": true,
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "600",
-                    "color": "#0066cc"
-                  }
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "sortable": false
                 }
               ],
+              "pagination": {
+                "enabled": true,
+                "pageSize": 25,
+                "pageSizeOptions": [
+                  10,
+                  25,
+                  50,
+                  100
+                ]
+              },
               "actions": [
+                {
+                  "label": "View Details",
+                  "type": "view",
+                  "icon": "eye"
+                },
                 {
                   "label": "Export",
                   "type": "export",
-                  "style": {
-                    "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                    "fontSize": "13px",
-                    "fontWeight": "500",
-                    "color": "#0066cc",
-                    "cursor": "pointer"
-                  }
+                  "icon": "download"
                 }
               ],
-              "pagination": true,
-              "pageSize": 20,
               "style": {
                 "backgroundColor": "#ffffff",
                 "borderRadius": "8px",
                 "border": "1px solid #e0e0e0",
-                "overflow": "hidden",
-                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.08)"
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "overflow": "hidden"
               },
               "headerStyle": {
-                "backgroundColor": "#f8f9fa",
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "13px",
+                "backgroundColor": "#f5f5f5",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "0.875rem",
                 "fontWeight": "600",
                 "color": "#1a1a1a",
-                "textTransform": "uppercase",
-                "letterSpacing": "0.5px",
-                "padding": "12px 16px",
+                "padding": "1rem",
                 "borderBottom": "2px solid #e0e0e0"
               },
               "rowStyle": {
-                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-                "fontSize": "14px",
-                "color": "#1a1a1a",
-                "padding": "12px 16px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "0.875rem",
+                "fontWeight": "400",
+                "color": "#333333",
+                "padding": "1rem",
                 "borderBottom": "1px solid #f0f0f0"
               }
             },
-            "dataBinding": "Ticket.reportData"
+            "dataBinding": "Response.query",
+            "filters": {
+              "include": [
+                "respondent",
+                "survey"
+              ],
+              "orderBy": {
+                "submittedAt": "desc"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Export All Responses",
+              "variant": "outlined",
+              "icon": "download",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "0.875rem",
+                "fontWeight": "500",
+                "padding": "0.625rem 1.25rem",
+                "borderRadius": "6px",
+                "border": "1px solid #007bff",
+                "color": "#007bff",
+                "backgroundColor": "transparent",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease"
+              }
+            },
+            "action": {
+              "type": "navigate",
+              "target": "/export-data"
+            }
           }
         ]
       }
     ],
     "navigation": {
       "onAction": {
-        "generateReport": {
-          "type": "workflow",
-          "workflow": "GenerateReportWorkflow"
+        "view": {
+          "type": "navigate",
+          "target": "/response/:id"
         },
         "export": {
-          "type": "download",
-          "format": "csv"
+          "type": "navigate",
+          "target": "/export-data"
         }
       },
       "menu": [
         {
-          "label": "Admin Dashboard",
+          "label": "Dashboard",
           "route": "/admin-dashboard"
         },
         {
-          "label": "Officer Dashboard",
-          "route": "/officer-dashboard"
+          "label": "Survey Management",
+          "route": "/survey-management-dashboard"
         },
         {
-          "label": "Ticket Management",
-          "route": "/citizen-portal"
+          "label": "Analytics",
+          "route": "/analytics-report"
         },
         {
-          "label": "Payment History",
-          "route": "/payment-history"
+          "label": "Export Data",
+          "route": "/export-data"
         },
         {
-          "label": "Dispute Management",
-          "route": "/dispute-management"
-        },
-        {
-          "label": "Officer Management",
-          "route": "/officer-management"
-        },
-        {
-          "label": "Violation Types",
-          "route": "/violation-type-management"
+          "label": "Notifications",
+          "route": "/notification-history"
         }
       ]
     },
-    "workflowId": "workflow_1735227156483"
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
   },
   {
-    "id": "citizenportal-1764936100000-abc123",
-    "name": "CitizenPortal",
-    "title": "Citizen Portal - Parking Tickets",
-    "description": "Public-facing portal enabling citizens to view, pay, and dispute parking tickets by license plate or ticket number",
-    "route": "/citizen-portal",
+    "id": "analytics-report-page-1768214600000-abc123",
+    "name": "Analytics Report Page",
+    "title": "Survey Analytics & Reports",
+    "description": "Visual analytics and charts for survey data",
+    "route": "/analytics-report",
     "type": "dashboard",
     "platform": "both",
     "forms": [
-      "ticketsearchform-1764935926576-p54wjh",
-      "ticketpaymentform-1764935987536-cmjwfm",
-      "disputesubmissionform-1764936013180-h6wtl2"
+      "response-filter-form-1768214522000-oyjo35",
+      "export-configuration-form-1768214538178-5vsnii"
     ],
     "sections": [
       {
@@ -2807,9 +2332,8 @@
           {
             "type": "text",
             "config": {
-              "text": "Parking Ticket Portal",
+              "text": "Survey Analytics & Reports",
               "variant": "h1",
-              "alignment": "center",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
                 "fontSize": "32px",
@@ -2822,9 +2346,8 @@
           {
             "type": "text",
             "config": {
-              "text": "Search, pay, and dispute your parking tickets",
+              "text": "Comprehensive insights and visualizations of survey responses",
               "variant": "body1",
-              "alignment": "center",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
                 "fontSize": "16px",
@@ -2843,140 +2366,580 @@
           {
             "type": "card",
             "config": {
-              "title": "Search Your Tickets",
-              "description": "Enter your license plate or ticket number to view your parking tickets",
+              "title": "Filter Analytics",
               "style": {
                 "backgroundColor": "#ffffff",
                 "borderRadius": "12px",
                 "padding": "24px",
-                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
-                "border": "1px solid #e5e5e5",
-                "marginBottom": "24px"
-              }
-            },
-            "formRef": "ticketsearchform-1764935926576-p54wjh"
-          },
-          {
-            "type": "list",
-            "config": {
-              "title": "Your Tickets",
-              "emptyMessage": "No tickets found. Use the search above to find your tickets.",
-              "itemLayout": "card",
-              "showActions": true,
-              "actions": [
-                {
-                  "label": "View Details",
-                  "type": "navigate",
-                  "style": {
-                    "backgroundColor": "#0066cc",
-                    "color": "#ffffff",
-                    "borderRadius": "8px",
-                    "padding": "8px 16px",
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "border": "none"
-                  }
-                },
-                {
-                  "label": "Pay Now",
-                  "type": "action",
-                  "style": {
-                    "backgroundColor": "#28a745",
-                    "color": "#ffffff",
-                    "borderRadius": "8px",
-                    "padding": "8px 16px",
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "border": "none"
-                  }
-                },
-                {
-                  "label": "Dispute",
-                  "type": "action",
-                  "style": {
-                    "backgroundColor": "#ffffff",
-                    "color": "#0066cc",
-                    "borderRadius": "8px",
-                    "padding": "8px 16px",
-                    "fontFamily": "Inter, system-ui, sans-serif",
-                    "fontSize": "14px",
-                    "fontWeight": "500",
-                    "border": "1px solid #0066cc"
-                  }
-                }
-              ],
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "12px",
-                "padding": "24px",
-                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
                 "border": "1px solid #e5e5e5"
               }
             },
-            "dataBinding": "Ticket.query",
-            "filters": {
-              "status": [
-                "issued",
-                "pending",
-                "overdue"
-              ]
-            }
+            "formRef": "response-filter-form-1768214522000-oyjo35"
+          },
+          {
+            "type": "chart",
+            "config": {
+              "chartType": "bar",
+              "title": "Response Distribution",
+              "xAxis": "question",
+              "yAxis": "responseCount",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5",
+                "height": "400px"
+              }
+            },
+            "dataBinding": "Analytics.query"
+          },
+          {
+            "type": "chart",
+            "config": {
+              "chartType": "line",
+              "title": "Response Trends Over Time",
+              "xAxis": "date",
+              "yAxis": "count",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5",
+                "height": "400px"
+              }
+            },
+            "dataBinding": "ResponseSummary.query"
           },
           {
             "type": "card",
             "config": {
-              "title": "Quick Actions",
-              "layout": "horizontal",
-              "items": [
-                {
-                  "icon": "payment",
-                  "label": "Payment History",
-                  "action": "navigate",
-                  "target": "/payment-history"
-                },
-                {
-                  "icon": "dispute",
-                  "label": "My Disputes",
-                  "action": "navigate",
-                  "target": "/dispute-management"
-                },
-                {
-                  "icon": "notifications",
-                  "label": "Notification Settings",
-                  "action": "modal",
-                  "target": "notification-preferences"
-                }
-              ],
+              "title": "Key Metrics",
               "style": {
-                "backgroundColor": "#f8f9fa",
+                "backgroundColor": "#ffffff",
                 "borderRadius": "12px",
                 "padding": "24px",
-                "border": "1px solid #e5e5e5",
-                "marginTop": "24px"
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "dataBinding": "Analytics.query",
+            "children": [
+              {
+                "type": "grid",
+                "config": {
+                  "columns": 4,
+                  "gap": "16px"
+                },
+                "items": [
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Total Responses",
+                      "value": "{{Analytics.totalResponses}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#666666"
+                      },
+                      "valueStyle": {
+                        "fontSize": "28px",
+                        "fontWeight": "700",
+                        "color": "#0066cc"
+                      }
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Completion Rate",
+                      "value": "{{Analytics.completionRate}}%",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#666666"
+                      },
+                      "valueStyle": {
+                        "fontSize": "28px",
+                        "fontWeight": "700",
+                        "color": "#00a86b"
+                      }
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Avg. Time",
+                      "value": "{{Analytics.averageTime}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#666666"
+                      },
+                      "valueStyle": {
+                        "fontSize": "28px",
+                        "fontWeight": "700",
+                        "color": "#ff6b35"
+                      }
+                    }
+                  },
+                  {
+                    "type": "metric",
+                    "config": {
+                      "label": "Active Surveys",
+                      "value": "{{Analytics.activeSurveys}}",
+                      "style": {
+                        "fontFamily": "Inter, system-ui, sans-serif",
+                        "fontSize": "14px",
+                        "fontWeight": "500",
+                        "color": "#666666"
+                      },
+                      "valueStyle": {
+                        "fontSize": "28px",
+                        "fontWeight": "700",
+                        "color": "#9333ea"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Export Analytics Report",
+              "variant": "primary",
+              "action": "openExportDialog",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#0066cc",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease"
+              }
+            },
+            "formRef": "export-configuration-form-1768214538178-5vsnii"
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "export": {
+          "type": "navigate",
+          "target": "/export-data"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Survey Management",
+          "route": "/survey-management-dashboard"
+        },
+        {
+          "label": "Response List",
+          "route": "/response-list"
+        },
+        {
+          "label": "Export Data",
+          "route": "/export-data"
+        },
+        {
+          "label": "Notification History",
+          "route": "/notification-history"
+        },
+        {
+          "label": "Notification Templates Page",
+          "route": "/notification-templates"
+        },
+        {
+          "label": "Response List View",
+          "route": "/responses"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "export-data-page-1768214600000-abc123",
+    "name": "Export Data Page",
+    "title": "Export Data",
+    "description": "Interface for configuring and downloading data exports",
+    "route": "/export-data",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "export-configuration-form-1768214538178-5vsnii"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Export Data",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Configure and download your survey data in various formats",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
               }
             }
           }
         ]
       },
       {
-        "id": "footer",
-        "type": "footer",
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Export Configuration",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "components": [
+              {
+                "type": "form",
+                "config": {
+                  "submitLabel": "Generate Export",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif"
+                  },
+                  "buttonStyle": {
+                    "backgroundColor": "#2563eb",
+                    "color": "#ffffff",
+                    "padding": "12px 24px",
+                    "borderRadius": "8px",
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "border": "none",
+                    "cursor": "pointer",
+                    "transition": "all 0.2s ease"
+                  }
+                },
+                "formRef": "export-configuration-form-1768214538178-5vsnii"
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Recent Exports",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginTop": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "table",
+                "config": {
+                  "columns": [
+                    {
+                      "key": "fileName",
+                      "label": "File Name",
+                      "sortable": true
+                    },
+                    {
+                      "key": "format",
+                      "label": "Format",
+                      "sortable": true
+                    },
+                    {
+                      "key": "createdAt",
+                      "label": "Created",
+                      "sortable": true
+                    },
+                    {
+                      "key": "status",
+                      "label": "Status",
+                      "sortable": false
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "label": "Download",
+                      "type": "download",
+                      "style": {
+                        "color": "#2563eb",
+                        "fontWeight": "600"
+                      }
+                    }
+                  ],
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px"
+                  },
+                  "headerStyle": {
+                    "backgroundColor": "#f9fafb",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a",
+                    "padding": "12px 16px"
+                  },
+                  "rowStyle": {
+                    "borderBottom": "1px solid #e5e5e5",
+                    "padding": "12px 16px"
+                  }
+                },
+                "dataBinding": "ExportConfiguration.query"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "workflow",
+          "workflow": "Export Data",
+          "successMessage": "Export generated successfully",
+          "errorMessage": "Failed to generate export"
+        },
+        "download": {
+          "type": "download",
+          "target": "file"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Survey Management",
+          "route": "/survey-management-dashboard"
+        },
+        {
+          "label": "Response List",
+          "route": "/response-list"
+        },
+        {
+          "label": "Analytics",
+          "route": "/analytics-report"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notification-settings"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "survey-editor-page-1768214600000-abc123",
+    "name": "Survey Editor",
+    "title": "Survey Editor",
+    "description": "Page for editing survey configuration and questions",
+    "route": "/survey-editor/:surveyId",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "survey-configuration-form-1768214488212-zxjvsa",
+      "question-builder-form-1768214557412-dpjac4"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
         "components": [
           {
             "type": "text",
             "config": {
-              "text": "Need help? Contact us at parking@city.gov or call (555) 123-4567",
-              "variant": "body2",
-              "alignment": "center",
+              "text": "Edit Survey",
+              "variant": "h1",
               "style": {
                 "fontFamily": "Inter, system-ui, sans-serif",
-                "fontSize": "14px",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Configure survey settings and manage questions",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
                 "fontWeight": "400",
                 "color": "#666666",
-                "lineHeight": "1.5",
-                "marginTop": "32px"
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Survey Configuration",
+              "submitLabel": "Save Configuration",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "survey-configuration-form-1768214488212-zxjvsa",
+            "dataBinding": "Survey.findById"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Survey Questions",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginBottom": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "itemLayout": "card",
+                  "emptyMessage": "No questions added yet. Click 'Add Question' to get started.",
+                  "style": {
+                    "gap": "16px"
+                  }
+                },
+                "dataBinding": "Question.query",
+                "actions": [
+                  {
+                    "label": "Edit",
+                    "type": "navigate",
+                    "target": "/question-editor/:questionId",
+                    "style": {
+                      "backgroundColor": "#007bff",
+                      "color": "#ffffff",
+                      "borderRadius": "8px",
+                      "padding": "8px 16px",
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "500"
+                    }
+                  },
+                  {
+                    "label": "Delete",
+                    "type": "delete",
+                    "confirmMessage": "Are you sure you want to delete this question?",
+                    "style": {
+                      "backgroundColor": "#dc3545",
+                      "color": "#ffffff",
+                      "borderRadius": "8px",
+                      "padding": "8px 16px",
+                      "fontFamily": "Inter, system-ui, sans-serif",
+                      "fontSize": "14px",
+                      "fontWeight": "500"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Add Question",
+              "variant": "primary",
+              "action": "navigate",
+              "target": "/question-editor",
+              "style": {
+                "backgroundColor": "#28a745",
+                "color": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "12px 24px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "500",
+                "border": "none",
+                "cursor": "pointer",
+                "marginBottom": "16px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Preview Survey",
+              "variant": "secondary",
+              "action": "navigate",
+              "target": "/survey-preview/:surveyId",
+              "style": {
+                "backgroundColor": "#6c757d",
+                "color": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "12px 24px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "500",
+                "border": "none",
+                "cursor": "pointer"
               }
             }
           }
@@ -2985,42 +2948,203 @@
     ],
     "navigation": {
       "onAction": {
-        "view": {
+        "submit": {
           "type": "navigate",
-          "target": "/ticket-detail"
+          "target": "/survey-management-dashboard"
         },
-        "pay": {
-          "type": "modal",
-          "target": "ticketpaymentform-1764935987536-cmjwfm"
-        },
-        "dispute": {
-          "type": "modal",
-          "target": "disputesubmissionform-1764936013180-h6wtl2"
+        "cancel": {
+          "type": "navigate",
+          "target": "/survey-management-dashboard"
         }
       },
       "menu": [
         {
-          "label": "Home",
-          "route": "/citizen-portal",
-          "icon": "home"
+          "label": "Dashboard",
+          "route": "/survey-management-dashboard"
         },
         {
-          "label": "Payment History",
-          "route": "/payment-history",
-          "icon": "payment"
+          "label": "Question Editor",
+          "route": "/question-editor/:questionId"
         },
         {
-          "label": "My Disputes",
-          "route": "/dispute-management",
-          "icon": "dispute"
+          "label": "Preview Survey",
+          "route": "/survey-preview/:surveyId"
         },
         {
-          "label": "Ticket Details",
-          "route": "/ticket-detail",
-          "icon": "ticket"
+          "label": "View Responses",
+          "route": "/responses"
+        },
+        {
+          "label": "Analytics",
+          "route": "/analytics-report"
+        },
+        {
+          "label": "Notification Settings",
+          "route": "/notification-settings"
         }
       ]
     },
-    "workflowId": "workflow_1735227156483"
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
+  },
+  {
+    "id": "notification-settings-page-1768214600000-abc123",
+    "name": "Notification Settings Page",
+    "title": "Notification Settings",
+    "description": "Admin page for managing notification configuration",
+    "route": "/notification-settings",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "notification-settings-form-1768214573879-1dno45"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Notification Settings",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Configure notification preferences and delivery settings for your surveys",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Current Settings",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5",
+                "marginBottom": "24px"
+              }
+            },
+            "dataBinding": "NotificationSettings.query"
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Update Notification Configuration",
+              "submitLabel": "Save Settings",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "padding": "24px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "buttonStyle": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "borderRadius": "8px",
+                "padding": "12px 24px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "border": "none",
+                "cursor": "pointer"
+              }
+            },
+            "formRef": "notification-settings-form-1768214573879-1dno45",
+            "dataBinding": "NotificationSettings.update"
+          }
+        ]
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "View Notification History",
+              "variant": "secondary",
+              "style": {
+                "backgroundColor": "#f5f5f5",
+                "color": "#1a1a1a",
+                "borderRadius": "8px",
+                "padding": "10px 20px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "border": "1px solid #e5e5e5",
+                "cursor": "pointer"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/admin-dashboard"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/notification-history"
+        }
+      },
+      "menu": [
+        {
+          "label": "Admin Dashboard",
+          "route": "/admin-dashboard"
+        },
+        {
+          "label": "Notification Templates",
+          "route": "/notification-templates"
+        },
+        {
+          "label": "Notification History",
+          "route": "/notification-history"
+        },
+        {
+          "label": "Survey Management",
+          "route": "/survey-management-dashboard"
+        },
+        {
+          "label": "Analytics",
+          "route": "/analytics-report"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-survey"
   }
 ]

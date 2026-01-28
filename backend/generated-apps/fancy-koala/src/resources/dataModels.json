@@ -1,0 +1,953 @@
+[
+  {
+    "id": "dm_book_1766492325729",
+    "name": "Book",
+    "description": "Core entity representing books in the library catalog with details and real-time availability tracking",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the book record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isbn",
+        "type": "string",
+        "description": "International Standard Book Number for unique book identification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Title of the book",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "author",
+        "type": "string",
+        "description": "Author name(s) of the book",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "description": "Book category or genre classification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "totalCopies",
+        "type": "number",
+        "description": "Total number of copies owned by the library",
+        "required": true,
+        "defaultValue": 1
+      },
+      {
+        "name": "availableCopies",
+        "type": "number",
+        "description": "Number of copies currently available for checkout",
+        "required": true,
+        "defaultValue": 1
+      },
+      {
+        "name": "location",
+        "type": "string",
+        "description": "Physical location or shelf number in the library",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_isbn",
+        "fields": [
+          "isbn"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_category",
+        "fields": [
+          "category"
+        ]
+      },
+      {
+        "name": "idx_availability",
+        "fields": [
+          "availableCopies"
+        ]
+      }
+    ],
+    "constraints": {
+      "availableCopies": "Must be less than or equal to totalCopies",
+      "totalCopies": "Must be greater than 0",
+      "isbn": "Must be unique across all books"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "BookRegistrationWorkflow",
+        "BookCheckoutWorkflow",
+        "BookReturnWorkflow",
+        "BookReservationWorkflow",
+        "InventoryManagementWorkflow"
+      ],
+      "usedByForms": [
+        "BookRegistrationForm",
+        "CheckoutForm",
+        "ReturnForm",
+        "ReservationForm",
+        "InventoryUpdateForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "Book",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "dm_member_1766492325729",
+    "name": "Member",
+    "description": "Library member with personal details, membership status, and borrowing privileges",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the member",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "Member's first name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "description": "Member's last name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Member's email address for communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "description": "Member's contact phone number",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "membershipType",
+        "type": "string",
+        "description": "Type of membership (e.g., Standard, Premium, Student)",
+        "required": true,
+        "defaultValue": "Standard"
+      },
+      {
+        "name": "membershipStatus",
+        "type": "string",
+        "description": "Current status of membership (Active, Expired, Suspended)",
+        "required": true,
+        "defaultValue": "Active"
+      },
+      {
+        "name": "expiryDate",
+        "type": "date",
+        "description": "Date when membership expires",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_member_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_member_status",
+        "fields": [
+          "membershipStatus"
+        ]
+      }
+    ],
+    "constraints": {
+      "email": {
+        "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+        "message": "Must be a valid email address"
+      },
+      "membershipStatus": {
+        "enum": [
+          "Active",
+          "Expired",
+          "Suspended"
+        ],
+        "message": "Status must be Active, Expired, or Suspended"
+      },
+      "membershipType": {
+        "enum": [
+          "Standard",
+          "Premium",
+          "Student"
+        ],
+        "message": "Type must be Standard, Premium, or Student"
+      }
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "MemberRegistrationWorkflow",
+        "MembershipRenewalWorkflow",
+        "BookCheckoutWorkflow",
+        "BookReturnWorkflow",
+        "BookReservationWorkflow"
+      ],
+      "usedByForms": [
+        "MemberRegistrationForm",
+        "MembershipRenewalForm",
+        "CheckoutForm",
+        "ReturnForm",
+        "ReservationForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "Member",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "membership-type",
+    "name": "MembershipType",
+    "description": "Lookup entity defining membership tiers with borrowing privileges, loan duration, and fee structure",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the membership type",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the membership tier (e.g., Basic, Premium, Student)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of membership benefits and features",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "maxBooksAllowed",
+        "type": "number",
+        "description": "Maximum number of books that can be borrowed simultaneously",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "loanDurationDays",
+        "type": "number",
+        "description": "Default loan period in days for borrowed books",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "renewalLimit",
+        "type": "number",
+        "description": "Maximum number of times a loan can be renewed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "annualFee",
+        "type": "number",
+        "description": "Annual membership fee amount",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if this membership type is currently available for registration",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_membership_type_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_membership_type_active",
+        "fields": [
+          "isActive"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "maxBooksAllowed": "Must be greater than 0",
+      "loanDurationDays": "Must be greater than 0",
+      "renewalLimit": "Must be greater than or equal to 0",
+      "annualFee": "Must be greater than or equal to 0"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "MemberRegistrationWorkflow",
+        "MembershipRenewalWorkflow"
+      ],
+      "usedByForms": [
+        "MemberRegistrationForm",
+        "MembershipRenewalForm"
+      ],
+      "isPrimary": false,
+      "entityType": "lookup"
+    },
+    "_specName": "MembershipType",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "dm_category_1766492325729",
+    "name": "Category",
+    "description": "Lookup entity for book categories enabling classification and filtered searching",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the category",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Category name (e.g., Fiction, Science, History)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the category",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "parentCategoryId",
+        "type": "string",
+        "description": "Reference to parent category for hierarchical organization",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the category is currently active and available for use",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the category was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp when the category was last updated",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "self-referencing",
+        "entity": "Category",
+        "foreignKey": "parentCategoryId",
+        "description": "Supports hierarchical category structure (parent-child relationships)"
+      },
+      {
+        "type": "one-to-many",
+        "entity": "Book",
+        "foreignKey": "categoryId",
+        "description": "A category can be assigned to multiple books"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_category_name",
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_category_parent",
+        "fields": [
+          "parentCategoryId"
+        ]
+      },
+      {
+        "name": "idx_category_active",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "uniqueFields": [
+        "name"
+      ],
+      "validation": {
+        "name": "Must be between 2 and 100 characters",
+        "description": "Maximum 500 characters"
+      }
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "BookRegistrationWorkflow",
+        "InventoryManagementWorkflow"
+      ],
+      "usedByForms": [
+        "BookRegistrationForm",
+        "InventoryUpdateForm"
+      ],
+      "isPrimary": false,
+      "entityType": "lookup"
+    },
+    "_specName": "Category",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Tracks all system notifications sent to members and librarians including delivery status and history",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of notification (overdue_reminder, reservation_ready, due_soon, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientId",
+        "type": "string",
+        "description": "ID of the member or librarian receiving the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientEmail",
+        "type": "string",
+        "description": "Email address where notification was sent",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "description": "Subject line of the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "message",
+        "type": "string",
+        "description": "Full content/body of the notification message",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Delivery status (pending, sent, failed, delivered)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "sentDate",
+        "type": "date",
+        "description": "Timestamp when notification was sent",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "entity": "Member",
+        "type": "many-to-one",
+        "foreignKey": "recipientId",
+        "description": "Links notification to the recipient member"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "recipientId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "type"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "sentDate"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "type": [
+        "overdue_reminder",
+        "reservation_ready",
+        "due_soon",
+        "membership_expiring",
+        "book_returned",
+        "fine_notice"
+      ],
+      "status": [
+        "pending",
+        "sent",
+        "failed",
+        "delivered"
+      ]
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "NotificationWorkflow",
+        "OverdueTrackingWorkflow",
+        "BookReservationWorkflow"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Notification",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "dm_transaction_1766492325729",
+    "name": "Transaction",
+    "description": "Records book borrowing transactions including checkout, due dates, returns, and fines",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the transaction",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "bookId",
+        "type": "string",
+        "description": "Reference to the borrowed book",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "memberId",
+        "type": "string",
+        "description": "Reference to the member borrowing the book",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "checkoutDate",
+        "type": "date",
+        "description": "Date when the book was checked out",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Date when the book is due for return",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "returnDate",
+        "type": "date",
+        "description": "Actual date when the book was returned",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Transaction status: checked_out, returned, overdue",
+        "required": true,
+        "defaultValue": "checked_out"
+      },
+      {
+        "name": "fineAmount",
+        "type": "number",
+        "description": "Fine amount for overdue or damaged books",
+        "required": false,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedEntity": "Book",
+        "foreignKey": "bookId",
+        "description": "Each transaction is associated with one book"
+      },
+      {
+        "type": "many-to-one",
+        "relatedEntity": "Member",
+        "foreignKey": "memberId",
+        "description": "Each transaction is associated with one member"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "bookId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "memberId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "dueDate"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "checked_out",
+          "returned",
+          "overdue"
+        ]
+      },
+      "fineAmount": {
+        "min": 0
+      }
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "BookCheckoutWorkflow",
+        "BookReturnWorkflow",
+        "OverdueTrackingWorkflow"
+      ],
+      "usedByForms": [
+        "CheckoutForm",
+        "ReturnForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "Transaction",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "dm_reservation_1766492325729",
+    "name": "Reservation",
+    "description": "Tracks book reservation requests from members when books are unavailable, managing reservation queue and fulfillment",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the reservation",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "bookId",
+        "type": "string",
+        "description": "Reference to the reserved book",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "memberId",
+        "type": "string",
+        "description": "Reference to the member making the reservation",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "reservationDate",
+        "type": "date",
+        "description": "Date when the reservation was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "expiryDate",
+        "type": "date",
+        "description": "Date when the reservation expires if not fulfilled",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of reservation (pending, notified, fulfilled, expired, cancelled)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "notificationSent",
+        "type": "boolean",
+        "description": "Indicates if member was notified when book became available",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "fulfilledDate",
+        "type": "date",
+        "description": "Date when the reservation was fulfilled",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedEntity": "Book",
+        "foreignKey": "bookId",
+        "description": "Each reservation is for one book"
+      },
+      {
+        "type": "many-to-one",
+        "relatedEntity": "Member",
+        "foreignKey": "memberId",
+        "description": "Each reservation belongs to one member"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_book_status",
+        "fields": [
+          "bookId",
+          "status"
+        ],
+        "description": "Optimize queries for active reservations by book"
+      },
+      {
+        "name": "idx_member_status",
+        "fields": [
+          "memberId",
+          "status"
+        ],
+        "description": "Optimize queries for member's active reservations"
+      },
+      {
+        "name": "idx_status_reservation_date",
+        "fields": [
+          "status",
+          "reservationDate"
+        ],
+        "description": "Support queue ordering for pending reservations"
+      }
+    ],
+    "constraints": {
+      "unique": [],
+      "check": [
+        {
+          "name": "valid_status",
+          "condition": "status IN ('pending', 'notified', 'fulfilled', 'expired', 'cancelled')"
+        },
+        {
+          "name": "expiry_after_reservation",
+          "condition": "expiryDate > reservationDate"
+        }
+      ]
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "BookReservationWorkflow",
+        "BookReturnWorkflow"
+      ],
+      "usedByForms": [
+        "ReservationForm",
+        "ReservationFulfillmentForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "Reservation",
+    "workflowId": "book-registration-workflow"
+  },
+  {
+    "id": "dm_fine_1766492325729",
+    "name": "Fine",
+    "description": "Entity managing financial penalties for overdue books including fine calculation, payment tracking, and waiver management",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the fine record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "transactionId",
+        "type": "string",
+        "description": "Reference to the transaction that incurred the fine",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "memberId",
+        "type": "string",
+        "description": "Reference to the member who owes the fine",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "description": "Fine amount in currency units",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fineDate",
+        "type": "date",
+        "description": "Date when the fine was assessed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentStatus",
+        "type": "string",
+        "description": "Current payment status (pending, paid, waived, partial)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "paymentDate",
+        "type": "date",
+        "description": "Date when the fine was paid or waived",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentMethod",
+        "type": "string",
+        "description": "Method used for payment (cash, card, online, waived)",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedEntity": "Transaction",
+        "foreignKey": "transactionId",
+        "description": "Fine is associated with a specific transaction"
+      },
+      {
+        "type": "many-to-one",
+        "relatedEntity": "Member",
+        "foreignKey": "memberId",
+        "description": "Fine is owed by a specific member"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_member_payment_status",
+        "fields": [
+          "memberId",
+          "paymentStatus"
+        ],
+        "description": "Optimize queries for member's outstanding fines"
+      },
+      {
+        "name": "idx_transaction",
+        "fields": [
+          "transactionId"
+        ],
+        "description": "Quick lookup of fines by transaction"
+      }
+    ],
+    "constraints": {
+      "amount": "Must be greater than 0",
+      "paymentStatus": "Must be one of: pending, paid, waived, partial",
+      "paymentDate": "Required when paymentStatus is paid or waived"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "OverdueTrackingWorkflow",
+        "BookReturnWorkflow"
+      ],
+      "usedByForms": [
+        "FinePaymentForm",
+        "FineWaiverForm"
+      ],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Fine",
+    "workflowId": "book-registration-workflow"
+  }
+]

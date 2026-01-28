@@ -1,0 +1,235 @@
+[
+  {
+    "id": "rule_start_process_validation",
+    "name": "Start Rule (startProcess)",
+    "description": "Validate user input when creating a new task to ensure required fields are provided",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.title",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "task.title",
+          "value": null,
+          "message": "Task title is required and cannot be empty"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1768532859030"
+  },
+  {
+    "id": "rule_submit_task_details",
+    "name": "Submit Task Details Rule (userTask)",
+    "description": "Validate task description length and due date is in the future",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.description",
+          "operator": "lessThan",
+          "value": 10
+        },
+        {
+          "field": "task.dueDate",
+          "operator": "lessThan",
+          "value": "{{currentDate}}"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "task.description",
+          "value": null,
+          "message": "Task description must be at least 10 characters and due date must be in the future"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1768532859030"
+  },
+  {
+    "id": "rule_validate_task_data",
+    "name": "Validate Task Data Rule (validation)",
+    "description": "Validate task priority is within acceptable range and assignee is specified",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.priority",
+          "operator": "in",
+          "value": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ]
+        },
+        {
+          "field": "task.assignee",
+          "operator": "notEquals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "task.status",
+          "value": "validated",
+          "message": "Task data validation successful"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "Task validated successfully",
+          "message": "Task passed all validation checks"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1768532859030"
+  },
+  {
+    "id": "rule_check_priority_level",
+    "name": "Check Priority Level Rule (decision)",
+    "description": "Determine if manager approval is required based on task priority level",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.priority",
+          "operator": "in",
+          "value": [
+            "High",
+            "Critical"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "requiresApproval",
+          "value": true,
+          "message": "High or Critical priority task requires manager approval"
+        },
+        {
+          "type": "sendNotification",
+          "field": "task.manager",
+          "value": "approval_required",
+          "message": "A high priority task requires your approval"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1768532859030"
+  },
+  {
+    "id": "rule_manager_approval",
+    "name": "Manager Approval Rule (userTask)",
+    "description": "Validate manager approval input and ensure approval comments are provided for rejections",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approval.decision",
+          "operator": "equals",
+          "value": "rejected"
+        },
+        {
+          "field": "approval.comments",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "approval.comments",
+          "value": null,
+          "message": "Comments are required when rejecting a task"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1768532859030"
+  },
+  {
+    "id": "rule_approval_decision",
+    "name": "Approval Decision Rule (decision)",
+    "description": "Route task based on approval decision and update task status accordingly",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approval.decision",
+          "operator": "equals",
+          "value": "approved"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "updateData",
+          "field": "task.status",
+          "value": "approved",
+          "message": "Task has been approved by manager"
+        },
+        {
+          "type": "sendNotification",
+          "field": "task.assignee",
+          "value": "task_approved",
+          "message": "Your task has been approved and is ready to start"
+        },
+        {
+          "type": "setVariable",
+          "field": "workflowComplete",
+          "value": true,
+          "message": "Task creation workflow completed successfully"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "wf-create-task",
+    "workflowId": "wf-create-task",
+    "application_id": "app_1768532859030"
+  }
+]

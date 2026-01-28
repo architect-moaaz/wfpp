@@ -1,203 +1,1717 @@
 [
   {
-    "id": "app_1764281341247_agent-dashboard",
-    "name": "AgentDashboard",
-    "forms": [],
-    "route": "/agent/dashboard",
-    "title": "Agent Dashboard",
-    "config": {},
-    "layout": {
-      "type": "dashboard",
-      "spacing": "normal",
-      "responsive": true
-    },
-    "styling": {},
-    "metadata": {},
-    "workflows": [],
-    "components": [
+    "id": "task-list-page-1767699850000-main",
+    "name": "Task List Page",
+    "title": "My Tasks",
+    "description": "Main page displaying all tasks with filtering options and action buttons",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "task-creation-form-1767699755115-p5c49x",
+      "task-filter-form-1767699787934-tqz39l",
+      "task-search-form-1767699803442-i2f3be"
+    ],
+    "sections": [
       {
-        "id": "dashboard-stats",
-        "type": "card",
-        "label": "Ticket Statistics",
-        "config": {
-          "variant": "stats",
-          "position": "top"
-        },
-        "dataBinding": "Ticket.query.assignedToCurrentUser"
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "My Tasks",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Create New Task",
+              "variant": "primary",
+              "action": "navigate",
+              "target": "/tasks/create",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "cursor": "pointer"
+              }
+            }
+          }
+        ]
       },
       {
-        "id": "ticket-search",
-        "type": "input",
-        "label": "Search Tickets",
-        "config": {
-          "variant": "search",
-          "placeholder": "Search by ticket ID, subject, or customer"
-        }
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Filter & Search Tasks",
+              "layout": "inline",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#f8fafc",
+                "padding": "20px",
+                "borderRadius": "12px",
+                "marginBottom": "24px",
+                "border": "1px solid #e2e8f0"
+              }
+            },
+            "formRef": "task-filter-form-1767699787934-tqz39l"
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Search",
+              "layout": "inline",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "marginBottom": "24px"
+              }
+            },
+            "formRef": "task-search-form-1767699803442-i2f3be"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "All Tasks",
+              "columns": [
+                {
+                  "key": "title",
+                  "label": "Task Title",
+                  "sortable": true
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "render": "badge"
+                },
+                {
+                  "key": "priority",
+                  "label": "Priority",
+                  "sortable": true,
+                  "render": "badge"
+                },
+                {
+                  "key": "dueDate",
+                  "label": "Due Date",
+                  "sortable": true,
+                  "render": "date"
+                },
+                {
+                  "key": "assignedTo",
+                  "label": "Assigned To",
+                  "sortable": false
+                },
+                {
+                  "key": "actions",
+                  "label": "Actions",
+                  "sortable": false,
+                  "render": "actions"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "type": "navigate",
+                  "target": "/tasks/:id",
+                  "icon": "eye"
+                },
+                {
+                  "label": "Edit",
+                  "type": "navigate",
+                  "target": "/tasks/:id/edit",
+                  "icon": "edit"
+                },
+                {
+                  "label": "Delete",
+                  "type": "workflow",
+                  "workflow": "Delete Task",
+                  "icon": "delete",
+                  "confirm": true
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "emptyMessage": "No tasks found. Create your first task to get started!",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e2e8f0",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "dataBinding": "Task.query"
+          }
+        ]
       },
       {
-        "id": "assigned-tickets-table",
-        "type": "table",
-        "label": "My Assigned Tickets",
-        "config": {
-          "columns": [
-            "id",
-            "subject",
-            "priority",
-            "status",
-            "customer",
-            "createdAt"
-          ],
-          "variant": "interactive",
-          "sortable": true,
-          "filterable": true
-        },
-        "dataBinding": "Ticket.query.assignedToCurrentUser"
-      },
-      {
-        "id": "quick-update-form",
-        "type": "form",
-        "label": "Quick Update",
-        "config": {
-          "variant": "inline",
-          "position": "bottom"
-        },
-        "formRef": "TicketUpdateForm"
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Total tasks: {{Task.count}}",
+              "variant": "body2",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#64748b",
+                "textAlign": "center"
+              }
+            }
+          }
+        ]
       }
     ],
-    "description": "Agent workspace for managing assigned tickets with priority-based organization and quick actions",
-    "data_sources": []
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "navigate",
+          "target": "/task-edit/:id"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "edit": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "filter": {
+          "type": "navigate",
+          "target": "/tasks/filtered"
+        }
+      },
+      "menu": [
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "My Tasks",
+          "route": "/tasks",
+          "icon": "list",
+          "active": true
+        },
+        {
+          "label": "Create Task",
+          "route": "/tasks/create",
+          "icon": "add"
+        },
+        {
+          "label": "Filtered Tasks",
+          "route": "/tasks/filtered",
+          "icon": "filter"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notifications",
+          "icon": "bell"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings/notifications",
+          "icon": "settings"
+        },
+        {
+          "label": "Profile",
+          "route": "/profile",
+          "icon": "user"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-user-registration-001"
   },
   {
-    "id": "app_1764281341247_customer-portal",
-    "name": "CustomerPortal",
-    "forms": [],
-    "route": "/portal",
-    "title": "My Support Tickets",
-    "config": {},
-    "layout": {
-      "type": "single-column",
-      "spacing": "normal",
-      "responsive": true
-    },
-    "styling": {},
-    "metadata": {},
-    "workflows": [],
-    "components": [
+    "id": "task-creation-page-1767699755115-p5c49x",
+    "name": "Task Creation Page",
+    "title": "Create New Task",
+    "description": "Page containing the task creation form",
+    "route": "/tasks/create",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "task-creation-form-1767699755115-p5c49x"
+    ],
+    "sections": [
       {
-        "id": "portal-header",
-        "type": "text",
-        "label": "Welcome to Support Portal",
-        "config": {
-          "variant": "heading",
-          "position": "top"
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Create New Task",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Fill in the details below to create a new task",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.6"
+              }
+            }
+          }
+        ],
+        "style": {
+          "padding": "32px 24px",
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e5e5e5"
         }
       },
       {
-        "id": "new-ticket-card",
-        "type": "card",
-        "label": "Submit New Ticket",
-        "config": {
-          "variant": "elevated",
-          "collapsible": false
-        },
-        "formRef": "TicketSubmissionForm"
-      },
-      {
-        "id": "my-tickets-header",
-        "type": "text",
-        "label": "My Tickets",
-        "config": {
-          "variant": "subheading",
-          "position": "center"
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Task Details",
+              "submitLabel": "Create Task",
+              "cancelLabel": "Cancel",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "32px",
+                "borderRadius": "12px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.08)",
+                "border": "1px solid #e5e5e5"
+              },
+              "fieldStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "color": "#1a1a1a",
+                "marginBottom": "24px"
+              },
+              "labelStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              },
+              "inputStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "padding": "12px 16px",
+                "borderRadius": "8px",
+                "border": "1px solid #d4d4d4",
+                "backgroundColor": "#ffffff",
+                "transition": "all 0.2s ease"
+              },
+              "buttonStyle": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "padding": "12px 32px",
+                "borderRadius": "8px",
+                "border": "none",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease"
+              },
+              "primaryButtonStyle": {
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff"
+              },
+              "secondaryButtonStyle": {
+                "backgroundColor": "#f5f5f5",
+                "color": "#1a1a1a"
+              }
+            },
+            "formRef": "task-creation-form-1767699755115-p5c49x",
+            "dataBinding": "Task.create"
+          }
+        ],
+        "style": {
+          "padding": "32px 24px",
+          "backgroundColor": "#fafafa",
+          "minHeight": "calc(100vh - 200px)"
         }
       },
       {
-        "id": "customer-tickets-table",
-        "type": "table",
-        "label": "Ticket History",
-        "config": {
-          "columns": [
-            "id",
-            "title",
-            "status",
-            "priority",
-            "createdAt",
-            "updatedAt"
-          ],
-          "variant": "interactive",
-          "sortable": true,
-          "filterable": true
-        },
-        "dataBinding": "Ticket.query.filterByCurrentUser"
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Need help? Contact support or view documentation",
+              "variant": "caption",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "textAlign": "center"
+              }
+            }
+          }
+        ],
+        "style": {
+          "padding": "24px",
+          "backgroundColor": "#ffffff",
+          "borderTop": "1px solid #e5e5e5"
+        }
       }
     ],
-    "description": "Customer dashboard for submitting new tickets and tracking existing ticket status",
-    "data_sources": []
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/tasks"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks"
+        },
+        {
+          "label": "Filtered Tasks",
+          "route": "/tasks/filtered"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notifications"
+        },
+        {
+          "label": "Settings",
+          "route": "/settings/notifications"
+        },
+        {
+          "label": "Profile",
+          "route": "/profile"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-user-registration-001"
   },
   {
-    "id": "app_1764281341247_manager-dashboard",
-    "name": "ManagerDashboard",
-    "forms": [],
-    "route": "/manager/dashboard",
-    "title": "Manager Dashboard",
-    "config": {},
-    "layout": {
-      "type": "dashboard",
-      "spacing": "normal",
-      "responsive": true
-    },
-    "styling": {},
-    "metadata": {},
-    "workflows": [],
-    "components": [
+    "id": "task-edit-page-1767699770940-edit",
+    "name": "Task Edit Page",
+    "title": "Edit Task",
+    "description": "Page containing the task edit form with pre-populated data",
+    "route": "/task-edit/:id",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "task-edit-form-1767699770939-90kweg"
+    ],
+    "sections": [
       {
-        "id": "workload-metrics",
-        "type": "card",
-        "label": "Workload Distribution",
-        "config": {
-          "variant": "metrics",
-          "position": "top"
-        },
-        "dataBinding": "Ticket.aggregateByAgent"
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Edit Task",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Update task details and save changes",
+              "variant": "body",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ],
+        "style": {
+          "backgroundColor": "#ffffff",
+          "padding": "24px",
+          "borderBottom": "1px solid #e5e5e5"
+        }
       },
       {
-        "id": "unassigned-queue",
-        "type": "card",
-        "label": "Unassigned Tickets",
-        "config": {
-          "variant": "warning",
-          "position": "top"
-        },
-        "dataBinding": "Ticket.query.unassigned"
-      },
-      {
-        "id": "all-tickets-table",
-        "type": "table",
-        "label": "All Tickets",
-        "config": {
-          "filters": [
-            "status",
-            "priority",
-            "assignedTo"
-          ],
-          "variant": "interactive",
-          "sortable": true,
-          "filterable": true
-        },
-        "dataBinding": "Ticket.query.all"
-      },
-      {
-        "id": "ticket-assignment",
-        "type": "form",
-        "label": "Assign/Reassign Ticket",
-        "config": {
-          "trigger": "row-action",
-          "variant": "modal"
-        },
-        "formRef": "TicketAssignmentForm"
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Task Details",
+              "submitLabel": "Save Changes",
+              "cancelLabel": "Cancel",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "32px",
+                "borderRadius": "12px",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "border": "1px solid #e5e5e5"
+              },
+              "buttonStyle": {
+                "primary": {
+                  "backgroundColor": "#2563eb",
+                  "color": "#ffffff",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "16px",
+                  "fontWeight": "600",
+                  "border": "none",
+                  "cursor": "pointer"
+                },
+                "secondary": {
+                  "backgroundColor": "#f5f5f5",
+                  "color": "#1a1a1a",
+                  "padding": "12px 24px",
+                  "borderRadius": "8px",
+                  "fontFamily": "Inter, system-ui, sans-serif",
+                  "fontSize": "16px",
+                  "fontWeight": "600",
+                  "border": "1px solid #e5e5e5",
+                  "cursor": "pointer"
+                }
+              }
+            },
+            "formRef": "task-edit-form-1767699770939-90kweg",
+            "dataBinding": "Task.findById"
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Delete Task",
+              "variant": "danger",
+              "action": "delete",
+              "style": {
+                "backgroundColor": "#dc2626",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "border": "none",
+                "cursor": "pointer",
+                "marginTop": "16px"
+              }
+            }
+          }
+        ],
+        "style": {
+          "backgroundColor": "#f9fafb",
+          "padding": "32px",
+          "minHeight": "calc(100vh - 200px)"
+        }
       }
     ],
-    "description": "Manager oversight interface for ticket management, assignment, and workload distribution",
-    "data_sources": []
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/tasks"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/task-list"
+        },
+        {
+          "label": "Create Task",
+          "route": "/task-creation"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notification-history"
+        },
+        {
+          "label": "Profile",
+          "route": "/profile"
+        },
+        {
+          "label": "Settings",
+          "route": "/notification-settings"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-user-registration-001"
+  },
+  {
+    "id": "notification-history-page-1767699850000-nhp001",
+    "name": "Notification History Page",
+    "title": "Notification History",
+    "description": "Page displaying log of all notifications sent to user",
+    "route": "/notification-history",
+    "type": "list",
+    "platform": "both",
+    "forms": [],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Notification History",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "View all notifications sent to you",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ],
+        "style": {
+          "padding": "32px 24px",
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e5e5e5"
+        }
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "table",
+            "config": {
+              "title": "All Notifications",
+              "columns": [
+                {
+                  "key": "type",
+                  "label": "Type",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "message",
+                  "label": "Message",
+                  "sortable": false,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#333333"
+                  }
+                },
+                {
+                  "key": "sentAt",
+                  "label": "Sent At",
+                  "sortable": true,
+                  "format": "datetime",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "400",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#1a1a1a"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "emptyMessage": "No notifications found",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "8px",
+                "border": "1px solid #e5e5e5",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "overflow": "hidden"
+              },
+              "headerStyle": {
+                "backgroundColor": "#f8f8f8",
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "padding": "16px",
+                "borderBottom": "1px solid #e5e5e5"
+              },
+              "rowStyle": {
+                "padding": "16px",
+                "borderBottom": "1px solid #f0f0f0",
+                "transition": "background-color 0.2s ease",
+                "hover": {
+                  "backgroundColor": "#f8f8f8"
+                }
+              }
+            },
+            "dataBinding": "Notification.query",
+            "filters": {
+              "userId": "{{currentUser.id}}"
+            },
+            "sort": {
+              "field": "sentAt",
+              "order": "desc"
+            }
+          }
+        ],
+        "style": {
+          "padding": "24px",
+          "backgroundColor": "#fafafa",
+          "minHeight": "calc(100vh - 200px)"
+        }
+      },
+      {
+        "id": "footer",
+        "type": "footer",
+        "components": [
+          {
+            "type": "button",
+            "config": {
+              "label": "Notification Settings",
+              "variant": "outlined",
+              "action": "navigate",
+              "target": "/notification-settings",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "padding": "10px 20px",
+                "borderRadius": "6px",
+                "border": "1px solid #0066cc",
+                "color": "#0066cc",
+                "backgroundColor": "transparent",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease",
+                "hover": {
+                  "backgroundColor": "#e6f2ff",
+                  "borderColor": "#0052a3"
+                }
+              }
+            }
+          }
+        ],
+        "style": {
+          "padding": "24px",
+          "backgroundColor": "#ffffff",
+          "borderTop": "1px solid #e5e5e5",
+          "display": "flex",
+          "justifyContent": "center",
+          "alignItems": "center"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "settings": {
+          "type": "navigate",
+          "target": "/notification-settings"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/task-list",
+          "style": {
+            "fontFamily": "Inter, system-ui, sans-serif",
+            "fontSize": "14px",
+            "fontWeight": "500",
+            "color": "#333333"
+          }
+        },
+        {
+          "label": "Notification Settings",
+          "route": "/notification-settings",
+          "style": {
+            "fontFamily": "Inter, system-ui, sans-serif",
+            "fontSize": "14px",
+            "fontWeight": "500",
+            "color": "#333333"
+          }
+        },
+        {
+          "label": "Profile",
+          "route": "/profile",
+          "style": {
+            "fontFamily": "Inter, system-ui, sans-serif",
+            "fontSize": "14px",
+            "fontWeight": "500",
+            "color": "#333333"
+          }
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-user-registration-001"
+  },
+  {
+    "id": "registration-page-1767699704603",
+    "name": "Registration Page",
+    "title": "Create Your Account",
+    "description": "Page for new user registration",
+    "route": "/register",
+    "type": "auth",
+    "platform": "both",
+    "forms": [
+      "registration-form-1767699704603-ufti21"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Create Your Account",
+              "variant": "h1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Join us to manage your tasks efficiently",
+              "variant": "body1",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginBottom": "32px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Registration Form",
+              "submitLabel": "Create Account",
+              "style": {
+                "maxWidth": "480px",
+                "margin": "0 auto",
+                "padding": "32px",
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "formRef": "registration-form-1767699704603-ufti21"
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Already have an account?",
+              "variant": "body2",
+              "align": "center",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "marginTop": "24px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Sign In",
+              "variant": "text",
+              "action": "navigate",
+              "target": "/login",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "14px",
+                "fontWeight": "600",
+                "color": "#2563eb",
+                "textTransform": "none",
+                "display": "block",
+                "margin": "8px auto 0",
+                "padding": "8px 16px",
+                "backgroundColor": "transparent",
+                "border": "none",
+                "borderRadius": "8px"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {},
+      "menu": [
+        {
+          "label": "Login",
+          "route": "/login"
+        },
+        {
+          "label": "Task List",
+          "route": "/task-list"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": false
+    },
+    "workflowId": "wf-user-registration-001"
+  },
+  {
+    "id": "login-page-1767699723673",
+    "name": "Login Page",
+    "title": "Sign In",
+    "description": "Page for user authentication",
+    "route": "/login",
+    "type": "auth",
+    "platform": "both",
+    "forms": [
+      "login-form-1767699723673-lqhw6s"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Welcome Back",
+              "variant": "h1",
+              "align": "center",
+              "style": {
+                "fontSize": "32px",
+                "fontWeight": "600",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Sign in to your account to continue",
+              "variant": "body1",
+              "align": "center",
+              "style": {
+                "fontSize": "16px",
+                "color": "#666666",
+                "marginBottom": "32px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "",
+              "style": {
+                "maxWidth": "440px",
+                "margin": "0 auto",
+                "padding": "40px",
+                "borderRadius": "8px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.1)",
+                "backgroundColor": "#ffffff"
+              }
+            },
+            "components": [
+              {
+                "type": "form",
+                "config": {
+                  "submitLabel": "Sign In",
+                  "style": {
+                    "width": "100%"
+                  }
+                },
+                "formRef": "login-form-1767699723673-lqhw6s"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Don't have an account?",
+              "variant": "body2",
+              "align": "center",
+              "style": {
+                "fontSize": "14px",
+                "color": "#666666",
+                "marginTop": "24px"
+              }
+            }
+          },
+          {
+            "type": "button",
+            "config": {
+              "label": "Create Account",
+              "variant": "text",
+              "style": {
+                "display": "block",
+                "margin": "8px auto 0",
+                "color": "#007bff",
+                "fontSize": "14px",
+                "fontWeight": "500",
+                "textTransform": "none"
+              }
+            },
+            "action": {
+              "type": "navigate",
+              "target": "/registration"
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {},
+      "menu": [
+        {
+          "label": "Register",
+          "route": "/registration"
+        },
+        {
+          "label": "Task List",
+          "route": "/task-list"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": false
+    },
+    "workflowId": "wf-user-registration-001"
+  },
+  {
+    "id": "notification-settings-page-1767699850000-abc123",
+    "name": "Notification Settings Page",
+    "title": "Notification Settings",
+    "description": "Page where users manage their notification preferences",
+    "route": "/notification-settings",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "notification-preferences-form-1767699818966-mxwqjm"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Notification Settings",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Manage how and when you receive notifications",
+              "variant": "body",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ],
+        "style": {
+          "padding": "32px 24px",
+          "backgroundColor": "#ffffff",
+          "borderBottom": "1px solid #e5e5e5"
+        }
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Notification Preferences",
+              "submitLabel": "Save Preferences",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "32px",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e5e5",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)"
+              }
+            },
+            "formRef": "notification-preferences-form-1767699818966-mxwqjm",
+            "dataBinding": "NotificationPreference.currentUser"
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Recent Notifications",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "24px",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e5e5",
+                "boxShadow": "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "marginTop": "24px"
+              }
+            },
+            "components": [
+              {
+                "type": "list",
+                "config": {
+                  "itemLayout": "compact",
+                  "emptyMessage": "No recent notifications",
+                  "maxItems": 5,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif"
+                  }
+                },
+                "dataBinding": "Notification.recent"
+              }
+            ]
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "View All Notifications",
+              "variant": "secondary",
+              "action": "navigate",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "backgroundColor": "#f5f5f5",
+                "color": "#1a1a1a",
+                "border": "1px solid #e5e5e5",
+                "marginTop": "16px",
+                "cursor": "pointer",
+                "transition": "all 0.2s ease"
+              }
+            }
+          }
+        ],
+        "style": {
+          "padding": "32px 24px",
+          "maxWidth": "800px",
+          "margin": "0 auto"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/profile"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/notification-history"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks"
+        },
+        {
+          "label": "Profile",
+          "route": "/profile"
+        },
+        {
+          "label": "Notification History",
+          "route": "/notification-history"
+        },
+        {
+          "label": "Create Task",
+          "route": "/task-create"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-user-registration-001"
+  },
+  {
+    "id": "profile-page-1767699850123-abc123",
+    "name": "Profile Page",
+    "title": "My Profile",
+    "description": "Page for viewing and editing user profile",
+    "route": "/profile",
+    "type": "detail",
+    "platform": "both",
+    "forms": [
+      "profile-edit-form-1767699734996-zzmh0d"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "My Profile",
+              "variant": "h1",
+              "align": "left",
+              "color": "#1a1a1a",
+              "fontSize": "32px",
+              "fontWeight": "700",
+              "margin": "0 0 8px 0"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "View and manage your account information",
+              "variant": "body1",
+              "align": "left",
+              "color": "#666666",
+              "fontSize": "16px",
+              "fontWeight": "400"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Profile Information",
+              "elevation": 1,
+              "padding": "24px",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "border": "1px solid #e0e0e0"
+            },
+            "dataBinding": "User.currentUser",
+            "components": [
+              {
+                "type": "text",
+                "config": {
+                  "text": "{{User.currentUser.name}}",
+                  "variant": "h2",
+                  "fontSize": "24px",
+                  "fontWeight": "600",
+                  "color": "#1a1a1a",
+                  "margin": "0 0 16px 0"
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Email: {{User.currentUser.email}}",
+                  "variant": "body1",
+                  "fontSize": "16px",
+                  "color": "#333333",
+                  "margin": "0 0 8px 0"
+                }
+              },
+              {
+                "type": "text",
+                "config": {
+                  "text": "Role: {{User.currentUser.role}}",
+                  "variant": "body1",
+                  "fontSize": "16px",
+                  "color": "#333333",
+                  "margin": "0 0 24px 0"
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "Edit Profile",
+                  "variant": "contained",
+                  "color": "#007bff",
+                  "backgroundColor": "#007bff",
+                  "hoverBackgroundColor": "#0056b3",
+                  "textColor": "#ffffff",
+                  "fontSize": "16px",
+                  "fontWeight": "500",
+                  "padding": "12px 24px",
+                  "borderRadius": "6px",
+                  "border": "none",
+                  "action": "openForm"
+                },
+                "formRef": "profile-edit-form-1767699734996-zzmh0d"
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "config": {
+              "title": "Quick Actions",
+              "elevation": 1,
+              "padding": "24px",
+              "backgroundColor": "#ffffff",
+              "borderRadius": "8px",
+              "border": "1px solid #e0e0e0",
+              "margin": "24px 0 0 0"
+            },
+            "components": [
+              {
+                "type": "button",
+                "config": {
+                  "label": "Notification Settings",
+                  "variant": "outlined",
+                  "color": "#007bff",
+                  "backgroundColor": "transparent",
+                  "hoverBackgroundColor": "#f0f8ff",
+                  "textColor": "#007bff",
+                  "fontSize": "16px",
+                  "fontWeight": "500",
+                  "padding": "12px 24px",
+                  "borderRadius": "6px",
+                  "border": "1px solid #007bff",
+                  "action": "navigate",
+                  "fullWidth": true,
+                  "margin": "0 0 12px 0"
+                }
+              },
+              {
+                "type": "button",
+                "config": {
+                  "label": "View My Tasks",
+                  "variant": "outlined",
+                  "color": "#007bff",
+                  "backgroundColor": "transparent",
+                  "hoverBackgroundColor": "#f0f8ff",
+                  "textColor": "#007bff",
+                  "fontSize": "16px",
+                  "fontWeight": "500",
+                  "padding": "12px 24px",
+                  "borderRadius": "6px",
+                  "border": "1px solid #007bff",
+                  "action": "navigate",
+                  "fullWidth": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "openForm": {
+          "type": "modal",
+          "target": "profile-edit-form-1767699734996-zzmh0d"
+        },
+        "navigate": {
+          "type": "navigate",
+          "target": "/tasks"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks"
+        },
+        {
+          "label": "Create Task",
+          "route": "/tasks/create"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notifications"
+        },
+        {
+          "label": "Notification Settings",
+          "route": "/notification-settings"
+        },
+        {
+          "label": "Logout",
+          "route": "/login"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-user-registration-001"
+  },
+  {
+    "id": "filtered-task-list-page-1767699850123-abc123",
+    "name": "Filtered Task List Page",
+    "title": "Filtered Tasks",
+    "description": "Page displaying filtered and sorted task results with search capability",
+    "route": "/tasks/filtered",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "task-filter-form-1767699787934-tqz39l",
+      "task-search-form-1767699803442-i2f3be",
+      "task-creation-form-1767699755115-p5c49x"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "text",
+            "config": {
+              "text": "Filtered Tasks",
+              "variant": "h1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "32px",
+                "fontWeight": "700",
+                "color": "#1a1a1a",
+                "marginBottom": "8px"
+              }
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "View and manage your filtered task results",
+              "variant": "body1",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "400",
+                "color": "#666666",
+                "lineHeight": "1.5"
+              }
+            }
+          }
+        ],
+        "style": {
+          "backgroundColor": "#ffffff",
+          "padding": "32px 24px",
+          "borderBottom": "1px solid #e5e5e5"
+        }
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "form",
+            "config": {
+              "title": "Search & Filter",
+              "layout": "horizontal",
+              "style": {
+                "backgroundColor": "#f8f9fa",
+                "padding": "24px",
+                "borderRadius": "12px",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "formRef": "task-search-form-1767699803442-i2f3be"
+          },
+          {
+            "type": "form",
+            "config": {
+              "title": "Advanced Filters",
+              "collapsible": true,
+              "style": {
+                "backgroundColor": "#ffffff",
+                "padding": "20px",
+                "borderRadius": "12px",
+                "marginBottom": "24px",
+                "border": "1px solid #e5e5e5"
+              }
+            },
+            "formRef": "task-filter-form-1767699787934-tqz39l"
+          },
+          {
+            "type": "table",
+            "config": {
+              "title": "Filtered Results",
+              "columns": [
+                {
+                  "key": "title",
+                  "label": "Task Title",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "600",
+                    "color": "#1a1a1a"
+                  }
+                },
+                {
+                  "key": "status",
+                  "label": "Status",
+                  "sortable": true,
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "key": "priority",
+                  "label": "Priority",
+                  "sortable": true,
+                  "type": "badge",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "12px",
+                    "fontWeight": "500"
+                  }
+                },
+                {
+                  "key": "dueDate",
+                  "label": "Due Date",
+                  "sortable": true,
+                  "type": "date",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                },
+                {
+                  "key": "assignee",
+                  "label": "Assigned To",
+                  "sortable": true,
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "color": "#666666"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "label": "View",
+                  "type": "button",
+                  "variant": "text",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#2563eb",
+                    "textDecoration": "none"
+                  }
+                },
+                {
+                  "label": "Edit",
+                  "type": "button",
+                  "variant": "text",
+                  "style": {
+                    "fontFamily": "Inter, system-ui, sans-serif",
+                    "fontSize": "14px",
+                    "fontWeight": "500",
+                    "color": "#059669"
+                  }
+                }
+              ],
+              "pagination": true,
+              "pageSize": 20,
+              "emptyMessage": "No tasks match your filter criteria",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "12px",
+                "border": "1px solid #e5e5e5",
+                "overflow": "hidden"
+              }
+            },
+            "dataBinding": "Task.filteredQuery"
+          },
+          {
+            "type": "button",
+            "config": {
+              "text": "Create New Task",
+              "variant": "primary",
+              "icon": "add",
+              "style": {
+                "fontFamily": "Inter, system-ui, sans-serif",
+                "fontSize": "16px",
+                "fontWeight": "600",
+                "backgroundColor": "#2563eb",
+                "color": "#ffffff",
+                "padding": "12px 24px",
+                "borderRadius": "8px",
+                "border": "none",
+                "cursor": "pointer",
+                "marginTop": "16px"
+              }
+            },
+            "action": {
+              "type": "navigate",
+              "target": "/tasks/create"
+            }
+          }
+        ],
+        "style": {
+          "backgroundColor": "#ffffff",
+          "padding": "24px",
+          "minHeight": "calc(100vh - 200px)"
+        }
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "view": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "edit": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "create": {
+          "type": "navigate",
+          "target": "/task-edit/:id"
+        }
+      },
+      "menu": [
+        {
+          "label": "All Tasks",
+          "route": "/tasks",
+          "icon": "list"
+        },
+        {
+          "label": "Create Task",
+          "route": "/tasks/create",
+          "icon": "add"
+        },
+        {
+          "label": "Notifications",
+          "route": "/notifications",
+          "icon": "notifications"
+        },
+        {
+          "label": "Settings",
+          "route": "/notification-settings",
+          "icon": "settings"
+        },
+        {
+          "label": "Profile",
+          "route": "/profile",
+          "icon": "person"
+        }
+      ]
+    },
+    "_pageAssociation": {
+      "workflows": [
+        "Filter tasks by status",
+        "Sort tasks by due date",
+        "Search tasks"
+      ]
+    },
+    "_specName": "Filtered Task List Page",
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "wf-user-registration-001"
   }
 ]

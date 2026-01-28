@@ -1237,6 +1237,24 @@ ${this.getComponentTemplate(failedComponent)}`;
       // Continue without partial results
     }
 
+    // Generate designAnalysis for theme even in fallback mode
+    // Theme CSS generation doesn't require LLM - it's just predefined colors
+    try {
+      if (context.designInput && context.designInput.theme) {
+        const theme = context.designInput.theme;
+        console.log('[SelfHealing] Generating theme CSS in fallback mode:', theme);
+
+        const designAnalysis = this.generateFallbackDesignAnalysis(theme);
+        if (designAnalysis) {
+          minimalWorkflow.designAnalysis = designAnalysis;
+          console.log('[SelfHealing] Successfully added designAnalysis to fallback workflow');
+        }
+      }
+    } catch (designError) {
+      console.error('[SelfHealing] Error generating design in fallback:', designError.message);
+      // Continue without design - non-critical
+    }
+
     // Build the result - this is just object creation, should never fail
     const errorMessages = [];
     try {
@@ -1906,6 +1924,186 @@ ${this.getComponentTemplate(failedComponent)}`;
       fallbackMode: true,
       autoFixesApplied: []
     };
+  }
+
+  /**
+   * Generate design analysis with theme CSS for fallback mode
+   * This doesn't require LLM - just applies predefined color schemes
+   */
+  generateFallbackDesignAnalysis(theme) {
+    console.log('[SelfHealing] Generating fallback design analysis for theme:', theme);
+
+    const designSystem = {
+      colors: {},
+      typography: {
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontSize: { base: '14px', h1: '24px', h2: '20px', label: '14px', input: '14px' },
+        fontWeight: { title: 600, label: 500, input: 400 }
+      },
+      spacing: {
+        container: '24px',
+        fieldGap: '16px',
+        sectionGap: '32px',
+        inputPadding: '10px 12px'
+      },
+      components: {
+        input: { borderRadius: '6px', borderWidth: '1px', height: '42px' },
+        button: {
+          primary: { padding: '10px 24px', borderRadius: '6px' },
+          secondary: { padding: '10px 24px', borderRadius: '6px' }
+        },
+        card: { borderRadius: '8px', shadow: '0 2px 8px rgba(0,0,0,0.08)', padding: '24px' }
+      }
+    };
+
+    if (theme === 'dark') {
+      designSystem.colors = {
+        primary: '#6366f1',
+        secondary: '#8b5cf6',
+        background: '#0f172a',
+        cardBackground: '#1e293b',
+        cardBorder: '#334155',
+        text: '#f1f5f9',
+        textSecondary: '#94a3b8',
+        labelText: '#cbd5e1',
+        border: '#475569',
+        focus: '#818cf8',
+        info: '#38bdf8',
+        infoBackground: '#0c4a6e',
+        error: '#f87171',
+        success: '#4ade80',
+        warning: '#fbbf24'
+      };
+      designSystem.source = 'dark-theme';
+    } else {
+      // Light theme (default)
+      designSystem.colors = {
+        primary: '#4f46e5',
+        secondary: '#7c3aed',
+        background: '#f8fafc',
+        cardBackground: '#ffffff',
+        cardBorder: '#e2e8f0',
+        text: '#1e293b',
+        textSecondary: '#64748b',
+        labelText: '#475569',
+        border: '#cbd5e1',
+        focus: '#6366f1',
+        info: '#0284c7',
+        infoBackground: '#f0f9ff',
+        error: '#dc2626',
+        success: '#16a34a',
+        warning: '#d97706'
+      };
+      designSystem.source = 'light-theme';
+    }
+
+    // Generate CSS from design system
+    const generatedCSS = this.generateCSSFromDesignSystem(designSystem);
+
+    return {
+      designSystem,
+      generatedCSS,
+      themeName: theme,
+      source: `${theme}-theme`
+    };
+  }
+
+  /**
+   * Generate CSS from design system for fallback mode
+   */
+  generateCSSFromDesignSystem(designSystem) {
+    const colors = designSystem.colors;
+    const typography = designSystem.typography;
+
+    return `
+/* Generated Theme CSS - ${designSystem.source || 'auto'} */
+:root {
+  --color-primary: ${colors.primary};
+  --color-secondary: ${colors.secondary};
+  --color-background: ${colors.background};
+  --color-card-background: ${colors.cardBackground};
+  --color-card-border: ${colors.cardBorder};
+  --color-text: ${colors.text};
+  --color-text-secondary: ${colors.textSecondary};
+  --color-label: ${colors.labelText};
+  --color-border: ${colors.border};
+  --color-focus: ${colors.focus};
+  --color-error: ${colors.error};
+  --color-success: ${colors.success};
+  --color-warning: ${colors.warning};
+  --font-family: ${typography.fontFamily};
+}
+
+body, .app-container, .preview-frame {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-family);
+}
+
+.card, .form-card, .page-section {
+  background-color: var(--color-card-background);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text);
+}
+
+p, span, label {
+  color: var(--color-text-secondary);
+}
+
+input, textarea, select {
+  background-color: var(--color-card-background);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--color-focus);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+button, .btn {
+  border-radius: 6px;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary, button[type="submit"] {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover, button[type="submit"]:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background-color: var(--color-card-background);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.alert-error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+}
+
+.alert-success {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--color-success);
+  color: var(--color-success);
+}
+`;
   }
 
   /**

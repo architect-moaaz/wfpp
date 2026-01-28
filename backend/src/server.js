@@ -20,12 +20,32 @@ const publishRoutes = require('./api/routes/publish.routes');
 const executionLogsRoutes = require('./routes/execution-logs');
 const aresRoutes = require('./routes/ares.routes');
 const ruleRoutes = require('./routes/rule.routes');
+const mobileRoutes = require('./routes/mobile.routes');
+const authRoutes = require('./routes/auth.routes');
+const environmentRoutes = require('./routes/environments.routes');
+const deploymentRoutes = require('./routes/deployments.routes');
+const identityRoutes = require('./routes/identity');
+const analyticsRoutes = require('./routes/analytics.routes');
+const db = require('./config/database');
+
+// Import identity services
+const {
+  UserService,
+  OrganizationService,
+  RoleService,
+  GroupService,
+  PositionService,
+  DepartmentService
+} = require('./services/identity');
 
 const app = express();
+
+// Make database available to routes via app.locals
+app.locals.db = db;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003"],
+    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003", "http://localhost:3500"],
     methods: ["GET", "POST"],
     credentials: true
   },
@@ -48,6 +68,10 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+// Auth routes (public - no authentication required)
+app.use('/api/auth', authRoutes);
+
+// Application routes (can be accessed without auth for now, add auth middleware when ready)
 app.use('/api/workflows', workflowRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/bpmn', bpmnRoutes);
@@ -61,7 +85,27 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/execution-logs', executionLogsRoutes);
 app.use('/api/ares', aresRoutes);
 app.use('/api/rules', ruleRoutes);
+app.use('/api/mobile', mobileRoutes);
+app.use('/api/environments', environmentRoutes);
+app.use('/api/deployments', deploymentRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use('/api', publishRoutes);
+
+// Initialize identity services with database
+const identityServices = {
+  userService: new UserService(db),
+  organizationService: new OrganizationService(db),
+  roleService: new RoleService(db),
+  groupService: new GroupService(db),
+  positionService: new PositionService(db),
+  departmentService: new DepartmentService(db)
+};
+
+// Make identity services available to app
+app.locals.identityServices = identityServices;
+
+// Identity management routes
+app.use('/api/identity', identityRoutes(identityServices));
 
 // Initialize Event Manager for real-time workflow monitoring
 const eventManager = require('./runtime/EventManager');
@@ -72,9 +116,21 @@ app.set('io', io);
 
 // WebSocket connection handling
 const aiWorkflowGenerator = require('./services/ai-workflow-generator');
+const socketSessionManager = require('./runtime/SocketSessionManager');
+
+// Make socket session manager available to routes
+app.set('socketSessionManager', socketSessionManager);
 
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
+
+  // Handle session registration for reconnection support
+  socket.on('register:session', (sessionId) => {
+    if (sessionId) {
+      socketSessionManager.register(sessionId, socket.id, socket);
+      socket.emit('session:registered', { sessionId, socketId: socket.id });
+    }
+  });
 
   // Subscribe to workflow instance
   socket.on('subscribe:instance', (instanceId) => {
@@ -159,6 +215,8 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
+    // Unregister socket but keep session for potential reconnection
+    socketSessionManager.unregister(socket.id);
   });
 });
 

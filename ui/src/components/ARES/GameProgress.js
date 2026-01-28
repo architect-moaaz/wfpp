@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './GameProgress.css';
 
-const GameProgress = ({ events, isGenerating }) => {
+const GameProgress = ({ events, isGenerating, actions, onActionClick }) => {
   const [progress, setProgress] = useState(0);
   const [currentPhase, setCurrentPhase] = useState('');
   const [currentActivity, setCurrentActivity] = useState('');
@@ -257,8 +257,12 @@ const GameProgress = ({ events, isGenerating }) => {
     <div className="progress-container">
       {/* Current Activity Header */}
       <div className="progress-header">
-        <div className="progress-title">{hasFailed ? 'Generation Failed' : 'Generation in Progress'}</div>
-        <div className={`progress-status ${hasFailed ? 'status-failed' : ''}`}>{currentPhase}</div>
+        <div className="progress-title">
+          {hasFailed ? 'Generation Failed' : (progress === 100 ? 'Complete' : 'Generation in Progress')}
+        </div>
+        <div className={`progress-status ${hasFailed ? 'status-failed' : (progress === 100 ? 'status-complete' : '')}`}>
+          {currentPhase}
+        </div>
       </div>
 
       {/* Main Progress Bar */}
@@ -345,6 +349,22 @@ const GameProgress = ({ events, isGenerating }) => {
             <path d="M6 10L9 13L14 7" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           <span>Application generated successfully with {stats.totalComponents} components</span>
+        </div>
+      )}
+
+      {/* Action buttons - shown after completion */}
+      {!hasFailed && progress === 100 && actions && actions.length > 0 && (
+        <div className="progress-actions">
+          {actions.map((action) => (
+            <button
+              key={action.id}
+              className="progress-action-btn"
+              onClick={() => onActionClick && onActionClick(action)}
+            >
+              <span className="action-label">{action.label}</span>
+              <span className="action-arrow">→</span>
+            </button>
+          ))}
         </div>
       )}
     </div>

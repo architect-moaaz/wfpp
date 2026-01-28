@@ -10491,5 +10491,1041 @@
         "target": "node_18"
       }
     ]
+  },
+  {
+    "id": "file-management-workflow",
+    "name": "FileManagementWorkflow",
+    "nodes": [
+      {
+        "id": "start-1",
+        "data": {
+          "label": "Start",
+          "formId": "userprofileform-1765309328153-nal20l",
+          "formName": "UserProfileForm",
+          "description": "File upload process initiated"
+        },
+        "type": "startProcess",
+        "label": "Start",
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      {
+        "id": "task-1",
+        "data": {
+          "label": "Receive File Upload",
+          "description": "Accept file upload request with metadata (ticket/comment ID, user, file)"
+        },
+        "type": "task",
+        "label": "Receive File Upload",
+        "position": {
+          "x": 250,
+          "y": 100
+        }
+      },
+      {
+        "id": "decision-1",
+        "data": {
+          "label": "Validate File Type & Size",
+          "description": "Check if file type is allowed and size is within limits"
+        },
+        "type": "decision",
+        "label": "Validate File Type & Size",
+        "position": {
+          "x": 400,
+          "y": 100
+        }
+      },
+      {
+        "id": "task-2",
+        "data": {
+          "label": "Return Validation Error",
+          "description": "Send error response with specific validation failure reason"
+        },
+        "type": "task",
+        "label": "Return Validation Error",
+        "position": {
+          "x": 400,
+          "y": 250
+        }
+      },
+      {
+        "id": "api-1",
+        "data": {
+          "label": "Virus Scan File",
+          "description": "Call antivirus API to scan uploaded file for malware"
+        },
+        "type": "api",
+        "label": "Virus Scan File",
+        "position": {
+          "x": 550,
+          "y": 100
+        }
+      },
+      {
+        "id": "decision-2",
+        "data": {
+          "label": "Scan Result Clean?",
+          "description": "Evaluate virus scan results"
+        },
+        "type": "decision",
+        "label": "Scan Result Clean?",
+        "position": {
+          "x": 700,
+          "y": 100
+        }
+      },
+      {
+        "id": "task-3",
+        "data": {
+          "label": "Quarantine & Notify",
+          "description": "Quarantine infected file and notify user and admin"
+        },
+        "type": "task",
+        "label": "Quarantine & Notify",
+        "position": {
+          "x": 700,
+          "y": 250
+        }
+      },
+      {
+        "id": "task-4",
+        "data": {
+          "label": "Store File in Storage",
+          "description": "Upload file to secure storage system (S3/Azure Blob) and generate unique identifier"
+        },
+        "type": "task",
+        "label": "Store File in Storage",
+        "position": {
+          "x": 850,
+          "y": 100
+        }
+      },
+      {
+        "id": "task-5",
+        "data": {
+          "label": "Create Attachment Record",
+          "description": "Create Attachment entity with file metadata, storage path, and link to Ticket/Comment"
+        },
+        "type": "task",
+        "label": "Create Attachment Record",
+        "position": {
+          "x": 1000,
+          "y": 100
+        }
+      },
+      {
+        "id": "task-6",
+        "data": {
+          "label": "Return Success Response",
+          "description": "Send success response with attachment ID and download URL"
+        },
+        "type": "task",
+        "label": "Return Success Response",
+        "position": {
+          "x": 1150,
+          "y": 100
+        }
+      },
+      {
+        "id": "end-1",
+        "data": {
+          "label": "End",
+          "description": "File management process complete"
+        },
+        "type": "endProcess",
+        "label": "End",
+        "position": {
+          "x": 1300,
+          "y": 100
+        }
+      },
+      {
+        "id": "end-2",
+        "data": {
+          "label": "End - Rejected",
+          "description": "File rejected due to validation or security issues"
+        },
+        "type": "endProcess",
+        "label": "End - Rejected",
+        "position": {
+          "x": 550,
+          "y": 250
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge-1",
+        "label": "",
+        "source": "start-1",
+        "target": "task-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-2",
+        "label": "",
+        "source": "task-1",
+        "target": "decision-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-3",
+        "label": "Valid",
+        "source": "decision-1",
+        "target": "api-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-4",
+        "label": "Invalid",
+        "source": "decision-1",
+        "target": "task-2",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-5",
+        "label": "",
+        "source": "task-2",
+        "target": "end-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-6",
+        "label": "",
+        "source": "api-1",
+        "target": "decision-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-7",
+        "label": "Clean",
+        "source": "decision-2",
+        "target": "task-4",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-8",
+        "label": "Infected",
+        "source": "decision-2",
+        "target": "task-3",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-9",
+        "label": "",
+        "source": "task-3",
+        "target": "end-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-10",
+        "label": "",
+        "source": "task-4",
+        "target": "task-5",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-11",
+        "label": "",
+        "source": "task-5",
+        "target": "task-6",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-12",
+        "label": "",
+        "source": "task-6",
+        "target": "end-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      }
+    ]
+  },
+  {
+    "id": "leave-management-workflow",
+    "name": "LeaveManagement",
+    "nodes": [
+      {
+        "id": "start-1",
+        "data": {
+          "label": "Start Leave Request",
+          "formId": "leaverequestform-1765362757607-lbqn7t",
+          "formName": "LeaveRequestForm",
+          "description": "Employee initiates leave request submission"
+        },
+        "type": "startProcess",
+        "label": "Start Leave Request",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "width": 320,
+        "height": 130,
+        "draggable": true
+      },
+      {
+        "id": "userTask-1",
+        "data": {
+          "label": "Submit Leave Request",
+          "formId": "leaveapprovalform-1765362592729-309dgs",
+          "formName": "LeaveApprovalForm",
+          "formFields": [
+            "leaveType",
+            "startDate",
+            "endDate",
+            "reason",
+            "attachments"
+          ],
+          "description": "Employee fills out leave request form with dates, type, and reason"
+        },
+        "type": "userTask",
+        "label": "Submit Leave Request",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "width": 320,
+        "height": 130,
+        "draggable": true
+      },
+      {
+        "id": "validation-1",
+        "data": {
+          "label": "Validate Leave Balance",
+          "description": "Check if employee has sufficient leave balance for requested days",
+          "validationRules": [
+            "checkLeaveBalance",
+            "validateDateRange",
+            "checkMinimumNotice"
+          ]
+        },
+        "type": "validation",
+        "label": "Validate Leave Balance",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "decision-1",
+        "data": {
+          "label": "Balance Sufficient?",
+          "description": "Determine if leave balance is adequate"
+        },
+        "type": "decision",
+        "label": "Balance Sufficient?",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "width": 319,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "scriptTask-1",
+        "data": {
+          "label": "Check Conflicts",
+          "script": "checkLeaveConflicts(teamMember, dateRange, projects)",
+          "description": "Check for conflicts with existing team leaves, project deadlines, and milestones"
+        },
+        "type": "scriptTask",
+        "label": "Check Conflicts",
+        "position": {
+          "x": 125,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "notification-3",
+        "data": {
+          "label": "Insufficient Balance Alert",
+          "channels": [
+            "email"
+          ],
+          "recipients": [
+            "employee"
+          ],
+          "description": "Notify employee about insufficient leave balance"
+        },
+        "type": "notification",
+        "label": "Insufficient Balance Alert",
+        "position": {
+          "x": 475,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "decision-2",
+        "data": {
+          "label": "Conflicts Found?",
+          "description": "Determine if there are scheduling conflicts"
+        },
+        "type": "decision",
+        "label": "Conflicts Found?",
+        "position": {
+          "x": 175,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "end-3",
+        "data": {
+          "label": "Insufficient Balance",
+          "description": "Leave request cancelled due to insufficient balance"
+        },
+        "type": "endProcess",
+        "label": "Insufficient Balance",
+        "position": {
+          "x": 525,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "userTask-2",
+        "data": {
+          "label": "Manager Approval",
+          "formId": "form_auto_manager_approval_1765363295112",
+          "actions": [
+            "approve",
+            "reject",
+            "requestModification"
+          ],
+          "assignee": "manager",
+          "formName": "Manager Approval Form",
+          "description": "Manager reviews and approves/rejects leave request with conflict information"
+        },
+        "type": "userTask",
+        "label": "Manager Approval",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "decision-3",
+        "data": {
+          "label": "Manager Decision",
+          "description": "Check manager's approval decision"
+        },
+        "type": "decision",
+        "label": "Manager Decision",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "width": 301,
+        "height": 101,
+        "draggable": true
+      },
+      {
+        "id": "userTask-3",
+        "data": {
+          "label": "HR Final Approval",
+          "formId": "form_auto_hr_final_approval_1765363295112",
+          "assignee": "hr",
+          "formName": "HR Final Approval Form",
+          "condition": "leaveDuration > 5 OR leaveType == 'unpaid'",
+          "description": "HR reviews and provides final approval for extended leaves or special cases"
+        },
+        "type": "userTask",
+        "label": "HR Final Approval",
+        "position": {
+          "x": 325,
+          "y": 2100
+        },
+        "width": 320,
+        "height": 150,
+        "draggable": true
+      },
+      {
+        "id": "notification-2",
+        "data": {
+          "label": "Send Rejection Notification",
+          "channels": [
+            "email",
+            "push"
+          ],
+          "recipients": [
+            "employee"
+          ],
+          "description": "Notify employee about rejected leave request with reason"
+        },
+        "type": "notification",
+        "label": "Send Rejection Notification",
+        "position": {
+          "x": 675,
+          "y": 2100
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "dataProcess-1",
+        "data": {
+          "label": "Update Leave Balance",
+          "operations": [
+            "updateLeaveBalance",
+            "createLeaveRecord",
+            "updateCalendar"
+          ],
+          "description": "Deduct approved leave days from employee's leave balance"
+        },
+        "type": "dataProcess",
+        "label": "Update Leave Balance",
+        "position": {
+          "x": 375,
+          "y": 2350
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "end-2",
+        "data": {
+          "label": "Leave Rejected",
+          "description": "Leave request rejected by approver"
+        },
+        "type": "endProcess",
+        "label": "Leave Rejected",
+        "position": {
+          "x": 725,
+          "y": 2350
+        },
+        "width": 300,
+        "height": 80,
+        "draggable": true
+      },
+      {
+        "id": "notification-1",
+        "data": {
+          "label": "Send Approval Notification",
+          "channels": [
+            "email",
+            "push"
+          ],
+          "recipients": [
+            "employee",
+            "manager",
+            "team"
+          ],
+          "description": "Notify employee, manager, and team about approved leave"
+        },
+        "type": "notification",
+        "label": "Send Approval Notification",
+        "position": {
+          "x": 600,
+          "y": 2600
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "end-1",
+        "data": {
+          "label": "Leave Approved",
+          "description": "Leave request successfully processed and approved"
+        },
+        "type": "endProcess",
+        "label": "Leave Approved",
+        "position": {
+          "x": 650,
+          "y": 2850
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge-1",
+        "label": "",
+        "source": "start-1",
+        "target": "userTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-2",
+        "label": "",
+        "source": "userTask-1",
+        "target": "validation-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-3",
+        "label": "",
+        "source": "validation-1",
+        "target": "decision-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-4",
+        "label": "Yes",
+        "source": "decision-1",
+        "target": "scriptTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-5",
+        "label": "No",
+        "source": "decision-1",
+        "target": "notification-3",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-6",
+        "label": "",
+        "source": "notification-3",
+        "target": "end-3",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-7",
+        "label": "",
+        "source": "scriptTask-1",
+        "target": "decision-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-8",
+        "label": "Yes/No",
+        "source": "decision-2",
+        "target": "userTask-2",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-9",
+        "label": "",
+        "source": "userTask-2",
+        "target": "decision-3",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-10",
+        "label": "Approved",
+        "source": "decision-3",
+        "target": "userTask-3",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-11",
+        "label": "Rejected",
+        "source": "decision-3",
+        "target": "notification-2",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-12",
+        "label": "",
+        "source": "notification-2",
+        "target": "end-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-13",
+        "label": "",
+        "source": "userTask-3",
+        "target": "dataProcess-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-14",
+        "label": "",
+        "source": "dataProcess-1",
+        "target": "notification-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-15",
+        "label": "",
+        "source": "notification-1",
+        "target": "end-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      }
+    ]
+  },
+  {
+    "id": "workflow_1767009025228",
+    "name": "New Workflow 1",
+    "nodes": [
+      {
+        "id": "start_1",
+        "type": "startProcess",
+        "position": {
+          "x": 28.95052754598089,
+          "y": -240.9588307322519
+        },
+        "data": {
+          "label": "Start",
+          "trigger": "user_action"
+        },
+        "width": 280,
+        "height": 74,
+        "selected": true,
+        "positionAbsolute": {
+          "x": 28.95052754598089,
+          "y": -240.9588307322519
+        },
+        "dragging": false
+      },
+      {
+        "id": "end_1",
+        "type": "endEvent",
+        "position": {
+          "x": 250,
+          "y": 300
+        },
+        "data": {
+          "label": "End"
+        },
+        "width": 280,
+        "height": 54
+      },
+      {
+        "id": "node_0",
+        "type": "scriptTask",
+        "position": {
+          "x": 138,
+          "y": 102.5
+        },
+        "data": {
+          "label": "Script Task",
+          "description": "New node"
+        },
+        "draggable": true,
+        "width": 280,
+        "height": 80,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 138,
+          "y": 102.5
+        },
+        "dragging": false
+      }
+    ],
+    "connections": [
+      {
+        "source": "start_1",
+        "sourceHandle": null,
+        "target": "node_0",
+        "targetHandle": null,
+        "id": "edge-1767009066139",
+        "animated": false
+      },
+      {
+        "source": "node_0",
+        "sourceHandle": null,
+        "target": "end_1",
+        "targetHandle": null,
+        "id": "edge-1767009069931",
+        "animated": false
+      }
+    ]
+  },
+  {
+    "id": "user-registration-workflow",
+    "name": "User Registration",
+    "nodes": [
+      {
+        "id": "start-1",
+        "data": {
+          "label": "Start Registration",
+          "formId": "form_auto_start_registration_1767094352626",
+          "formName": "Start Registration Form",
+          "description": "User initiates registration process"
+        },
+        "type": "startProcess",
+        "label": "Start Registration",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "width": 291,
+        "height": 113,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 100,
+          "y": 201.3838383838384
+        },
+        "dragging": false,
+        "draggable": true
+      },
+      {
+        "id": "userTask-1",
+        "data": {
+          "label": "Submit Registration Form",
+          "formId": "form_auto_submit_registration_form_1767094352626",
+          "formName": "Submit Registration Form Form",
+          "description": "User fills out registration details (username, email, password, contact info)"
+        },
+        "type": "userTask",
+        "label": "Submit Registration Form",
+        "position": {
+          "x": 150,
+          "y": 350
+        },
+        "width": 320,
+        "height": 130,
+        "draggable": true
+      },
+      {
+        "id": "validation-1",
+        "data": {
+          "label": "Validate Registration Data",
+          "description": "Validate email format, password strength, unique username/email, required fields"
+        },
+        "type": "validation",
+        "label": "Validate Registration Data",
+        "position": {
+          "x": 200,
+          "y": 600
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "decision-1",
+        "data": {
+          "label": "Validation Passed?",
+          "description": "Check if all validation rules are satisfied"
+        },
+        "type": "decision",
+        "label": "Validation Passed?",
+        "position": {
+          "x": 250,
+          "y": 850
+        },
+        "width": 320,
+        "height": 117,
+        "draggable": true
+      },
+      {
+        "id": "scriptTask-1",
+        "data": {
+          "label": "Create User Account",
+          "description": "Create User record, hash password, assign default Role, generate verification token"
+        },
+        "type": "scriptTask",
+        "label": "Create User Account",
+        "position": {
+          "x": 125,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "notification-2",
+        "data": {
+          "label": "Notify Validation Error",
+          "description": "Display error messages to user about validation failures"
+        },
+        "type": "notification",
+        "label": "Notify Validation Error",
+        "position": {
+          "x": 475,
+          "y": 1100
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "notification-1",
+        "data": {
+          "label": "Send Verification Email",
+          "description": "Send email with verification link to confirm email address"
+        },
+        "type": "notification",
+        "label": "Send Verification Email",
+        "position": {
+          "x": 175,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "end-2",
+        "data": {
+          "label": "Registration Failed",
+          "description": "Registration process terminated due to validation errors"
+        },
+        "type": "endProcess",
+        "label": "Registration Failed",
+        "position": {
+          "x": 525,
+          "y": 1350
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "scriptTask-2",
+        "data": {
+          "label": "Log Registration Event",
+          "description": "Create AuditLog entry for new user registration"
+        },
+        "type": "scriptTask",
+        "label": "Log Registration Event",
+        "position": {
+          "x": 400,
+          "y": 1600
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      },
+      {
+        "id": "end-1",
+        "data": {
+          "label": "Registration Complete",
+          "description": "User account created successfully, awaiting email verification"
+        },
+        "type": "endProcess",
+        "label": "Registration Complete",
+        "position": {
+          "x": 450,
+          "y": 1850
+        },
+        "width": 320,
+        "height": 97,
+        "draggable": true
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge-1",
+        "label": "",
+        "source": "start-1",
+        "target": "userTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-2",
+        "label": "",
+        "source": "userTask-1",
+        "target": "validation-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-3",
+        "label": "",
+        "source": "validation-1",
+        "target": "decision-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-4",
+        "label": "Valid",
+        "source": "decision-1",
+        "target": "scriptTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-5",
+        "label": "Invalid",
+        "source": "decision-1",
+        "target": "notification-2",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-6",
+        "label": "",
+        "source": "scriptTask-1",
+        "target": "notification-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-7",
+        "label": "",
+        "source": "notification-1",
+        "target": "scriptTask-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-8",
+        "label": "",
+        "source": "scriptTask-2",
+        "target": "end-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-9",
+        "label": "",
+        "source": "notification-2",
+        "target": "end-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      }
+    ]
   }
 ]

@@ -53,6 +53,7 @@ class MoEOrchestrator {
   constructor() {
     this.router = new RouterAgent();
     this.planningExpert = new PlanningExpert();
+    this.organizationContext = null;
 
     // Initialize all experts
     this.experts = {
@@ -103,6 +104,69 @@ class MoEOrchestrator {
   }
 
   /**
+   * Set organization context for task assignment in generated workflows
+   * @param {Object} orgContext - Organization details (roles, groups, departments, positions)
+   */
+  setOrganizationContext(orgContext) {
+    this.organizationContext = orgContext;
+    if (orgContext) {
+      console.log(`[MoE] Organization context set: ${orgContext.roles?.length || 0} roles, ${orgContext.groups?.length || 0} groups`);
+    }
+  }
+
+  /**
+   * Fetch organization context from identity services
+   * @param {string} organizationId - The organization ID to fetch context for
+   * @returns {Promise<Object|null>} Organization context or null
+   */
+  async fetchOrganizationContext(organizationId) {
+    if (!organizationId) {
+      console.log('[MoE] No organization ID provided, workflows will use fallback assignments');
+      return null;
+    }
+
+    try {
+      // Import identity services
+      const { roleService, groupService, departmentService, positionService } = require('../identity');
+
+      // Fetch organization data in parallel
+      const [roles, groups, departments] = await Promise.all([
+        roleService.listOrgRoles(organizationId).catch(() => []),
+        groupService.listGroups(organizationId).catch(() => []),
+        departmentService.listDepartments(organizationId).catch(() => [])
+      ]);
+
+      const context = {
+        organizationId,
+        roles: roles.map(r => ({
+          id: r.id,
+          name: r.name,
+          description: r.description,
+          level: r.level
+        })),
+        groups: groups.map(g => ({
+          id: g.id,
+          name: g.name,
+          description: g.description,
+          memberCount: g.memberCount || 0
+        })),
+        departments: departments.map(d => ({
+          id: d.id,
+          name: d.name,
+          code: d.code,
+          headPosition: d.head_position_id
+        }))
+      };
+
+      console.log(`[MoE] Fetched organization context: ${context.roles.length} roles, ${context.groups.length} groups, ${context.departments.length} departments`);
+      return context;
+    } catch (error) {
+      console.warn(`[MoE] Failed to fetch organization context: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
    * Main method: Generate complete workflow using MoE
    */
   async generateWorkflow(userRequirements, existingWorkflow, conversationHistory, emitEvent, designInput = null) {
@@ -136,7 +200,7 @@ class MoEOrchestrator {
       let applicationPlan = null;
       if (!existingWorkflow) {
         console.log('[MoE] Step 1.5: Creating application plan...');
-        applicationPlan = await this.createApplicationPlan(userRequirements, conversationHistory, emitThinking);
+        applicationPlan = await this.createApplicationPlan(userRequirements, conversationHistory, emitThinking, designInput);
         console.log('[MoE] Step 1.5 COMPLETE: Plan created with', applicationPlan ? `${applicationPlan.dataModels.length} models` : 'fallback');
       }
 
@@ -189,7 +253,7 @@ class MoEOrchestrator {
    * Phase 0: Create comprehensive application plan
    * Uses NEW component-based architecture to eliminate JSON truncation
    */
-  async createApplicationPlan(userRequirements, conversationHistory, emitThinking) {
+  async createApplicationPlan(userRequirements, conversationHistory, emitThinking, designInput = null) {
     emitThinking({
       agent: 'PlanningExpert',
       step: 'Creating Application Blueprint',
@@ -226,28 +290,47 @@ class MoEOrchestrator {
       // DesignExpert acts as UX Designer, creating ONLY design specifications
       // FormExpert and PageExpert will use these specs to generate components
       console.log('[MoE] Step 1.5: Generating design system...');
+      console.log('[MoE] Design input:', designInput);
       emitThinking({
         agent: 'DesignExpert',
         step: 'Generating Design System',
-        content: 'UX Designer creating professional design specifications...'
+        content: designInput?.theme ? `UX Designer creating ${designInput.theme} theme design...` : 'UX Designer creating professional design specifications...'
       });
 
       let designSystem = null;
+      let fullDesignAnalysis = null;
       try {
         const designExpert = this.experts.design.ui;
-        const designAnalysis = await designExpert.generateOptimalDesign(
-          userRequirements,
-          [],  // dataModels not yet generated
-          null,  // workflow not yet generated
-          (thought) => {
-            if (emitThinking) emitThinking(thought);
-          }
-        );
 
-        designSystem = designAnalysis?.designAnalysis || this.getDefaultDesignSystem();
+        // If theme is provided, use execute() which properly handles theme
+        // Otherwise use generateOptimalDesign() for auto-generation
+        if (designInput && designInput.theme) {
+          fullDesignAnalysis = await designExpert.execute(
+            userRequirements,
+            [],  // conversationHistory
+            (thought) => {
+              if (emitThinking) emitThinking(thought);
+            },
+            designInput  // Pass theme configuration
+          );
+          designSystem = fullDesignAnalysis?.designAnalysis || this.getDefaultDesignSystem();
+        } else {
+          fullDesignAnalysis = await designExpert.generateOptimalDesign(
+            userRequirements,
+            [],  // dataModels not yet generated
+            null,  // workflow not yet generated
+            (thought) => {
+              if (emitThinking) emitThinking(thought);
+            }
+          );
+          designSystem = fullDesignAnalysis?.designAnalysis || this.getDefaultDesignSystem();
+        }
 
         console.log('[MoE] Design system generated successfully:', {
           hasDesignSystem: !!designSystem,
+          hasGeneratedCSS: !!fullDesignAnalysis?.designAnalysis?.generatedCSS,
+          cssLength: fullDesignAnalysis?.designAnalysis?.generatedCSS?.length || 0,
+          theme: fullDesignAnalysis?.designAnalysis?.theme || 'unknown',
           domain: designSystem?.domain || 'auto-generated'
         });
       } catch (error) {
@@ -273,6 +356,13 @@ class MoEOrchestrator {
       // STEP 2: Execute component generation using ComponentOrchestrator
       console.log('[MoE] Step 2: Executing component generation with design system...');
       const orchestrator = new ComponentOrchestrator();
+
+      // Pass organization context to ComponentOrchestrator (which forwards to WorkflowExpert)
+      if (this.organizationContext) {
+        orchestrator.setOrganizationContext(this.organizationContext);
+        console.log('[MoE] Organization context passed to ComponentOrchestrator');
+      }
+
       const plan = await orchestrator.execute(componentPlan, emitThinking);
 
       console.log('[MoE] Component generation complete:', {
@@ -286,6 +376,18 @@ class MoEOrchestrator {
         agent: 'ComponentOrchestrator',
         step: 'Generation Complete',
         content: `Blueprint complete: ${plan.dataModels.length} data models, ${plan.workflows.length} workflows, ${plan.forms.length} forms, ${plan.pages.length} pages`
+      });
+
+      // Attach design analysis (including generated CSS) to the plan result
+      // This will be used by ApplicationGenerator to apply the design to the generated app
+      // Use fullDesignAnalysis which includes generatedCSS from DesignExpert
+      plan.designAnalysis = fullDesignAnalysis?.designAnalysis || designSystem;
+
+      console.log('[MoE] Design analysis attached to plan:', {
+        hasDesignAnalysis: !!plan.designAnalysis,
+        hasGeneratedCSS: !!plan.designAnalysis?.generatedCSS,
+        cssLength: plan.designAnalysis?.generatedCSS?.length || 0,
+        theme: plan.designAnalysis?.theme || 'unknown'
       });
 
       return plan;
@@ -395,23 +497,38 @@ class MoEOrchestrator {
       }
     }
 
-    // ONLY execute design expert for Figma/PDF/Image analysis (OLD PATH)
-    // Note: NEW PATH (applicationPlan) already called DesignExpert for design system
-    // This section is for when a design FILE is provided (Figma/PDF/Image)
+    // Execute design expert for design file analysis OR theme configuration
+    // This handles: Figma/PDF/Image files AND theme-based design (dark/light/custom CSS)
     if (designInput) {
-      emitThinking({
-        agent: 'MoEOrchestrator',
-        step: 'Executing Design Expert',
-        content: `Analyzing ${designInput.type} design file: ${designInput.name}`
-      });
+      // Detect if this is a theme-based design input
+      const isThemeInput = designInput.theme !== undefined;
+
+      if (isThemeInput) {
+        emitThinking({
+          agent: 'MoEOrchestrator',
+          step: 'Executing Design Expert',
+          content: `Applying ${designInput.theme === 'custom' ? 'custom CSS' : designInput.theme + ' theme'} design...`
+        });
+      } else {
+        emitThinking({
+          agent: 'MoEOrchestrator',
+          step: 'Executing Design Expert',
+          content: `Analyzing ${designInput.type} design file: ${designInput.name}`
+        });
+      }
 
       const designExpert = this.getExpert('design', 'ui');
       if (designExpert) {
         try {
           // Prepare design input for the expert
           let designInputForExpert = null;
-          if (designInput) {
-            // Convert base64 data to temporary file path format expected by DesignExpert
+
+          if (isThemeInput) {
+            // For theme-based input, pass the theme config directly
+            designInputForExpert = designInput;
+            console.log('[MoE] Using theme-based design input:', { theme: designInput.theme, hasCustomCss: !!designInput.customCss });
+          } else if (designInput.name) {
+            // For file-based input, convert base64 data to temporary file path format
             designInputForExpert = designInput.name; // Filename with extension
             // Store the base64 data for the expert to use
             designExpert.base64Data = designInput.data;
@@ -427,15 +544,21 @@ class MoEOrchestrator {
 
           if (designResult) {
             results.design = designResult;
+            console.log('[MoE] Design expert result:', {
+              hasDesignAnalysis: !!designResult.designAnalysis,
+              hasGeneratedCSS: !!designResult.designAnalysis?.generatedCSS,
+              source: designResult.designAnalysis?.source || 'unknown'
+            });
+
             // When analyzing Figma/PDF/Image files, DesignExpert extracts forms and pages
             // Use these instead of generating new ones
             if (designResult.forms && designResult.forms.length > 0) {
               results.forms.push({ forms: designResult.forms });
-              console.log(`[MoE] Design expert extracted ${designResult.forms.length} forms from design file`);
+              console.log(`[MoE] Design expert extracted ${designResult.forms.length} forms from design`);
             }
             if (designResult.pages && designResult.pages.length > 0) {
               results.pages.push({ pages: designResult.pages });
-              console.log(`[MoE] Design expert extracted ${designResult.pages.length} pages from design file`);
+              console.log(`[MoE] Design expert extracted ${designResult.pages.length} pages from design`);
             }
           }
         } catch (error) {
@@ -443,7 +566,7 @@ class MoEOrchestrator {
           emitThinking({
             agent: 'MoEOrchestrator',
             step: 'Design Expert Error',
-            content: `Design file analysis failed: ${error.message}. Falling back to auto-generation...`
+            content: `Design processing failed: ${error.message}. Falling back to auto-generation...`
           });
         }
       }
@@ -690,8 +813,19 @@ class MoEOrchestrator {
       forms: [],
       mobileUI: null,
       pages: [],
-      rules: []
+      rules: [],
+      designAnalysis: null  // Store design system and CSS from DesignExpert
     };
+
+    // Extract designAnalysis from design expert result
+    if (results.design && results.design.designAnalysis) {
+      combined.designAnalysis = results.design.designAnalysis;
+      console.log('[MoE] Captured designAnalysis from DesignExpert:', {
+        source: combined.designAnalysis.source || 'unknown',
+        hasGeneratedCSS: !!combined.designAnalysis.generatedCSS,
+        themeName: combined.designAnalysis.themeName || 'default'
+      });
+    }
 
     // Keep workflows separate - don't combine them
     if (results.workflows.length > 0) {
@@ -819,6 +953,7 @@ class MoEOrchestrator {
       workflow.mobileUI = combined.mobileUI;
       workflow.pages = combined.pages;
       workflow.rules = combined.rules;
+      workflow.designAnalysis = combined.designAnalysis;
 
       // Add MoE metadata
       workflow.generatedBy = 'MoE';
@@ -1498,43 +1633,516 @@ Return JSON in this exact format:
 
   /**
    * Generate forms for the application
+   * @param {string} requirements - User requirements describing the forms needed
+   * @param {Object} context - Additional context (dataModels, workflow, etc.)
+   * @param {Function} emitThinking - Optional callback for thinking events
+   * @returns {Promise<Array>} Generated forms
    */
-  async generateForms(requirements) {
+  async generateForms(requirements, context = {}, emitThinking = null) {
     console.log('[MoE] Generating forms based on requirements...');
 
-    // For now, return empty array - this will be implemented later
-    // when the full application generation flow is needed
-    return [];
+    const emit = emitThinking || (() => {});
+
+    try {
+      emit({
+        agent: 'FormExpert',
+        step: 'Analyzing Requirements',
+        content: 'Parsing form requirements and preparing generation...'
+      });
+
+      // Create a simple component plan for forms
+      const formSpecs = await this.planningExpert.extractFormSpecs(requirements, context);
+
+      if (!formSpecs || formSpecs.length === 0) {
+        console.log('[MoE] No form specs extracted, generating default form');
+        return this.generateDefaultForm(requirements);
+      }
+
+      emit({
+        agent: 'FormExpert',
+        step: 'Generating Forms',
+        content: `Generating ${formSpecs.length} form(s)...`
+      });
+
+      // Use FormExpert to generate forms
+      const FormExpert = require('./experts/FormExpert');
+      const formExpert = new FormExpert();
+
+      const componentPlan = {
+        componentSpecs: formSpecs,
+        complexity: 'simple',
+        generationStrategy: 'parallel',
+        designSystem: context.designSystem || this.getDefaultDesignSystem()
+      };
+
+      const forms = await formExpert.generateBatch(formSpecs, componentPlan, context);
+
+      emit({
+        agent: 'FormExpert',
+        step: 'Forms Generated',
+        content: `Successfully generated ${forms.length} form(s)`
+      });
+
+      return forms;
+    } catch (error) {
+      console.error('[MoE] Form generation failed:', error.message);
+      emit({
+        agent: 'FormExpert',
+        step: 'Error',
+        content: `Form generation failed: ${error.message}`
+      });
+      return this.generateDefaultForm(requirements);
+    }
+  }
+
+  /**
+   * Generate a default fallback form
+   */
+  generateDefaultForm(requirements) {
+    const timestamp = Date.now();
+    return [{
+      id: `form_${timestamp}`,
+      name: 'Default Form',
+      description: 'Auto-generated form based on requirements',
+      type: 'simple',
+      sections: [{
+        id: `section_${timestamp}`,
+        title: 'Form Details',
+        fields: [
+          {
+            id: `field_${timestamp}_1`,
+            name: 'title',
+            label: 'Title',
+            type: 'text',
+            required: true
+          },
+          {
+            id: `field_${timestamp}_2`,
+            name: 'description',
+            label: 'Description',
+            type: 'textarea',
+            required: false
+          },
+          {
+            id: `field_${timestamp}_3`,
+            name: 'status',
+            label: 'Status',
+            type: 'dropdown',
+            options: [
+              { label: 'Pending', value: 'pending' },
+              { label: 'In Progress', value: 'in_progress' },
+              { label: 'Completed', value: 'completed' }
+            ]
+          }
+        ]
+      }],
+      _autoGenerated: true
+    }];
   }
 
   /**
    * Generate data models for the application
+   * @param {string} requirements - User requirements describing the data models needed
+   * @param {Object} context - Additional context
+   * @param {Function} emitThinking - Optional callback for thinking events
+   * @returns {Promise<Array>} Generated data models
    */
-  async generateDataModels(requirements) {
+  async generateDataModels(requirements, context = {}, emitThinking = null) {
     console.log('[MoE] Generating data models based on requirements...');
 
-    // For now, return empty array - this will be implemented later
-    return [];
+    const emit = emitThinking || (() => {});
+
+    try {
+      emit({
+        agent: 'DataModelExpert',
+        step: 'Analyzing Requirements',
+        content: 'Extracting entities and relationships from requirements...'
+      });
+
+      // Create component plan for data models
+      const dataModelSpecs = await this.planningExpert.extractDataModelSpecs(requirements, context);
+
+      if (!dataModelSpecs || dataModelSpecs.length === 0) {
+        console.log('[MoE] No data model specs extracted, generating default model');
+        return this.generateDefaultDataModel(requirements);
+      }
+
+      emit({
+        agent: 'DataModelExpert',
+        step: 'Generating Models',
+        content: `Generating ${dataModelSpecs.length} data model(s)...`
+      });
+
+      // Use DataModelExpert to generate models
+      const DataModelExpert = require('./experts/DataModelExpert');
+      const dataModelExpert = new DataModelExpert();
+
+      const componentPlan = {
+        componentSpecs: dataModelSpecs,
+        complexity: 'simple',
+        generationStrategy: 'parallel'
+      };
+
+      const dataModels = await dataModelExpert.generateBatch(dataModelSpecs, componentPlan);
+
+      emit({
+        agent: 'DataModelExpert',
+        step: 'Models Generated',
+        content: `Successfully generated ${dataModels.length} data model(s)`
+      });
+
+      return dataModels;
+    } catch (error) {
+      console.error('[MoE] Data model generation failed:', error.message);
+      emit({
+        agent: 'DataModelExpert',
+        step: 'Error',
+        content: `Data model generation failed: ${error.message}`
+      });
+      return this.generateDefaultDataModel(requirements);
+    }
+  }
+
+  /**
+   * Generate a default fallback data model
+   */
+  generateDefaultDataModel(requirements) {
+    const timestamp = Date.now();
+    return [{
+      id: `dm_${timestamp}`,
+      name: 'DefaultEntity',
+      description: 'Auto-generated data model',
+      fields: [
+        { name: 'id', type: 'uuid', primaryKey: true },
+        { name: 'title', type: 'string', required: true, maxLength: 255 },
+        { name: 'description', type: 'text', required: false },
+        { name: 'status', type: 'string', defaultValue: 'active' },
+        { name: 'createdAt', type: 'datetime', defaultValue: 'now()' },
+        { name: 'updatedAt', type: 'datetime', defaultValue: 'now()' }
+      ],
+      _autoGenerated: true
+    }];
   }
 
   /**
    * Generate pages for the application
+   * @param {string} requirements - User requirements describing the pages needed
+   * @param {Object} context - Additional context (forms, dataModels, workflow, etc.)
+   * @param {Function} emitThinking - Optional callback for thinking events
+   * @returns {Promise<Array>} Generated pages
    */
-  async generatePages(requirements) {
+  async generatePages(requirements, context = {}, emitThinking = null) {
     console.log('[MoE] Generating pages based on requirements...');
 
-    // For now, return empty array - this will be implemented later
-    return [];
+    const emit = emitThinking || (() => {});
+
+    try {
+      emit({
+        agent: 'PageExpert',
+        step: 'Analyzing Requirements',
+        content: 'Determining page structure and navigation...'
+      });
+
+      // Create component plan for pages
+      const pageSpecs = await this.planningExpert.extractPageSpecs(requirements, context);
+
+      if (!pageSpecs || pageSpecs.length === 0) {
+        console.log('[MoE] No page specs extracted, generating default pages');
+        return this.generateDefaultPages(requirements, context);
+      }
+
+      emit({
+        agent: 'PageExpert',
+        step: 'Generating Pages',
+        content: `Generating ${pageSpecs.length} page(s)...`
+      });
+
+      // Use PageExpert to generate pages
+      const PageExpert = require('./experts/PageExpert');
+      const pageExpert = new PageExpert();
+
+      const componentPlan = {
+        componentSpecs: pageSpecs,
+        complexity: 'simple',
+        generationStrategy: 'parallel',
+        designSystem: context.designSystem || this.getDefaultDesignSystem()
+      };
+
+      const pages = await pageExpert.generateBatch(pageSpecs, componentPlan, context);
+
+      emit({
+        agent: 'PageExpert',
+        step: 'Pages Generated',
+        content: `Successfully generated ${pages.length} page(s)`
+      });
+
+      return pages;
+    } catch (error) {
+      console.error('[MoE] Page generation failed:', error.message);
+      emit({
+        agent: 'PageExpert',
+        step: 'Error',
+        content: `Page generation failed: ${error.message}`
+      });
+      return this.generateDefaultPages(requirements, context);
+    }
+  }
+
+  /**
+   * Generate default fallback pages
+   */
+  generateDefaultPages(requirements, context = {}) {
+    const timestamp = Date.now();
+    const pages = [];
+
+    // Dashboard page
+    pages.push({
+      id: `page_dashboard_${timestamp}`,
+      name: 'Dashboard',
+      type: 'dashboard',
+      route: '/',
+      title: 'Dashboard',
+      components: [
+        {
+          type: 'header',
+          props: { title: 'Dashboard', subtitle: 'Overview' }
+        },
+        {
+          type: 'statsGrid',
+          props: { columns: 4 }
+        }
+      ],
+      navigation: {
+        menu: [],
+        onAction: {}
+      },
+      _autoGenerated: true
+    });
+
+    // List page if forms exist
+    if (context.forms && context.forms.length > 0) {
+      pages.push({
+        id: `page_list_${timestamp}`,
+        name: 'Records List',
+        type: 'list',
+        route: '/records',
+        title: 'Records',
+        components: [
+          {
+            type: 'header',
+            props: { title: 'Records' }
+          },
+          {
+            type: 'dataTable',
+            props: {
+              formId: context.forms[0].id,
+              columns: ['title', 'status', 'createdAt']
+            }
+          }
+        ],
+        navigation: {
+          menu: [{ label: 'Dashboard', route: '/' }],
+          onAction: { create: { type: 'navigate', target: '/records/new' } }
+        },
+        _autoGenerated: true
+      });
+
+      // Form page
+      pages.push({
+        id: `page_form_${timestamp}`,
+        name: 'New Record',
+        type: 'form',
+        route: '/records/new',
+        title: 'New Record',
+        components: [
+          {
+            type: 'formRenderer',
+            props: { formId: context.forms[0].id }
+          }
+        ],
+        navigation: {
+          menu: [{ label: 'Dashboard', route: '/' }],
+          onAction: {
+            submit: { type: 'navigate', target: '/records' },
+            cancel: { type: 'navigate', target: '/records' }
+          }
+        },
+        _autoGenerated: true
+      });
+    }
+
+    return pages;
   }
 
   /**
    * Generate mobile UI for the application
+   * @param {string} requirements - User requirements describing the mobile UI needed
+   * @param {Object} context - Additional context (forms, dataModels, workflow, pages, etc.)
+   * @param {Function} emitThinking - Optional callback for thinking events
+   * @returns {Promise<Object>} Generated mobile UI configuration
    */
-  async generateMobileUI(requirements) {
+  async generateMobileUI(requirements, context = {}, emitThinking = null) {
     console.log('[MoE] Generating mobile UI based on requirements...');
 
-    // For now, return null - this will be implemented later
-    return null;
+    const emit = emitThinking || (() => {});
+
+    try {
+      emit({
+        agent: 'CrossPlatformExpert',
+        step: 'Analyzing Requirements',
+        content: 'Determining mobile screen structure...'
+      });
+
+      // Route to determine which mobile expert to use
+      const routing = await this.router.execute(requirements, [], emit);
+      const mobileExperts = routing.routing.mobileExperts || ['CrossPlatformExpert'];
+
+      emit({
+        agent: 'MobileExpert',
+        step: 'Generating Screens',
+        content: `Using ${mobileExperts[0]} to generate mobile UI...`
+      });
+
+      // Get the appropriate mobile expert
+      const expertKey = mobileExperts[0].includes('ios') ? 'ios' :
+                       mobileExperts[0].includes('android') ? 'android' : 'crossPlatform';
+      const mobileExpert = this.experts.mobile[expertKey];
+
+      if (!mobileExpert) {
+        console.warn('[MoE] Mobile expert not found, using CrossPlatformExpert');
+        return this.generateDefaultMobileUI(requirements, context);
+      }
+
+      // Prepare shared context for mobile expert
+      const sharedContext = {
+        userRequirements: requirements,
+        existingWorkflow: context.workflow || null,
+        conversationHistory: [],
+        routing,
+        forms: context.forms || [],
+        dataModels: context.dataModels || [],
+        pages: context.pages || []
+      };
+
+      const mobileResult = await mobileExpert.execute(sharedContext, emit);
+
+      if (mobileResult && mobileResult.screens) {
+        emit({
+          agent: 'MobileExpert',
+          step: 'Mobile UI Generated',
+          content: `Successfully generated ${mobileResult.screens.length} mobile screen(s)`
+        });
+        return mobileResult;
+      }
+
+      return this.generateDefaultMobileUI(requirements, context);
+    } catch (error) {
+      console.error('[MoE] Mobile UI generation failed:', error.message);
+      emit({
+        agent: 'MobileExpert',
+        step: 'Error',
+        content: `Mobile UI generation failed: ${error.message}`
+      });
+      return this.generateDefaultMobileUI(requirements, context);
+    }
+  }
+
+  /**
+   * Generate default fallback mobile UI
+   */
+  generateDefaultMobileUI(requirements, context = {}) {
+    const timestamp = Date.now();
+
+    const screens = [
+      {
+        id: `mobile_home_${timestamp}`,
+        name: 'HomeScreen',
+        type: 'dashboard',
+        platform: 'crossplatform',
+        components: [
+          {
+            type: 'SafeAreaView',
+            children: [
+              {
+                type: 'ScrollView',
+                children: [
+                  {
+                    type: 'View',
+                    props: { style: { padding: 16 } },
+                    children: [
+                      { type: 'Text', props: { children: 'Welcome', style: { fontSize: 24, fontWeight: 'bold' } } },
+                      { type: 'Text', props: { children: 'Your mobile dashboard', style: { color: '#666' } } }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ];
+
+    // Add list screen if forms exist
+    if (context.forms && context.forms.length > 0) {
+      screens.push({
+        id: `mobile_list_${timestamp}`,
+        name: 'ListScreen',
+        type: 'list',
+        platform: 'crossplatform',
+        components: [
+          {
+            type: 'SafeAreaView',
+            children: [
+              {
+                type: 'FlatList',
+                props: {
+                  dataSource: 'records',
+                  renderItem: 'ListItem'
+                }
+              }
+            ]
+          }
+        ]
+      });
+
+      screens.push({
+        id: `mobile_form_${timestamp}`,
+        name: 'FormScreen',
+        type: 'form',
+        platform: 'crossplatform',
+        formId: context.forms[0].id,
+        components: [
+          {
+            type: 'SafeAreaView',
+            children: [
+              {
+                type: 'ScrollView',
+                children: [
+                  {
+                    type: 'MobileFormRenderer',
+                    props: { formId: context.forms[0].id }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      });
+    }
+
+    return {
+      screens,
+      navigation: {
+        type: 'tab',
+        screens: screens.map(s => s.name)
+      },
+      theme: {
+        primary: '#3b82f6',
+        background: '#f8f9fa',
+        text: '#1f2937'
+      },
+      _autoGenerated: true
+    };
   }
 }
 

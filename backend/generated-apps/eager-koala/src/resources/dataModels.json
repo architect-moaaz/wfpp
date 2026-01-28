@@ -1,271 +1,131 @@
 [
   {
-    "id": "app_1764299556312_comment-category-data-model",
-    "name": "CommentCategoryDataModel",
-    "config": {},
+    "id": "task",
+    "name": "Task",
+    "description": "Core task entity for tracking personal tasks",
     "fields": [
       {
         "name": "id",
         "type": "string",
+        "description": "Unique identifier for the task",
         "required": true,
-        "description": "Unique identifier for comment or category record",
-        "defaultValue": null
-      },
-      {
-        "name": "type",
-        "type": "string",
-        "required": true,
-        "description": "Record type: 'comment' or 'category'",
-        "defaultValue": null
-      },
-      {
-        "name": "ticketId",
-        "type": "string",
-        "required": false,
-        "description": "Reference to associated ticket (for comments only)",
-        "defaultValue": null
-      },
-      {
-        "name": "content",
-        "type": "string",
-        "required": true,
-        "description": "Comment text or category name with description",
-        "defaultValue": null
-      },
-      {
-        "name": "authorId",
-        "type": "string",
-        "required": true,
-        "description": "User or agent ID who created the comment or category",
-        "defaultValue": null
-      },
-      {
-        "name": "parentId",
-        "type": "string",
-        "required": false,
-        "description": "Parent comment ID for threaded conversations or parent category for hierarchy",
-        "defaultValue": null
-      },
-      {
-        "name": "metadata",
-        "type": "object",
-        "required": false,
-        "description": "Additional data: SLA rules for categories, knowledge base references, visibility flags, attachments",
-        "defaultValue": {}
-      },
-      {
-        "name": "createdAt",
-        "type": "date",
-        "required": true,
-        "description": "Timestamp when comment was posted or category was created",
-        "defaultValue": null
-      }
-    ],
-    "indexes": [
-      {
-        "fields": [
-          "ticketId",
-          "createdAt"
-        ],
-        "description": "Optimize retrieval of comments for a ticket in chronological order"
-      },
-      {
-        "fields": [
-          "type",
-          "parentId"
-        ],
-        "description": "Support efficient querying of categories and threaded comments"
-      }
-    ],
-    "metadata": {},
-    "constraints": {
-      "typeEnum": [
-        "comment",
-        "category"
-      ],
-      "validParentReference": "parentId must reference existing record of same type",
-      "commentRequiresTicket": "Comments must have a ticketId"
-    },
-    "description": "Stores ticket comments with threaded conversations and ticket categories with SLA rules for help desk ticketing system",
-    "relationships": [
-      {
-        "type": "manyToOne",
-        "foreignKey": "ticketId",
-        "description": "Comments belong to tickets",
-        "relatedModel": "TicketDataModel"
-      },
-      {
-        "type": "manyToOne",
-        "foreignKey": "authorId",
-        "description": "Comments and categories are created by users or agents",
-        "relatedModel": "UserAgentDataModel"
-      }
-    ]
-  },
-  {
-    "id": "app_1764299556312_ticket-data-model",
-    "name": "TicketDataModel",
-    "config": {},
-    "fields": [
-      {
-        "name": "ticketId",
-        "type": "string",
-        "required": true,
-        "description": "Unique identifier for the ticket",
+        "primaryKey": true,
         "defaultValue": null
       },
       {
         "name": "title",
         "type": "string",
+        "description": "Title or name of the task",
         "required": true,
-        "description": "Brief summary of the ticket issue",
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the task",
+        "required": false,
         "defaultValue": null
       },
       {
         "name": "status",
         "type": "string",
+        "description": "Current status of the task (e.g., pending, in-progress, completed)",
         "required": true,
-        "description": "Current ticket status (open, in-progress, resolved, closed)",
-        "defaultValue": "open"
+        "defaultValue": "pending"
       },
       {
         "name": "priority",
         "type": "string",
-        "required": true,
-        "description": "Priority level of the ticket (low, medium, high, critical)",
+        "description": "Priority level of the task (e.g., low, medium, high)",
+        "required": false,
         "defaultValue": "medium"
       },
       {
-        "name": "assignedAgentId",
-        "type": "string",
+        "name": "dueDate",
+        "type": "date",
+        "description": "Due date for task completion",
         "required": false,
-        "description": "ID of the agent assigned to handle the ticket",
         "defaultValue": null
       },
       {
         "name": "createdAt",
         "type": "date",
+        "description": "Timestamp when the task was created",
         "required": true,
-        "description": "Timestamp when the ticket was created",
-        "defaultValue": null
+        "defaultValue": "now"
       },
       {
-        "name": "slaDueDate",
+        "name": "completedAt",
         "type": "date",
-        "required": true,
-        "description": "Service Level Agreement deadline for ticket resolution",
-        "defaultValue": null
-      },
-      {
-        "name": "requesterId",
-        "type": "string",
-        "required": true,
-        "description": "ID of the user who submitted the ticket",
+        "description": "Timestamp when the task was completed",
+        "required": false,
         "defaultValue": null
       }
     ],
+    "relationships": [],
     "indexes": [],
-    "metadata": {},
     "constraints": {},
-    "description": "Central data model for managing help desk tickets including status, priority, assignment, and SLA tracking",
-    "relationships": []
+    "workflowId": "wf-create-task"
   },
   {
-    "id": "app_1764299556312_user-agent-data-model",
-    "name": "UserAgentDataModel",
-    "config": {},
+    "id": "task-model",
+    "name": "Task",
+    "description": "Task entity with due date tracking capabilities",
     "fields": [
       {
-        "name": "userId",
+        "name": "id",
         "type": "string",
+        "description": "Unique identifier for the task",
         "required": true,
-        "description": "Unique identifier for the user",
+        "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "fullName",
+        "name": "title",
         "type": "string",
+        "description": "Title or name of the task",
         "required": true,
-        "description": "Full name of the user or agent",
         "defaultValue": null
       },
       {
-        "name": "email",
+        "name": "description",
         "type": "string",
-        "required": true,
-        "description": "Email address for contact and authentication",
-        "defaultValue": null
-      },
-      {
-        "name": "role",
-        "type": "string",
-        "required": true,
-        "description": "User role in the system (customer, agent, team_lead, administrator)",
-        "defaultValue": "customer"
-      },
-      {
-        "name": "department",
-        "type": "string",
+        "description": "Detailed description of the task",
         "required": false,
-        "description": "Department or team assignment for agents",
         "defaultValue": null
       },
       {
-        "name": "isAvailable",
-        "type": "boolean",
+        "name": "dueDate",
+        "type": "date",
+        "description": "Due date for task completion",
         "required": false,
-        "description": "Current availability status for agents to handle tickets",
-        "defaultValue": true
+        "defaultValue": null
       },
       {
-        "name": "activeTicketCount",
-        "type": "number",
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the task (e.g., pending, in-progress, completed)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the task (e.g., low, medium, high)",
         "required": false,
-        "description": "Number of tickets currently assigned to the agent",
-        "defaultValue": 0
+        "defaultValue": "medium"
       },
       {
         "name": "createdAt",
         "type": "date",
+        "description": "Timestamp when the task was created",
         "required": true,
-        "description": "Timestamp when the user account was created",
-        "defaultValue": null
+        "defaultValue": "now"
       }
     ],
-    "indexes": [
-      {
-        "fields": [
-          "userId"
-        ],
-        "unique": true
-      },
-      {
-        "fields": [
-          "email"
-        ],
-        "unique": true
-      },
-      {
-        "fields": [
-          "role",
-          "department"
-        ]
-      }
-    ],
-    "metadata": {},
-    "constraints": {
-      "role": "Must be one of: customer, agent, team_lead, administrator",
-      "email": "Must be valid email format",
-      "activeTicketCount": "Must be non-negative integer"
-    },
-    "description": "Manages user profiles, agent information, roles, and team assignments for the help desk ticketing system",
-    "relationships": [
-      {
-        "type": "oneToMany",
-        "foreignKey": "assignedAgentId",
-        "description": "An agent can be assigned to multiple tickets",
-        "relatedModel": "TicketDataModel"
-      }
-    ]
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "wf-create-task"
   }
 ]

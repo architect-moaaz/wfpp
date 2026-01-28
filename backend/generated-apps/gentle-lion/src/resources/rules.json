@@ -1,0 +1,140 @@
+[
+  {
+    "id": "rule_start_task_creation",
+    "name": "Start Task Creation Rule",
+    "description": "Validate user input when starting task creation to ensure title and description are provided",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Task.title",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Task.title",
+          "value": null,
+          "message": "Task title is required and cannot be empty"
+        },
+        {
+          "type": "stopWorkflow",
+          "field": null,
+          "value": null,
+          "message": "Task creation stopped due to validation failure"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "wf-create-task-001",
+    "workflowId": "wf-create-task-001",
+    "application_id": "app_1767362306268"
+  },
+  {
+    "id": "rule_validate_task_data",
+    "name": "Validate Task Data Rule",
+    "description": "Ensure task has valid status and title length meets requirements",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Task.status",
+          "operator": "in",
+          "value": [
+            "pending",
+            "in_progress",
+            "completed",
+            "cancelled"
+          ]
+        },
+        {
+          "field": "Task.title",
+          "operator": "greaterThan",
+          "value": 3
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Task.status",
+          "value": "valid",
+          "message": "Task status validated successfully"
+        },
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "passed",
+          "message": "All task data validation checks passed"
+        },
+        {
+          "type": "logMessage",
+          "field": null,
+          "value": "info",
+          "message": "Task data validation completed successfully"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "wf-create-task-001",
+    "workflowId": "wf-create-task-001",
+    "application_id": "app_1767362306268"
+  },
+  {
+    "id": "rule_is_valid_decision",
+    "name": "Is Valid? Rule",
+    "description": "Determine if task data is valid and route to appropriate workflow path",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validationStatus",
+          "operator": "equals",
+          "value": "passed"
+        },
+        {
+          "field": "Task.title",
+          "operator": "notEquals",
+          "value": null
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "proceed_to_save",
+          "message": "Task validation successful, proceeding to save"
+        },
+        {
+          "type": "updateData",
+          "field": "Task.status",
+          "value": "pending",
+          "message": "Setting initial task status to pending"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Task.assignedUser",
+          "value": "email",
+          "message": "New task has been created and assigned to you"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "wf-create-task-001",
+    "workflowId": "wf-create-task-001",
+    "application_id": "app_1767362306268"
+  }
+]

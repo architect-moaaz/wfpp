@@ -1,0 +1,190 @@
+[
+  {
+    "id": "rule_start_notification_process",
+    "name": "Start Notification Process Rule",
+    "description": "Validate user input and ensure data quality before initiating notification workflow",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Notification.recipientEmail",
+          "operator": "isNull",
+          "value": "false"
+        },
+        {
+          "field": "Notification.notificationType",
+          "operator": "in",
+          "value": [
+            "TICKET_ISSUED",
+            "PAYMENT_DUE",
+            "APPEAL_STATUS",
+            "PAYMENT_CONFIRMATION"
+          ]
+        },
+        {
+          "field": "ParkingTicket.ticketNumber",
+          "operator": "notEquals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Notification.status",
+          "value": "VALIDATED"
+        },
+        {
+          "type": "logMessage",
+          "message": "Notification request validated successfully for ticket"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "notification-workflow-001",
+    "workflowId": "notification-workflow-001",
+    "application_id": "app_1765340179198"
+  },
+  {
+    "id": "rule_validate_notification_request",
+    "name": "Validate Notification Request Rule",
+    "description": "Validate notification data against business rules and recipient eligibility",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ParkingTicket.status",
+          "operator": "in",
+          "value": [
+            "ISSUED",
+            "PENDING_PAYMENT",
+            "UNDER_APPEAL",
+            "PAID"
+          ]
+        },
+        {
+          "field": "Notification.recipientEmail",
+          "operator": "contains",
+          "value": "@"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Notification.recipientEmail",
+          "message": "Email format validated"
+        },
+        {
+          "type": "setVariable",
+          "field": "Notification.validationStatus",
+          "value": "PASSED"
+        },
+        {
+          "type": "logMessage",
+          "message": "Notification request passed business rule validation"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "notification-workflow-001",
+    "workflowId": "notification-workflow-001",
+    "application_id": "app_1765340179198"
+  },
+  {
+    "id": "rule_determine_notification_type",
+    "name": "Determine Notification Type Rule",
+    "description": "Evaluate ticket conditions to determine appropriate notification workflow path",
+    "type": "decision",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ParkingTicket.status",
+          "operator": "equals",
+          "value": "ISSUED"
+        },
+        {
+          "field": "Payment.paymentStatus",
+          "operator": "equals",
+          "value": "UNPAID"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Notification.notificationType",
+          "value": "TICKET_ISSUED"
+        },
+        {
+          "type": "setVariable",
+          "field": "Notification.priority",
+          "value": "HIGH"
+        },
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "IMMEDIATE_NOTIFICATION"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "notification-workflow-001",
+    "workflowId": "notification-workflow-001",
+    "application_id": "app_1765340179198"
+  },
+  {
+    "id": "rule_select_delivery_channel",
+    "name": "Select Delivery Channel Rule",
+    "description": "Evaluate notification priority and recipient preferences to determine delivery channel",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Notification.priority",
+          "operator": "equals",
+          "value": "HIGH"
+        },
+        {
+          "field": "Notification.recipientEmail",
+          "operator": "isNull",
+          "value": "false"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Notification.deliveryChannel",
+          "value": "EMAIL"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Notification.recipientEmail",
+          "message": "Parking ticket notification sent via email"
+        },
+        {
+          "type": "updateData",
+          "field": "Notification.sentAt",
+          "value": "CURRENT_TIMESTAMP"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "notification-workflow-001",
+    "workflowId": "notification-workflow-001",
+    "application_id": "app_1765340179198"
+  }
+]

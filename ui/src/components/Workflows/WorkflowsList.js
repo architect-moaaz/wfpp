@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GitBranch, Plus, Trash2, Edit, Calendar, CheckSquare, Square, Play, Eye, Copy } from 'lucide-react';
+import { GitBranch, Plus, Trash2, Edit, Calendar, CheckSquare, Square, Play, Eye, Copy, X } from 'lucide-react';
 import { useWorkflow } from '../../context/WorkflowContext';
 import WorkflowCanvas from '../Canvas/WorkflowCanvas';
 import WorkflowTestRunner from '../TestRun/WorkflowTestRunner';
@@ -44,10 +44,8 @@ const WorkflowsList = () => {
   };
 
   const handleEditWorkflow = (workflow) => {
-    setSelectedWorkflow(workflow);
-    setIsEditMode(true);
-    setShowEditor(true);
     setCurrentWorkflow(workflow);
+    setActiveSidebar('workflow-editor');
   };
 
   const handlePreviewWorkflow = (workflow, e) => {
@@ -63,7 +61,7 @@ const WorkflowsList = () => {
     setShowTestRunner(true);
   };
 
-  const handleCreateNew = async () => {
+  const handleCreateNew = () => {
     const timestamp = Date.now();
     const newWorkflow = {
       id: `workflow_${timestamp}`,
@@ -88,23 +86,21 @@ const WorkflowsList = () => {
       createdAt: new Date().toISOString()
     };
 
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/applications/${currentApplication.id}/workflows`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newWorkflow)
-        }
-      );
+    // Navigate immediately for instant feedback
+    setCurrentWorkflow(newWorkflow);
+    setActiveSidebar('workflow-editor');
 
-      if (response.ok) {
-        setCurrentWorkflow(newWorkflow);
-        setActiveSidebar('workflows');
+    // Save to backend in background (don't wait for response)
+    fetch(
+      `http://localhost:5000/api/applications/${currentApplication.id}/workflows`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newWorkflow)
       }
-    } catch (error) {
+    ).catch(error => {
       console.error('Failed to create workflow:', error);
-    }
+    });
   };
 
   const handleDuplicate = async (workflow, e) => {
@@ -234,7 +230,7 @@ const WorkflowsList = () => {
             {!isEditMode && (
               <button
                 className="btn-icon"
-                onClick={() => setIsEditMode(true)}
+                onClick={() => handleEditWorkflow(selectedWorkflow)}
                 title="Edit"
               >
                 <Edit size={16} />
@@ -261,7 +257,7 @@ const WorkflowsList = () => {
               }}
               title="Close"
             >
-              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>x</span>
+              <X size={16} />
             </button>
           </div>
         </div>

@@ -1,0 +1,2458 @@
+[
+  {
+    "id": "survey-analytics-workflow",
+    "name": "SurveyAnalyticsWorkflow",
+    "description": "Processes survey responses to generate real-time analytics, statistical summaries, and visualizations with response filtering, segmentation, and trend analysis",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start-1",
+        "data": {
+          "label": "Start Analytics Process",
+          "formId": "form_auto_start_analytics_process_1766069169698",
+          "formName": "Start Analytics Process Form",
+          "description": "Triggered when analytics generation is requested for a survey"
+        },
+        "type": "startProcess",
+        "label": "Start Analytics Process",
+        "position": {
+          "x": 100,
+          "y": 200
+        }
+      },
+      {
+        "id": "validation-1",
+        "data": {
+          "label": "Validate Survey Data",
+          "description": "Verify survey exists, has responses, and user has analytics permissions"
+        },
+        "type": "validation",
+        "label": "Validate Survey Data",
+        "position": {
+          "x": 250,
+          "y": 200
+        }
+      },
+      {
+        "id": "decision-1",
+        "data": {
+          "label": "Sufficient Responses?",
+          "description": "Check if survey has minimum responses for meaningful analytics"
+        },
+        "type": "decision",
+        "label": "Sufficient Responses?",
+        "position": {
+          "x": 400,
+          "y": 200
+        }
+      },
+      {
+        "id": "dataProcess-1",
+        "data": {
+          "label": "Filter & Segment Responses",
+          "description": "Apply filters, create segments based on demographics, time periods, and custom criteria"
+        },
+        "type": "dataProcess",
+        "label": "Filter & Segment Responses",
+        "position": {
+          "x": 550,
+          "y": 100
+        }
+      },
+      {
+        "id": "scriptTask-1",
+        "data": {
+          "label": "Calculate Statistics",
+          "description": "Compute response rates, averages, distributions, correlations, and statistical summaries"
+        },
+        "type": "scriptTask",
+        "label": "Calculate Statistics",
+        "position": {
+          "x": 700,
+          "y": 100
+        }
+      },
+      {
+        "id": "llmTask-1",
+        "data": {
+          "label": "Generate Insights",
+          "description": "Use AI to analyze open-ended responses, identify trends, and generate actionable insights"
+        },
+        "type": "llmTask",
+        "label": "Generate Insights",
+        "position": {
+          "x": 850,
+          "y": 100
+        }
+      },
+      {
+        "id": "dataProcess-2",
+        "data": {
+          "label": "Prepare Visualizations",
+          "description": "Generate chart data, graphs, heat maps, and dashboard components"
+        },
+        "type": "dataProcess",
+        "label": "Prepare Visualizations",
+        "position": {
+          "x": 1000,
+          "y": 100
+        }
+      },
+      {
+        "id": "scriptTask-2",
+        "data": {
+          "label": "Create Analytics Snapshot",
+          "description": "Save analytics snapshot to database for historical tracking and comparison"
+        },
+        "type": "scriptTask",
+        "label": "Create Analytics Snapshot",
+        "position": {
+          "x": 1150,
+          "y": 100
+        }
+      },
+      {
+        "id": "notification-1",
+        "data": {
+          "label": "Notify Analytics Ready",
+          "description": "Send notification to users that analytics report is available"
+        },
+        "type": "notification",
+        "label": "Notify Analytics Ready",
+        "position": {
+          "x": 1300,
+          "y": 100
+        }
+      },
+      {
+        "id": "notification-2",
+        "data": {
+          "label": "Notify Insufficient Data",
+          "description": "Alert user that survey needs more responses for analytics"
+        },
+        "type": "notification",
+        "label": "Notify Insufficient Data",
+        "position": {
+          "x": 550,
+          "y": 300
+        }
+      },
+      {
+        "id": "end-1",
+        "data": {
+          "label": "Analytics Complete",
+          "description": "Analytics generation process completed successfully"
+        },
+        "type": "endProcess",
+        "label": "Analytics Complete",
+        "position": {
+          "x": 1450,
+          "y": 100
+        }
+      },
+      {
+        "id": "end-2",
+        "data": {
+          "label": "Process Terminated",
+          "description": "Process ended due to insufficient data"
+        },
+        "type": "endProcess",
+        "label": "Process Terminated",
+        "position": {
+          "x": 700,
+          "y": 300
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "start-1",
+        "target": "validation-1"
+      },
+      {
+        "id": "edge-2",
+        "source": "validation-1",
+        "target": "decision-1"
+      },
+      {
+        "id": "edge-3",
+        "label": "Yes",
+        "source": "decision-1",
+        "target": "dataProcess-1",
+        "isDefault": true
+      },
+      {
+        "id": "edge-4",
+        "label": "No",
+        "source": "decision-1",
+        "target": "notification-2"
+      },
+      {
+        "id": "edge-5",
+        "source": "dataProcess-1",
+        "target": "scriptTask-1"
+      },
+      {
+        "id": "edge-6",
+        "source": "scriptTask-1",
+        "target": "llmTask-1"
+      },
+      {
+        "id": "edge-7",
+        "source": "llmTask-1",
+        "target": "dataProcess-2"
+      },
+      {
+        "id": "edge-8",
+        "source": "dataProcess-2",
+        "target": "scriptTask-2"
+      },
+      {
+        "id": "edge-9",
+        "source": "scriptTask-2",
+        "target": "notification-1"
+      },
+      {
+        "id": "edge-10",
+        "source": "notification-1",
+        "target": "end-1"
+      },
+      {
+        "id": "edge-11",
+        "source": "notification-2",
+        "target": "end-2"
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge-1",
+        "label": "",
+        "source": "start-1",
+        "target": "validation-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-2",
+        "label": "",
+        "source": "validation-1",
+        "target": "decision-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-3",
+        "label": "Yes",
+        "source": "decision-1",
+        "target": "dataProcess-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-4",
+        "label": "No",
+        "source": "decision-1",
+        "target": "notification-2",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-5",
+        "label": "",
+        "source": "dataProcess-1",
+        "target": "scriptTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-6",
+        "label": "",
+        "source": "scriptTask-1",
+        "target": "llmTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-7",
+        "label": "",
+        "source": "llmTask-1",
+        "target": "dataProcess-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-8",
+        "label": "",
+        "source": "dataProcess-2",
+        "target": "scriptTask-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-9",
+        "label": "",
+        "source": "scriptTask-2",
+        "target": "notification-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-10",
+        "label": "",
+        "source": "notification-1",
+        "target": "end-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-11",
+        "label": "",
+        "source": "notification-2",
+        "target": "end-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      }
+    ],
+    "metadata": {
+      "category": "data-processing",
+      "complexity": "complex"
+    },
+    "is_active": true,
+    "created_at": "2025-12-10T05:26:44.136Z",
+    "updated_at": "2025-12-18T14:47:59.145Z"
+  },
+  {
+    "id": "user-management-workflow",
+    "name": "UserManagementWorkflow",
+    "description": "Manages user registration, authentication, role assignment, and profile management with organization membership and access control",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start-1",
+        "data": {
+          "label": "Start User Management",
+          "formId": "userregistrationform-1766068739669-gu9l0l",
+          "formName": "UserRegistrationForm",
+          "description": "Initiate user management process"
+        },
+        "type": "startProcess",
+        "label": "Start User Management",
+        "position": {
+          "x": 100,
+          "y": 200
+        }
+      },
+      {
+        "id": "userTask-1",
+        "data": {
+          "label": "Submit User Request",
+          "formId": "form_auto_submit_user_request_1766069169698",
+          "formName": "Submit User Request Form",
+          "description": "User submits registration or profile update request"
+        },
+        "type": "userTask",
+        "label": "Submit User Request",
+        "position": {
+          "x": 250,
+          "y": 200
+        }
+      },
+      {
+        "id": "validation-1",
+        "data": {
+          "label": "Validate User Data",
+          "description": "Validate email format, password strength, required fields, and duplicate checks"
+        },
+        "type": "validation",
+        "label": "Validate User Data",
+        "position": {
+          "x": 400,
+          "y": 200
+        }
+      },
+      {
+        "id": "decision-1",
+        "data": {
+          "label": "Validation Passed?",
+          "description": "Check if user data meets all validation requirements"
+        },
+        "type": "decision",
+        "label": "Validation Passed?",
+        "position": {
+          "x": 550,
+          "y": 200
+        }
+      },
+      {
+        "id": "notification-1",
+        "data": {
+          "label": "Send Validation Error",
+          "description": "Notify user of validation errors and required corrections"
+        },
+        "type": "notification",
+        "label": "Send Validation Error",
+        "position": {
+          "x": 550,
+          "y": 350
+        }
+      },
+      {
+        "id": "scriptTask-1",
+        "data": {
+          "label": "Create/Update User Account",
+          "description": "Process user account creation or update in database"
+        },
+        "type": "scriptTask",
+        "label": "Create/Update User Account",
+        "position": {
+          "x": 700,
+          "y": 200
+        }
+      },
+      {
+        "id": "userTask-2",
+        "data": {
+          "label": "Assign Roles & Permissions",
+          "formId": "form_auto_assign_roles___permissions_1766069169698",
+          "formName": "Assign Roles & Permissions Form",
+          "description": "Admin assigns user roles and organization membership"
+        },
+        "type": "userTask",
+        "label": "Assign Roles & Permissions",
+        "position": {
+          "x": 850,
+          "y": 200
+        }
+      },
+      {
+        "id": "dataProcess-1",
+        "data": {
+          "label": "Configure Access Control",
+          "description": "Set up user permissions, organization access, and survey visibility"
+        },
+        "type": "dataProcess",
+        "label": "Configure Access Control",
+        "position": {
+          "x": 1000,
+          "y": 200
+        }
+      },
+      {
+        "id": "notification-2",
+        "data": {
+          "label": "Send Welcome Email",
+          "description": "Send account confirmation and credentials to user"
+        },
+        "type": "notification",
+        "label": "Send Welcome Email",
+        "position": {
+          "x": 1150,
+          "y": 200
+        }
+      },
+      {
+        "id": "end-1",
+        "data": {
+          "label": "End",
+          "description": "User management process complete"
+        },
+        "type": "endProcess",
+        "label": "End",
+        "position": {
+          "x": 1300,
+          "y": 200
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "start-1",
+        "target": "userTask-1"
+      },
+      {
+        "id": "edge-2",
+        "source": "userTask-1",
+        "target": "validation-1"
+      },
+      {
+        "id": "edge-3",
+        "source": "validation-1",
+        "target": "decision-1"
+      },
+      {
+        "id": "edge-4",
+        "data": {
+          "condition": "validationFailed"
+        },
+        "label": "Failed",
+        "source": "decision-1",
+        "target": "notification-1"
+      },
+      {
+        "id": "edge-5",
+        "data": {
+          "condition": "validationPassed"
+        },
+        "label": "Passed",
+        "source": "decision-1",
+        "target": "scriptTask-1",
+        "isDefault": true
+      },
+      {
+        "id": "edge-6",
+        "source": "notification-1",
+        "target": "userTask-1"
+      },
+      {
+        "id": "edge-7",
+        "source": "scriptTask-1",
+        "target": "userTask-2"
+      },
+      {
+        "id": "edge-8",
+        "source": "userTask-2",
+        "target": "dataProcess-1"
+      },
+      {
+        "id": "edge-9",
+        "source": "dataProcess-1",
+        "target": "notification-2"
+      },
+      {
+        "id": "edge-10",
+        "source": "notification-2",
+        "target": "end-1"
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge-1",
+        "label": "",
+        "source": "start-1",
+        "target": "userTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-2",
+        "label": "",
+        "source": "userTask-1",
+        "target": "validation-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-3",
+        "label": "",
+        "source": "validation-1",
+        "target": "decision-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-4",
+        "label": "Failed",
+        "source": "decision-1",
+        "target": "notification-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-5",
+        "label": "Passed",
+        "source": "decision-1",
+        "target": "scriptTask-1",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-6",
+        "label": "",
+        "source": "notification-1",
+        "target": "userTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-7",
+        "label": "",
+        "source": "scriptTask-1",
+        "target": "userTask-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-8",
+        "label": "",
+        "source": "userTask-2",
+        "target": "dataProcess-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-9",
+        "label": "",
+        "source": "dataProcess-1",
+        "target": "notification-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-10",
+        "label": "",
+        "source": "notification-2",
+        "target": "end-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      }
+    ],
+    "metadata": {
+      "category": "user-interaction",
+      "complexity": "medium"
+    },
+    "is_active": true,
+    "created_at": "2025-12-18T14:47:59.895Z",
+    "updated_at": "2025-12-18T14:47:59.895Z"
+  },
+  {
+    "id": "survey-distribution-workflow",
+    "name": "SurveyDistributionWorkflow",
+    "description": "Manages survey distribution and invitation sending to respondents via email or shareable links, with tracking and reminder scheduling",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start-1",
+        "data": {
+          "label": "Start Distribution",
+          "formId": "surveypublishform-1766068482702-71beu9",
+          "formName": "SurveyPublishForm",
+          "description": "Initiate survey distribution process"
+        },
+        "type": "startProcess",
+        "label": "Start Distribution",
+        "position": {
+          "x": 100,
+          "y": 200
+        }
+      },
+      {
+        "id": "validation-1",
+        "data": {
+          "label": "Validate Survey & Recipients",
+          "description": "Verify survey is published and recipient list is valid"
+        },
+        "type": "validation",
+        "label": "Validate Survey & Recipients",
+        "position": {
+          "x": 280,
+          "y": 200
+        }
+      },
+      {
+        "id": "decision-1",
+        "data": {
+          "label": "Distribution Method?",
+          "description": "Determine if distribution is via email invitations or shareable link"
+        },
+        "type": "decision",
+        "label": "Distribution Method?",
+        "position": {
+          "x": 480,
+          "y": 200
+        }
+      },
+      {
+        "id": "dataProcess-1",
+        "data": {
+          "label": "Generate Shareable Link",
+          "description": "Create unique shareable link and update SurveyDistribution record"
+        },
+        "type": "dataProcess",
+        "label": "Generate Shareable Link",
+        "position": {
+          "x": 680,
+          "y": 100
+        }
+      },
+      {
+        "id": "scriptTask-1",
+        "data": {
+          "label": "Prepare Email Invitations",
+          "description": "Generate personalized invitation tokens and tracking links for each respondent"
+        },
+        "type": "scriptTask",
+        "label": "Prepare Email Invitations",
+        "position": {
+          "x": 680,
+          "y": 300
+        }
+      },
+      {
+        "id": "notification-1",
+        "data": {
+          "label": "Send Email Invitations",
+          "description": "Distribute survey invitations via email to respondent list"
+        },
+        "type": "notification",
+        "label": "Send Email Invitations",
+        "position": {
+          "x": 880,
+          "y": 300
+        }
+      },
+      {
+        "id": "dataProcess-2",
+        "data": {
+          "label": "Update Distribution Analytics",
+          "description": "Record distribution metrics and create AnalyticsSnapshot"
+        },
+        "type": "dataProcess",
+        "label": "Update Distribution Analytics",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "id": "timerEvent-1",
+        "data": {
+          "label": "Schedule Reminders",
+          "description": "Set up automated reminder notifications for non-respondents"
+        },
+        "type": "timerEvent",
+        "label": "Schedule Reminders",
+        "position": {
+          "x": 1080,
+          "y": 200
+        }
+      },
+      {
+        "id": "notification-2",
+        "data": {
+          "label": "Notify Distribution Complete",
+          "description": "Send confirmation to survey owner with distribution summary"
+        },
+        "type": "notification",
+        "label": "Notify Distribution Complete",
+        "position": {
+          "x": 1280,
+          "y": 200
+        }
+      },
+      {
+        "id": "end-1",
+        "data": {
+          "label": "End",
+          "description": "Distribution process complete"
+        },
+        "type": "endProcess",
+        "label": "End",
+        "position": {
+          "x": 1480,
+          "y": 200
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "start-1",
+        "target": "validation-1"
+      },
+      {
+        "id": "edge-2",
+        "source": "validation-1",
+        "target": "decision-1"
+      },
+      {
+        "id": "edge-3",
+        "label": "Shareable Link",
+        "source": "decision-1",
+        "target": "dataProcess-1"
+      },
+      {
+        "id": "edge-4",
+        "label": "Email Invitations",
+        "source": "decision-1",
+        "target": "scriptTask-1",
+        "isDefault": true
+      },
+      {
+        "id": "edge-5",
+        "source": "scriptTask-1",
+        "target": "notification-1"
+      },
+      {
+        "id": "edge-6",
+        "source": "notification-1",
+        "target": "dataProcess-2"
+      },
+      {
+        "id": "edge-7",
+        "source": "dataProcess-1",
+        "target": "dataProcess-2"
+      },
+      {
+        "id": "edge-8",
+        "source": "dataProcess-2",
+        "target": "timerEvent-1"
+      },
+      {
+        "id": "edge-9",
+        "source": "timerEvent-1",
+        "target": "notification-2"
+      },
+      {
+        "id": "edge-10",
+        "source": "notification-2",
+        "target": "end-1"
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge-1",
+        "label": "",
+        "source": "start-1",
+        "target": "validation-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-2",
+        "label": "",
+        "source": "validation-1",
+        "target": "decision-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-3",
+        "label": "Shareable Link",
+        "source": "decision-1",
+        "target": "dataProcess-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-4",
+        "label": "Email Invitations",
+        "source": "decision-1",
+        "target": "scriptTask-1",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-5",
+        "label": "",
+        "source": "scriptTask-1",
+        "target": "notification-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-6",
+        "label": "",
+        "source": "notification-1",
+        "target": "dataProcess-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-7",
+        "label": "",
+        "source": "dataProcess-1",
+        "target": "dataProcess-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-8",
+        "label": "",
+        "source": "dataProcess-2",
+        "target": "timerEvent-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-9",
+        "label": "",
+        "source": "timerEvent-1",
+        "target": "notification-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-10",
+        "label": "",
+        "source": "notification-2",
+        "target": "end-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      }
+    ],
+    "metadata": {
+      "category": "automation",
+      "complexity": "medium"
+    },
+    "is_active": true,
+    "created_at": "2025-12-18T14:48:00.174Z",
+    "updated_at": "2025-12-18T14:48:00.174Z"
+  },
+  {
+    "id": "survey-template-workflow",
+    "name": "SurveyTemplateWorkflow",
+    "description": "Manages survey template creation from existing surveys, template library management, instantiation of surveys from templates, and tracks template usage and popularity metrics",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start-1",
+        "data": {
+          "label": "Start Template Process",
+          "formId": "templatecreationform-1766068719550-pduq80",
+          "formName": "TemplateCreationForm",
+          "description": "Initiates survey template workflow - creation or instantiation"
+        },
+        "type": "startProcess",
+        "label": "Start Template Process",
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      {
+        "id": "decision-1",
+        "data": {
+          "label": "Template Action Type",
+          "description": "Determine if creating new template or instantiating from existing"
+        },
+        "type": "decision",
+        "label": "Template Action Type",
+        "position": {
+          "x": 250,
+          "y": 100
+        }
+      },
+      {
+        "id": "userTask-1",
+        "data": {
+          "label": "Configure Template Details",
+          "formId": "form_auto_configure_template_details_1766069169698",
+          "formName": "Configure Template Details Form",
+          "description": "User defines template name, description, category, and visibility settings"
+        },
+        "type": "userTask",
+        "label": "Configure Template Details",
+        "position": {
+          "x": 400,
+          "y": 50
+        }
+      },
+      {
+        "id": "dataProcess-1",
+        "data": {
+          "label": "Extract Survey Structure",
+          "description": "Process source survey to extract questions, branching rules, and configuration"
+        },
+        "type": "dataProcess",
+        "label": "Extract Survey Structure",
+        "position": {
+          "x": 550,
+          "y": 50
+        }
+      },
+      {
+        "id": "validation-1",
+        "data": {
+          "label": "Validate Template",
+          "description": "Ensure template meets quality standards and has required components"
+        },
+        "type": "validation",
+        "label": "Validate Template",
+        "position": {
+          "x": 700,
+          "y": 50
+        }
+      },
+      {
+        "id": "scriptTask-1",
+        "data": {
+          "label": "Save to Template Library",
+          "description": "Store template in library with metadata and indexing"
+        },
+        "type": "scriptTask",
+        "label": "Save to Template Library",
+        "position": {
+          "x": 850,
+          "y": 50
+        }
+      },
+      {
+        "id": "userTask-2",
+        "data": {
+          "label": "Select Template",
+          "formId": "form_auto_select_template_1766069169698",
+          "formName": "Select Template Form",
+          "description": "User browses and selects template from library"
+        },
+        "type": "userTask",
+        "label": "Select Template",
+        "position": {
+          "x": 400,
+          "y": 150
+        }
+      },
+      {
+        "id": "dataProcess-2",
+        "data": {
+          "label": "Instantiate Survey",
+          "description": "Create new survey instance from template with all questions and rules"
+        },
+        "type": "dataProcess",
+        "label": "Instantiate Survey",
+        "position": {
+          "x": 550,
+          "y": 150
+        }
+      },
+      {
+        "id": "scriptTask-2",
+        "data": {
+          "label": "Track Template Usage",
+          "description": "Update usage count and popularity metrics for analytics"
+        },
+        "type": "scriptTask",
+        "label": "Track Template Usage",
+        "position": {
+          "x": 700,
+          "y": 150
+        }
+      },
+      {
+        "id": "notification-1",
+        "data": {
+          "label": "Notify User",
+          "description": "Send confirmation notification about template action completion"
+        },
+        "type": "notification",
+        "label": "Notify User",
+        "position": {
+          "x": 1000,
+          "y": 100
+        }
+      },
+      {
+        "id": "end-1",
+        "data": {
+          "label": "End Process",
+          "description": "Template workflow completed successfully"
+        },
+        "type": "endProcess",
+        "label": "End Process",
+        "position": {
+          "x": 1150,
+          "y": 100
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "start-1",
+        "target": "decision-1"
+      },
+      {
+        "id": "edge-2",
+        "label": "Create Template",
+        "source": "decision-1",
+        "target": "userTask-1"
+      },
+      {
+        "id": "edge-3",
+        "label": "Use Template",
+        "source": "decision-1",
+        "target": "userTask-2",
+        "isDefault": true
+      },
+      {
+        "id": "edge-4",
+        "source": "userTask-1",
+        "target": "dataProcess-1"
+      },
+      {
+        "id": "edge-5",
+        "source": "dataProcess-1",
+        "target": "validation-1"
+      },
+      {
+        "id": "edge-6",
+        "source": "validation-1",
+        "target": "scriptTask-1"
+      },
+      {
+        "id": "edge-7",
+        "source": "scriptTask-1",
+        "target": "notification-1"
+      },
+      {
+        "id": "edge-8",
+        "source": "userTask-2",
+        "target": "dataProcess-2"
+      },
+      {
+        "id": "edge-9",
+        "source": "dataProcess-2",
+        "target": "scriptTask-2"
+      },
+      {
+        "id": "edge-10",
+        "source": "scriptTask-2",
+        "target": "notification-1"
+      },
+      {
+        "id": "edge-11",
+        "source": "notification-1",
+        "target": "end-1"
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge-1",
+        "label": "",
+        "source": "start-1",
+        "target": "decision-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-2",
+        "label": "Create Template",
+        "source": "decision-1",
+        "target": "userTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-3",
+        "label": "Use Template",
+        "source": "decision-1",
+        "target": "userTask-2",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-4",
+        "label": "",
+        "source": "userTask-1",
+        "target": "dataProcess-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-5",
+        "label": "",
+        "source": "dataProcess-1",
+        "target": "validation-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-6",
+        "label": "",
+        "source": "validation-1",
+        "target": "scriptTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-7",
+        "label": "",
+        "source": "scriptTask-1",
+        "target": "notification-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-8",
+        "label": "",
+        "source": "userTask-2",
+        "target": "dataProcess-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-9",
+        "label": "",
+        "source": "dataProcess-2",
+        "target": "scriptTask-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-10",
+        "label": "",
+        "source": "scriptTask-2",
+        "target": "notification-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-11",
+        "label": "",
+        "source": "notification-1",
+        "target": "end-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      }
+    ],
+    "metadata": {
+      "category": "data-processing",
+      "complexity": "medium"
+    },
+    "is_active": true,
+    "created_at": "2025-12-18T14:48:00.178Z",
+    "updated_at": "2025-12-18T14:48:00.178Z"
+  },
+  {
+    "id": "data-export-workflow-001",
+    "name": "DataExportWorkflow",
+    "description": "Handles exporting survey responses and analytics to various formats (CSV, PDF) with asynchronous job processing and download link provisioning",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start-1",
+        "data": {
+          "label": "Start Export Request",
+          "formId": "exportconfigurationform-1766068682271-2egnw8",
+          "formName": "ExportConfigurationForm",
+          "description": "User initiates survey data export request"
+        },
+        "type": "startProcess",
+        "label": "Start Export Request",
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      {
+        "id": "validation-1",
+        "data": {
+          "label": "Validate Export Parameters",
+          "description": "Validate survey ID, format type, date ranges, and user permissions"
+        },
+        "type": "validation",
+        "label": "Validate Export Parameters",
+        "position": {
+          "x": 250,
+          "y": 100
+        }
+      },
+      {
+        "id": "decision-1",
+        "data": {
+          "label": "Check Data Volume",
+          "description": "Determine if export requires async processing based on response count"
+        },
+        "type": "decision",
+        "label": "Check Data Volume",
+        "position": {
+          "x": 400,
+          "y": 100
+        }
+      },
+      {
+        "id": "scriptTask-1",
+        "data": {
+          "label": "Create Export Job",
+          "description": "Create ExportJob record for large dataset with queued status"
+        },
+        "type": "scriptTask",
+        "label": "Create Export Job",
+        "position": {
+          "x": 550,
+          "y": 50
+        }
+      },
+      {
+        "id": "dataProcess-1",
+        "data": {
+          "label": "Generate Export File",
+          "description": "Process responses, apply filters, transform data to requested format (CSV/PDF)"
+        },
+        "type": "dataProcess",
+        "label": "Generate Export File",
+        "position": {
+          "x": 700,
+          "y": 50
+        }
+      },
+      {
+        "id": "scriptTask-2",
+        "data": {
+          "label": "Generate Immediate Export",
+          "description": "Synchronously generate export file for small datasets"
+        },
+        "type": "scriptTask",
+        "label": "Generate Immediate Export",
+        "position": {
+          "x": 550,
+          "y": 200
+        }
+      },
+      {
+        "id": "scriptTask-3",
+        "data": {
+          "label": "Store File & Generate Link",
+          "description": "Upload file to storage, generate secure download link with expiration"
+        },
+        "type": "scriptTask",
+        "label": "Store File & Generate Link",
+        "position": {
+          "x": 850,
+          "y": 100
+        }
+      },
+      {
+        "id": "notification-1",
+        "data": {
+          "label": "Notify User",
+          "description": "Send email with download link and export details to requesting user"
+        },
+        "type": "notification",
+        "label": "Notify User",
+        "position": {
+          "x": 1000,
+          "y": 100
+        }
+      },
+      {
+        "id": "end-1",
+        "data": {
+          "label": "Export Complete",
+          "description": "Export workflow completed successfully"
+        },
+        "type": "endProcess",
+        "label": "Export Complete",
+        "position": {
+          "x": 1150,
+          "y": 100
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "start-1",
+        "target": "validation-1"
+      },
+      {
+        "id": "edge-2",
+        "source": "validation-1",
+        "target": "decision-1"
+      },
+      {
+        "id": "edge-3",
+        "data": {
+          "condition": "responseCount > 10000"
+        },
+        "label": "Large Dataset (>10k responses)",
+        "source": "decision-1",
+        "target": "scriptTask-1"
+      },
+      {
+        "id": "edge-4",
+        "label": "Small Dataset",
+        "source": "decision-1",
+        "target": "scriptTask-2",
+        "isDefault": true
+      },
+      {
+        "id": "edge-5",
+        "source": "scriptTask-1",
+        "target": "dataProcess-1"
+      },
+      {
+        "id": "edge-6",
+        "source": "dataProcess-1",
+        "target": "scriptTask-3"
+      },
+      {
+        "id": "edge-7",
+        "source": "scriptTask-2",
+        "target": "scriptTask-3"
+      },
+      {
+        "id": "edge-8",
+        "source": "scriptTask-3",
+        "target": "notification-1"
+      },
+      {
+        "id": "edge-9",
+        "source": "notification-1",
+        "target": "end-1"
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge-1",
+        "label": "",
+        "source": "start-1",
+        "target": "validation-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-2",
+        "label": "",
+        "source": "validation-1",
+        "target": "decision-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-3",
+        "label": "Large Dataset (>10k responses)",
+        "source": "decision-1",
+        "target": "scriptTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-4",
+        "label": "Small Dataset",
+        "source": "decision-1",
+        "target": "scriptTask-2",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-5",
+        "label": "",
+        "source": "scriptTask-1",
+        "target": "dataProcess-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-6",
+        "label": "",
+        "source": "dataProcess-1",
+        "target": "scriptTask-3",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-7",
+        "label": "",
+        "source": "scriptTask-2",
+        "target": "scriptTask-3",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-8",
+        "label": "",
+        "source": "scriptTask-3",
+        "target": "notification-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-9",
+        "label": "",
+        "source": "notification-1",
+        "target": "end-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      }
+    ],
+    "metadata": {
+      "category": "data-processing",
+      "complexity": "medium"
+    },
+    "is_active": true,
+    "created_at": "2025-12-18T14:48:00.240Z",
+    "updated_at": "2025-12-18T14:48:00.240Z"
+  },
+  {
+    "id": "survey-creation-workflow",
+    "name": "SurveyCreationWorkflow",
+    "description": "Manages the complete survey creation and editing process from initial setup through question building, branching logic configuration, validation, and preview before publishing",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start-1",
+        "data": {
+          "label": "Start Survey Creation",
+          "formId": "surveycreationform-1766068573440-owac46",
+          "formName": "SurveyCreationForm",
+          "description": "Initiate survey creation process - new or from template"
+        },
+        "type": "startProcess",
+        "label": "Start Survey Creation",
+        "position": {
+          "x": 100,
+          "y": 200
+        }
+      },
+      {
+        "id": "decision-1",
+        "data": {
+          "label": "Creation Method",
+          "description": "Determine if creating from scratch or from template"
+        },
+        "type": "decision",
+        "label": "Creation Method",
+        "position": {
+          "x": 250,
+          "y": 200
+        }
+      },
+      {
+        "id": "userTask-1",
+        "data": {
+          "label": "Setup Survey Details",
+          "formId": "form_auto_setup_survey_details_1766069169698",
+          "formName": "Setup Survey Details Form",
+          "description": "User enters survey title, description, settings, and basic configuration"
+        },
+        "type": "userTask",
+        "label": "Setup Survey Details",
+        "position": {
+          "x": 400,
+          "y": 100
+        }
+      },
+      {
+        "id": "dataProcess-1",
+        "data": {
+          "label": "Load Template",
+          "description": "Load selected SurveyTemplate and populate Survey with template questions and settings"
+        },
+        "type": "dataProcess",
+        "label": "Load Template",
+        "position": {
+          "x": 400,
+          "y": 300
+        }
+      },
+      {
+        "id": "userTask-2",
+        "data": {
+          "label": "Build Questions",
+          "formId": "form_auto_build_questions_1766069169698",
+          "formName": "Build Questions Form",
+          "description": "User creates/edits questions, adds QuestionOptions, configures question types and validation"
+        },
+        "type": "userTask",
+        "label": "Build Questions",
+        "position": {
+          "x": 550,
+          "y": 200
+        }
+      },
+      {
+        "id": "userTask-3",
+        "data": {
+          "label": "Configure Branching Logic",
+          "formId": "branchinglogicform-1766068626460-ojev0c",
+          "formName": "BranchingLogicForm",
+          "description": "User sets up BranchingRules for conditional question flow and skip logic"
+        },
+        "type": "userTask",
+        "label": "Configure Branching Logic",
+        "position": {
+          "x": 700,
+          "y": 200
+        }
+      },
+      {
+        "id": "validation-1",
+        "data": {
+          "label": "Validate Survey Structure",
+          "description": "Validate survey has required questions, valid branching rules, and proper configuration"
+        },
+        "type": "validation",
+        "label": "Validate Survey Structure",
+        "position": {
+          "x": 850,
+          "y": 200
+        }
+      },
+      {
+        "id": "decision-2",
+        "data": {
+          "label": "Validation Result",
+          "description": "Check if survey passes validation checks"
+        },
+        "type": "decision",
+        "label": "Validation Result",
+        "position": {
+          "x": 1000,
+          "y": 200
+        }
+      },
+      {
+        "id": "userTask-4",
+        "data": {
+          "label": "Preview & Finalize",
+          "formId": "form_auto_preview___finalize_1766069169698",
+          "formName": "Preview & Finalize Form",
+          "description": "User previews survey, makes final adjustments, and saves as draft or ready for distribution"
+        },
+        "type": "userTask",
+        "label": "Preview & Finalize",
+        "position": {
+          "x": 1150,
+          "y": 100
+        }
+      },
+      {
+        "id": "notification-1",
+        "data": {
+          "label": "Notify Validation Errors",
+          "description": "Send validation error messages to user for correction"
+        },
+        "type": "notification",
+        "label": "Notify Validation Errors",
+        "position": {
+          "x": 1150,
+          "y": 300
+        }
+      },
+      {
+        "id": "end-1",
+        "data": {
+          "label": "Survey Created",
+          "description": "Survey creation process completed successfully"
+        },
+        "type": "endProcess",
+        "label": "Survey Created",
+        "position": {
+          "x": 1300,
+          "y": 200
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "start-1",
+        "target": "decision-1"
+      },
+      {
+        "id": "edge-2",
+        "label": "From Scratch",
+        "source": "decision-1",
+        "target": "userTask-1",
+        "isDefault": true
+      },
+      {
+        "id": "edge-3",
+        "label": "From Template",
+        "source": "decision-1",
+        "target": "dataProcess-1"
+      },
+      {
+        "id": "edge-4",
+        "source": "userTask-1",
+        "target": "userTask-2"
+      },
+      {
+        "id": "edge-5",
+        "source": "dataProcess-1",
+        "target": "userTask-2"
+      },
+      {
+        "id": "edge-6",
+        "source": "userTask-2",
+        "target": "userTask-3"
+      },
+      {
+        "id": "edge-7",
+        "source": "userTask-3",
+        "target": "validation-1"
+      },
+      {
+        "id": "edge-8",
+        "source": "validation-1",
+        "target": "decision-2"
+      },
+      {
+        "id": "edge-9",
+        "label": "Valid",
+        "source": "decision-2",
+        "target": "userTask-4",
+        "isDefault": true
+      },
+      {
+        "id": "edge-10",
+        "label": "Invalid",
+        "source": "decision-2",
+        "target": "notification-1"
+      },
+      {
+        "id": "edge-11",
+        "label": "Return to Edit",
+        "source": "notification-1",
+        "target": "userTask-2"
+      },
+      {
+        "id": "edge-12",
+        "source": "userTask-4",
+        "target": "end-1"
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge-1",
+        "label": "",
+        "source": "start-1",
+        "target": "decision-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-2",
+        "label": "From Scratch",
+        "source": "decision-1",
+        "target": "userTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-3",
+        "label": "From Template",
+        "source": "decision-1",
+        "target": "dataProcess-1",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-4",
+        "label": "",
+        "source": "userTask-1",
+        "target": "userTask-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-5",
+        "label": "",
+        "source": "dataProcess-1",
+        "target": "userTask-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-6",
+        "label": "",
+        "source": "userTask-2",
+        "target": "userTask-3",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-7",
+        "label": "",
+        "source": "userTask-3",
+        "target": "validation-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-8",
+        "label": "",
+        "source": "validation-1",
+        "target": "decision-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-9",
+        "label": "Valid",
+        "source": "decision-2",
+        "target": "userTask-4",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-10",
+        "label": "Invalid",
+        "source": "decision-2",
+        "target": "notification-1",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-11",
+        "label": "Return to Edit",
+        "source": "notification-1",
+        "target": "userTask-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-12",
+        "label": "",
+        "source": "userTask-4",
+        "target": "end-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      }
+    ],
+    "metadata": {
+      "category": "user-interaction",
+      "complexity": "medium"
+    },
+    "is_active": true,
+    "created_at": "2025-12-10T05:26:44.132Z",
+    "updated_at": "2025-12-18T14:47:59.145Z"
+  },
+  {
+    "id": "response-collection-workflow",
+    "name": "ResponseCollectionWorkflow",
+    "description": "Manages survey response submission with validation, branching logic, partial save support, and completion tracking for both anonymous and authenticated respondents",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start-1",
+        "data": {
+          "label": "Start Response Collection",
+          "formId": "responsesubmissionform-1766068779248-ezmrpm",
+          "formName": "ResponseSubmissionForm",
+          "description": "Respondent initiates survey response submission"
+        },
+        "type": "startProcess",
+        "label": "Start Response Collection",
+        "position": {
+          "x": 100,
+          "y": 200
+        }
+      },
+      {
+        "id": "validation-1",
+        "data": {
+          "label": "Validate Survey Access",
+          "description": "Check if survey is active, not expired, and respondent has access permissions"
+        },
+        "type": "validation",
+        "label": "Validate Survey Access",
+        "position": {
+          "x": 280,
+          "y": 200
+        }
+      },
+      {
+        "id": "decision-1",
+        "data": {
+          "label": "Access Valid?",
+          "description": "Determine if respondent can proceed with survey"
+        },
+        "type": "decision",
+        "label": "Access Valid?",
+        "position": {
+          "x": 460,
+          "y": 200
+        }
+      },
+      {
+        "id": "userTask-1",
+        "data": {
+          "label": "Fill Survey Questions",
+          "formId": "form_auto_fill_survey_questions_1766069169698",
+          "formName": "Fill Survey Questions Form",
+          "description": "Respondent answers survey questions with branching logic support"
+        },
+        "type": "userTask",
+        "label": "Fill Survey Questions",
+        "position": {
+          "x": 640,
+          "y": 100
+        }
+      },
+      {
+        "id": "scriptTask-1",
+        "data": {
+          "label": "Apply Branching Rules",
+          "description": "Evaluate branching rules based on answers to determine next questions"
+        },
+        "type": "scriptTask",
+        "label": "Apply Branching Rules",
+        "position": {
+          "x": 820,
+          "y": 100
+        }
+      },
+      {
+        "id": "decision-2",
+        "data": {
+          "label": "Survey Complete?",
+          "description": "Check if all required questions answered or partial save requested"
+        },
+        "type": "decision",
+        "label": "Survey Complete?",
+        "position": {
+          "x": 1000,
+          "y": 100
+        }
+      },
+      {
+        "id": "dataProcess-1",
+        "data": {
+          "label": "Save Partial Response",
+          "description": "Store incomplete response with current progress for later completion"
+        },
+        "type": "dataProcess",
+        "label": "Save Partial Response",
+        "position": {
+          "x": 1000,
+          "y": 250
+        }
+      },
+      {
+        "id": "validation-2",
+        "data": {
+          "label": "Validate Response Data",
+          "description": "Validate all answers against question rules and required fields"
+        },
+        "type": "validation",
+        "label": "Validate Response Data",
+        "position": {
+          "x": 1180,
+          "y": 100
+        }
+      },
+      {
+        "id": "decision-3",
+        "data": {
+          "label": "Validation Passed?",
+          "description": "Check if response meets all validation criteria"
+        },
+        "type": "decision",
+        "label": "Validation Passed?",
+        "position": {
+          "x": 1360,
+          "y": 100
+        }
+      },
+      {
+        "id": "dataProcess-2",
+        "data": {
+          "label": "Save Complete Response",
+          "description": "Store validated response, update completion tracking, and link to respondent"
+        },
+        "type": "dataProcess",
+        "label": "Save Complete Response",
+        "position": {
+          "x": 1540,
+          "y": 100
+        }
+      },
+      {
+        "id": "notification-1",
+        "data": {
+          "label": "Send Confirmation",
+          "description": "Notify respondent of successful submission and thank them"
+        },
+        "type": "notification",
+        "label": "Send Confirmation",
+        "position": {
+          "x": 1720,
+          "y": 100
+        }
+      },
+      {
+        "id": "notification-2",
+        "data": {
+          "label": "Send Access Denied",
+          "description": "Notify respondent that survey is unavailable or access is restricted"
+        },
+        "type": "notification",
+        "label": "Send Access Denied",
+        "position": {
+          "x": 640,
+          "y": 300
+        }
+      },
+      {
+        "id": "end-1",
+        "data": {
+          "label": "Response Submitted",
+          "description": "Response collection completed successfully"
+        },
+        "type": "endProcess",
+        "label": "Response Submitted",
+        "position": {
+          "x": 1900,
+          "y": 100
+        }
+      },
+      {
+        "id": "end-2",
+        "data": {
+          "label": "Access Denied",
+          "description": "Response collection terminated due to access restrictions"
+        },
+        "type": "endProcess",
+        "label": "Access Denied",
+        "position": {
+          "x": 820,
+          "y": 300
+        }
+      },
+      {
+        "id": "end-3",
+        "data": {
+          "label": "Partial Save Complete",
+          "description": "Partial response saved for later completion"
+        },
+        "type": "endProcess",
+        "label": "Partial Save Complete",
+        "position": {
+          "x": 1180,
+          "y": 250
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "start-1",
+        "target": "validation-1"
+      },
+      {
+        "id": "edge-2",
+        "source": "validation-1",
+        "target": "decision-1"
+      },
+      {
+        "id": "edge-3",
+        "data": {
+          "condition": "access_valid == true"
+        },
+        "label": "Valid",
+        "source": "decision-1",
+        "target": "userTask-1"
+      },
+      {
+        "id": "edge-4",
+        "data": {
+          "condition": "access_valid == false"
+        },
+        "label": "Invalid",
+        "source": "decision-1",
+        "target": "notification-2",
+        "isDefault": true
+      },
+      {
+        "id": "edge-5",
+        "source": "userTask-1",
+        "target": "scriptTask-1"
+      },
+      {
+        "id": "edge-6",
+        "source": "scriptTask-1",
+        "target": "decision-2"
+      },
+      {
+        "id": "edge-7",
+        "data": {
+          "condition": "all_required_answered == true"
+        },
+        "label": "Complete",
+        "source": "decision-2",
+        "target": "validation-2"
+      },
+      {
+        "id": "edge-8",
+        "data": {
+          "condition": "has_next_questions == true"
+        },
+        "label": "More Questions",
+        "source": "decision-2",
+        "target": "userTask-1",
+        "isDefault": true
+      },
+      {
+        "id": "edge-9",
+        "data": {
+          "condition": "partial_save_requested == true"
+        },
+        "label": "Save Partial",
+        "source": "decision-2",
+        "target": "dataProcess-1"
+      },
+      {
+        "id": "edge-10",
+        "source": "validation-2",
+        "target": "decision-3"
+      },
+      {
+        "id": "edge-11",
+        "data": {
+          "condition": "validation_passed == true"
+        },
+        "label": "Valid",
+        "source": "decision-3",
+        "target": "dataProcess-2"
+      },
+      {
+        "id": "edge-12",
+        "data": {
+          "condition": "validation_passed == false"
+        },
+        "label": "Invalid",
+        "source": "decision-3",
+        "target": "userTask-1",
+        "isDefault": true
+      },
+      {
+        "id": "edge-13",
+        "source": "dataProcess-2",
+        "target": "notification-1"
+      },
+      {
+        "id": "edge-14",
+        "source": "notification-1",
+        "target": "end-1"
+      },
+      {
+        "id": "edge-15",
+        "source": "notification-2",
+        "target": "end-2"
+      },
+      {
+        "id": "edge-16",
+        "source": "dataProcess-1",
+        "target": "end-3"
+      }
+    ],
+    "connections": [
+      {
+        "id": "edge-1",
+        "label": "",
+        "source": "start-1",
+        "target": "validation-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-2",
+        "label": "",
+        "source": "validation-1",
+        "target": "decision-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-3",
+        "label": "Valid",
+        "source": "decision-1",
+        "target": "userTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-4",
+        "label": "Invalid",
+        "source": "decision-1",
+        "target": "notification-2",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-5",
+        "label": "",
+        "source": "userTask-1",
+        "target": "scriptTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-6",
+        "label": "",
+        "source": "scriptTask-1",
+        "target": "decision-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-7",
+        "label": "Complete",
+        "source": "decision-2",
+        "target": "validation-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-8",
+        "label": "More Questions",
+        "source": "decision-2",
+        "target": "userTask-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-9",
+        "label": "Save Partial",
+        "source": "decision-2",
+        "target": "dataProcess-1",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-10",
+        "label": "",
+        "source": "validation-2",
+        "target": "decision-3",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-11",
+        "label": "Valid",
+        "source": "decision-3",
+        "target": "dataProcess-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-12",
+        "label": "Invalid",
+        "source": "decision-3",
+        "target": "userTask-1",
+        "isDefault": true,
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-13",
+        "label": "",
+        "source": "dataProcess-2",
+        "target": "notification-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-14",
+        "label": "",
+        "source": "notification-1",
+        "target": "end-1",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-15",
+        "label": "",
+        "source": "notification-2",
+        "target": "end-2",
+        "sourceHandle": null,
+        "targetHandle": null
+      },
+      {
+        "id": "edge-16",
+        "label": "",
+        "source": "dataProcess-1",
+        "target": "end-3",
+        "sourceHandle": null,
+        "targetHandle": null
+      }
+    ],
+    "metadata": {
+      "category": "user-interaction",
+      "complexity": "complex"
+    },
+    "is_active": true,
+    "created_at": "2025-12-10T05:26:44.135Z",
+    "updated_at": "2025-12-18T14:47:59.145Z"
+  },
+  {
+    "id": "workflow_1766074654535",
+    "name": "New Workflow 8",
+    "description": "",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start_1",
+        "data": {
+          "label": "Start",
+          "formId": "form_workflow_1766074654535_start_1",
+          "trigger": "user_action"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 250,
+          "y": 50
+        }
+      },
+      {
+        "id": "end_1",
+        "data": {
+          "label": "End"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 250,
+          "y": 300
+        }
+      }
+    ],
+    "edges": [],
+    "connections": [],
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-12-18T16:17:34.535Z",
+    "updated_at": "2025-12-18T16:17:40.292Z"
+  },
+  {
+    "id": "workflow_1766074656864",
+    "name": "New Workflow 8",
+    "description": "",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start_1",
+        "data": {
+          "label": "Start",
+          "formId": "form_workflow_1766074656864_start_1",
+          "trigger": "user_action"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 250,
+          "y": 50
+        }
+      },
+      {
+        "id": "end_1",
+        "data": {
+          "label": "End"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 250,
+          "y": 300
+        }
+      }
+    ],
+    "edges": [],
+    "connections": [],
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-12-18T16:17:36.864Z",
+    "updated_at": "2025-12-18T16:17:41.382Z"
+  },
+  {
+    "id": "workflow_1766074656124",
+    "name": "New Workflow 8",
+    "description": "",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start_1",
+        "data": {
+          "label": "Start",
+          "formId": "form_workflow_1766074656124_start_1",
+          "trigger": "user_action"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 250,
+          "y": 50
+        }
+      },
+      {
+        "id": "end_1",
+        "data": {
+          "label": "End"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 250,
+          "y": 300
+        }
+      }
+    ],
+    "edges": [],
+    "connections": [],
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-12-18T16:17:36.124Z",
+    "updated_at": "2025-12-18T16:17:41.814Z"
+  },
+  {
+    "id": "workflow_1766074676698",
+    "name": "New Workflow 8",
+    "description": "",
+    "version": "1.0.0",
+    "nodes": [
+      {
+        "id": "start_1",
+        "data": {
+          "label": "Start",
+          "formId": "form_workflow_1766074676698_start_1",
+          "trigger": "user_action"
+        },
+        "type": "startProcess",
+        "position": {
+          "x": 250,
+          "y": 50
+        }
+      },
+      {
+        "id": "end_1",
+        "data": {
+          "label": "End"
+        },
+        "type": "endEvent",
+        "position": {
+          "x": 250,
+          "y": 300
+        }
+      }
+    ],
+    "edges": [],
+    "connections": [],
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-12-18T16:17:56.698Z",
+    "updated_at": "2025-12-18T16:18:01.624Z"
+  },
+  {
+    "id": "workflow_test_123",
+    "name": "Test Workflow",
+    "description": "",
+    "version": "1.0.0",
+    "nodes": [],
+    "edges": [],
+    "connections": [],
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-12-18T16:21:46.889Z",
+    "updated_at": "2025-12-18T16:21:46.889Z"
+  },
+  {
+    "id": "workflow_test_456",
+    "name": "Test Workflow 2",
+    "description": "",
+    "version": "1.0.0",
+    "nodes": [],
+    "edges": [],
+    "connections": [],
+    "metadata": {},
+    "is_active": true,
+    "created_at": "2025-12-18T16:24:03.859Z",
+    "updated_at": "2025-12-18T16:24:03.859Z"
+  }
+]

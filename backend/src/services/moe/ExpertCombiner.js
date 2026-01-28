@@ -297,23 +297,50 @@ class ExpertCombiner {
         b.reduce((sum, f) => sum + (f.fields?.length || 0), 0) -
         a.reduce((sum, f) => sum + (f.fields?.length || 0), 0)
       );
-      return sorted[0];
+      // Still need to deduplicate by id even in best-only
+      return this.deduplicateById(sorted[0]);
     }
 
-    // Ensemble: merge unique forms
-    const allForms = [];
-    const seen = new Set();
+    // Ensemble: merge unique forms by ID (database requires unique IDs)
+    const formsMap = new Map();
 
     formsArrays.forEach(forms => {
-      forms.forEach(form => {
-        if (!seen.has(form.nodeId)) {
-          allForms.push(form);
-          seen.add(form.nodeId);
+      (forms || []).forEach(form => {
+        const formId = form.id;
+        if (!formId) {
+          // Generate ID if missing
+          form.id = `form_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          formsMap.set(form.id, form);
+        } else if (!formsMap.has(formId)) {
+          formsMap.set(formId, form);
+        } else {
+          // Keep the more complete version (more fields)
+          const existing = formsMap.get(formId);
+          if ((form.fields?.length || 0) > (existing.fields?.length || 0)) {
+            formsMap.set(formId, form);
+          }
         }
       });
     });
 
-    return allForms;
+    return Array.from(formsMap.values());
+  }
+
+  /**
+   * Deduplicate array by id field
+   */
+  static deduplicateById(items) {
+    if (!items || !Array.isArray(items)) return items;
+    const seen = new Map();
+    for (const item of items) {
+      if (!item.id) {
+        item.id = `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      }
+      if (!seen.has(item.id)) {
+        seen.set(item.id, item);
+      }
+    }
+    return Array.from(seen.values());
   }
 
   /**
@@ -321,37 +348,60 @@ class ExpertCombiner {
    */
   static combineDataModels(dataModelsArrays, strategy = 'best-only') {
     if (!dataModelsArrays || dataModelsArrays.length === 0) return [];
-    if (dataModelsArrays.length === 1) return dataModelsArrays[0];
+    if (dataModelsArrays.length === 1) {
+      // Still need to deduplicate by id even for single array
+      return this.deduplicateById(dataModelsArrays[0]);
+    }
 
     if (strategy === 'best-only') {
-      // Return most comprehensive models
+      // Return most comprehensive models, deduplicated by id
       const sorted = [...dataModelsArrays].sort((a, b) =>
         b.reduce((sum, dm) => sum + (dm.fields?.length || 0), 0) -
         a.reduce((sum, dm) => sum + (dm.fields?.length || 0), 0)
       );
-      return sorted[0];
+      return this.deduplicateById(sorted[0]);
     }
 
-    // Ensemble: merge models by name
-    const modelsMap = new Map();
+    // Ensemble: merge models by ID first (database constraint), then by name for merging fields
+    const modelsById = new Map();  // For database uniqueness
+    const modelsByName = new Map(); // For logical merging
 
     dataModelsArrays.forEach(models => {
-      models.forEach(model => {
-        if (!modelsMap.has(model.name)) {
-          modelsMap.set(model.name, model);
-        } else {
-          // Merge fields
-          const existing = modelsMap.get(model.name);
+      (models || []).forEach(model => {
+        // Ensure model has an id
+        if (!model.id) {
+          model.id = model.name || `model_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        // Check by ID first (database constraint)
+        if (modelsById.has(model.id)) {
+          // Same ID - merge fields into existing
+          const existing = modelsById.get(model.id);
           model.fields?.forEach(field => {
-            if (!existing.fields.some(f => f.name === field.name)) {
+            if (!existing.fields?.some(f => f.name === field.name)) {
+              existing.fields = existing.fields || [];
               existing.fields.push(field);
             }
           });
+        } else if (modelsByName.has(model.name)) {
+          // Same name but different ID - merge into name-matched model, discard this ID
+          const existing = modelsByName.get(model.name);
+          model.fields?.forEach(field => {
+            if (!existing.fields?.some(f => f.name === field.name)) {
+              existing.fields = existing.fields || [];
+              existing.fields.push(field);
+            }
+          });
+          console.log(`[ExpertCombiner] Merged duplicate data model "${model.name}" (id: ${model.id} -> ${existing.id})`);
+        } else {
+          // New model
+          modelsById.set(model.id, model);
+          modelsByName.set(model.name, model);
         }
       });
     });
 
-    return Array.from(modelsMap.values());
+    return Array.from(modelsById.values());
   }
 
   /**
@@ -396,36 +446,50 @@ class ExpertCombiner {
    */
   static combinePages(pagesArrays, workflowNames = [], strategy = 'best-only') {
     if (!pagesArrays || pagesArrays.length === 0) return [];
-    if (pagesArrays.length === 1) return pagesArrays[0];
+    if (pagesArrays.length === 1) {
+      // Still need to deduplicate by id
+      return this.deduplicateById(pagesArrays[0]);
+    }
 
     if (strategy === 'best-only') {
-      // Return pages with most components
+      // Return pages with most components, deduplicated by id
       const sorted = [...pagesArrays].sort((a, b) =>
         b.reduce((sum, p) => sum + (p.components?.length || 0), 0) -
         a.reduce((sum, p) => sum + (p.components?.length || 0), 0)
       );
-      return sorted[0];
+      return this.deduplicateById(sorted[0]);
     }
 
-    // Ensemble: merge unique pages
-    const allPages = [];
-    const seen = new Set();
+    // Ensemble: merge unique pages by ID (database requires unique IDs)
+    const pagesMap = new Map();
 
     pagesArrays.forEach(pages => {
-      pages.forEach(page => {
-        const pageKey = page.id || page.name;
-        if (!seen.has(pageKey)) {
+      (pages || []).forEach(page => {
+        // Ensure page has an id
+        if (!page.id) {
+          page.id = `page_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        if (!pagesMap.has(page.id)) {
           // Tag page with associated workflows if not already done
           if (!page.workflows && workflowNames.length > 0) {
             page.workflows = workflowNames;
           }
-          allPages.push(page);
-          seen.add(pageKey);
+          pagesMap.set(page.id, page);
+        } else {
+          // Same ID - keep the more complete version (more components)
+          const existing = pagesMap.get(page.id);
+          if ((page.components?.length || 0) > (existing.components?.length || 0)) {
+            if (!page.workflows && workflowNames.length > 0) {
+              page.workflows = workflowNames;
+            }
+            pagesMap.set(page.id, page);
+          }
         }
       });
     });
 
-    return allPages;
+    return Array.from(pagesMap.values());
   }
 
   /**

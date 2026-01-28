@@ -1,0 +1,311 @@
+[
+  {
+    "id": "rule_start_process",
+    "name": "Start Process Validation",
+    "description": "Validate initial process start and set default values",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "processAction",
+          "operator": "equals",
+          "value": "addNewContact"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "pending"
+        },
+        {
+          "type": "setVariable",
+          "field": "approvalRequired",
+          "value": false
+        },
+        {
+          "type": "logMessage",
+          "message": "Contact creation process initiated"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1768574459369"
+  },
+  {
+    "id": "rule_enter_contact_details",
+    "name": "Contact Details Input Validation",
+    "description": "Validate required contact fields are provided",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Contact.name",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Contact.name",
+          "message": "Contact name is required"
+        },
+        {
+          "type": "throwError",
+          "message": "Please provide all required contact information"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1768574459369"
+  },
+  {
+    "id": "rule_validate_contact_data",
+    "name": "Contact Data Business Rules",
+    "description": "Validate email format and phone number presence",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Contact.email",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "Contact.email",
+          "operator": "contains",
+          "value": "@"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "ValidationResult.isValid",
+          "value": true
+        },
+        {
+          "type": "setVariable",
+          "field": "ValidationResult.message",
+          "value": "Contact data is valid"
+        },
+        {
+          "type": "logMessage",
+          "message": "Contact validation passed"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1768574459369"
+  },
+  {
+    "id": "rule_validation_passed_decision",
+    "name": "Validation Status Decision",
+    "description": "Route workflow based on validation results",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ValidationResult.isValid",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "proceedToApproval"
+        },
+        {
+          "type": "logMessage",
+          "message": "Validation passed, proceeding to approval check"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1768574459369"
+  },
+  {
+    "id": "rule_correct_validation_errors",
+    "name": "Validation Error Correction",
+    "description": "Handle validation failures and request corrections",
+    "type": "validation",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ValidationResult.isValid",
+          "operator": "equals",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "returnToEntry"
+        },
+        {
+          "type": "sendNotification",
+          "message": "Contact validation failed. Please correct the errors and resubmit."
+        },
+        {
+          "type": "logMessage",
+          "message": "Validation errors detected, returning to user"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1768574459369"
+  },
+  {
+    "id": "rule_requires_approval_decision",
+    "name": "Approval Requirement Check",
+    "description": "Determine if manager approval is needed for VIP contacts",
+    "type": "decision",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Contact.contactType",
+          "operator": "in",
+          "value": [
+            "VIP",
+            "Executive",
+            "Partner"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "approvalRequired",
+          "value": true
+        },
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "requiresApproval"
+        },
+        {
+          "type": "logMessage",
+          "message": "VIP contact detected, manager approval required"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1768574459369"
+  },
+  {
+    "id": "rule_manager_approval",
+    "name": "Manager Approval Validation",
+    "description": "Validate manager approval decision is provided",
+    "type": "validation",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approvalRequired",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "sendNotification",
+          "message": "Manager approval required for VIP contact addition"
+        },
+        {
+          "type": "setVariable",
+          "field": "approvalStatus",
+          "value": "pending"
+        },
+        {
+          "type": "logMessage",
+          "message": "Awaiting manager approval"
+        }
+      ]
+    },
+    "node_id": "userTask-3",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1768574459369"
+  },
+  {
+    "id": "rule_approved_decision",
+    "name": "Approval Decision Routing",
+    "description": "Route workflow based on manager approval decision",
+    "type": "decision",
+    "priority": 7,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approvalStatus",
+          "operator": "equals",
+          "value": "approved"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "saveContact"
+        },
+        {
+          "type": "updateData",
+          "field": "Contact.status",
+          "value": "active"
+        },
+        {
+          "type": "sendNotification",
+          "message": "Contact approved and added to directory successfully"
+        }
+      ]
+    },
+    "node_id": "decision-3",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1768574459369"
+  }
+]

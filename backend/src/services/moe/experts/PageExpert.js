@@ -11,6 +11,154 @@ class PageExpert {
     this.anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY
     });
+
+    // Component catalog - matches PageBuilderPro component palette (enhanced with Shadcn mappings)
+    this.componentCatalog = {
+      'Basic Elements': [
+        { type: 'heading', description: 'Title or heading text', config: { text: 'Heading', variant: 'h1|h2|h3|h4' }, shadcn: { component: 'div', className: 'scroll-m-20 text-4xl font-extrabold tracking-tight' } },
+        { type: 'text', description: 'Paragraph content', config: { text: 'Text content', variant: 'body|caption|subtitle' }, shadcn: { component: 'p', className: 'leading-7 [&:not(:first-child)]:mt-6' } },
+        { type: 'button', description: 'Clickable button', config: { label: 'Button', variant: 'default|destructive|outline|secondary|ghost|link', icon: 'icon-name' }, shadcn: { component: 'Button', imports: ['Button'] } },
+        { type: 'link', description: 'Navigation link', config: { text: 'Link text', href: '/route' }, shadcn: { component: 'Link', className: 'text-primary underline-offset-4 hover:underline' } },
+        { type: 'image', description: 'Display image', config: { src: 'url', alt: 'description', width: '100%' }, shadcn: { component: 'AspectRatio', imports: ['AspectRatio'] } },
+        { type: 'divider', description: 'Horizontal separator', config: {}, shadcn: { component: 'Separator', imports: ['Separator'] } },
+        { type: 'spacer', description: 'Vertical spacing', config: { height: '24px' }, shadcn: { component: 'div', className: 'h-6' } }
+      ],
+      'Layout': [
+        { type: 'container', description: 'Content wrapper - can contain children components', config: { padding: '16px', maxWidth: '1200px', children: [] }, shadcn: { component: 'div', className: 'container mx-auto px-4' } },
+        { type: 'card', description: 'Content card - can contain children, actions', config: { title: 'Card Title', description: 'Description', shadow: 'sm|md|lg', hoverElevation: true, children: [], actions: [] }, shadcn: { component: 'Card', imports: ['Card', 'CardHeader', 'CardTitle', 'CardDescription', 'CardContent', 'CardFooter'], microInteractions: { hover: 'hover:shadow-lg transition-shadow duration-200' } } },
+        { type: 'grid', description: 'Multi-column layout', config: { columns: 2|3|4, gap: '16px' }, shadcn: { component: 'div', className: 'grid grid-cols-{{columns}} gap-4' } },
+        { type: 'section', description: 'Page section with title - can contain children', config: { title: 'Section Title', subtitle: 'Optional subtitle', padding: '32px', children: [] }, shadcn: { component: 'section', className: 'py-8 space-y-4' } },
+        { type: 'header', description: 'Page header', config: { title: 'Page Header', sticky: false }, shadcn: { component: 'header', className: 'sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60' } },
+        { type: 'footer', description: 'Page footer', config: { text: 'Footer content' }, shadcn: { component: 'footer', className: 'border-t py-6' } },
+        { type: 'hero', description: 'Hero section with title, subtitle, and CTA buttons', config: { title: 'Welcome', subtitle: 'Description text', buttons: [{ label: 'Primary Action', variant: 'default' }, { label: 'Secondary Action', variant: 'outline' }] }, shadcn: { component: 'section', className: 'py-20 lg:py-32' } }
+      ],
+      'Navigation': [
+        { type: 'navbar', description: 'Navigation bar', config: { brand: 'Brand', items: [{ label: 'Home', route: '/' }] }, shadcn: { component: 'NavigationMenu', imports: ['NavigationMenu', 'NavigationMenuList', 'NavigationMenuItem', 'NavigationMenuLink'] } },
+        { type: 'breadcrumb', description: 'Breadcrumb trail', config: { items: ['Home', 'Page'] }, shadcn: { component: 'Breadcrumb', imports: ['Breadcrumb', 'BreadcrumbList', 'BreadcrumbItem', 'BreadcrumbLink', 'BreadcrumbSeparator'] } },
+        {
+          type: 'tabs',
+          description: 'Tab navigation with nested content - tabs can contain forms, alerts, cards inside content array',
+          config: {
+            variant: 'underline|pills',
+            orientation: 'horizontal|vertical',
+            tabs: [
+              { id: 'tab-id', label: 'Tab Label', icon: 'icon-name', content: [/* nested components */] }
+            ]
+          },
+          shadcn: { component: 'Tabs', imports: ['Tabs', 'TabsList', 'TabsTrigger', 'TabsContent'] }
+        },
+        { type: 'buttonGroup', description: 'Group of buttons', config: { buttons: [{ label: 'Action', variant: 'default|outline' }] }, shadcn: { component: 'div', className: 'flex items-center gap-2' } }
+      ],
+      'Form Elements': [
+        { type: 'input', description: 'Single line input', config: { label: 'Label', placeholder: 'Enter text...', type: 'text|email|password|number', required: false }, shadcn: { component: 'Input', imports: ['Input', 'Label'] } },
+        { type: 'textarea', description: 'Multi-line input', config: { label: 'Label', placeholder: 'Enter text...', rows: 4 }, shadcn: { component: 'Textarea', imports: ['Textarea', 'Label'] } },
+        { type: 'select', description: 'Dropdown select', config: { label: 'Label', options: [{ label: 'Option', value: '1' }] }, shadcn: { component: 'Select', imports: ['Select', 'SelectTrigger', 'SelectValue', 'SelectContent', 'SelectItem', 'Label'] } },
+        { type: 'checkbox', description: 'Checkbox input', config: { label: 'Checkbox label' }, shadcn: { component: 'Checkbox', imports: ['Checkbox', 'Label'] } },
+        { type: 'radio', description: 'Radio options', config: { label: 'Select one', options: [{ label: 'Option 1', value: '1' }] }, shadcn: { component: 'RadioGroup', imports: ['RadioGroup', 'RadioGroupItem', 'Label'] } },
+        { type: 'toggle', description: 'Toggle switch for boolean settings', config: { label: 'Toggle label', name: 'settingName', defaultValue: false }, shadcn: { component: 'Switch', imports: ['Switch', 'Label'] } },
+        { type: 'search', description: 'Search input', config: { placeholder: 'Search...' }, shadcn: { component: 'Input', imports: ['Input'], icon: 'Search' } }
+      ],
+      'Data Display': [
+        { type: 'table', description: 'Data table', config: { columns: [{ key: 'name', label: 'Name' }], dataBinding: 'items' }, shadcn: { component: 'Table', imports: ['Table', 'TableHeader', 'TableBody', 'TableRow', 'TableHead', 'TableCell'] } },
+        { type: 'stat-card', description: 'Metric display card for dashboards', config: { title: 'Metric', value: '{{value}}', icon: 'trending-up|users|package|clock', iconColor: 'primary|success|warning|error', trend: '+12%', trendDirection: 'up|down' }, shadcn: { component: 'Card', imports: ['Card', 'CardHeader', 'CardTitle', 'CardContent'], microInteractions: { hover: 'hover:shadow-md hover:-translate-y-0.5 transition-all duration-200' } } },
+        { type: 'chart', description: 'Data visualization', config: { chartType: 'bar|line|pie|area', title: 'Chart', height: 300 }, shadcn: { component: 'ChartContainer', recharts: true } },
+        { type: 'avatar', description: 'User avatar', config: { src: 'url', initials: 'JD', size: 'sm|md|lg' }, shadcn: { component: 'Avatar', imports: ['Avatar', 'AvatarImage', 'AvatarFallback'] } },
+        { type: 'badge', description: 'Status badge', config: { text: 'Badge', variant: 'default|secondary|destructive|outline' }, shadcn: { component: 'Badge', imports: ['Badge'] } },
+        {
+          type: 'progress',
+          description: 'Progress indicator - bar or wizard steps',
+          config: {
+            variant: 'bar|steps',
+            value: 60,
+            label: 'Progress',
+            showPercent: true,
+            steps: ['Step 1', 'Step 2', 'Step 3'],
+            currentStep: 1
+          },
+          shadcn: { component: 'Progress', imports: ['Progress'] }
+        },
+        { type: 'skeleton', description: 'Loading placeholder', config: { width: '100%', height: '20px' }, shadcn: { component: 'Skeleton', imports: ['Skeleton'] } }
+      ],
+      'Feedback': [
+        {
+          type: 'alert',
+          description: 'Alert/notification message',
+          config: {
+            variant: 'default|destructive',
+            title: 'Alert Title',
+            message: 'Alert message text',
+            dismissible: true
+          },
+          shadcn: { component: 'Alert', imports: ['Alert', 'AlertTitle', 'AlertDescription'] }
+        },
+        {
+          type: 'spinner',
+          description: 'Loading spinner with optional label',
+          config: {
+            size: 'small|medium|large',
+            label: 'Loading...'
+          },
+          shadcn: { component: 'div', className: 'animate-spin rounded-full border-2 border-muted border-t-primary' }
+        },
+        { type: 'accordion', description: 'Collapsible sections', config: { items: [{ title: 'Section 1', content: 'Content' }] }, shadcn: { component: 'Accordion', imports: ['Accordion', 'AccordionItem', 'AccordionTrigger', 'AccordionContent'] } },
+        { type: 'toast', description: 'Toast notification', config: { title: 'Toast', description: 'Message' }, shadcn: { component: 'Toast', imports: ['useToast', 'Toaster'] } },
+        { type: 'dialog', description: 'Modal dialog', config: { title: 'Dialog', description: 'Content' }, shadcn: { component: 'Dialog', imports: ['Dialog', 'DialogTrigger', 'DialogContent', 'DialogHeader', 'DialogTitle', 'DialogDescription', 'DialogFooter'] } }
+      ],
+      'Media': [
+        { type: 'video', description: 'Video player', config: { src: 'url', poster: 'thumbnail-url', autoplay: false }, shadcn: { component: 'AspectRatio', imports: ['AspectRatio'] } },
+        { type: 'carousel', description: 'Image carousel', config: { images: ['url1', 'url2'], autoSlide: true, interval: 5000 }, shadcn: { component: 'Carousel', imports: ['Carousel', 'CarouselContent', 'CarouselItem', 'CarouselPrevious', 'CarouselNext'] } }
+      ],
+      'Forms': [
+        {
+          type: 'form',
+          description: 'Form reference ONLY - NEVER create input/button/textarea directly in pages! Use formRef to link to existing forms created by FormExpert',
+          config: { title: 'Optional form title' },
+          formRef: 'existing-form-id',
+          example: { type: 'form', formRef: 'user-registration-form', config: { title: 'Sign Up' } },
+          shadcn: { component: 'Form', imports: ['Form', 'FormItem', 'FormLabel', 'FormControl', 'FormDescription', 'FormMessage'] }
+        }
+      ],
+      'Interactive': [
+        { type: 'dropdown-menu', description: 'Dropdown menu with actions', config: { trigger: 'Menu', items: [{ label: 'Item', action: 'action' }] }, shadcn: { component: 'DropdownMenu', imports: ['DropdownMenu', 'DropdownMenuTrigger', 'DropdownMenuContent', 'DropdownMenuItem'] } },
+        { type: 'popover', description: 'Popover with content', config: { trigger: 'Info', content: 'Popover content' }, shadcn: { component: 'Popover', imports: ['Popover', 'PopoverTrigger', 'PopoverContent'] } },
+        { type: 'tooltip', description: 'Hover tooltip', config: { content: 'Tooltip text' }, shadcn: { component: 'Tooltip', imports: ['Tooltip', 'TooltipTrigger', 'TooltipContent', 'TooltipProvider'] } },
+        { type: 'sheet', description: 'Side sheet/drawer', config: { title: 'Sheet', side: 'right' }, shadcn: { component: 'Sheet', imports: ['Sheet', 'SheetTrigger', 'SheetContent', 'SheetHeader', 'SheetTitle', 'SheetDescription'] } }
+      ]
+    };
+
+    // Shadcn micro-interaction classes
+    this.microInteractions = {
+      button: {
+        press: 'active:scale-95 transition-transform duration-100',
+        hover: 'hover:bg-primary/90 transition-colors duration-200'
+      },
+      card: {
+        hover: 'hover:shadow-lg transition-shadow duration-200',
+        hoverLift: 'hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200'
+      },
+      input: {
+        focus: 'focus:border-primary focus:ring-2 focus:ring-ring transition-all'
+      }
+    };
+  }
+
+  /**
+   * Get formatted component catalog for prompts
+   */
+  getComponentCatalogPrompt() {
+    let catalog = '**AVAILABLE PAGE COMPONENTS** (use ONLY these types):\n\n';
+
+    for (const [category, components] of Object.entries(this.componentCatalog)) {
+      catalog += `**${category}**:\n`;
+      for (const comp of components) {
+        const configKeys = Object.keys(comp.config).join(', ');
+        catalog += `- \`${comp.type}\`: ${comp.description}\n`;
+        catalog += `  Config: { ${configKeys} }\n`;
+      }
+      catalog += '\n';
+    }
+
+    return catalog;
   }
 
   /**
@@ -272,7 +420,45 @@ ${pageAssociation.pageType === 'form' ? '- This is a FORM page - embed a form fo
 ${pageAssociation.pageType === 'report' ? '- This is a REPORT page - display charts, analytics, and data summaries.' : ''}
 ` : '';
 
-    return `Generate a page for: ${spec.name}
+    // Get component catalog
+    const componentCatalog = this.getComponentCatalogPrompt();
+
+    return `You are an EXPERT UX/UI DESIGNER with 15+ years of experience designing world-class applications.
+
+**YOUR DESIGN PHILOSOPHY**:
+You follow the design principles of the world's best design teams:
+
+**Apple Human Interface Guidelines**:
+- Clarity: Text is legible, icons are precise, adornments are subtle and appropriate
+- Deference: Fluid motion and crisp interface help understand content without competing with it
+- Depth: Visual layers and realistic motion convey hierarchy and facilitate understanding
+
+**Google Material Design**:
+- Material is the metaphor: Surfaces and edges provide visual cues grounded in reality
+- Bold, graphic, intentional: Typography, grids, space, scale, color create hierarchy and meaning
+- Motion provides meaning: Attention is focused and continuity is maintained through subtle feedback
+
+**Meta (Facebook) Design Principles**:
+- Universal: Design for a diverse, global audience with accessibility in mind
+- Human: Warm, approachable interfaces that feel personal not robotic
+- Clean: Remove unnecessary elements, every pixel should have a purpose
+- Consistent: Familiar patterns reduce cognitive load
+
+**YOUR DESIGN STANDARDS**:
+- White space is not wasted space - use generous padding and margins
+- Visual hierarchy through size, weight, and color contrast
+- Group related elements, separate unrelated ones
+- Consistent alignment and grid-based layouts
+- Subtle shadows and elevation for depth (not flat, not skeuomorphic)
+- Smooth micro-interactions and state transitions
+- Touch-friendly tap targets (min 44px)
+- Accessible color contrast (WCAG AA minimum)
+- Progressive disclosure - show what's needed, hide complexity
+- Clear visual feedback for all interactive elements
+
+---
+
+Generate a page for: ${spec.name}
 
 Purpose: ${spec.purpose}
 ${spec.description ? `Description: ${spec.description}` : ''}
@@ -285,17 +471,365 @@ ${existingComponents.forms ? `- Available forms: ${existingComponents.forms.map(
 ${existingComponents.workflows ? `- Available workflows: ${existingComponents.workflows.map(w => w.name).join(', ')}` : ''}
 ${otherPages.length > 0 ? `- Other pages in app: ${otherPages.map(p => p.name).join(', ')}` : ''}
 
+${componentCatalog}
+
 ${designGuidelines}
 
 CRITICAL Requirements:
-1. **POPULATE FORMS ARRAY**: Add relevant form IDs to the "forms" array based on page purpose (e.g., list pages get create forms, detail pages get edit forms)
-2. **ADD NAVIGATION**: Include navigation.menu with links to other pages in the app
-3. Structure pages using SECTIONS (header, main, footer) with components inside sections
-4. Link forms using formRef in components if needed
-5. Include actual content in components (text, labels, data bindings)
-6. Maximum 4-6 components total across all sections
+1. **USE ONLY CATALOG COMPONENTS**: Only use component types listed in the AVAILABLE PAGE COMPONENTS section above
+2. **POPULATE FORMS ARRAY**: Add relevant form IDs to the "forms" array based on page purpose (e.g., list pages get create forms, detail pages get edit forms)
+3. **ADD NAVIGATION**: Include navigation.menu with links to other pages in the app
+4. Structure pages using SECTIONS (header, main, footer) with components inside sections
+5. **NEVER DUPLICATE FORM FIELDS**: If a page needs a form, use ONLY { "type": "form", "formRef": "existing-form-id" }. NEVER create input/textarea/select/button components directly in the page - those belong in forms only!
+6. Include actual content in components (text, labels, data bindings)
 7. Use appropriate page type (list, detail, form, dashboard, auth, confirmation)
 ${designSystem ? '8. CRITICAL: Apply the design system specifications above to ALL styling properties' : ''}
+
+**MODERN PAGE DESIGN PATTERNS**:
+
+**For DASHBOARD pages**, use this structure:
+{
+  "sections": [
+    {
+      "id": "stats",
+      "type": "stats-row",
+      "layout": "grid-4",
+      "components": [
+        { "type": "stat-card", "config": { "title": "Total Items", "value": "{{totalCount}}", "icon": "package", "iconColor": "primary", "trend": "+12%", "trendDirection": "up" } },
+        { "type": "stat-card", "config": { "title": "Pending", "value": "{{pendingCount}}", "icon": "clock", "iconColor": "warning" } },
+        { "type": "stat-card", "config": { "title": "Completed", "value": "{{completedCount}}", "icon": "check-circle", "iconColor": "success" } },
+        { "type": "stat-card", "config": { "title": "Active Users", "value": "{{activeUsers}}", "icon": "users", "iconColor": "primary" } }
+      ]
+    },
+    {
+      "id": "main",
+      "type": "two-column",
+      "components": [
+        { "type": "chart", "config": { "chartType": "line", "title": "Activity Overview", "height": 300 } },
+        { "type": "activity-feed", "config": { "title": "Recent Activity", "limit": 5 } }
+      ]
+    },
+    {
+      "id": "actions",
+      "type": "quick-actions",
+      "components": [
+        { "type": "button", "config": { "label": "Create New", "variant": "primary", "icon": "plus" } },
+        { "type": "button", "config": { "label": "View Reports", "variant": "secondary", "icon": "chart-bar" } }
+      ]
+    }
+  ]
+}
+
+**For LIST pages**, use card grids with hover effects:
+{
+  "sections": [
+    {
+      "id": "header",
+      "type": "header",
+      "components": [
+        { "type": "text", "config": { "text": "Items", "variant": "h1" } },
+        { "type": "button", "config": { "label": "Add New", "variant": "primary", "icon": "plus" } }
+      ]
+    },
+    {
+      "id": "main",
+      "type": "card-grid",
+      "layout": "grid-3",
+      "components": [
+        {
+          "type": "card",
+          "config": {
+            "title": "{{item.name}}",
+            "description": "{{item.description}}",
+            "footer": "{{item.date}}",
+            "actions": [{ "label": "View", "icon": "eye" }, { "label": "Edit", "icon": "edit" }]
+          },
+          "style": { "shadow": "md", "hoverElevation": true, "borderRadius": "lg" },
+          "dataBinding": "items"
+        }
+      ]
+    }
+  ]
+}
+
+**For TABBED FORM pages** (multi-step, settings, profiles):
+{
+  "sections": [
+    {
+      "id": "header",
+      "type": "header",
+      "components": [
+        { "type": "heading", "config": { "text": "User Profile", "variant": "h1" } },
+        { "type": "text", "config": { "text": "Manage your account settings", "variant": "subtitle" } }
+      ]
+    },
+    {
+      "id": "tabs-section",
+      "type": "tabs",
+      "components": [
+        {
+          "type": "tabs",
+          "config": {
+            "variant": "underline",
+            "tabs": [
+              {
+                "id": "personal",
+                "label": "Personal Info",
+                "icon": "user",
+                "content": [
+                  { "type": "form", "formRef": "personal-info-form", "config": { "title": "Personal Information" } },
+                  { "type": "button", "config": { "label": "Save Changes", "variant": "primary" } }
+                ]
+              },
+              {
+                "id": "security",
+                "label": "Security",
+                "icon": "shield",
+                "content": [
+                  { "type": "alert", "config": { "variant": "info", "title": "Two-Factor Authentication", "message": "Enhance your account security" } },
+                  { "type": "form", "formRef": "security-form", "config": { "title": "Password & Security" } }
+                ]
+              },
+              {
+                "id": "notifications",
+                "label": "Notifications",
+                "icon": "bell",
+                "content": [
+                  { "type": "form", "formRef": "notification-settings-form", "config": { "title": "Notification Preferences" } }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+
+**For WIZARD/MULTI-STEP pages** with progress:
+{
+  "sections": [
+    {
+      "id": "header",
+      "type": "header",
+      "components": [
+        { "type": "heading", "config": { "text": "Create New Order", "variant": "h1" } }
+      ]
+    },
+    {
+      "id": "progress-section",
+      "type": "progress",
+      "components": [
+        {
+          "type": "progress",
+          "config": {
+            "variant": "steps",
+            "steps": ["Customer Info", "Order Details", "Payment", "Confirmation"],
+            "currentStep": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "step-content",
+      "type": "main",
+      "components": [
+        { "type": "form", "formRef": "customer-info-form", "config": { "title": "Customer Information" } }
+      ]
+    },
+    {
+      "id": "navigation",
+      "type": "footer",
+      "components": [
+        { "type": "button", "config": { "label": "Back", "variant": "secondary" } },
+        { "type": "button", "config": { "label": "Continue", "variant": "primary" } }
+      ]
+    }
+  ]
+}
+
+**For DETAIL pages** with alerts and status:
+{
+  "sections": [
+    {
+      "id": "status-alerts",
+      "type": "alerts",
+      "components": [
+        { "type": "alert", "config": { "variant": "success", "title": "Order Confirmed", "message": "Your order has been successfully placed", "dismissible": true } }
+      ]
+    },
+    {
+      "id": "header",
+      "type": "header",
+      "components": [
+        { "type": "heading", "config": { "text": "Order #{{orderId}}", "variant": "h1" } },
+        { "type": "badge", "config": { "text": "{{status}}", "variant": "success" } }
+      ]
+    },
+    {
+      "id": "loading-state",
+      "type": "conditional",
+      "showWhen": "isLoading",
+      "components": [
+        { "type": "spinner", "config": { "size": "large", "label": "Loading order details..." } }
+      ]
+    },
+    {
+      "id": "main",
+      "type": "two-column",
+      "components": [
+        {
+          "type": "card",
+          "config": {
+            "title": "Order Summary",
+            "children": [
+              { "type": "table", "config": { "columns": ["Item", "Qty", "Price"], "dataBinding": "orderItems" } }
+            ]
+          }
+        },
+        {
+          "type": "card",
+          "config": {
+            "title": "Customer Details",
+            "children": [
+              { "type": "text", "config": { "text": "{{customer.name}}", "variant": "body" } },
+              { "type": "text", "config": { "text": "{{customer.email}}", "variant": "caption" } }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+
+**For SETTINGS pages** with toggles and sections:
+{
+  "sections": [
+    {
+      "id": "header",
+      "type": "header",
+      "components": [
+        { "type": "heading", "config": { "text": "Settings", "variant": "h1" } }
+      ]
+    },
+    {
+      "id": "tabs-section",
+      "type": "tabs",
+      "components": [
+        {
+          "type": "tabs",
+          "config": {
+            "variant": "pills",
+            "orientation": "vertical",
+            "tabs": [
+              {
+                "id": "general",
+                "label": "General",
+                "icon": "settings",
+                "content": [
+                  { "type": "card", "config": { "title": "Application Settings", "children": [
+                    { "type": "toggle", "config": { "label": "Dark Mode", "name": "darkMode" } },
+                    { "type": "toggle", "config": { "label": "Notifications", "name": "notifications" } },
+                    { "type": "select", "config": { "label": "Language", "options": ["English", "Spanish", "French"] } }
+                  ]}}
+                ]
+              },
+              {
+                "id": "integrations",
+                "label": "Integrations",
+                "icon": "plug",
+                "content": [
+                  { "type": "alert", "config": { "variant": "warning", "title": "API Key Required", "message": "Some integrations require an API key" } },
+                  { "type": "card", "config": { "title": "Connected Services", "children": [
+                    { "type": "table", "config": { "columns": ["Service", "Status", "Actions"], "dataBinding": "integrations" } }
+                  ]}}
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "save-section",
+      "type": "footer",
+      "components": [
+        { "type": "button", "config": { "label": "Save All Settings", "variant": "primary", "fullWidth": false } }
+      ]
+    }
+  ]
+}
+
+**COMPONENT NESTING RULES**:
+IMPORTANT: Use "children" arrays to nest components within containers for rich layouts.
+
+- **container**: Wrapper component that can hold any children. Use for grouping related components:
+  { "type": "container", "config": { "padding": "24px", "children": [
+    { "type": "heading", "config": { "text": "Section Title", "variant": "h2" } },
+    { "type": "text", "config": { "text": "Description text here" } },
+    { "type": "button", "config": { "label": "Action", "variant": "primary" } }
+  ] } }
+
+- **section**: Page section that can contain children. Use for major page divisions:
+  { "type": "section", "config": { "padding": "32px", "children": [
+    { "type": "stat-card", "config": { "title": "Users", "value": "1,234" } },
+    { "type": "chart", "config": { "chartType": "bar", "title": "Analytics" } }
+  ] } }
+
+- **card**: Content card with children array for nested content:
+  { "type": "card", "config": { "title": "Card Title", "shadow": "md", "children": [
+    { "type": "text", "config": { "text": "Card content" } },
+    { "type": "input", "config": { "label": "Email", "type": "email" } },
+    { "type": "button", "config": { "label": "Submit", "variant": "primary" } }
+  ], "actions": [{ "label": "Save", "action": "submit" }] } }
+
+- **tabs**: Nested content inside each tab's "content" array:
+  { "type": "tabs", "config": { "variant": "underline", "tabs": [
+    { "id": "tab1", "label": "Overview", "content": [
+      { "type": "stat-card", "config": { "title": "Total", "value": "500" } }
+    ] },
+    { "id": "tab2", "label": "Settings", "content": [
+      { "type": "toggle", "config": { "label": "Notifications", "name": "notify" } }
+    ] }
+  ] } }
+
+- **form**: Reference forms using "formRef" to embed full form definitions
+  CRITICAL: ONLY use { "type": "form", "formRef": "form-id" } - NEVER create input/textarea/select/checkbox/radio/button components in pages!
+  Example: { "type": "form", "formRef": "login-form", "config": { "title": "Sign In" } }
+- **progress**: Use variant "steps" for wizards with "steps" array and "currentStep"
+- **spinner**: Use "size" (small|medium|large) and optional "label"
+- **alert**: Use "variant" (info|success|warning|error), "title", "message", "dismissible"
+- **toggle**: For boolean settings with "label" and "name"
+
+- **hero**: Hero sections MUST use "buttons" array for CTA buttons:
+  { "type": "hero", "config": {
+    "title": "Why Join Us?",
+    "subtitle": "Start your journey today",
+    "buttons": [
+      { "label": "Create Account", "variant": "primary" },
+      { "label": "Learn More", "variant": "secondary" }
+    ]
+  } }
+
+- **section**: Sections can have titles and subtitles displayed above their children:
+  { "type": "section", "config": {
+    "title": "Features",
+    "subtitle": "What we offer",
+    "padding": "32px",
+    "children": [
+      { "type": "card", "config": { "title": "Feature 1" } },
+      { "type": "card", "config": { "title": "Feature 2" } }
+    ]
+  } }
+
+ALWAYS use children arrays when you need to group multiple components together!
+
+**Style Guidelines (Material/Tailwind)**:
+- Shadows: Use "shadow": "sm|md|lg" for depth
+- Border radius: "borderRadius": "md" (8px) for cards, "lg" (12px) for modals
+- Hover effects: "hoverElevation": true for interactive cards
+- Spacing: Use consistent 16px/24px/32px scale
+- Transitions: All interactive elements should have smooth transitions
 
 Return ONLY valid JSON in this format:
 {
@@ -383,25 +917,85 @@ Return ONLY valid JSON in this format:
     const designSystem = componentPlan.designSystem;
     const designGuidelines = designSystem ? this.formatDesignGuidelines(designSystem) : '';
 
-    return `Generate ${specs.length} pages for: ${componentPlan.overview.name}
+    // Get component catalog
+    const componentCatalog = this.getComponentCatalogPrompt();
+
+    return `You are an EXPERT UX/UI DESIGNER with 15+ years of experience designing world-class applications.
+
+**YOUR DESIGN PHILOSOPHY**:
+You follow the design principles of the world's best design teams:
+
+**Apple Human Interface Guidelines**:
+- Clarity: Text is legible, icons are precise, adornments are subtle and appropriate
+- Deference: Fluid motion and crisp interface help understand content without competing with it
+- Depth: Visual layers and realistic motion convey hierarchy and facilitate understanding
+
+**Google Material Design**:
+- Material is the metaphor: Surfaces and edges provide visual cues grounded in reality
+- Bold, graphic, intentional: Typography, grids, space, scale, color create hierarchy and meaning
+- Motion provides meaning: Attention is focused and continuity is maintained through subtle feedback
+
+**Meta (Facebook) Design Principles**:
+- Universal: Design for a diverse, global audience with accessibility in mind
+- Human: Warm, approachable interfaces that feel personal not robotic
+- Clean: Remove unnecessary elements, every pixel should have a purpose
+- Consistent: Familiar patterns reduce cognitive load
+
+**YOUR DESIGN STANDARDS**:
+- White space is not wasted space - use generous padding and margins
+- Visual hierarchy through size, weight, and color contrast
+- Group related elements, separate unrelated ones
+- Consistent alignment and grid-based layouts
+- Subtle shadows and elevation for depth (not flat, not skeuomorphic)
+- Smooth micro-interactions and state transitions
+- Touch-friendly tap targets (min 44px)
+- Accessible color contrast (WCAG AA minimum)
+- Progressive disclosure - show what's needed, hide complexity
+- Clear visual feedback for all interactive elements
+
+---
+
+Generate ${specs.length} pages for: ${componentPlan.overview.name}
 
 Pages to generate (with their workflow/form associations):
 ${specList}
 
+${componentCatalog}
+
 ${designGuidelines}
+
+**COMPONENT NESTING - USE CHILDREN ARRAYS**:
+IMPORTANT: Use "children" arrays to create rich nested layouts.
+
+- **container**: { "type": "container", "config": { "padding": "24px", "children": [components...] } }
+- **section**: Sections have title/subtitle displayed ABOVE children:
+  { "type": "section", "config": { "title": "Section Title", "subtitle": "Description", "padding": "32px", "children": [components...] } }
+- **card**: { "type": "card", "config": { "title": "Title", "children": [components...], "actions": [...] } }
+- **tabs**: { "type": "tabs", "config": { "tabs": [{ "id": "t1", "label": "Tab", "content": [components...] }] } }
+- **hero**: Hero sections MUST use "buttons" array for CTA buttons:
+  { "type": "hero", "config": { "title": "Why Join Us?", "subtitle": "Description", "buttons": [{ "label": "Create Account", "variant": "primary" }, { "label": "Learn More", "variant": "secondary" }] } }
+
+Example nested structure:
+{ "type": "card", "config": { "title": "Settings", "shadow": "md", "children": [
+  { "type": "heading", "config": { "text": "Preferences", "variant": "h3" } },
+  { "type": "toggle", "config": { "label": "Notifications", "name": "notify" } },
+  { "type": "toggle", "config": { "label": "Dark Mode", "name": "darkMode" } },
+  { "type": "button", "config": { "label": "Save", "variant": "primary" } }
+] } }
 
 Context:
 ${existingComponents.forms ? `- Available forms: ${existingComponents.forms.map(f => `${f.name} (ID: ${f.id})`).join(', ')}` : '- No forms available yet'}
 ${existingComponents.dataModels ? `- Available data models: ${existingComponents.dataModels.map(dm => dm.name).join(', ')}` : ''}
 
 CRITICAL Requirements for EACH page:
-1. **POPULATE FORMS ARRAY**: Add relevant form IDs to the "forms" array (list pages get create forms, detail pages get edit forms)
-2. **ADD NAVIGATION MENU**: Include navigation.menu with links to ALL other pages in the app
-3. Structure with SECTIONS (header, main) containing components
-4. Include actual content in components (not empty)
-5. Link forms using formRef where applicable
-6. Use appropriate page types (list, detail, form, dashboard, auth, confirmation)
-${designSystem ? '7. CRITICAL: Apply the design system specifications above to ALL styling properties' : ''}
+1. **USE ONLY CATALOG COMPONENTS**: Only use component types listed in the AVAILABLE PAGE COMPONENTS section above
+2. **POPULATE FORMS ARRAY**: Add relevant form IDs to the "forms" array (list pages get create forms, detail pages get edit forms)
+3. **ADD NAVIGATION MENU**: Include navigation.menu with links to ALL other pages in the app
+4. Structure with SECTIONS (header, main) containing components
+5. Include actual content in components (not empty)
+6. **NEVER DUPLICATE FORM FIELDS**: If a page needs a form, use ONLY { "type": "form", "formRef": "existing-form-id" }. NEVER create input/textarea/select/button components directly in the page - those belong in forms only!
+7. Use appropriate page types (list, detail, form, dashboard, auth, confirmation)
+${designSystem ? '8. CRITICAL: Apply the design system specifications above to ALL styling properties' : ''}
 
 Available pages for navigation: ${allPageNames.join(', ')}
 

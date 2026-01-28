@@ -1,0 +1,193 @@
+[
+  {
+    "id": "rule_start_process",
+    "name": "Start Process - Validate User Input",
+    "description": "Validates that required contact fields are present and properly formatted before processing",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "contact.email",
+          "operator": "isNull",
+          "value": "false"
+        },
+        {
+          "field": "contact.firstName",
+          "operator": "isNull",
+          "value": "false"
+        },
+        {
+          "field": "contact.lastName",
+          "operator": "isNull",
+          "value": "false"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "contact.email",
+          "value": "email",
+          "message": "Valid email format required"
+        },
+        {
+          "type": "logMessage",
+          "field": "processLog",
+          "value": "Contact validation initiated",
+          "message": "Starting contact creation process"
+        },
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "passed",
+          "message": "Initial validation successful"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1767695125249"
+  },
+  {
+    "id": "rule_validate_contact_data",
+    "name": "Validate Contact Data Rule",
+    "description": "Validates contact data against business rules including email format and phone number",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "contact.email",
+          "operator": "contains",
+          "value": "@"
+        },
+        {
+          "field": "contact.phone",
+          "operator": "notEquals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "contact.phone",
+          "value": "phone",
+          "message": "Phone number must be in valid format"
+        },
+        {
+          "type": "setVariable",
+          "field": "dataValidationStatus",
+          "value": "valid",
+          "message": "Contact data meets business rules"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "Data validation completed successfully",
+          "message": "All contact fields validated"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1767695125249"
+  },
+  {
+    "id": "rule_is_data_valid",
+    "name": "Is Data Valid? Decision Rule",
+    "description": "Evaluates validation status to determine if contact can proceed to duplicate check",
+    "type": "decision",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "dataValidationStatus",
+          "operator": "equals",
+          "value": "valid"
+        },
+        {
+          "field": "validationStatus",
+          "operator": "equals",
+          "value": "passed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "proceedToDuplicateCheck",
+          "message": "Route to duplicate detection"
+        },
+        {
+          "type": "logMessage",
+          "field": "decisionLog",
+          "value": "Data validation passed - proceeding",
+          "message": "Contact data is valid, moving to next step"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1767695125249"
+  },
+  {
+    "id": "rule_duplicate_found",
+    "name": "Duplicate Found? Decision Rule",
+    "description": "Checks if a contact with the same email already exists in the system",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "existingContact.email",
+          "operator": "equals",
+          "value": "contact.email"
+        },
+        {
+          "field": "existingContact.id",
+          "operator": "isNull",
+          "value": "false"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "duplicateDetected",
+          "value": "true",
+          "message": "Duplicate contact found"
+        },
+        {
+          "type": "sendNotification",
+          "field": "userNotification",
+          "value": "warning",
+          "message": "A contact with this email already exists in the system"
+        },
+        {
+          "type": "stopWorkflow",
+          "field": "workflowStatus",
+          "value": "stopped",
+          "message": "Cannot create duplicate contact"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1767695125249"
+  }
+]

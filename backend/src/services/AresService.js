@@ -359,8 +359,9 @@ Respond in JSON format:
 
       case 'confirmation':
         if (analysis.readyToGenerate) {
+          // Instead of showing "Generate Now", offer theme selection first
           suggestions.push(
-            { id: 'generate', label: 'Yes, generate it now!', action: 'generate_with_moe', requirements: analysis.requirements },
+            { id: 'theme-selection', label: 'Choose theme and generate', action: 'select_theme', requirements: analysis.requirements },
             { id: 'edit', label: 'Let me add more details', action: 'edit_requirements' },
             { id: 'cancel', label: 'Cancel', action: 'help' }
           );
@@ -370,6 +371,15 @@ Respond in JSON format:
             { id: 'cancel', label: 'Cancel', action: 'help' }
           );
         }
+        break;
+
+      case 'theme_selection':
+        // User needs to select a theme before generation
+        suggestions.push(
+          { id: 'light-theme', label: 'Light Theme', action: 'select_light_theme', requirements: analysis.requirements },
+          { id: 'dark-theme', label: 'Dark Theme', action: 'select_dark_theme', requirements: analysis.requirements },
+          { id: 'custom-theme', label: 'Upload Figma Design (PDF)', action: 'select_custom_theme', requirements: analysis.requirements }
+        );
         break;
 
       case 'generating':
@@ -522,6 +532,28 @@ Respond in JSON format:
         }
       };
 
+      // Build design input with theme configuration or uploaded design file
+      let designInput = null;
+      if (context.themeConfig) {
+        if (context.themeConfig.theme === 'figma-pdf' && context.themeConfig.designFile) {
+          // User uploaded a Figma design PDF
+          designInput = {
+            name: context.themeConfig.designFile.name,
+            data: context.themeConfig.designFile.data,
+            type: 'pdf',
+            mimeType: context.themeConfig.designFile.mimeType || 'application/pdf'
+          };
+          console.log('[ARES] Using Figma PDF design input:', { name: designInput.name, type: designInput.type });
+        } else {
+          // Theme selection (light/dark)
+          designInput = {
+            theme: context.themeConfig.theme,
+            customCss: context.themeConfig.customCss
+          };
+          console.log('[ARES] Using theme design input:', { theme: designInput.theme });
+        }
+      }
+
       // Use MoE Orchestrator to generate
       // generateWorkflow(userRequirements, existingWorkflow, conversationHistory, emitEvent, designInput = null)
       const result = await this.moeOrchestrator.generateWorkflow(
@@ -529,7 +561,7 @@ Respond in JSON format:
         null, // existingWorkflow
         conversationHistory,
         emitEvent,
-        null // designInput
+        designInput // Pass theme configuration as design input
       );
 
       console.log('[ARES] MoE generation complete:', result);

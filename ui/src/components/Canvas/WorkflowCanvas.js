@@ -26,15 +26,28 @@ import ScriptTaskNode from './Nodes/ScriptTaskNode';
 import TimerEventNode from './Nodes/TimerEventNode';
 import LLMTaskNode from './Nodes/LLMTaskNode';
 import SubWorkflowNode from './Nodes/SubWorkflowNode';
+import RestApiNode from './Nodes/RestApiNode';
+import {
+  TimerStartEventNode,
+  MessageStartEventNode,
+  SignalStartEventNode,
+  ConditionalStartEventNode
+} from './Nodes/StartEventNodes';
 import WorkflowOverview from '../Workflow/WorkflowOverview';
 import WorkflowConnectionEditor from '../Workflow/WorkflowConnectionEditor';
-import { Grid3x3, Upload, Save, Download, Rocket, CheckCircle, GitBranch, Map as MapIcon } from 'lucide-react';
+import AIPromptBar from './AIPromptBar';
+import { Grid3x3, Upload, Save, Download, Rocket, CheckCircle, GitBranch, Map as MapIcon, FileJson, Sparkles } from 'lucide-react';
 
 const nodeTypes = {
-  // Core node types
+  // Core start event types (multiple triggers supported)
   startProcess: StartProcessNode,
   startEvent: StartProcessNode,
   start: StartProcessNode,
+  timerStartEvent: TimerStartEventNode,
+  messageStartEvent: MessageStartEventNode,
+  signalStartEvent: SignalStartEventNode,
+  conditionalStartEvent: ConditionalStartEventNode,
+  // Other node types
   validation: ValidationNode,
   decision: DecisionNode,
   exclusiveGateway: DecisionNode,
@@ -50,6 +63,7 @@ const nodeTypes = {
   timerEvent: TimerEventNode,
   llmTask: LLMTaskNode,
   subWorkflow: SubWorkflowNode,
+  restApi: RestApiNode,
   // Additional node types from WorkflowExpert
   task: DataProcessNode,
   form: UserTaskNode,
@@ -67,7 +81,7 @@ let id = 0;
 const getId = () => `node_${id++}`;
 
 const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
-  const { currentWorkflow: contextWorkflow, setCurrentWorkflow, setSelectedNode, setPropertiesPanelOpen, setConnectedForms, setDataModels, currentApplication } = useWorkflow();
+  const { currentWorkflow: contextWorkflow, setCurrentWorkflow, setSelectedNode, setPropertiesPanelOpen, setConnectedForms, setDataModels, currentApplication, saveWorkflow } = useWorkflow();
 
   // Use initialWorkflow prop if provided (for preview mode), otherwise use context
   const currentWorkflow = initialWorkflow || contextWorkflow;
@@ -80,6 +94,7 @@ const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [showWorkflowOverview, setShowWorkflowOverview] = useState(false);
   const [showConnectionEditor, setShowConnectionEditor] = useState(false);
+  const [showAIPromptBar, setShowAIPromptBar] = useState(false);
   const [isPaletteCollapsed, setIsPaletteCollapsed] = useState(false);
 
   const showToast = useCallback((message, type = 'success') => {
@@ -172,6 +187,30 @@ const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
     }
   }, [currentWorkflow, initialWorkflow, nodes.length, edges.length, setNodes, setEdges]);
 
+  // Sync node DATA from context to ReactFlow (preserving positions)
+  // This ensures form changes and other data updates appear on canvas nodes
+  useEffect(() => {
+    if (initialWorkflow || !currentWorkflow?.nodes) return;
+
+    // Update node data from context while preserving local positions
+    setNodes(prevNodes => {
+      return prevNodes.map(localNode => {
+        const contextNode = currentWorkflow.nodes.find(n => n.id === localNode.id);
+        if (contextNode && contextNode.data) {
+          // Only update if data actually changed
+          const dataChanged = JSON.stringify(localNode.data) !== JSON.stringify(contextNode.data);
+          if (dataChanged) {
+            return {
+              ...localNode,
+              data: contextNode.data // Update data from context
+            };
+          }
+        }
+        return localNode;
+      });
+    });
+  }, [currentWorkflow?.nodes, initialWorkflow, setNodes]);
+
   const onConnect = useCallback(
     (params) => {
       const newEdge = { ...params, id: `edge-${Date.now()}`, animated: false };
@@ -192,6 +231,15 @@ const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
   const onNodeClick = useCallback(
     (event, node) => {
       setSelectedNode(node.id);
+      setPropertiesPanelOpen(true);
+    },
+    [setSelectedNode, setPropertiesPanelOpen]
+  );
+
+  // Click on canvas background opens Workflow Settings
+  const onPaneClick = useCallback(
+    () => {
+      setSelectedNode(null); // Clear selected node to show Workflow Settings
       setPropertiesPanelOpen(true);
     },
     [setSelectedNode, setPropertiesPanelOpen]
@@ -220,16 +268,22 @@ const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
       }
 
       // Update context when nodes change (e.g., position changes)
-      const updatedNodes = nodes.map(node => {
-        const change = changes.find(c => c.id === node.id && c.type === 'position');
-        if (change && change.position) {
-          return { ...node, position: change.position };
-        }
-        return node;
-      });
-      setCurrentWorkflow(prev => ({ ...prev, nodes: updatedNodes }));
+      // Only update positions, preserve all other data from context
+      const positionChanges = changes.filter(c => c.type === 'position' && c.position);
+      if (positionChanges.length > 0) {
+        setCurrentWorkflow(prev => ({
+          ...prev,
+          nodes: prev.nodes.map(node => {
+            const change = positionChanges.find(c => c.id === node.id);
+            if (change) {
+              return { ...node, position: change.position };
+            }
+            return node;
+          })
+        }));
+      }
     },
-    [onNodesChange, nodes, setCurrentWorkflow]
+    [onNodesChange, setCurrentWorkflow]
   );
 
   const onDragOver = useCallback((event) => {
@@ -470,9 +524,54 @@ const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
     [setNodes, setEdges, setCurrentWorkflow, reactFlowInstance, setConnectedForms, setDataModels]
   );
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!currentWorkflow) {
       showToast('No workflow to save', 'warning');
+      return;
+    }
+
+    // Merge node data: use positions from ReactFlow state, but data from context
+    // (context has latest property changes like form links, ReactFlow has latest positions)
+    const contextNodesMap = new Map(
+      (currentWorkflow.nodes || []).map(n => [n.id, n])
+    );
+
+    const mergedNodes = nodes.map(node => {
+      const contextNode = contextNodesMap.get(node.id);
+      return {
+        id: node.id,
+        type: node.type,
+        position: node.position, // From ReactFlow (latest drag position)
+        data: contextNode?.data || node.data // From context (latest property changes)
+      };
+    });
+
+    // Build the workflow object with merged state
+    const workflowToSave = {
+      ...currentWorkflow,
+      nodes: mergedNodes,
+      edges: edges.map(edge => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        sourceHandle: edge.sourceHandle,
+        targetHandle: edge.targetHandle
+      })),
+      updatedAt: new Date().toISOString()
+    };
+
+    // Save to backend
+    const result = await saveWorkflow(workflowToSave);
+    if (result.success) {
+      showToast('Workflow saved successfully', 'success');
+    } else {
+      showToast(result.error || 'Failed to save workflow', 'error');
+    }
+  }, [currentWorkflow, nodes, edges, showToast, saveWorkflow]);
+
+  const handleExportJSON = useCallback(() => {
+    if (!currentWorkflow) {
+      showToast('No workflow to export', 'warning');
       return;
     }
 
@@ -489,9 +588,7 @@ const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
         id: node.id,
         type: node.type,
         position: node.position,
-        data: {
-          ...node.data
-        }
+        data: { ...node.data }
       })),
       connections: edges.map(edge => ({
         id: edge.id,
@@ -513,6 +610,7 @@ const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    showToast('Workflow exported as JSON', 'success');
   }, [currentWorkflow, nodes, edges, showToast]);
 
   const handleValidate = useCallback(async () => {
@@ -883,6 +981,7 @@ const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
           onEdgesChange={readOnly ? undefined : onEdgesChange}
           onConnect={readOnly ? undefined : onConnect}
           onNodeClick={readOnly ? undefined : onNodeClick}
+          onPaneClick={readOnly ? undefined : onPaneClick}
           onNodesDelete={readOnly ? undefined : onNodesDelete}
           onInit={onInit}
           onDrop={readOnly ? undefined : onDrop}
@@ -921,6 +1020,9 @@ const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
           {/* Edit/Save buttons only in edit mode */}
           {!readOnly && (
             <>
+              <button className="fab-button fab-ai" onClick={() => setShowAIPromptBar(true)} title="AI Generate">
+                <Sparkles size={20} />
+              </button>
               <button className="fab-button fab-validate" onClick={handleValidate} title="Validate Workflow">
                 <CheckCircle size={20} />
               </button>
@@ -945,8 +1047,11 @@ const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
               <button className="fab-button fab-import" onClick={handleImport} title="Import Workflow">
                 <Upload size={20} />
               </button>
-              <button className="fab-button fab-save" onClick={handleSave} title="Save as JSON">
+              <button className="fab-button fab-save" onClick={handleSave} title="Save Workflow">
                 <Save size={20} />
+              </button>
+              <button className="fab-button fab-export" onClick={handleExportJSON} title="Export as JSON">
+                <FileJson size={20} />
               </button>
               <button className="fab-button fab-download" onClick={handleDownloadBPMN} title="Download BPMN">
                 <Download size={20} />
@@ -1011,6 +1116,14 @@ const WorkflowCanvas = ({ initialWorkflow = null, readOnly = false }) => {
             />
           </div>
         </div>
+      )}
+
+      {/* AI Prompt Bar */}
+      {showAIPromptBar && (
+        <AIPromptBar
+          onClose={() => setShowAIPromptBar(false)}
+          onGenerate={handleAIWorkflowGenerated}
+        />
       )}
     </div>
   );

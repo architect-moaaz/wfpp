@@ -1,0 +1,157 @@
+[
+  {
+    "id": "rule_start_process",
+    "name": "Start Rule - Validate User Input",
+    "description": "Validates required contact fields are present and properly formatted before processing",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "contact.name",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "contact.name",
+          "message": "Contact name is required and cannot be empty"
+        },
+        {
+          "type": "stopWorkflow",
+          "message": "Workflow stopped due to missing required fields"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "workflow-create-new-contact",
+    "workflowId": "workflow-create-new-contact",
+    "application_id": "app_1767692682302"
+  },
+  {
+    "id": "rule_validate_contact_data",
+    "name": "Validate Contact Data Rule",
+    "description": "Validates email format and phone number length meet business requirements",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "contact.email",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "contact.email",
+          "operator": "contains",
+          "value": "@"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "contact.email",
+          "message": "Email format is valid"
+        },
+        {
+          "type": "setVariable",
+          "field": "validation.emailValid",
+          "value": true
+        },
+        {
+          "type": "logMessage",
+          "message": "Contact data validation passed successfully"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "workflow-create-new-contact",
+    "workflowId": "workflow-create-new-contact",
+    "application_id": "app_1767692682302"
+  },
+  {
+    "id": "rule_is_data_valid",
+    "name": "Is Data Valid? Decision Rule",
+    "description": "Determines if contact data meets all validation criteria to proceed with creation",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validation.emailValid",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "contact.name",
+          "operator": "notEquals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.proceedToSave",
+          "value": true
+        },
+        {
+          "type": "logMessage",
+          "message": "Data validation successful - proceeding to duplicate check"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "workflow-create-new-contact",
+    "workflowId": "workflow-create-new-contact",
+    "application_id": "app_1767692682302"
+  },
+  {
+    "id": "rule_duplicate_found",
+    "name": "Duplicate Found? Decision Rule",
+    "description": "Checks if contact with same email already exists in the directory",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "existingContact.email",
+          "operator": "equals",
+          "value": "contact.email"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.duplicateDetected",
+          "value": true
+        },
+        {
+          "type": "sendNotification",
+          "message": "Duplicate contact found with email: {contact.email}. Please review before proceeding."
+        },
+        {
+          "type": "stopWorkflow",
+          "message": "Contact creation halted - duplicate email address detected"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "workflow-create-new-contact",
+    "workflowId": "workflow-create-new-contact",
+    "application_id": "app_1767692682302"
+  }
+]

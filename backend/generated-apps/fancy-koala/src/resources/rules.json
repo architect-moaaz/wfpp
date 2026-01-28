@@ -1,0 +1,229 @@
+[
+  {
+    "id": "rule_start_book_registration",
+    "name": "Start Book Registration Rule",
+    "description": "Validate initial book registration input to ensure all required fields are provided",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Book.title",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Book.title",
+          "value": null,
+          "message": "Book title is required to start registration process"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "book-registration-workflow",
+    "workflowId": "book-registration-workflow",
+    "application_id": "app_1766491284095"
+  },
+  {
+    "id": "rule_enter_book_details",
+    "name": "Enter Book Details Rule",
+    "description": "Validate book details including author, publisher, and publication year",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Book.author",
+          "operator": "isNull",
+          "value": true
+        },
+        {
+          "field": "Book.publicationYear",
+          "operator": "greaterThan",
+          "value": 2024
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Book.author",
+          "value": null,
+          "message": "Author name is required"
+        },
+        {
+          "type": "throwError",
+          "field": "Book.publicationYear",
+          "value": null,
+          "message": "Publication year cannot be in the future"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "book-registration-workflow",
+    "workflowId": "book-registration-workflow",
+    "application_id": "app_1766491284095"
+  },
+  {
+    "id": "rule_validate_isbn_format",
+    "name": "Validate ISBN Format Rule",
+    "description": "Check if ISBN follows valid ISBN-10 or ISBN-13 format",
+    "type": "validation",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Book.isbn",
+          "operator": "notEquals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "executeScript",
+          "field": "Book.isbnValid",
+          "value": "validateISBNFormat(Book.isbn)",
+          "message": "Validating ISBN format"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "ISBN validation completed",
+          "message": "ISBN format validation executed"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "book-registration-workflow",
+    "workflowId": "book-registration-workflow",
+    "application_id": "app_1766491284095"
+  },
+  {
+    "id": "rule_isbn_valid_decision",
+    "name": "ISBN Valid? Rule",
+    "description": "Determine workflow path based on ISBN validation result",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Book.isbnValid",
+          "operator": "equals",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "reenterISBN",
+          "message": "Invalid ISBN detected, redirecting to re-entry"
+        },
+        {
+          "type": "sendNotification",
+          "field": "userNotification",
+          "value": "error",
+          "message": "The ISBN format is invalid. Please enter a valid ISBN-10 or ISBN-13"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "book-registration-workflow",
+    "workflowId": "book-registration-workflow",
+    "application_id": "app_1766491284095"
+  },
+  {
+    "id": "rule_duplicate_found_decision",
+    "name": "Duplicate Found? Rule",
+    "description": "Check if book with same ISBN already exists in the system",
+    "type": "decision",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Book.isDuplicate",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "duplicateHandling",
+          "message": "Duplicate book detected"
+        },
+        {
+          "type": "stopWorkflow",
+          "field": "registrationStatus",
+          "value": "duplicate",
+          "message": "Book with this ISBN already exists in the library system"
+        },
+        {
+          "type": "logMessage",
+          "field": "auditLog",
+          "value": "Duplicate registration attempt blocked",
+          "message": "Duplicate book registration prevented"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "book-registration-workflow",
+    "workflowId": "book-registration-workflow",
+    "application_id": "app_1766491284095"
+  },
+  {
+    "id": "rule_review_confirm_category",
+    "name": "Review & Confirm Category Rule",
+    "description": "Validate that book category is selected and exists in system",
+    "type": "validation",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Book.categoryId",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Book.categoryId",
+          "value": null,
+          "message": "Book category must be selected before completing registration"
+        },
+        {
+          "type": "setVariable",
+          "field": "registrationComplete",
+          "value": false,
+          "message": "Registration incomplete due to missing category"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "book-registration-workflow",
+    "workflowId": "book-registration-workflow",
+    "application_id": "app_1766491284095"
+  }
+]

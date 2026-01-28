@@ -1,0 +1,272 @@
+[
+  {
+    "id": "rule_start_task_creation",
+    "name": "Start Task Creation Rule",
+    "description": "Validate that user is authenticated and has permission to create tasks",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.id",
+          "operator": "isNull",
+          "value": "false"
+        },
+        {
+          "field": "User.status",
+          "operator": "equals",
+          "value": "active"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Task.createdBy",
+          "value": "{{User.id}}",
+          "message": "Task creation initiated"
+        },
+        {
+          "type": "logMessage",
+          "field": "system.log",
+          "value": "User {{User.id}} started task creation",
+          "message": "Task creation process started"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "workflow-task-creation",
+    "workflowId": "workflow-task-creation",
+    "application_id": "app_1768494560386"
+  },
+  {
+    "id": "rule_enter_task_details",
+    "name": "Enter Task Details Rule",
+    "description": "Validate required task fields are provided with proper data",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Task.title",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "Task.dueDate",
+          "operator": "greaterThan",
+          "value": "{{currentDate}}"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Task.title",
+          "value": "valid",
+          "message": "Task title is valid"
+        },
+        {
+          "type": "validateField",
+          "field": "Task.dueDate",
+          "value": "valid",
+          "message": "Due date is valid"
+        },
+        {
+          "type": "setVariable",
+          "field": "Task.status",
+          "value": "pending_validation",
+          "message": "Task details entered successfully"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "workflow-task-creation",
+    "workflowId": "workflow-task-creation",
+    "application_id": "app_1768494560386"
+  },
+  {
+    "id": "rule_validate_task_data",
+    "name": "Validate Task Data Rule",
+    "description": "Check task data against business rules including priority and description length",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Task.priority",
+          "operator": "in",
+          "value": [
+            "low",
+            "medium",
+            "high",
+            "urgent"
+          ]
+        },
+        {
+          "field": "Task.description",
+          "operator": "notEquals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Task.validationStatus",
+          "value": "passed",
+          "message": "Task data validation successful"
+        },
+        {
+          "type": "logMessage",
+          "field": "system.log",
+          "value": "Task {{Task.id}} passed validation",
+          "message": "Validation completed"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "workflow-task-creation",
+    "workflowId": "workflow-task-creation",
+    "application_id": "app_1768494560386"
+  },
+  {
+    "id": "rule_is_valid_decision",
+    "name": "Is Valid? Rule",
+    "description": "Determine if task data is valid to proceed or needs correction",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Task.validationStatus",
+          "operator": "equals",
+          "value": "passed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.nextStep",
+          "value": "assignToUser",
+          "message": "Proceed to assignment"
+        },
+        {
+          "type": "logMessage",
+          "field": "system.log",
+          "value": "Task validation passed, proceeding to assignment",
+          "message": "Moving to next step"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "workflow-task-creation",
+    "workflowId": "workflow-task-creation",
+    "application_id": "app_1768494560386"
+  },
+  {
+    "id": "rule_correct_task_details",
+    "name": "Correct Task Details Rule",
+    "description": "Validate corrected task details after user modifications",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Task.correctionAttempts",
+          "operator": "lessThan",
+          "value": "3"
+        },
+        {
+          "field": "Task.title",
+          "operator": "notEquals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Task.correctionAttempts",
+          "value": "{{Task.correctionAttempts + 1}}",
+          "message": "Correction attempt recorded"
+        },
+        {
+          "type": "setVariable",
+          "field": "Task.status",
+          "value": "pending_validation",
+          "message": "Task ready for re-validation"
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.email",
+          "value": "{{User.email}}",
+          "message": "Task details have been updated and are being re-validated"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "workflow-task-creation",
+    "workflowId": "workflow-task-creation",
+    "application_id": "app_1768494560386"
+  },
+  {
+    "id": "rule_assign_to_user_decision",
+    "name": "Assign to User? Rule",
+    "description": "Determine if task should be assigned to specific user or remain unassigned",
+    "type": "decision",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Task.assignedUserId",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "Task.assignedUserId",
+          "operator": "isNull",
+          "value": "false"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Task.status",
+          "value": "assigned",
+          "message": "Task assigned to user"
+        },
+        {
+          "type": "sendNotification",
+          "field": "assignedUser.email",
+          "value": "{{Task.assignedUserId}}",
+          "message": "You have been assigned a new task: {{Task.title}}"
+        },
+        {
+          "type": "updateData",
+          "field": "Task.assignedDate",
+          "value": "{{currentDate}}",
+          "message": "Task assignment completed"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "workflow-task-creation",
+    "workflowId": "workflow-task-creation",
+    "application_id": "app_1768494560386"
+  }
+]

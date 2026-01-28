@@ -1,0 +1,119 @@
+import axios from 'axios';
+
+// Use environment variable for API URL, fallback to relative /api path (for proxy)
+const API_BASE_URL = process.env.REACT_APP_API_URL
+  ? `${process.env.REACT_APP_API_URL}/api`
+  : '/api';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Response interceptor to unwrap API responses
+api.interceptors.response.use(
+  response => {
+    // API returns { success: true, workflows/forms/instances/data: [...] }
+    // Unwrap the response for convenience
+    const data = response.data;
+    if (data && data.success) {
+      // Return the actual data, not the wrapper
+      if (data.workflows) return { data: data.workflows };
+      if (data.forms) return { data: data.forms };
+      if (data.instances) return { data: data.instances };
+      if (data.instance) return { data: data.instance };
+      if (data.workflow) return { data: data.workflow };
+      if (data.data) return { data: data.data };
+      if (data.statistics) return { data: { statistics: data.statistics } };
+    }
+    return response;
+  },
+  error => Promise.reject(error)
+);
+
+// Workflows API
+export const workflowsApi = {
+  list: () => api.get('/workflows'),
+  get: (id) => api.get(`/workflows/${id}`),
+  start: (id, data) => api.post(`/workflows/${id}/start`, data),
+  getInstances: () => api.get('/instances'),
+  getInstance: (instanceId) => api.get(`/instances/${instanceId}`)
+};
+
+// Forms API
+export const formsApi = {
+  list: () => api.get('/resources/forms'),
+  get: (id) => api.get('/resources/forms').then(res => ({
+    data: (res.data || []).find(f => f.id === id)
+  })),
+  submit: (id, data) => api.post(`/forms/${id}/submit`, data)
+};
+
+// Data API (generic CRUD for all data models)
+export const dataApi = {
+  list: (model) => api.get(`/data/${model}`),
+  get: (model, id) => api.get(`/data/${model}/${id}`),
+  create: (model, data) => api.post(`/data/${model}`, data),
+  update: (model, id, data) => api.put(`/data/${model}/${id}`, data),
+  delete: (model, id) => api.delete(`/data/${model}/${id}`)
+};
+
+// Execution Logs API
+export const logsApi = {
+  getStatistics: () => api.get('/execution-logs/statistics'),
+  getHistory: (limit = 50) => api.get(`/execution-logs/history?limit=${limit}`)
+};
+
+// Authentication API
+export const authApi = {
+  login: (email, password) => api.post('/auth/login', { email, password }),
+  register: (email, password, userData) => api.post('/auth/register', { email, password, ...userData }),
+  logout: () => api.post('/auth/logout'),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
+  getProfile: () => api.get('/auth/profile'),
+  refresh: () => api.post('/auth/refresh')
+};
+
+// Workflow Navigation API - handles workflow execution with page navigation
+export const workflowApi = {
+  // Start a workflow and get initial navigation
+  start: (workflowId, inputData = {}) => api.post(`/workflows/${workflowId}/start`, inputData),
+
+  // Get current instance state with navigation info
+  getInstance: (instanceId) => api.get(`/instances/${instanceId}`),
+
+  // Complete a task and get next navigation
+  completeTask: (instanceId, taskId, formData) =>
+    api.post(`/instances/${instanceId}/complete`, { taskId, ...formData }),
+
+  // Get current task for an instance
+  getCurrentTask: (instanceId) => api.get(`/instances/${instanceId}/task`),
+
+  // Claim a group task
+  claimTask: (instanceId, taskId) => api.post(`/instances/${instanceId}/claim`, { taskId }),
+
+  // Get workflow execution history
+  getHistory: (instanceId) => api.get(`/instances/${instanceId}/history`)
+};
+
+// Add auth token to requests
+export const setAuthToken = (token) => {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    localStorage.setItem('authToken', token);
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+    localStorage.removeItem('authToken');
+  }
+};
+
+// Initialize token from localStorage
+const savedToken = localStorage.getItem('authToken');
+if (savedToken) {
+  api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+}
+
+export default api;

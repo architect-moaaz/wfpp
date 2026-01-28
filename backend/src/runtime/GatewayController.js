@@ -4,16 +4,20 @@
  */
 
 const tokenManager = require('./TokenManager');
+const configEnforcer = require('./WorkflowConfigEnforcer');
+const SafeConditionEvaluator = require('../utils/SafeConditionEvaluator');
 
 class GatewayController {
   constructor() {
     // Track gateway join states: instanceId -> { gatewayId -> { expectedTokens, arrivedTokens[] } }
     this.gatewayStates = new Map();
+    this.conditionEvaluator = new SafeConditionEvaluator();
   }
 
   /**
    * Process Parallel Gateway Split (AND)
    * Forks token into multiple parallel paths
+   * Now enforces configured parallel branch count
    */
   async processParallelGatewaySplit(gateway, token, workflow, instance) {
     const outgoingFlows = this.getOutgoingFlows(gateway.id, workflow);
@@ -22,10 +26,18 @@ class GatewayController {
       throw new Error(`Parallel gateway ${gateway.id} has no outgoing flows`);
     }
 
-    console.log(`[GatewayController] Parallel split at ${gateway.id}, creating ${outgoingFlows.length} tokens`);
+    // Enforce parallel branch count from configuration (Feature #17)
+    const branchEnforcement = configEnforcer.enforceParallelBranches(gateway, outgoingFlows);
+    const enforcedFlows = branchEnforcement.connections;
 
-    // Get target node IDs
-    const targetNodeIds = outgoingFlows.map(flow => flow.targetId);
+    if (branchEnforcement.warning) {
+      console.warn(`[GatewayController] ${branchEnforcement.warning}`);
+    }
+
+    console.log(`[GatewayController] Parallel split at ${gateway.id}, creating ${enforcedFlows.length} tokens (enforced: ${branchEnforcement.enforced})`);
+
+    // Get target node IDs from enforced flows
+    const targetNodeIds = enforcedFlows.map(flow => flow.targetId);
 
     // Fork token into multiple child tokens
     const childTokens = tokenManager.forkToken(
@@ -38,7 +50,9 @@ class GatewayController {
       type: 'split',
       gateway: gateway.id,
       tokens: childTokens,
-      nextNodes: targetNodeIds
+      nextNodes: targetNodeIds,
+      branchCount: enforcedFlows.length,
+      enforced: branchEnforcement.enforced
     };
   }
 
@@ -120,6 +134,7 @@ class GatewayController {
   /**
    * Process Inclusive Gateway Split (OR)
    * Evaluates conditions and forks token for paths that evaluate to true
+   * Now validates conditions before execution (Feature #16)
    */
   async processInclusiveGatewaySplit(gateway, token, workflow, instance) {
     const outgoingFlows = this.getOutgoingFlows(gateway.id, workflow);
@@ -128,7 +143,19 @@ class GatewayController {
       throw new Error(`Inclusive gateway ${gateway.id} has no outgoing flows`);
     }
 
-    console.log(`[GatewayController] Inclusive split at ${gateway.id}, evaluating ${outgoingFlows.length} conditions`);
+    // Validate gateway conditions before execution (Feature #16)
+    const validation = configEnforcer.validateGatewayConditions(gateway, workflow, token.variables);
+
+    if (!validation.valid) {
+      console.error(`[GatewayController] Inclusive gateway condition validation failed:`, validation.errors);
+      throw new Error(`Gateway ${gateway.id} validation failed: ${validation.errors.join(', ')}`);
+    }
+
+    if (validation.warnings.length > 0) {
+      console.warn(`[GatewayController] Inclusive gateway condition warnings:`, validation.warnings);
+    }
+
+    console.log(`[GatewayController] Inclusive split at ${gateway.id}, evaluating ${outgoingFlows.length} conditions (validated)`);
 
     // Evaluate each outgoing flow condition
     const activeFlows = [];
@@ -272,6 +299,7 @@ class GatewayController {
   /**
    * Process Exclusive Gateway (XOR)
    * Evaluates conditions and takes first matching path
+   * Now validates conditions before execution (Feature #16)
    */
   async processExclusiveGateway(gateway, token, workflow, instance) {
     const outgoingFlows = this.getOutgoingFlows(gateway.id, workflow);
@@ -280,7 +308,19 @@ class GatewayController {
       throw new Error(`Exclusive gateway ${gateway.id} has no outgoing flows`);
     }
 
-    console.log(`[GatewayController] Exclusive gateway at ${gateway.id}, evaluating ${outgoingFlows.length} conditions`);
+    // Validate gateway conditions before execution (Feature #16)
+    const validation = configEnforcer.validateGatewayConditions(gateway, workflow, token.variables);
+
+    if (!validation.valid) {
+      console.error(`[GatewayController] Gateway condition validation failed:`, validation.errors);
+      throw new Error(`Gateway ${gateway.id} validation failed: ${validation.errors.join(', ')}`);
+    }
+
+    if (validation.warnings.length > 0) {
+      console.warn(`[GatewayController] Gateway condition warnings:`, validation.warnings);
+    }
+
+    console.log(`[GatewayController] Exclusive gateway at ${gateway.id}, evaluating ${outgoingFlows.length} conditions (validated)`);
 
     // Evaluate conditions in order until one matches
     for (const flow of outgoingFlows) {
@@ -304,7 +344,8 @@ class GatewayController {
           type: 'exclusive',
           gateway: gateway.id,
           token: token,
-          nextNode: flow.targetId
+          nextNode: flow.targetId,
+          conditionMatched: flow.condition
         };
       }
     }
@@ -323,12 +364,13 @@ class GatewayController {
       type: 'exclusive',
       gateway: gateway.id,
       token: token,
-      nextNode: defaultFlow.targetId
+      nextNode: defaultFlow.targetId,
+      usedDefault: true
     };
   }
 
   /**
-   * Evaluate a flow condition
+   * Evaluate a flow condition using SafeConditionEvaluator (no eval)
    */
   async evaluateCondition(condition, variables, instance) {
     // No condition means always true
@@ -337,20 +379,8 @@ class GatewayController {
     }
 
     try {
-      // Simple expression evaluation
-      // Support: variable == value, variable > value, variable < value, etc.
-
-      // Replace variable references with actual values
-      let expression = condition;
-      for (const [key, value] of Object.entries(variables)) {
-        const regex = new RegExp(`\\b${key}\\b`, 'g');
-        const replacementValue = typeof value === 'string' ? `"${value}"` : value;
-        expression = expression.replace(regex, replacementValue);
-      }
-
-      // Evaluate expression safely
-      // In production, use a proper expression parser
-      const result = eval(expression);
+      // Use SafeConditionEvaluator instead of unsafe eval()
+      const result = this.conditionEvaluator.evaluate(condition, variables);
 
       console.log(`[GatewayController] Condition "${condition}" evaluated to ${result}`);
 

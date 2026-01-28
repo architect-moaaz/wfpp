@@ -289,9 +289,22 @@ class PlanningExpert {
    * Creates a component-based plan (NEW ARCHITECTURE)
    * Returns lightweight component specs instead of full components
    * Prevents JSON truncation by avoiding monolithic generation
+   *
+   * For complex requirements (ERP-level), uses CHUNKED PLANNING:
+   * 1. Decompose into modules
+   * 2. Generate specs per module
+   * 3. Stitch together with cross-module connections
    */
   async createComponentPlan(userRequirements, context = {}, eventEmitter = null) {
     console.log('[PlanningExpert] Creating COMPONENT-BASED plan...');
+
+    // Check if requirements are complex enough to need chunked planning
+    const isComplex = this.isComplexRequirement(userRequirements);
+    console.log('[PlanningExpert] Complexity detection:', isComplex ? 'COMPLEX - using chunked planning' : 'SIMPLE - using single-pass planning');
+
+    if (isComplex) {
+      return await this.createChunkedComponentPlan(userRequirements, context, eventEmitter);
+    }
 
     if (eventEmitter) {
       eventEmitter({
@@ -344,6 +357,471 @@ class PlanningExpert {
     }
 
     return componentPlan;
+  }
+
+  /**
+   * Detect if requirements are complex enough to need chunked planning
+   * Uses GENERIC metrics - works for any application type
+   */
+  isComplexRequirement(requirements) {
+    const text = requirements.toLowerCase();
+
+    // Metric 1: Length of requirements (longer = more complex)
+    const wordCount = text.split(/\s+/).length;
+    const isLengthy = wordCount > 80; // Lowered from 150
+
+    // Metric 2: Count numbered/bulleted items (features, steps, etc.)
+    // Match: "1.", "1)", "- ", "* ", with or without leading whitespace
+    const numberedItems = (text.match(/\d+[\.\)]\s|^\s*[-*]\s|,\s*\d+[\.\)]/gm) || []).length;
+    const hasMultipleItems = numberedItems >= 4; // Lowered from 5
+
+    // Metric 3: Count distinct workflow/process indicators
+    const workflowIndicators = [
+      /workflow|process|flow|pipeline/gi,
+      /step|phase|stage/gi,
+      /then|after|next|finally|first|second|third/gi,
+      /approval|review|validate|verify/gi,
+      /notify|alert|email|send|notification/gi,
+      /manage|management|tracking|monitor/gi
+    ];
+    const workflowMatches = workflowIndicators.reduce((count, pattern) => {
+      return count + (text.match(pattern) || []).length;
+    }, 0);
+    const hasComplexWorkflows = workflowMatches >= 5; // Lowered from 8
+
+    // Metric 4: Count distinct entity/data types mentioned (matches plurals too)
+    const entityPatterns = [
+      /\b(users?|customers?|clients?|members?|employees?|staff|admins?|managers?|suppliers?|vendors?|teams?)\b/gi,
+      /\b(products?|items?|goods|services?|orders?|transactions?|purchases?|sales?)\b/gi,
+      /\b(forms?|screens?|pages?|views?|dashboards?|reports?|analytics)\b/gi,
+      /\b(documents?|files?|attachments?|records?|data|database)\b/gi,
+      /\b(payments?|invoices?|billing|subscriptions?|pricing|finance|accounting)\b/gi,
+      /\b(notifications?|messages?|alerts?|emails?|sms|communication)\b/gi,
+      /\b(schedules?|calendars?|bookings?|appointments?|events?|meetings?)\b/gi,
+      /\b(inventory|stock|warehouse|shipping|delivery|logistics)\b/gi,
+      /\b(category|categories|tags?|types?|status|priority|priorities|levels?|roles?|permissions?)\b/gi,
+      /\b(comments?|reviews?|ratings?|feedback|notes?|tasks?|projects?)\b/gi,
+      /\b(hr|payroll|manufacturing|production|crm|erp|workflow)\b/gi
+    ];
+    const entityMatches = entityPatterns.filter(pattern => pattern.test(text)).length;
+    const hasMultipleEntities = entityMatches >= 4;
+
+    // Metric 5: Explicit complexity indicators
+    const complexityKeywords = [
+      'comprehensive', 'complete', 'full', 'entire', 'all-in-one',
+      'enterprise', 'complex', 'advanced', 'sophisticated', 'robust',
+      'multiple', 'various', 'different', 'several', 'many',
+      'integration', 'integrate', 'connect', 'sync', 'platform', 'system'
+    ];
+    const complexityScore = complexityKeywords.filter(kw => text.includes(kw)).length;
+    const hasComplexityKeywords = complexityScore >= 2; // Lowered from 3
+
+    // Metric 6: Count commas and "and" (indicates listing multiple features)
+    const andCount = (text.match(/\band\b/gi) || []).length;
+    const commaCount = (text.match(/,/g) || []).length;
+    const hasMultipleListing = andCount >= 4 || commaCount >= 8; // More sensitive
+
+    // Calculate overall complexity score (max 12 points)
+    const scores = {
+      lengthy: isLengthy ? 2 : 0,
+      multipleItems: hasMultipleItems ? 2 : 0,
+      complexWorkflows: hasComplexWorkflows ? 2 : 0,
+      multipleEntities: hasMultipleEntities ? 2 : 0,
+      complexityKeywords: hasComplexityKeywords ? 2 : 0,
+      multipleListing: hasMultipleListing ? 2 : 0
+    };
+
+    const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
+
+    // Complex if score >= 4 (out of 12 possible) - more sensitive threshold
+    const isComplex = totalScore >= 4;
+
+    console.log('[PlanningExpert] Complexity analysis:', {
+      wordCount,
+      numberedItems,
+      workflowMatches,
+      entityMatches,
+      complexityScore,
+      andCount,
+      commaCount,
+      scores,
+      totalScore,
+      isComplex
+    });
+
+    return isComplex;
+  }
+
+  /**
+   * CHUNKED PLANNING: Break complex requirements into modules and plan each separately
+   * This avoids giant JSON responses that get truncated
+   */
+  async createChunkedComponentPlan(userRequirements, context = {}, eventEmitter = null) {
+    console.log('[PlanningExpert] Starting CHUNKED planning for complex requirements...');
+
+    if (eventEmitter) {
+      eventEmitter({
+        type: 'thinking-step',
+        data: {
+          agent: 'Planning Expert',
+          step: 'chunked-start',
+          content: 'Complex requirements detected. Breaking down into modules for reliable generation...'
+        }
+      });
+    }
+
+    // Phase 1: Decompose into modules
+    const modules = await this.decomposeIntoModules(userRequirements, eventEmitter);
+    console.log('[PlanningExpert] Identified modules:', modules.map(m => m.name));
+
+    // Phase 2: Generate component specs for each module
+    const allComponentSpecs = [];
+    const moduleOverviews = [];
+
+    for (let i = 0; i < modules.length; i++) {
+      const module = modules[i];
+
+      if (eventEmitter) {
+        eventEmitter({
+          type: 'thinking-step',
+          data: {
+            agent: 'Planning Expert',
+            step: 'module-planning',
+            content: `Planning module ${i + 1}/${modules.length}: ${module.name}...`
+          }
+        });
+      }
+
+      const moduleSpecs = await this.planModuleComponents(module, userRequirements, eventEmitter);
+
+      // Tag specs with their module
+      moduleSpecs.forEach(spec => {
+        spec.module = module.name;
+      });
+
+      allComponentSpecs.push(...moduleSpecs);
+      moduleOverviews.push({
+        name: module.name,
+        description: module.description,
+        componentCount: moduleSpecs.length
+      });
+
+      console.log(`[PlanningExpert] Module "${module.name}" planned: ${moduleSpecs.length} components`);
+    }
+
+    // Phase 3: Generate cross-module connections
+    if (eventEmitter) {
+      eventEmitter({
+        type: 'thinking-step',
+        data: {
+          agent: 'Planning Expert',
+          step: 'integration',
+          content: 'Generating cross-module integrations and connections...'
+        }
+      });
+    }
+
+    const workflowConnections = await this.generateCrossModuleConnections(modules, allComponentSpecs, eventEmitter);
+
+    // Build final component plan
+    const componentPlan = {
+      overview: {
+        name: context.applicationName || 'Generated Application',
+        description: `Application with ${modules.length} integrated modules: ${modules.map(m => m.name).join(', ')}`,
+        category: context.category || 'Business',
+        complexity: 'complex',
+        modules: moduleOverviews
+      },
+      componentSpecs: allComponentSpecs,
+      workflowConnections: workflowConnections,
+      generationStrategy: 'sequential', // Complex apps always use sequential
+      complexity: 'complex'
+    };
+
+    console.log('[PlanningExpert] Chunked planning complete:', {
+      modules: modules.length,
+      totalComponents: allComponentSpecs.length,
+      connections: workflowConnections.length
+    });
+
+    if (eventEmitter) {
+      eventEmitter({
+        type: 'thinking-step',
+        data: {
+          agent: 'Planning Expert',
+          step: 'plan-ready',
+          content: `Chunked plan ready: ${modules.length} modules, ${allComponentSpecs.length} components`
+        }
+      });
+    }
+
+    return componentPlan;
+  }
+
+  /**
+   * Phase 1: Decompose requirements into logical modules
+   * Works for ANY application type - not just enterprise apps
+   */
+  async decomposeIntoModules(userRequirements, eventEmitter = null) {
+    console.log('[PlanningExpert] Decomposing requirements into modules...');
+
+    const prompt = `Analyze these application requirements and break them down into logical MODULES or FEATURE AREAS.
+
+A module is a self-contained functional area that can be developed independently.
+Examples of modules: "User Management", "Content Creation", "Booking System", "Payment Processing", "Notifications", "Reports", "Settings", etc.
+
+REQUIREMENTS:
+${userRequirements}
+
+Break this down into logical modules. Each module should group related functionality together.
+
+Respond with a JSON array of modules:
+[
+  {
+    "name": "Module Name",
+    "description": "Brief description of what this module handles",
+    "keyEntities": ["Entity1", "Entity2"],
+    "keyWorkflows": ["Workflow1", "Workflow2"],
+    "keyForms": ["Form1", "Form2"]
+  }
+]
+
+RULES:
+- Create 2-8 modules depending on complexity
+- Each module should be focused on one functional area
+- Identify the main data entities, workflows, and forms for each module
+- Keep module names short and descriptive
+- Return ONLY the JSON array, no other text`;
+
+    const response = await this.anthropic.messages.create({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 4000,
+      temperature: 0.3,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    const text = response.content[0].text.trim();
+
+    try {
+      // Extract JSON array
+      let jsonText = text;
+      if (!jsonText.startsWith('[')) {
+        const match = jsonText.match(/\[[\s\S]*\]/);
+        if (match) jsonText = match[0];
+      }
+
+      const modules = JSON.parse(jsonText);
+      console.log('[PlanningExpert] Decomposed into', modules.length, 'modules');
+      return modules;
+    } catch (error) {
+      console.error('[PlanningExpert] Failed to parse modules:', error);
+      // Fallback: create a single module with everything
+      return [{
+        name: 'Core Application',
+        description: 'Main application functionality',
+        keyEntities: [],
+        keyWorkflows: [],
+        keyForms: []
+      }];
+    }
+  }
+
+  /**
+   * Phase 2: Generate component specs for a single module
+   */
+  async planModuleComponents(module, fullRequirements, eventEmitter = null) {
+    console.log(`[PlanningExpert] Planning components for module: ${module.name}`);
+
+    const prompt = `Generate component specifications for the "${module.name}" module.
+
+MODULE DETAILS:
+- Name: ${module.name}
+- Description: ${module.description}
+- Key Entities: ${(module.keyEntities || []).join(', ')}
+- Key Workflows: ${(module.keyWorkflows || []).join(', ')}
+- Key Forms: ${(module.keyForms || []).join(', ')}
+
+FULL APPLICATION CONTEXT:
+${fullRequirements}
+
+Generate component specs for THIS MODULE ONLY. Include:
+1. Data models (entities) for this module
+2. Workflows for this module's processes
+3. Forms for data entry in this module
+4. Pages/screens for this module
+
+Respond with JSON array of component specs:
+[
+  {
+    "type": "dataModel",
+    "name": "Product",
+    "description": "Product master data",
+    "fields": ["id", "name", "sku", "price", "quantity"],
+    "dependencies": []
+  },
+  {
+    "type": "workflow",
+    "name": "Stock Receiving",
+    "description": "Process for receiving inventory",
+    "steps": ["Create Receipt", "Verify Items", "Update Stock"],
+    "dependencies": ["Product"],
+    "workflowConfig": {
+      "triggers": [{"type": "user_action"}],
+      "isSubWorkflow": false
+    }
+  },
+  {
+    "type": "form",
+    "name": "Product Form",
+    "description": "Form for product data entry",
+    "formType": "standard",
+    "dependencies": ["Product"],
+    "formAssociation": {
+      "workflowName": "Stock Receiving",
+      "nodeName": "Create Receipt"
+    }
+  }
+]
+
+Return ONLY the JSON array. Keep specs lightweight - no full implementations.`;
+
+    const response = await this.anthropic.messages.create({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 6000,
+      temperature: 0.3,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    const text = response.content[0].text.trim();
+
+    try {
+      let jsonText = text;
+      if (!jsonText.startsWith('[')) {
+        const match = jsonText.match(/\[[\s\S]*\]/);
+        if (match) jsonText = match[0];
+      }
+
+      // Attempt repair if needed
+      let specs;
+      try {
+        specs = JSON.parse(jsonText);
+      } catch (parseError) {
+        const repaired = this.repairTruncatedJson(jsonText);
+        if (repaired) {
+          specs = JSON.parse(repaired);
+        } else {
+          throw parseError;
+        }
+      }
+
+      return specs;
+    } catch (error) {
+      console.error(`[PlanningExpert] Failed to parse module "${module.name}" specs:`, error);
+      // Return minimal specs based on module hints
+      return this.createFallbackModuleSpecs(module);
+    }
+  }
+
+  /**
+   * Create fallback specs when AI generation fails for a module
+   */
+  createFallbackModuleSpecs(module) {
+    const specs = [];
+
+    // Create data models from key entities
+    (module.keyEntities || []).forEach(entity => {
+      specs.push({
+        type: 'dataModel',
+        name: entity,
+        description: `${entity} data model`,
+        fields: ['id', 'name', 'createdAt', 'updatedAt'],
+        dependencies: []
+      });
+    });
+
+    // Create workflows from key workflows
+    (module.keyWorkflows || []).forEach(workflow => {
+      specs.push({
+        type: 'workflow',
+        name: workflow,
+        description: `${workflow} process`,
+        steps: ['Start', 'Process', 'Complete'],
+        dependencies: module.keyEntities || [],
+        workflowConfig: {
+          triggers: [{ type: 'user_action' }],
+          isSubWorkflow: false
+        }
+      });
+    });
+
+    // Create forms from key forms
+    (module.keyForms || []).forEach(form => {
+      specs.push({
+        type: 'form',
+        name: form,
+        description: `${form} for data entry`,
+        formType: 'standard',
+        dependencies: []
+      });
+    });
+
+    return specs;
+  }
+
+  /**
+   * Phase 3: Generate cross-module workflow connections
+   */
+  async generateCrossModuleConnections(modules, allSpecs, eventEmitter = null) {
+    console.log('[PlanningExpert] Generating cross-module connections...');
+
+    // Get workflow names by module
+    const workflowsByModule = {};
+    modules.forEach(m => {
+      workflowsByModule[m.name] = allSpecs
+        .filter(s => s.type === 'workflow' && s.module === m.name)
+        .map(s => s.name);
+    });
+
+    const prompt = `Given these modules and their workflows, identify logical connections between them.
+
+MODULES AND WORKFLOWS:
+${JSON.stringify(workflowsByModule, null, 2)}
+
+Generate workflow connections that represent how data or control flows between modules.
+For example: Sales Order completion might trigger Inventory update.
+
+Respond with JSON array:
+[
+  {
+    "fromWorkflow": "Sales Order Processing",
+    "toWorkflow": "Inventory Update",
+    "trigger": "on_complete",
+    "description": "Update inventory when sale is confirmed"
+  }
+]
+
+Return ONLY the JSON array. Maximum 10 connections for most important integrations.`;
+
+    try {
+      const response = await this.anthropic.messages.create({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 2000,
+        temperature: 0.3,
+        messages: [{ role: 'user', content: prompt }]
+      });
+
+      const text = response.content[0].text.trim();
+      let jsonText = text;
+      if (!jsonText.startsWith('[')) {
+        const match = jsonText.match(/\[[\s\S]*\]/);
+        if (match) jsonText = match[0];
+      }
+
+      return JSON.parse(jsonText);
+    } catch (error) {
+      console.error('[PlanningExpert] Failed to generate cross-module connections:', error);
+      return [];
+    }
   }
 
   /**
@@ -1405,13 +1883,16 @@ Create a component plan in the following JSON format:
       "dependencies": ["WorkflowName"],
       "pageAssociation": {
         "forWorkflow": "WorkflowName",
-        "pageType": "dashboard|list|detail|form|report",
+        "pageType": "dashboard|list|detail|form|report|auth",
         "displaysForms": ["FormName1", "FormName2"],
         "displaysDataModels": ["DataModelName"],
         "navigationFlow": {
           "previousPage": null,
-          "nextPage": "NextPageName"
-        }
+          "nextPage": "NextPageName",
+          "alternateLinks": ["OtherPageName"]
+        },
+        "isEntryPoint": false,
+        "requiresAuth": true
       }
     },
     {
@@ -1488,6 +1969,31 @@ MULTI-WORKFLOW GUIDELINES:
 13. Create ONE form component for EACH userTask/startProcess node across ALL workflows
 14. Forms for different workflows will have unique IDs like: form_{workflowId}_{nodeId}
 
+AUTHENTICATION & SECURITY REQUIREMENTS:
+15. ALWAYS include authentication pages and forms for any application that has user-facing features
+16. Create the following auth components by default:
+    - AuthWorkflow: A workflow handling the authentication process (login, register, password reset)
+    - LoginForm: Form with email/password fields, "forgot password" link
+    - RegistrationForm: Form with name, email, password, confirm password fields
+    - ForgotPasswordForm: Form with email field for password reset request
+    - ResetPasswordForm: Form with new password and confirm password fields
+    - LoginPage: Page displaying LoginForm with link to registration (pageType: "auth", isEntryPoint: true)
+    - RegisterPage: Page displaying RegistrationForm with link to login (pageType: "auth")
+    - ForgotPasswordPage: Page displaying ForgotPasswordForm (pageType: "auth")
+    - ResetPasswordPage: Page displaying ResetPasswordForm (pageType: "auth")
+17. Auth pages should be linked in navigationFlow:
+    - LoginPage.nextPage → Dashboard (after successful login)
+    - LoginPage has links to RegisterPage and ForgotPasswordPage
+    - RegisterPage.nextPage → Dashboard (after successful registration)
+    - ForgotPasswordPage.nextPage → LoginPage (after sending reset email)
+    - ResetPasswordPage.nextPage → LoginPage (after password reset)
+18. Auth pages use pageAssociation with:
+    - pageType: "auth"
+    - isEntryPoint: true (for LoginPage only)
+    - requiresAuth: false (auth pages are public)
+19. All OTHER pages should have requiresAuth: true in pageAssociation
+20. The main Dashboard page should be the landing page AFTER authentication
+
 Return the component plan now:`;
   }
 
@@ -1528,7 +2034,21 @@ Return the component plan now:`;
         console.error('[PlanningExpert] First 500 chars:', jsonText.substring(0, 500));
         console.error('[PlanningExpert] Last 500 chars:', jsonText.substring(Math.max(0, jsonText.length - 500)));
 
-        throw new Error(`Component plan JSON parsing failed: ${parseError.message}`);
+        // Attempt to repair truncated JSON
+        console.log('[PlanningExpert] Attempting to repair truncated JSON...');
+        const repairedJson = this.repairTruncatedJson(jsonText);
+
+        if (repairedJson) {
+          try {
+            componentPlan = JSON.parse(repairedJson);
+            console.log('[PlanningExpert] Successfully repaired and parsed JSON');
+          } catch (repairError) {
+            console.error('[PlanningExpert] Repair attempt failed:', repairError.message);
+            throw new Error(`Component plan JSON parsing failed: ${parseError.message}`);
+          }
+        } else {
+          throw new Error(`Component plan JSON parsing failed: ${parseError.message}`);
+        }
       }
 
       // Validate required fields exist
@@ -1734,6 +2254,10 @@ Return the component plan now:`;
         }
       });
 
+      // IMPORTANT: Deduplicate form specs to ensure only ONE form per workflow + nodeType combination
+      // This prevents multiple forms being attached to the same start node or user task
+      this.deduplicateFormSpecs(componentPlan);
+
       // Count component types for logging
       const workflowSpecs = componentPlan.componentSpecs.filter(s => s.type === 'workflow');
       const formSpecs = componentPlan.componentSpecs.filter(s => s.type === 'form');
@@ -1798,6 +2322,233 @@ Return the component plan now:`;
 
       throw new Error(`Failed to parse component plan: ${error.message}`);
     }
+  }
+
+  /**
+   * Attempts to repair truncated JSON by closing unclosed strings, arrays, and objects
+   * @param {string} jsonText - The potentially truncated JSON string
+   * @returns {string|null} - Repaired JSON string or null if repair fails
+   */
+  repairTruncatedJson(jsonText) {
+    try {
+      let text = jsonText.trim();
+
+      // Track open brackets and braces
+      let openBraces = 0;
+      let openBrackets = 0;
+      let inString = false;
+      let escapeNext = false;
+      let lastValidIndex = 0;
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+
+        if (char === '\\') {
+          escapeNext = true;
+          continue;
+        }
+
+        if (char === '"' && !escapeNext) {
+          inString = !inString;
+          continue;
+        }
+
+        if (!inString) {
+          if (char === '{') {
+            openBraces++;
+            lastValidIndex = i;
+          } else if (char === '}') {
+            openBraces--;
+            lastValidIndex = i;
+          } else if (char === '[') {
+            openBrackets++;
+            lastValidIndex = i;
+          } else if (char === ']') {
+            openBrackets--;
+            lastValidIndex = i;
+          }
+        }
+      }
+
+      // If we're inside a string, close it
+      if (inString) {
+        console.log('[PlanningExpert] Repairing: closing unclosed string');
+        text += '"';
+      }
+
+      // Remove any trailing incomplete key-value pairs
+      // Look for patterns like: ,"key": or ,"key" at the end
+      text = text.replace(/,\s*"[^"]*"?\s*:?\s*$/, '');
+
+      // Close any open arrays
+      while (openBrackets > 0) {
+        console.log('[PlanningExpert] Repairing: closing unclosed array');
+        text += ']';
+        openBrackets--;
+      }
+
+      // Close any open objects
+      while (openBraces > 0) {
+        console.log('[PlanningExpert] Repairing: closing unclosed object');
+        text += '}';
+        openBraces--;
+      }
+
+      // Validate the repair worked
+      JSON.parse(text);
+      console.log('[PlanningExpert] JSON repair successful, length:', text.length);
+      return text;
+    } catch (error) {
+      console.error('[PlanningExpert] JSON repair failed:', error.message);
+
+      // Fallback: try to extract a valid subset by finding balanced braces
+      try {
+        const fallback = this.extractValidJsonSubset(jsonText);
+        if (fallback) {
+          JSON.parse(fallback);
+          console.log('[PlanningExpert] Extracted valid JSON subset, length:', fallback.length);
+          return fallback;
+        }
+      } catch (e) {
+        // Fallback also failed
+      }
+
+      return null;
+    }
+  }
+
+  /**
+   * Extracts a valid JSON subset by finding the largest balanced JSON object
+   * @param {string} jsonText - The potentially truncated JSON string
+   * @returns {string|null} - Valid JSON string or null
+   */
+  extractValidJsonSubset(jsonText) {
+    // Find the last complete object or array by looking for balanced braces
+    let depth = 0;
+    let inString = false;
+    let escapeNext = false;
+    let lastCompleteEnd = -1;
+
+    for (let i = 0; i < jsonText.length; i++) {
+      const char = jsonText[i];
+
+      if (escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escapeNext = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+
+      if (!inString) {
+        if (char === '{' || char === '[') {
+          depth++;
+        } else if (char === '}' || char === ']') {
+          depth--;
+          if (depth === 0) {
+            lastCompleteEnd = i;
+          }
+        }
+      }
+    }
+
+    if (lastCompleteEnd > 0) {
+      return jsonText.substring(0, lastCompleteEnd + 1);
+    }
+
+    return null;
+  }
+
+  /**
+   * Deduplicate form specs to ensure only ONE form per workflow + nodeType combination
+   * For example, a workflow should have only ONE form for its startProcess node.
+   *
+   * This prevents the AI from creating multiple similar forms for the same purpose.
+   *
+   * @param {Object} componentPlan - The component plan with componentSpecs
+   */
+  deduplicateFormSpecs(componentPlan) {
+    const formSpecs = componentPlan.componentSpecs.filter(s => s.type === 'form');
+    if (formSpecs.length === 0) return;
+
+    // Group forms by workflow + nodeType
+    const formGroups = new Map();
+    formSpecs.forEach(form => {
+      const workflow = form.formAssociation?.forWorkflow || 'unassigned';
+      const nodeType = form.formAssociation?.forNodeType || 'unknown';
+      const nodeLabel = form.formAssociation?.forNodeLabel || '';
+      // Use nodeLabel if available, otherwise fall back to just workflow+nodeType
+      const key = nodeLabel ? `${workflow}|${nodeType}|${nodeLabel}` : `${workflow}|${nodeType}`;
+
+      if (!formGroups.has(key)) {
+        formGroups.set(key, []);
+      }
+      formGroups.get(key).push(form);
+    });
+
+    // Find duplicates and remove them
+    const formsToRemove = new Set();
+    let deduplicatedCount = 0;
+
+    formGroups.forEach((forms, key) => {
+      if (forms.length > 1) {
+        // Keep the first form (or the one with the most complete formAssociation)
+        const bestForm = forms.reduce((best, form) => {
+          const bestScore = this.scoreFormSpec(best);
+          const formScore = this.scoreFormSpec(form);
+          return formScore > bestScore ? form : best;
+        }, forms[0]);
+
+        // Mark all others for removal
+        forms.forEach(form => {
+          if (form !== bestForm) {
+            formsToRemove.add(form);
+            deduplicatedCount++;
+          }
+        });
+
+        console.log(`[PlanningExpert] Deduplicated ${forms.length - 1} duplicate form(s) for ${key}, keeping "${bestForm.name}"`);
+      }
+    });
+
+    // Remove duplicate forms from componentSpecs
+    if (formsToRemove.size > 0) {
+      componentPlan.componentSpecs = componentPlan.componentSpecs.filter(spec =>
+        spec.type !== 'form' || !formsToRemove.has(spec)
+      );
+      console.log(`[PlanningExpert] Removed ${deduplicatedCount} duplicate form specs`);
+    }
+  }
+
+  /**
+   * Score a form spec based on completeness (higher is better)
+   * Used to determine which form to keep when deduplicating
+   */
+  scoreFormSpec(form) {
+    let score = 0;
+    if (form.name) score += 1;
+    if (form.purpose) score += 1;
+    if (form.description) score += 2;
+    if (form.formAssociation) {
+      if (form.formAssociation.forWorkflow) score += 2;
+      if (form.formAssociation.forNodeType) score += 2;
+      if (form.formAssociation.forNodeLabel) score += 3;
+      if (form.formAssociation.dataModel) score += 1;
+    }
+    if (form.fieldHints && form.fieldHints.length > 0) score += form.fieldHints.length;
+    return score;
   }
 
   // ============================================================================
@@ -2313,6 +3064,230 @@ Return the component plan now:`;
         aiArchitect: Object.keys(this.aiArchitectKnowledge)
       }
     };
+  }
+
+  // ============================================================================
+  // COMPONENT EXTRACTION METHODS (for standalone generation)
+  // ============================================================================
+
+  /**
+   * Extract form specifications from requirements
+   * Used by MoEOrchestrator.generateForms() for standalone form generation
+   * @param {string} requirements - User requirements
+   * @param {Object} context - Additional context (dataModels, workflow, etc.)
+   * @returns {Promise<Array>} Array of form specifications
+   */
+  async extractFormSpecs(requirements, context = {}) {
+    console.log('[PlanningExpert] Extracting form specifications...');
+
+    try {
+      const prompt = `Analyze the following requirements and extract form specifications.
+
+REQUIREMENTS: ${requirements}
+
+${context.dataModels ? `AVAILABLE DATA MODELS: ${JSON.stringify(context.dataModels.map(dm => dm.name), null, 2)}` : ''}
+${context.workflow ? `WORKFLOW NAME: ${context.workflow.name || 'Main Workflow'}` : ''}
+
+Return a JSON array of form specifications. Each form spec should have:
+- type: "form"
+- name: Form name
+- purpose: Brief purpose statement
+- description: Detailed description
+- dependencies: Array of data model names this form uses
+- formAssociation: Object with forWorkflow, forNodeType, forNodeLabel, dataModel
+- fieldHints: Array of suggested field names
+
+Return ONLY valid JSON array, no additional text.
+
+Example:
+[
+  {
+    "type": "form",
+    "name": "Request Form",
+    "purpose": "Collect request information",
+    "description": "Form for submitting new requests",
+    "dependencies": ["Request"],
+    "formAssociation": {
+      "forWorkflow": "Request Workflow",
+      "forNodeType": "startProcess",
+      "forNodeLabel": "Submit Request",
+      "dataModel": "Request"
+    },
+    "fieldHints": ["title", "description", "priority", "requester"]
+  }
+]`;
+
+      const response = await this.anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }],
+        system: 'You are a form specification expert. Return only valid JSON arrays.'
+      });
+
+      const responseText = response.content[0].text;
+      const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+
+      if (jsonMatch) {
+        const specs = JSON.parse(jsonMatch[0]);
+        console.log(`[PlanningExpert] Extracted ${specs.length} form specs`);
+        return specs;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('[PlanningExpert] Form extraction failed:', error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Extract data model specifications from requirements
+   * Used by MoEOrchestrator.generateDataModels() for standalone data model generation
+   * @param {string} requirements - User requirements
+   * @param {Object} context - Additional context
+   * @returns {Promise<Array>} Array of data model specifications
+   */
+  async extractDataModelSpecs(requirements, context = {}) {
+    console.log('[PlanningExpert] Extracting data model specifications...');
+
+    try {
+      const prompt = `Analyze the following requirements and extract data model (entity) specifications.
+
+REQUIREMENTS: ${requirements}
+
+Return a JSON array of data model specifications. Each spec should have:
+- type: "dataModel"
+- name: Entity name (PascalCase)
+- purpose: Brief purpose statement
+- description: Detailed description
+- dependencies: Array of related entity names
+- dataModelAssociation: Object with usedByWorkflows, usedByForms, isPrimary, entityType
+- fieldHints: Array of suggested field names
+
+Return ONLY valid JSON array, no additional text.
+
+Example:
+[
+  {
+    "type": "dataModel",
+    "name": "Employee",
+    "purpose": "Store employee information",
+    "description": "Main employee entity with personal and work details",
+    "dependencies": [],
+    "dataModelAssociation": {
+      "usedByWorkflows": ["Onboarding Workflow"],
+      "usedByForms": ["Employee Form"],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "fieldHints": ["id", "firstName", "lastName", "email", "department", "hireDate", "status"]
+  }
+]`;
+
+      const response = await this.anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }],
+        system: 'You are a data modeling expert. Return only valid JSON arrays.'
+      });
+
+      const responseText = response.content[0].text;
+      const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+
+      if (jsonMatch) {
+        const specs = JSON.parse(jsonMatch[0]);
+        console.log(`[PlanningExpert] Extracted ${specs.length} data model specs`);
+        return specs;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('[PlanningExpert] Data model extraction failed:', error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Extract page specifications from requirements
+   * Used by MoEOrchestrator.generatePages() for standalone page generation
+   * @param {string} requirements - User requirements
+   * @param {Object} context - Additional context (forms, dataModels, workflow, etc.)
+   * @returns {Promise<Array>} Array of page specifications
+   */
+  async extractPageSpecs(requirements, context = {}) {
+    console.log('[PlanningExpert] Extracting page specifications...');
+
+    try {
+      const prompt = `Analyze the following requirements and extract page specifications.
+
+REQUIREMENTS: ${requirements}
+
+${context.forms ? `AVAILABLE FORMS: ${JSON.stringify(context.forms.map(f => f.name), null, 2)}` : ''}
+${context.dataModels ? `AVAILABLE DATA MODELS: ${JSON.stringify(context.dataModels.map(dm => dm.name), null, 2)}` : ''}
+
+Return a JSON array of page specifications. Each page spec should have:
+- type: "page"
+- name: Page name
+- purpose: Brief purpose statement
+- description: Detailed description
+- dependencies: Array of form/data model names this page uses
+- pageAssociation: Object with forWorkflow, pageType, displaysForms, displaysDataModels, navigationFlow
+
+Return ONLY valid JSON array, no additional text.
+
+Example:
+[
+  {
+    "type": "page",
+    "name": "Dashboard",
+    "purpose": "Main overview page",
+    "description": "Dashboard showing summary statistics and recent activity",
+    "dependencies": [],
+    "pageAssociation": {
+      "forWorkflow": null,
+      "pageType": "dashboard",
+      "displaysForms": [],
+      "displaysDataModels": ["Employee", "Request"],
+      "navigationFlow": { "previousPage": null, "nextPage": "Employees List" }
+    }
+  },
+  {
+    "type": "page",
+    "name": "Employees List",
+    "purpose": "View all employees",
+    "description": "List page for viewing and managing employees",
+    "dependencies": ["Employee"],
+    "pageAssociation": {
+      "forWorkflow": "Employee Workflow",
+      "pageType": "list",
+      "displaysForms": [],
+      "displaysDataModels": ["Employee"],
+      "navigationFlow": { "previousPage": "Dashboard", "nextPage": "Employee Form" }
+    }
+  }
+]`;
+
+      const response = await this.anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }],
+        system: 'You are a UI/UX architect. Return only valid JSON arrays.'
+      });
+
+      const responseText = response.content[0].text;
+      const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+
+      if (jsonMatch) {
+        const specs = JSON.parse(jsonMatch[0]);
+        console.log(`[PlanningExpert] Extracted ${specs.length} page specs`);
+        return specs;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('[PlanningExpert] Page extraction failed:', error.message);
+      return [];
+    }
   }
 }
 

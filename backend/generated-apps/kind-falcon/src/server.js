@@ -5,14 +5,11 @@
 
 require('dotenv').config();
 const express = require('express');
-const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const config = require('./config');
 const runtimeEngine = require('./runtime/engine');
 const apiRoutes = require('./routes/api');
-const uiRoutes = require('./routes/ui');
-
 const executionLogsRoutes = require('./routes/execution-logs');
 const database = require('./database');
 const logger = require('./utils/logger');
@@ -22,12 +19,6 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-
-// View engine setup
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, '../public')));
-
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Request logging
@@ -36,9 +27,22 @@ app.use((req, res, next) => {
   next();
 });
 
-// API Routes
-// UI Routes (must come before API routes to handle root path)
-app.use('/', uiRoutes);
+// Root route - Application info
+app.get('/', (req, res) => {
+  res.json({
+    name: 'kind_falcon',
+    description: 'AI-generated application via ARES',
+    status: 'running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      workflows: '/api/workflows',
+      forms: '/api/forms',
+      data: '/api/data'
+    },
+    documentation: 'Access the API endpoints above for full functionality'
+  });
+});
 
 // API Routes
 app.use('/api', apiRoutes);

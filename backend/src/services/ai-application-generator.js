@@ -269,6 +269,24 @@ Examples:
 
     // Step 4: Update application with generated components
     application.resources = generatedComponents;
+
+    // Save designAnalysis in metadata for ApplicationGenerator to use
+    if (generatedComponents.designAnalysis) {
+      application.metadata = application.metadata || {};
+      application.metadata.designAnalysis = generatedComponents.designAnalysis;
+      console.log('[AI App Generator] Saving designAnalysis to application metadata:', {
+        hasGeneratedCSS: !!generatedComponents.designAnalysis.generatedCSS,
+        source: generatedComponents.designAnalysis.source || 'unknown',
+        themeName: generatedComponents.designAnalysis.themeName || 'default'
+      });
+    }
+
+    // Save theme preference to application.theme field for ApplicationGenerator
+    if (designInput && designInput.theme) {
+      application.theme = { mode: designInput.theme };
+      console.log('[AI App Generator] Saving theme preference to application:', designInput.theme);
+    }
+
     await this.appDatabase.update(application.id, application);
 
     thinking.push({
@@ -352,6 +370,9 @@ Examples:
         components.pages = workflowResult.pages || [];
         components.mobileUI = workflowResult.mobileUI || null;
         components.rules = workflowResult.rules || [];
+
+        // Include design analysis for CSS generation in ApplicationGenerator
+        components.designAnalysis = workflowResult.designAnalysis || null;
 
         thinking.push({
           step: `Application Components Generated`,

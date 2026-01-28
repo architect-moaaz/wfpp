@@ -1,97 +1,87 @@
 [
   {
-    "id": "ticketissuanceform-1764487433111-na9fh2",
-    "name": "TicketIssuanceForm",
-    "title": "Issue Parking Violation Ticket",
-    "description": "Create and issue a parking violation ticket with vehicle details, violation type, and location information.",
+    "id": "approval-decision-form-1768480830878-07kqlc",
+    "name": "Approval Decision Form",
+    "title": "Leave Request Approval Decision",
+    "description": "Review and approve or reject employee leave requests",
     "fields": [
       {
-        "id": "license-plate",
-        "name": "licensePlate",
+        "id": "leave-request-id",
+        "name": "leaveRequestId",
         "type": "text",
-        "label": "License Plate Number",
-        "placeholder": "Enter license plate number",
+        "label": "Leave Request ID",
+        "placeholder": "LR-2024-001",
         "required": true,
         "validation": {
-          "pattern": "^[A-Z0-9]{2,8}$",
-          "message": "Please enter a valid license plate number (2-8 alphanumeric characters)"
+          "pattern": "^LR-\\d{4}-\\d{3}$",
+          "message": "Invalid leave request ID format"
         },
         "defaultValue": null
       },
       {
-        "id": "vehicle-make",
-        "name": "vehicleMake",
+        "id": "employee-name",
+        "name": "employeeName",
         "type": "text",
-        "label": "Vehicle Make/Model",
-        "placeholder": "e.g., Toyota Camry",
+        "label": "Employee Name",
+        "placeholder": "John Doe",
         "required": true,
-        "validation": {
-          "min": 2,
-          "max": 50,
-          "message": "Vehicle make/model must be between 2 and 50 characters"
-        },
         "defaultValue": null
       },
       {
-        "id": "violation-type",
-        "name": "violationType",
+        "id": "leave-type",
+        "name": "leaveType",
         "type": "select",
-        "label": "Violation Type",
-        "placeholder": "Select violation type",
+        "label": "Leave Type",
+        "placeholder": "Select leave type",
         "required": true,
         "options": [
-          "Expired Meter",
-          "No Parking Zone",
-          "Fire Hydrant Violation",
-          "Handicap Zone Violation",
-          "Double Parking",
-          "Street Cleaning Violation",
-          "Overtime Parking",
-          "Other"
+          "Annual Leave",
+          "Sick Leave",
+          "Personal Leave",
+          "Maternity Leave",
+          "Paternity Leave",
+          "Unpaid Leave"
         ],
         "defaultValue": null
       },
       {
-        "id": "location",
-        "name": "location",
+        "id": "leave-duration",
+        "name": "leaveDuration",
         "type": "text",
-        "label": "Location",
-        "placeholder": "GPS coordinates will be auto-filled",
+        "label": "Leave Duration",
+        "placeholder": "5 days (Jan 15 - Jan 19, 2024)",
         "required": true,
-        "validation": {
-          "message": "Location is required"
-        },
         "defaultValue": null
       },
       {
-        "id": "violation-photo",
-        "name": "violationPhoto",
-        "type": "file",
-        "label": "Violation Photo",
-        "placeholder": "Upload photo of violation",
+        "id": "approval-decision",
+        "name": "approvalDecision",
+        "type": "radio",
+        "label": "Decision",
         "required": true,
-        "validation": {
-          "message": "Please upload at least one photo of the violation"
-        },
+        "options": [
+          "Approve",
+          "Reject"
+        ],
         "defaultValue": null
       },
       {
-        "id": "officer-notes",
-        "name": "officerNotes",
+        "id": "comments",
+        "name": "comments",
         "type": "textarea",
-        "label": "Officer Notes",
-        "placeholder": "Enter additional details about the violation",
+        "label": "Comments",
+        "placeholder": "Enter your comments or reason for rejection (optional)",
         "required": false,
         "validation": {
           "max": 500,
-          "message": "Notes must not exceed 500 characters"
+          "message": "Comments must not exceed 500 characters"
         },
         "defaultValue": null
       }
     ],
     "gridLayout": [
       {
-        "i": "license-plate",
+        "i": "leave-request-id",
         "x": 0,
         "y": 0,
         "w": 12,
@@ -100,7 +90,7 @@
         "minH": 6
       },
       {
-        "i": "vehicle-make",
+        "i": "employee-name",
         "x": 12,
         "y": 0,
         "w": 12,
@@ -109,7 +99,7 @@
         "minH": 6
       },
       {
-        "i": "violation-type",
+        "i": "leave-type",
         "x": 0,
         "y": 8,
         "w": 12,
@@ -118,7 +108,7 @@
         "minH": 6
       },
       {
-        "i": "location",
+        "i": "leave-duration",
         "x": 12,
         "y": 8,
         "w": 12,
@@ -127,7 +117,7 @@
         "minH": 6
       },
       {
-        "i": "violation-photo",
+        "i": "approval-decision",
         "x": 0,
         "y": 16,
         "w": 24,
@@ -136,40 +126,40 @@
         "minH": 6
       },
       {
-        "i": "officer-notes",
+        "i": "comments",
         "x": 0,
         "y": 24,
         "w": 24,
         "h": 12,
         "minW": 12,
-        "minH": 8
+        "minH": 12
       }
     ],
     "layout": {
       "type": "two-column",
       "sections": [
         {
-          "id": "vehicle-info",
-          "title": "Vehicle Information",
+          "id": "request-details",
+          "title": "Request Details",
           "fieldIds": [
-            "license-plate",
-            "vehicle-make"
+            "leave-request-id",
+            "employee-name",
+            "leave-type",
+            "leave-duration"
           ]
         },
         {
-          "id": "violation-details",
-          "title": "Violation Details",
+          "id": "approval-section",
+          "title": "Approval Decision",
           "fieldIds": [
-            "violation-type",
-            "location",
-            "violation-photo",
-            "officer-notes"
+            "approval-decision",
+            "comments"
           ]
         }
       ]
     },
     "submitButton": {
-      "label": "Issue Ticket",
+      "label": "Submit Decision",
       "position": "right"
     },
     "validation": {
@@ -215,124 +205,103 @@
         }
       }
     },
-    "workflowId": "workflow_1735024800000"
+    "_formAssociation": {
+      "workflowName": "Manager Review Process",
+      "nodeName": "Capture Manager Decision"
+    },
+    "_specName": "Approval Decision Form",
+    "workflowId": "wf-calculate-leave-days"
   },
   {
-    "id": "paymentprocessingform-1764487450412-w34pmi",
-    "name": "PaymentProcessingForm",
-    "title": "Pay Parking Ticket",
-    "description": "Securely submit your payment for parking tickets online. Enter your ticket information and payment details below.",
+    "id": "email-template-form-1768480846305-5fetpu",
+    "name": "Email Template Form",
+    "title": "Email Template",
+    "description": "Create and edit email templates for automated notifications",
     "fields": [
       {
-        "id": "ticket-number",
-        "name": "ticketNumber",
+        "id": "template-name",
+        "name": "templateName",
         "type": "text",
-        "label": "Ticket Number",
-        "placeholder": "Enter your ticket number (e.g., TKT-2024-001234)",
+        "label": "Template Name",
+        "placeholder": "e.g., Leave Approval Notification",
         "required": true,
         "validation": {
-          "pattern": "^[A-Z]{3}-[0-9]{4}-[0-9]{6}$",
-          "message": "Please enter a valid ticket number format (TKT-YYYY-XXXXXX)"
+          "min": 3,
+          "max": 100,
+          "message": "Template name must be between 3 and 100 characters"
         },
         "defaultValue": null
       },
       {
-        "id": "license-plate",
-        "name": "licensePlate",
+        "id": "template-code",
+        "name": "templateCode",
         "type": "text",
-        "label": "License Plate Number",
-        "placeholder": "Enter vehicle license plate",
+        "label": "Template Code",
+        "placeholder": "e.g., LEAVE_APPROVED",
         "required": true,
         "validation": {
-          "pattern": "^[A-Z0-9]{2,8}$",
-          "message": "Please enter a valid license plate number"
+          "pattern": "^[A-Z_]+$",
+          "message": "Template code must contain only uppercase letters and underscores"
         },
         "defaultValue": null
       },
       {
-        "id": "amount-due",
-        "name": "amountDue",
-        "type": "number",
-        "label": "Amount Due",
-        "placeholder": "0.00",
+        "id": "subject",
+        "name": "subject",
+        "type": "text",
+        "label": "Email Subject",
+        "placeholder": "e.g., Your Leave Request Has Been {{status}}",
         "required": true,
         "validation": {
-          "min": 0.01,
-          "message": "Amount must be greater than $0.00"
+          "min": 5,
+          "max": 200,
+          "message": "Subject must be between 5 and 200 characters"
         },
         "defaultValue": null
       },
       {
-        "id": "payment-method",
-        "name": "paymentMethod",
+        "id": "category",
+        "name": "category",
         "type": "select",
-        "label": "Payment Method",
-        "placeholder": "Select payment method",
+        "label": "Category",
+        "placeholder": "Select category",
         "required": true,
         "options": [
-          "Credit Card",
-          "Debit Card",
-          "Bank Transfer",
-          "Digital Wallet"
+          "Leave Request",
+          "Approval",
+          "Notification",
+          "Reminder",
+          "System"
         ],
         "defaultValue": null
       },
       {
-        "id": "cardholder-name",
-        "name": "cardholderName",
-        "type": "text",
-        "label": "Cardholder Name",
-        "placeholder": "Name as it appears on card",
+        "id": "body",
+        "name": "body",
+        "type": "textarea",
+        "label": "Email Body",
+        "placeholder": "Enter email template content. Use {{variable}} for dynamic content.",
         "required": true,
         "validation": {
-          "pattern": "^[a-zA-Z\\s]{2,50}$",
-          "message": "Please enter a valid cardholder name"
+          "min": 20,
+          "max": 5000,
+          "message": "Email body must be between 20 and 5000 characters"
         },
         "defaultValue": null
       },
       {
-        "id": "card-number",
-        "name": "cardNumber",
-        "type": "text",
-        "label": "Card Number",
-        "placeholder": "1234 5678 9012 3456",
-        "required": true,
-        "validation": {
-          "pattern": "^[0-9]{13,19}$",
-          "message": "Please enter a valid card number (13-19 digits)"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "expiry-date",
-        "name": "expiryDate",
-        "type": "text",
-        "label": "Expiry Date",
-        "placeholder": "MM/YY",
-        "required": true,
-        "validation": {
-          "pattern": "^(0[1-9]|1[0-2])\\/([0-9]{2})$",
-          "message": "Please enter a valid expiry date (MM/YY)"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "cvv",
-        "name": "cvv",
-        "type": "text",
-        "label": "CVV",
-        "placeholder": "123",
-        "required": true,
-        "validation": {
-          "pattern": "^[0-9]{3,4}$",
-          "message": "Please enter a valid CVV (3-4 digits)"
-        },
-        "defaultValue": null
+        "id": "active",
+        "name": "active",
+        "type": "checkbox",
+        "label": "Active",
+        "placeholder": "",
+        "required": false,
+        "defaultValue": true
       }
     ],
     "gridLayout": [
       {
-        "i": "ticket-number",
+        "i": "template-name",
         "x": 0,
         "y": 0,
         "w": 12,
@@ -341,7 +310,7 @@
         "minH": 6
       },
       {
-        "i": "license-plate",
+        "i": "template-code",
         "x": 12,
         "y": 0,
         "w": 12,
@@ -350,54 +319,36 @@
         "minH": 6
       },
       {
-        "i": "amount-due",
+        "i": "subject",
         "x": 0,
         "y": 8,
-        "w": 12,
+        "w": 18,
         "h": 8,
         "minW": 6,
         "minH": 6
       },
       {
-        "i": "payment-method",
-        "x": 12,
+        "i": "category",
+        "x": 18,
         "y": 8,
-        "w": 12,
+        "w": 6,
         "h": 8,
         "minW": 6,
         "minH": 6
       },
       {
-        "i": "cardholder-name",
+        "i": "body",
         "x": 0,
         "y": 16,
         "w": 24,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
+        "h": 12,
+        "minW": 12,
+        "minH": 12
       },
       {
-        "i": "card-number",
+        "i": "active",
         "x": 0,
-        "y": 24,
-        "w": 24,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "expiry-date",
-        "x": 0,
-        "y": 32,
-        "w": 12,
-        "h": 8,
-        "minW": 6,
-        "minH": 6
-      },
-      {
-        "i": "cvv",
-        "x": 12,
-        "y": 32,
+        "y": 28,
         "w": 12,
         "h": 8,
         "minW": 6,
@@ -408,33 +359,264 @@
       "type": "two-column",
       "sections": [
         {
-          "id": "ticket-info",
-          "title": "Ticket Information",
+          "id": "template-info",
+          "title": "Template Information",
           "fieldIds": [
-            "ticket-number",
-            "license-plate",
-            "amount-due",
-            "payment-method"
+            "template-name",
+            "template-code",
+            "subject",
+            "category"
           ]
         },
         {
-          "id": "payment-details",
-          "title": "Payment Details",
+          "id": "template-content",
+          "title": "Content",
           "fieldIds": [
-            "cardholder-name",
-            "card-number",
-            "expiry-date",
-            "cvv"
+            "body"
+          ]
+        },
+        {
+          "id": "template-settings",
+          "title": "Settings",
+          "fieldIds": [
+            "active"
           ]
         }
       ]
     },
     "submitButton": {
-      "label": "Process Payment",
+      "label": "Save Template",
       "position": "right"
     },
     "validation": {
-      "mode": "onBlur",
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "8px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "workflowName": null,
+      "nodeName": null
+    },
+    "_specName": "Email Template Form",
+    "workflowId": "wf-calculate-leave-days"
+  },
+  {
+    "id": "history-filter-form-1768480862676-45058c",
+    "name": "History Filter Form",
+    "title": "Filter Leave History",
+    "description": "Search and filter leave history records by employee, date range, and status",
+    "fields": [
+      {
+        "id": "field-employee",
+        "name": "employee",
+        "type": "select",
+        "label": "Employee",
+        "placeholder": "Select employee",
+        "required": false,
+        "options": [
+          "All Employees",
+          "John Doe",
+          "Jane Smith",
+          "Mike Johnson",
+          "Sarah Williams"
+        ],
+        "defaultValue": "All Employees"
+      },
+      {
+        "id": "field-department",
+        "name": "department",
+        "type": "select",
+        "label": "Department",
+        "placeholder": "Select department",
+        "required": false,
+        "options": [
+          "All Departments",
+          "Engineering",
+          "Human Resources",
+          "Sales",
+          "Marketing",
+          "Finance"
+        ],
+        "defaultValue": "All Departments"
+      },
+      {
+        "id": "field-leave-type",
+        "name": "leaveType",
+        "type": "select",
+        "label": "Leave Type",
+        "placeholder": "Select leave type",
+        "required": false,
+        "options": [
+          "All Types",
+          "Annual Leave",
+          "Sick Leave",
+          "Personal Leave",
+          "Maternity Leave",
+          "Paternity Leave"
+        ],
+        "defaultValue": "All Types"
+      },
+      {
+        "id": "field-status",
+        "name": "status",
+        "type": "select",
+        "label": "Status",
+        "placeholder": "Select status",
+        "required": false,
+        "options": [
+          "All Statuses",
+          "Approved",
+          "Rejected",
+          "Cancelled",
+          "Completed"
+        ],
+        "defaultValue": "All Statuses"
+      },
+      {
+        "id": "field-start-date",
+        "name": "startDate",
+        "type": "date",
+        "label": "From Date",
+        "placeholder": "Select start date",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "id": "field-end-date",
+        "name": "endDate",
+        "type": "date",
+        "label": "To Date",
+        "placeholder": "Select end date",
+        "required": false,
+        "validation": {
+          "message": "End date must be after start date"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field-employee",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-department",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-leave-type",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-status",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-start-date",
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field-end-date",
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "section-filters",
+          "title": "Filter Criteria",
+          "fieldIds": [
+            "field-employee",
+            "field-department",
+            "field-leave-type",
+            "field-status"
+          ]
+        },
+        {
+          "id": "section-date-range",
+          "title": "Date Range",
+          "fieldIds": [
+            "field-start-date",
+            "field-end-date"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Apply Filters",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onChange",
       "showErrors": true
     },
     "styling": {
@@ -476,116 +658,382 @@
         }
       }
     },
-    "workflowId": "workflow_1735024800000"
+    "_formAssociation": {
+      "workflowName": "View Leave History",
+      "nodeName": "Select Filter Criteria"
+    },
+    "_specName": "History Filter Form",
+    "workflowId": "wf-calculate-leave-days"
   },
   {
-    "id": "appealsubmissionform-1764487470801-esa8wg",
-    "name": "AppealSubmissionForm",
-    "title": "Parking Ticket Appeal Submission",
-    "description": "Submit a formal appeal for your parking ticket with supporting evidence and detailed reasoning.",
+    "id": "report-parameters-form-1768480877795-aya6ym",
+    "name": "Report Parameters Form",
+    "title": "Configure Report Parameters",
+    "description": "Set parameters to generate customized reports for leave management data",
     "fields": [
       {
-        "id": "ticket-number",
-        "name": "ticketNumber",
-        "type": "text",
-        "label": "Ticket Number",
-        "placeholder": "Enter your parking ticket number",
-        "required": true,
-        "validation": {
-          "pattern": "^[A-Z0-9]{6,12}$",
-          "message": "Please enter a valid ticket number (6-12 alphanumeric characters)"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "contact-email",
-        "name": "contactEmail",
-        "type": "email",
-        "label": "Email Address",
-        "placeholder": "your.email@example.com",
-        "required": true,
-        "validation": {
-          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
-          "message": "Please enter a valid email address"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "contact-phone",
-        "name": "contactPhone",
-        "type": "text",
-        "label": "Phone Number",
-        "placeholder": "(555) 123-4567",
-        "required": true,
-        "validation": {
-          "pattern": "^[0-9\\s\\(\\)\\-\\+]{10,}$",
-          "message": "Please enter a valid phone number"
-        },
-        "defaultValue": null
-      },
-      {
-        "id": "preferred-contact",
-        "name": "preferredContact",
+        "id": "report-type",
+        "name": "reportType",
         "type": "select",
-        "label": "Preferred Contact Method",
-        "placeholder": "Select your preferred method",
+        "label": "Report Type",
+        "placeholder": "Select report type",
         "required": true,
         "options": [
-          "Email",
-          "Phone",
-          "SMS",
-          "Mail"
+          "Leave Summary Report",
+          "Employee Leave Balance",
+          "Department Leave Statistics",
+          "Approval Workflow Report",
+          "Leave History Report",
+          "Pending Requests Report"
         ],
-        "defaultValue": "Email"
+        "defaultValue": null,
+        "validation": {
+          "message": "Please select a report type"
+        }
       },
       {
-        "id": "appeal-reason",
-        "name": "appealReason",
-        "type": "select",
-        "label": "Reason for Appeal",
-        "placeholder": "Select the primary reason",
-        "required": true,
-        "options": [
-          "Incorrect vehicle information",
-          "Valid parking permit not recognized",
-          "Signage unclear or missing",
-          "Medical emergency",
-          "Meter malfunction",
-          "Vehicle breakdown",
-          "Other"
-        ],
-        "defaultValue": null
-      },
-      {
-        "id": "appeal-details",
-        "name": "appealDetails",
-        "type": "textarea",
-        "label": "Detailed Explanation",
-        "placeholder": "Provide a detailed explanation of why you are appealing this ticket. Include dates, times, and any relevant circumstances.",
+        "id": "date-range-start",
+        "name": "dateRangeStart",
+        "type": "date",
+        "label": "Start Date",
+        "placeholder": "Select start date",
         "required": true,
         "validation": {
-          "min": 50,
-          "max": 2000,
-          "message": "Please provide at least 50 characters explaining your appeal"
+          "message": "Start date is required"
         },
         "defaultValue": null
       },
       {
-        "id": "supporting-evidence",
-        "name": "supportingEvidence",
-        "type": "file",
-        "label": "Supporting Documents",
-        "placeholder": "Upload photos, receipts, or other evidence",
+        "id": "date-range-end",
+        "name": "dateRangeEnd",
+        "type": "date",
+        "label": "End Date",
+        "placeholder": "Select end date",
+        "required": true,
+        "validation": {
+          "message": "End date is required and must be after start date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "department-filter",
+        "name": "departmentFilter",
+        "type": "select",
+        "label": "Department",
+        "placeholder": "Select department (optional)",
+        "required": false,
+        "options": [
+          "All Departments",
+          "Human Resources",
+          "Engineering",
+          "Sales",
+          "Marketing",
+          "Finance",
+          "Operations"
+        ],
+        "defaultValue": "All Departments"
+      },
+      {
+        "id": "leave-type-filter",
+        "name": "leaveTypeFilter",
+        "type": "select",
+        "label": "Leave Type",
+        "placeholder": "Select leave type (optional)",
+        "required": false,
+        "options": [
+          "All Leave Types",
+          "Annual Leave",
+          "Sick Leave",
+          "Personal Leave",
+          "Maternity Leave",
+          "Paternity Leave",
+          "Unpaid Leave"
+        ],
+        "defaultValue": "All Leave Types"
+      },
+      {
+        "id": "report-format",
+        "name": "reportFormat",
+        "type": "select",
+        "label": "Export Format",
+        "placeholder": "Select format",
+        "required": true,
+        "options": [
+          "PDF",
+          "Excel (XLSX)",
+          "CSV",
+          "HTML"
+        ],
+        "defaultValue": "PDF",
+        "validation": {
+          "message": "Please select an export format"
+        }
+      },
+      {
+        "id": "include-charts",
+        "name": "includeCharts",
+        "type": "checkbox",
+        "label": "Include Visual Charts",
+        "placeholder": "",
+        "required": false,
+        "defaultValue": true
+      },
+      {
+        "id": "email-recipients",
+        "name": "emailRecipients",
+        "type": "text",
+        "label": "Email Recipients (Optional)",
+        "placeholder": "Enter email addresses separated by commas",
         "required": false,
         "validation": {
-          "message": "Accepted formats: JPG, PNG, PDF (max 10MB per file)"
+          "pattern": "^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2})(,\\s*[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2})*$",
+          "message": "Please enter valid email addresses separated by commas"
         },
         "defaultValue": null
       }
     ],
     "gridLayout": [
       {
-        "i": "ticket-number",
+        "i": "report-type",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 12,
+        "minH": 8
+      },
+      {
+        "i": "date-range-start",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "date-range-end",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "department-filter",
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "leave-type-filter",
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "report-format",
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "include-charts",
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 8
+      },
+      {
+        "i": "email-recipients",
+        "x": 0,
+        "y": 32,
+        "w": 24,
+        "h": 8,
+        "minW": 12,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "report-config",
+          "title": "Report Configuration",
+          "fieldIds": [
+            "report-type",
+            "date-range-start",
+            "date-range-end"
+          ]
+        },
+        {
+          "id": "filters",
+          "title": "Filters",
+          "fieldIds": [
+            "department-filter",
+            "leave-type-filter"
+          ]
+        },
+        {
+          "id": "output-options",
+          "title": "Output Options",
+          "fieldIds": [
+            "report-format",
+            "include-charts",
+            "email-recipients"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Generate Report",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "8px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#2563eb",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "workflowName": "Generate Leave Reports",
+      "nodeName": "Define Report Parameters"
+    },
+    "_specName": "Report Parameters Form",
+    "workflowId": "wf-calculate-leave-days"
+  },
+  {
+    "id": "role-assignment-form-1768480899420-hfho4u",
+    "name": "Role Assignment Form",
+    "title": "Assign Role to User",
+    "description": "Assign or update user roles and permissions within the organization",
+    "fields": [
+      {
+        "id": "employee-id",
+        "name": "employeeId",
+        "type": "select",
+        "label": "Employee",
+        "placeholder": "Select an employee",
+        "required": true,
+        "validation": {
+          "message": "Please select an employee"
+        },
+        "options": [],
+        "defaultValue": null
+      },
+      {
+        "id": "role-id",
+        "name": "roleId",
+        "type": "select",
+        "label": "Role",
+        "placeholder": "Select a role",
+        "required": true,
+        "validation": {
+          "message": "Please select a role to assign"
+        },
+        "options": [],
+        "defaultValue": null
+      },
+      {
+        "id": "department-id",
+        "name": "departmentId",
+        "type": "select",
+        "label": "Department",
+        "placeholder": "Select department",
+        "required": true,
+        "validation": {
+          "message": "Please select a department"
+        },
+        "options": [],
+        "defaultValue": null
+      },
+      {
+        "id": "effective-date",
+        "name": "effectiveDate",
+        "type": "date",
+        "label": "Effective Date",
+        "placeholder": "Select effective date",
+        "required": true,
+        "validation": {
+          "message": "Please specify when this role assignment becomes effective"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "is-primary-role",
+        "name": "isPrimaryRole",
+        "type": "checkbox",
+        "label": "Set as Primary Role",
+        "placeholder": "",
+        "required": false,
+        "defaultValue": false
+      },
+      {
+        "id": "notes",
+        "name": "notes",
+        "type": "textarea",
+        "label": "Notes",
+        "placeholder": "Add any additional notes or comments about this role assignment",
+        "required": false,
+        "validation": {
+          "max": 500,
+          "message": "Notes must not exceed 500 characters"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "employee-id",
         "x": 0,
         "y": 0,
         "w": 12,
@@ -594,7 +1042,7 @@
         "minH": 6
       },
       {
-        "i": "contact-email",
+        "i": "role-id",
         "x": 12,
         "y": 0,
         "w": 12,
@@ -603,7 +1051,7 @@
         "minH": 6
       },
       {
-        "i": "contact-phone",
+        "i": "department-id",
         "x": 0,
         "y": 8,
         "w": 12,
@@ -612,7 +1060,7 @@
         "minH": 6
       },
       {
-        "i": "preferred-contact",
+        "i": "effective-date",
         "x": 12,
         "y": 8,
         "w": 12,
@@ -621,30 +1069,21 @@
         "minH": 6
       },
       {
-        "i": "appeal-reason",
+        "i": "is-primary-role",
         "x": 0,
         "y": 16,
         "w": 24,
         "h": 8,
-        "minW": 12,
+        "minW": 6,
         "minH": 6
       },
       {
-        "i": "appeal-details",
+        "i": "notes",
         "x": 0,
         "y": 24,
         "w": 24,
         "h": 12,
-        "minW": 12,
-        "minH": 10
-      },
-      {
-        "i": "supporting-evidence",
-        "x": 0,
-        "y": 36,
-        "w": 24,
-        "h": 8,
-        "minW": 12,
+        "minW": 6,
         "minH": 6
       }
     ],
@@ -652,28 +1091,268 @@
       "type": "two-column",
       "sections": [
         {
-          "id": "contact-section",
-          "title": "Contact Information",
+          "id": "assignment-details",
+          "title": "Assignment Details",
           "fieldIds": [
-            "ticket-number",
-            "contact-email",
-            "contact-phone",
-            "preferred-contact"
+            "employee-id",
+            "role-id",
+            "department-id",
+            "effective-date"
           ]
         },
         {
-          "id": "appeal-section",
-          "title": "Appeal Details",
+          "id": "additional-info",
+          "title": "Additional Information",
           "fieldIds": [
-            "appeal-reason",
-            "appeal-details",
-            "supporting-evidence"
+            "is-primary-role",
+            "notes"
           ]
         }
       ]
     },
     "submitButton": {
-      "label": "Submit Appeal",
+      "label": "Assign Role",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#3b82f6",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "workflowName": "Role Assignment",
+      "nodeName": "Choose Role"
+    },
+    "_specName": "Role Assignment Form",
+    "workflowId": "wf-calculate-leave-days"
+  },
+  {
+    "id": "manager-assignment-form-1768480914684-u9lq7l",
+    "name": "Manager Assignment Form",
+    "title": "Manager Assignment Form",
+    "description": "Assign or update manager relationships for employees",
+    "fields": [
+      {
+        "id": "employee-id",
+        "name": "employeeId",
+        "type": "select",
+        "label": "Employee",
+        "placeholder": "Select employee",
+        "required": true,
+        "validation": {
+          "message": "Please select an employee"
+        },
+        "options": [],
+        "defaultValue": null
+      },
+      {
+        "id": "manager-id",
+        "name": "managerId",
+        "type": "select",
+        "label": "Assigned Manager",
+        "placeholder": "Select manager",
+        "required": true,
+        "validation": {
+          "message": "Please select a manager"
+        },
+        "options": [],
+        "defaultValue": null
+      },
+      {
+        "id": "department-id",
+        "name": "departmentId",
+        "type": "select",
+        "label": "Department",
+        "placeholder": "Select department",
+        "required": true,
+        "validation": {
+          "message": "Please select a department"
+        },
+        "options": [],
+        "defaultValue": null
+      },
+      {
+        "id": "effective-date",
+        "name": "effectiveDate",
+        "type": "date",
+        "label": "Effective Date",
+        "placeholder": "Select effective date",
+        "required": true,
+        "validation": {
+          "message": "Please select an effective date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "assignment-type",
+        "name": "assignmentType",
+        "type": "select",
+        "label": "Assignment Type",
+        "placeholder": "Select assignment type",
+        "required": true,
+        "validation": {
+          "message": "Please select an assignment type"
+        },
+        "options": [
+          "Primary Manager",
+          "Secondary Manager",
+          "Temporary Manager",
+          "Project Manager"
+        ],
+        "defaultValue": "Primary Manager"
+      },
+      {
+        "id": "notify-employee",
+        "name": "notifyEmployee",
+        "type": "checkbox",
+        "label": "Send notification to employee",
+        "placeholder": "",
+        "required": false,
+        "defaultValue": true
+      },
+      {
+        "id": "notes",
+        "name": "notes",
+        "type": "textarea",
+        "label": "Notes",
+        "placeholder": "Add any additional notes about this assignment",
+        "required": false,
+        "validation": {
+          "max": 500,
+          "message": "Notes must not exceed 500 characters"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "employee-id",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "manager-id",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "department-id",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "effective-date",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "assignment-type",
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "notify-employee",
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "notes",
+        "x": 0,
+        "y": 24,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 12
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "assignment-details",
+          "title": "Assignment Details",
+          "fieldIds": [
+            "employee-id",
+            "manager-id",
+            "department-id",
+            "effective-date",
+            "assignment-type"
+          ]
+        },
+        {
+          "id": "additional-options",
+          "title": "Additional Options",
+          "fieldIds": [
+            "notify-employee",
+            "notes"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Assign Manager",
       "position": "right"
     },
     "validation": {
@@ -702,7 +1381,7 @@
       "spacing": {
         "fieldGap": "16px",
         "sectionGap": "32px",
-        "inputPadding": "8px 12px"
+        "inputPadding": "10px 12px"
       },
       "components": {
         "input": {
@@ -719,6 +1398,4796 @@
         }
       }
     },
-    "workflowId": "workflow_1735024800000"
+    "_formAssociation": {
+      "workflowName": "Manager-Employee Relationship Setup",
+      "nodeName": "Assign Manager"
+    },
+    "_specName": "Manager Assignment Form",
+    "workflowId": "wf-calculate-leave-days"
+  },
+  {
+    "id": "leave-request-form-1768480931307-cwqhji",
+    "name": "Leave Request Form",
+    "title": "Leave Request Form",
+    "description": "Submit your leave request for manager approval",
+    "fields": [
+      {
+        "id": "employee-name",
+        "name": "employeeName",
+        "type": "text",
+        "label": "Employee Name",
+        "placeholder": "Enter your full name",
+        "required": true,
+        "validation": {
+          "min": 2,
+          "max": 100,
+          "message": "Please enter a valid name"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "employee-id",
+        "name": "employeeId",
+        "type": "text",
+        "label": "Employee ID",
+        "placeholder": "Enter your employee ID",
+        "required": true,
+        "validation": {
+          "pattern": "^[A-Z0-9]{4,10}$",
+          "message": "Please enter a valid employee ID"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "leave-type",
+        "name": "leaveType",
+        "type": "select",
+        "label": "Leave Type",
+        "placeholder": "Select leave type",
+        "required": true,
+        "options": [
+          "Annual Leave",
+          "Sick Leave",
+          "Personal Leave",
+          "Maternity/Paternity Leave",
+          "Unpaid Leave"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "department",
+        "name": "department",
+        "type": "select",
+        "label": "Department",
+        "placeholder": "Select your department",
+        "required": true,
+        "options": [
+          "Human Resources",
+          "Engineering",
+          "Sales",
+          "Marketing",
+          "Finance",
+          "Operations"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "start-date",
+        "name": "startDate",
+        "type": "date",
+        "label": "Start Date",
+        "placeholder": "Select start date",
+        "required": true,
+        "validation": {
+          "message": "Start date must be in the future"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "end-date",
+        "name": "endDate",
+        "type": "date",
+        "label": "End Date",
+        "placeholder": "Select end date",
+        "required": true,
+        "validation": {
+          "message": "End date must be after start date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "reason",
+        "name": "reason",
+        "type": "textarea",
+        "label": "Reason for Leave",
+        "placeholder": "Please provide details about your leave request",
+        "required": true,
+        "validation": {
+          "min": 10,
+          "max": 500,
+          "message": "Please provide a reason between 10 and 500 characters"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "employee-name",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "employee-id",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "leave-type",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "department",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "start-date",
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "end-date",
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "reason",
+        "x": 0,
+        "y": 24,
+        "w": 24,
+        "h": 12,
+        "minW": 12,
+        "minH": 8
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "employee-info",
+          "title": "Employee Information",
+          "fieldIds": [
+            "employee-name",
+            "employee-id"
+          ]
+        },
+        {
+          "id": "leave-details",
+          "title": "Leave Details",
+          "fieldIds": [
+            "leave-type",
+            "department",
+            "start-date",
+            "end-date",
+            "reason"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Submit Leave Request",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#3b82f6",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "workflowName": "Submit Leave Request",
+      "nodeName": "Fill Leave Request Form"
+    },
+    "_specName": "Leave Request Form",
+    "workflowId": "wf-calculate-leave-days"
+  },
+  {
+    "id": "user-profile-form-1768480948495-9h1494",
+    "name": "User Profile Form",
+    "title": "Employee Profile",
+    "description": "Create and manage employee profile information",
+    "fields": [
+      {
+        "id": "first-name",
+        "name": "firstName",
+        "type": "text",
+        "label": "First Name",
+        "placeholder": "Enter first name",
+        "required": true,
+        "validation": {
+          "min": 2,
+          "max": 50,
+          "pattern": "^[a-zA-Z\\s'-]+$",
+          "message": "Please enter a valid first name"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "last-name",
+        "name": "lastName",
+        "type": "text",
+        "label": "Last Name",
+        "placeholder": "Enter last name",
+        "required": true,
+        "validation": {
+          "min": 2,
+          "max": 50,
+          "pattern": "^[a-zA-Z\\s'-]+$",
+          "message": "Please enter a valid last name"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "email",
+        "name": "email",
+        "type": "email",
+        "label": "Email Address",
+        "placeholder": "employee@company.com",
+        "required": true,
+        "validation": {
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2}$",
+          "message": "Please enter a valid email address"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "department",
+        "name": "department",
+        "type": "select",
+        "label": "Department",
+        "placeholder": "Select department",
+        "required": true,
+        "options": [
+          "Engineering",
+          "Human Resources",
+          "Sales",
+          "Marketing",
+          "Finance",
+          "Operations",
+          "Customer Support"
+        ],
+        "defaultValue": null
+      },
+      {
+        "id": "role",
+        "name": "role",
+        "type": "select",
+        "label": "Role",
+        "placeholder": "Select role",
+        "required": true,
+        "options": [
+          "Employee",
+          "Manager",
+          "Team Lead",
+          "Director",
+          "Administrator"
+        ],
+        "defaultValue": "Employee"
+      },
+      {
+        "id": "manager",
+        "name": "manager",
+        "type": "select",
+        "label": "Reporting Manager",
+        "placeholder": "Select manager",
+        "required": false,
+        "options": [],
+        "defaultValue": null
+      },
+      {
+        "id": "start-date",
+        "name": "startDate",
+        "type": "date",
+        "label": "Start Date",
+        "placeholder": "Select start date",
+        "required": true,
+        "validation": {
+          "message": "Please select a valid start date"
+        },
+        "defaultValue": null
+      },
+      {
+        "id": "phone",
+        "name": "phone",
+        "type": "text",
+        "label": "Phone Number",
+        "placeholder": "+1 (555) 000-0000",
+        "required": false,
+        "validation": {
+          "pattern": "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,9}$",
+          "message": "Please enter a valid phone number"
+        },
+        "defaultValue": null
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "first-name",
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "last-name",
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "email",
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "phone",
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "department",
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "role",
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "manager",
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "start-date",
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "two-column",
+      "sections": [
+        {
+          "id": "personal-info",
+          "title": "Personal Information",
+          "fieldIds": [
+            "first-name",
+            "last-name",
+            "email",
+            "phone"
+          ]
+        },
+        {
+          "id": "employment-info",
+          "title": "Employment Details",
+          "fieldIds": [
+            "department",
+            "role",
+            "manager",
+            "start-date"
+          ]
+        }
+      ]
+    },
+    "submitButton": {
+      "label": "Save Profile",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onBlur",
+      "showErrors": true
+    },
+    "styling": {
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#64748b",
+        "background": "#ffffff",
+        "text": "#1e293b",
+        "border": "#e2e8f0"
+      },
+      "typography": {
+        "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "fontSize": {
+          "label": "14px",
+          "input": "14px"
+        },
+        "fontWeight": {
+          "label": "500",
+          "input": "400"
+        }
+      },
+      "spacing": {
+        "fieldGap": "16px",
+        "sectionGap": "32px",
+        "inputPadding": "10px 12px"
+      },
+      "components": {
+        "input": {
+          "borderRadius": "6px",
+          "borderWidth": "1px",
+          "height": "40px"
+        },
+        "button": {
+          "primary": {
+            "background": "#3b82f6",
+            "color": "#ffffff",
+            "padding": "10px 24px"
+          }
+        }
+      }
+    },
+    "_formAssociation": {
+      "workflowName": "User Registration",
+      "nodeName": "Enter Employee Details"
+    },
+    "_specName": "User Profile Form",
+    "workflowId": "wf-calculate-leave-days"
+  },
+  {
+    "id": "form_auto_start_1768481337650",
+    "name": "Start Form",
+    "description": "Auto-generated form for Start",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337650_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337650_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337650_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337650",
+        "title": "Start",
+        "fields": [
+          {
+            "id": "field_1768481337650_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337650_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337650_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337650_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337650_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337650_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Calculate Leave Days",
+    "_forNode": "start-1",
+    "workflowId": "wf-calculate-leave-days",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_review_invalid_dates_1768481337650",
+    "name": "Review Invalid Dates Form",
+    "description": "Auto-generated form for Review Invalid Dates",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337650_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337650_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337650",
+        "title": "Review Invalid Dates",
+        "fields": [
+          {
+            "id": "field_1768481337650_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337650_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337650_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337650_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Calculate Leave Days",
+    "_forNode": "userTask-1",
+    "workflowId": "wf-calculate-leave-days",
+    "linkedNodeId": "userTask-1",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_start_1768481337650",
+    "name": "Start Form",
+    "description": "Auto-generated form for Start",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337650_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337650_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337650_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337650",
+        "title": "Start",
+        "fields": [
+          {
+            "id": "field_1768481337650_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337650_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337650_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337650_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337650_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337650_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Route Request to Manager",
+    "_forNode": "start-1",
+    "workflowId": "wf-route-request-to-manager",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_start_role_assignment_1768481337651",
+    "name": "Start Role Assignment Form",
+    "description": "Auto-generated form for Start Role Assignment",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337651_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337651_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337651_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337651",
+        "title": "Start Role Assignment",
+        "fields": [
+          {
+            "id": "field_1768481337651_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337651_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337651_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337651_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337651_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337651_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Role Assignment",
+    "_forNode": "start-1",
+    "workflowId": "role-assignment-workflow",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_submit_role_request_1768481337651",
+    "name": "Submit Role Request Form",
+    "description": "Auto-generated form for Submit Role Request",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337651_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337651_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337651",
+        "title": "Submit Role Request",
+        "fields": [
+          {
+            "id": "field_1768481337651_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337651_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337651_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337651_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Role Assignment",
+    "_forNode": "userTask-1",
+    "workflowId": "role-assignment-workflow",
+    "linkedNodeId": "userTask-1",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_manager_approval_1768481337651",
+    "name": "Manager Approval Form",
+    "description": "Auto-generated form for Manager Approval",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337651_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337651_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337651",
+        "title": "Manager Approval",
+        "fields": [
+          {
+            "id": "field_1768481337651_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337651_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337651_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337651_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Role Assignment",
+    "_forNode": "userTask-2",
+    "workflowId": "role-assignment-workflow",
+    "linkedNodeId": "userTask-2",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_it_security_review_1768481337651",
+    "name": "IT Security Review Form",
+    "description": "Auto-generated form for IT Security Review",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337651_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337651_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337651",
+        "title": "IT Security Review",
+        "fields": [
+          {
+            "id": "field_1768481337651_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337651_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337651_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337651_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Role Assignment",
+    "_forNode": "userTask-3",
+    "workflowId": "role-assignment-workflow",
+    "linkedNodeId": "userTask-3",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_start_leave_request_1768481337651",
+    "name": "Start Leave Request Form",
+    "description": "Auto-generated form for Start Leave Request",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337651_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337651_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337651_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337651",
+        "title": "Start Leave Request",
+        "fields": [
+          {
+            "id": "field_1768481337651_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337651_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337651_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337651_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337651_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337651_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Submit Leave Request",
+    "_forNode": "start-1",
+    "workflowId": "wf-submit-leave-request",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_submit_leave_request_1768481337652",
+    "name": "Submit Leave Request Form",
+    "description": "Auto-generated form for Submit Leave Request",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Submit Leave Request",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Submit Leave Request",
+    "_forNode": "userTask-1",
+    "workflowId": "wf-submit-leave-request",
+    "linkedNodeId": "userTask-1",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_fix_validation_issues_1768481337652",
+    "name": "Fix Validation Issues Form",
+    "description": "Auto-generated form for Fix Validation Issues",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Fix Validation Issues",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Submit Leave Request",
+    "_forNode": "userTask-2",
+    "workflowId": "wf-submit-leave-request",
+    "linkedNodeId": "userTask-2",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_manager_review___approval_1768481337652",
+    "name": "Manager Review & Approval Form",
+    "description": "Auto-generated form for Manager Review & Approval",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Manager Review & Approval",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Submit Leave Request",
+    "_forNode": "userTask-3",
+    "workflowId": "wf-submit-leave-request",
+    "linkedNodeId": "userTask-3",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_start_validation_1768481337652",
+    "name": "Start Validation Form",
+    "description": "Auto-generated form for Start Validation",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337652_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Start Validation",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337652_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Validate Leave Eligibility",
+    "_forNode": "start-1",
+    "workflowId": "validate-leave-eligibility",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_start_review_1768481337652",
+    "name": "Start Review Form",
+    "description": "Auto-generated form for Start Review",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337652_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Start Review",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337652_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Manager Review Process",
+    "_forNode": "start-1",
+    "workflowId": "manager-review-process",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_manager_review_decision_1768481337652",
+    "name": "Manager Review Decision Form",
+    "description": "Auto-generated form for Manager Review Decision",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Manager Review Decision",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Manager Review Process",
+    "_forNode": "userTask-1",
+    "workflowId": "manager-review-process",
+    "linkedNodeId": "userTask-1",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_start_1768481337652",
+    "name": "Start Form",
+    "description": "Auto-generated form for Start",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337652_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Start",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337652_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Process Approval Decision",
+    "_forNode": "start-1",
+    "workflowId": "process-approval-decision",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_start_1768481337652",
+    "name": "Start Form",
+    "description": "Auto-generated form for Start",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337652_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Start",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337652_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Send Submission Confirmation",
+    "_forNode": "start-1",
+    "workflowId": "send-submission-confirmation",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_start_1768481337652",
+    "name": "Start Form",
+    "description": "Auto-generated form for Start",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337652_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Start",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337652_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Notify Manager of Pending Request",
+    "_forNode": "start-1",
+    "workflowId": "notify-manager-pending-request",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_start_1768481337652",
+    "name": "Start Form",
+    "description": "Auto-generated form for Start",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337652_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Start",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337652_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Send Approval Rejection Notification",
+    "_forNode": "start-1",
+    "workflowId": "wf-send-approval-rejection-notification",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_start_1768481337652",
+    "name": "Start Form",
+    "description": "Auto-generated form for Start",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337652_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Start",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337652_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "View Leave History",
+    "_forNode": "start-1",
+    "workflowId": "view-leave-history-workflow",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_specify_filter_criteria_1768481337652",
+    "name": "Specify Filter Criteria Form",
+    "description": "Auto-generated form for Specify Filter Criteria",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Specify Filter Criteria",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "View Leave History",
+    "_forNode": "userTask-1",
+    "workflowId": "view-leave-history-workflow",
+    "linkedNodeId": "userTask-1",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_display_leave_history_1768481337652",
+    "name": "Display Leave History Form",
+    "description": "Auto-generated form for Display Leave History",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Display Leave History",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "View Leave History",
+    "_forNode": "userTask-2",
+    "workflowId": "view-leave-history-workflow",
+    "linkedNodeId": "userTask-2",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_start_tracking_1768481337652",
+    "name": "Start Tracking Form",
+    "description": "Auto-generated form for Start Tracking",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337652_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "Start Tracking",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337652_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Track Request Status",
+    "_forNode": "start-1",
+    "workflowId": "track-request-status-workflow",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_view_status_dashboard_1768481337652",
+    "name": "View Status Dashboard Form",
+    "description": "Auto-generated form for View Status Dashboard",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337652_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337652_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337652",
+        "title": "View Status Dashboard",
+        "fields": [
+          {
+            "id": "field_1768481337652_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337652_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337652_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337652_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Track Request Status",
+    "_forNode": "userTask-1",
+    "workflowId": "track-request-status-workflow",
+    "linkedNodeId": "userTask-1",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_start_report_generation_1768481337653",
+    "name": "Start Report Generation Form",
+    "description": "Auto-generated form for Start Report Generation",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337653_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "Start Report Generation",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337653_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Generate Leave Reports",
+    "_forNode": "start-1",
+    "workflowId": "generate-leave-reports-workflow",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_configure_report_parameters_1768481337653",
+    "name": "Configure Report Parameters Form",
+    "description": "Auto-generated form for Configure Report Parameters",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "Configure Report Parameters",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Generate Leave Reports",
+    "_forNode": "userTask-1",
+    "workflowId": "generate-leave-reports-workflow",
+    "linkedNodeId": "userTask-1",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_review_report_1768481337653",
+    "name": "Review Report Form",
+    "description": "Auto-generated form for Review Report",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "Review Report",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Generate Leave Reports",
+    "_forNode": "userTask-2",
+    "workflowId": "generate-leave-reports-workflow",
+    "linkedNodeId": "userTask-2",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_revise_report_1768481337653",
+    "name": "Revise Report Form",
+    "description": "Auto-generated form for Revise Report",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "Revise Report",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Generate Leave Reports",
+    "_forNode": "userTask-3",
+    "workflowId": "generate-leave-reports-workflow",
+    "linkedNodeId": "userTask-3",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_start_1768481337653",
+    "name": "Start Form",
+    "description": "Auto-generated form for Start",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337653_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "Start",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337653_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Manager-Employee Relationship Setup",
+    "_forNode": "start-1",
+    "workflowId": "manager-employee-relationship-setup",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_submit_relationship_request_1768481337653",
+    "name": "Submit Relationship Request Form",
+    "description": "Auto-generated form for Submit Relationship Request",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "Submit Relationship Request",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Manager-Employee Relationship Setup",
+    "_forNode": "userTask-1",
+    "workflowId": "manager-employee-relationship-setup",
+    "linkedNodeId": "userTask-1",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_manager_consent_1768481337653",
+    "name": "Manager Consent Form",
+    "description": "Auto-generated form for Manager Consent",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "Manager Consent",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Manager-Employee Relationship Setup",
+    "_forNode": "userTask-2",
+    "workflowId": "manager-employee-relationship-setup",
+    "linkedNodeId": "userTask-2",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_hr_director_approval_1768481337653",
+    "name": "HR Director Approval Form",
+    "description": "Auto-generated form for HR Director Approval",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "HR Director Approval",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "Manager-Employee Relationship Setup",
+    "_forNode": "userTask-3",
+    "workflowId": "manager-employee-relationship-setup",
+    "linkedNodeId": "userTask-3",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_start_registration_1768481337653",
+    "name": "Start Registration Form",
+    "description": "Auto-generated form for Start Registration",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "submitterName",
+        "label": "Submitter Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "description",
+        "label": "Description",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "id": "field_1768481337653_3",
+        "name": "priority",
+        "label": "Priority",
+        "type": "dropdown",
+        "required": false,
+        "options": [
+          {
+            "label": "Low",
+            "value": "low"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "High",
+            "value": "high"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "Start Registration",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "submitterName",
+            "label": "Submitter Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "description",
+            "label": "Description",
+            "type": "textarea",
+            "required": false
+          },
+          {
+            "id": "field_1768481337653_3",
+            "name": "priority",
+            "label": "Priority",
+            "type": "dropdown",
+            "required": false,
+            "options": [
+              {
+                "label": "Low",
+                "value": "low"
+              },
+              {
+                "label": "Medium",
+                "value": "medium"
+              },
+              {
+                "label": "High",
+                "value": "high"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_3",
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "User Registration",
+    "_forNode": "start-1",
+    "workflowId": "user-registration-workflow",
+    "linkedNodeId": "start-1",
+    "linkedNodeType": "startProcess"
+  },
+  {
+    "id": "form_auto_submit_registration_1768481337653",
+    "name": "Submit Registration Form",
+    "description": "Auto-generated form for Submit Registration",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "Submit Registration",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "User Registration",
+    "_forNode": "userTask-1",
+    "workflowId": "user-registration-workflow",
+    "linkedNodeId": "userTask-1",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_correct_data_issues_1768481337653",
+    "name": "Correct Data Issues Form",
+    "description": "Auto-generated form for Correct Data Issues",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "Correct Data Issues",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "User Registration",
+    "_forNode": "userTask-2",
+    "workflowId": "user-registration-workflow",
+    "linkedNodeId": "userTask-2",
+    "linkedNodeType": "userTask"
+  },
+  {
+    "id": "form_auto_manager_approval_1768481337653",
+    "name": "Manager Approval Form",
+    "description": "Auto-generated form for Manager Approval",
+    "type": "simple",
+    "fields": [
+      {
+        "id": "field_1768481337653_1",
+        "name": "status",
+        "label": "Status",
+        "type": "dropdown",
+        "required": true,
+        "options": [
+          {
+            "label": "Approved",
+            "value": "approved"
+          },
+          {
+            "label": "Rejected",
+            "value": "rejected"
+          },
+          {
+            "label": "Pending",
+            "value": "pending"
+          }
+        ]
+      },
+      {
+        "id": "field_1768481337653_2",
+        "name": "comments",
+        "label": "Comments",
+        "type": "textarea",
+        "required": false
+      }
+    ],
+    "sections": [
+      {
+        "id": "section_1768481337653",
+        "title": "Manager Approval",
+        "fields": [
+          {
+            "id": "field_1768481337653_1",
+            "name": "status",
+            "label": "Status",
+            "type": "dropdown",
+            "required": true,
+            "options": [
+              {
+                "label": "Approved",
+                "value": "approved"
+              },
+              {
+                "label": "Rejected",
+                "value": "rejected"
+              },
+              {
+                "label": "Pending",
+                "value": "pending"
+              }
+            ]
+          },
+          {
+            "id": "field_1768481337653_2",
+            "name": "comments",
+            "label": "Comments",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "gridLayout": [
+      {
+        "i": "field_1768481337653_1",
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8,
+        "minW": 6,
+        "minH": 6
+      },
+      {
+        "i": "field_1768481337653_2",
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12,
+        "minW": 6,
+        "minH": 6
+      }
+    ],
+    "layout": {
+      "type": "single-column",
+      "sections": []
+    },
+    "submitButton": {
+      "label": "Submit",
+      "position": "right"
+    },
+    "validation": {
+      "mode": "onSubmit",
+      "showErrors": true
+    },
+    "dataModelId": "employee",
+    "dataModelName": "Employee",
+    "_autoGenerated": true,
+    "_forWorkflow": "User Registration",
+    "_forNode": "userTask-3",
+    "workflowId": "user-registration-workflow",
+    "linkedNodeId": "userTask-3",
+    "linkedNodeType": "userTask"
   }
 ]

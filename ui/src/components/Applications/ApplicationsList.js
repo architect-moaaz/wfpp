@@ -130,20 +130,29 @@ const ApplicationsList = () => {
 
   const handleManageWorkflows = async (app, e) => {
     e.stopPropagation();
-    setSelectedApp(app);
 
-    // Fetch available workflows
     try {
-      const response = await fetch('http://localhost:5000/api/workflows');
-      const data = await response.json();
-      if (data.success && data.workflows) {
-        setAvailableWorkflows(data.workflows);
-      }
-    } catch (error) {
-      console.error('Failed to fetch workflows:', error);
-    }
+      // Fetch full application data (list only has resourceCounts, not full resources)
+      const [appResponse, workflowsResponse] = await Promise.all([
+        fetch(`http://localhost:5000/api/applications/${app.id}`),
+        fetch('http://localhost:5000/api/workflows')
+      ]);
 
-    setShowWorkflowModal(true);
+      const appData = await appResponse.json();
+      const workflowsData = await workflowsResponse.json();
+
+      if (appData.success && appData.application) {
+        setSelectedApp(appData.application);
+      }
+
+      if (workflowsData.success && workflowsData.workflows) {
+        setAvailableWorkflows(workflowsData.workflows);
+      }
+
+      setShowWorkflowModal(true);
+    } catch (error) {
+      console.error('Failed to fetch data for workflow management:', error);
+    }
   };
 
   const handleLinkWorkflow = async (workflowId) => {

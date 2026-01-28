@@ -53,27 +53,76 @@ const workflowKnowledgeBase = {
       type: "userTask",
       name: "Human Task",
       category: "Tasks",
-      description: "Represents a task that requires human interaction or approval.",
+      description: "Represents a task that requires human interaction or approval. Supports organization-aware assignment to individuals, roles, or groups.",
       useCases: [
         "Manual approval required",
         "Human review needed",
         "Data entry by user",
         "Document review",
-        "Quality check"
+        "Quality check",
+        "Manager approval",
+        "Team task assignment"
       ],
       properties: {
         label: "String - Task name",
         taskName: "String - Specific task identifier",
-        assignedTo: "String - User/role assigned",
-        priority: "String - Task priority (Low/Medium/High)",
-        dueDate: "String - When task is due",
+        assignmentType: "String - How to assign: 'user' (specific person), 'role' (anyone with role), 'group' (group members, first to claim), 'manager' (submitter's manager), 'expression' (dynamic), 'unassigned' (open to all)",
+        assignee: "String - User ID or process variable like 'processData.initiator' (for assignmentType: user)",
+        assigneeRole: "String - Role name like 'Manager', 'Approver', 'Admin' (for assignmentType: role)",
+        assigneeGroup: "String - Group name or ID (for assignmentType: group)",
+        assigneeExpression: "String - Dynamic assignment like 'processData.manager' (for assignmentType: expression)",
+        openToAll: "Boolean - If true, anyone can complete this task (default: false)",
+        priority: "String - Task priority: 'low', 'medium', 'high', 'critical'",
+        dueDate: "String - When task is due (ISO date or process variable)",
+        dueDuration: "String - Relative due time like '2h', '1d', '1w'",
+        escalationTimeout: "String - For group tasks, when to escalate if unclaimed (e.g., '24h')",
         instructions: "String - Instructions for the user"
       },
+      assignmentExamples: [
+        {
+          scenario: "Manager approval",
+          assignmentType: "manager",
+          description: "Task assigned to the workflow initiator's manager"
+        },
+        {
+          scenario: "Role-based (any user with role can complete)",
+          assignmentType: "role",
+          assigneeRole: "Approver",
+          description: "Any user with 'Approver' role can complete directly"
+        },
+        {
+          scenario: "Group task (first to claim)",
+          assignmentType: "group",
+          assigneeGroup: "Finance Team",
+          escalationTimeout: "24h",
+          description: "All Finance Team members notified, first to claim completes it"
+        },
+        {
+          scenario: "Specific user",
+          assignmentType: "user",
+          assignee: "processData.assignedReviewer",
+          description: "Assigned to specific user from process data"
+        },
+        {
+          scenario: "Open to all",
+          assignmentType: "unassigned",
+          openToAll: true,
+          description: "Anyone can complete this task"
+        },
+        {
+          scenario: "Process initiator (no org data fallback)",
+          assignmentType: "expression",
+          assigneeExpression: "processData.initiator",
+          description: "Assigned to whoever started the workflow"
+        }
+      ],
       examples: [
         "Approve expense report",
         "Review contract",
         "Verify customer information",
-        "Complete survey"
+        "Complete survey",
+        "Manager sign-off",
+        "Team lead review"
       ]
     },
     {
@@ -276,6 +325,66 @@ const workflowKnowledgeBase = {
           description: "Analyzes customer feedback to determine sentiment (positive/negative/neutral) and extract key points"
         }
       }
+    },
+    {
+      type: "subWorkflow",
+      name: "Sub Workflow",
+      category: "Tasks",
+      description: "Calls another workflow as a sub-process, allowing complex workflows to be broken into manageable pieces.",
+      useCases: [
+        "Breaking complex processes into modules",
+        "Reusable workflow components",
+        "Hierarchical workflow organization",
+        "Shared process logic",
+        "Workflow composition"
+      ],
+      properties: {
+        label: "String - Sub workflow name",
+        workflowId: "String - ID of the workflow to call",
+        inputMapping: "Object - Map of input parameters",
+        outputMapping: "Object - Map of output parameters",
+        description: "String - What sub-workflow does"
+      },
+      examples: [
+        "Call customer verification workflow",
+        "Execute payment processing sub-workflow",
+        "Run compliance check workflow",
+        "Trigger notification workflow"
+      ]
+    },
+    {
+      type: "restApi",
+      name: "REST API",
+      category: "Tasks",
+      description: "Makes HTTP REST API calls to external systems or services.",
+      useCases: [
+        "External system integration",
+        "Third-party API calls",
+        "Webhook triggers",
+        "Data synchronization",
+        "External data retrieval",
+        "Service-to-service communication"
+      ],
+      properties: {
+        label: "String - API call name",
+        method: "String - HTTP method (GET/POST/PUT/PATCH/DELETE)",
+        url: "String - API endpoint URL",
+        headers: "Object - HTTP headers",
+        body: "Object/String - Request body for POST/PUT/PATCH",
+        queryParams: "Object - URL query parameters",
+        authType: "String - none/bearer/basic/apiKey",
+        outputVariable: "String - Variable name to store response",
+        timeout: "Number - Request timeout in milliseconds",
+        description: "String - What this API call does"
+      },
+      examples: [
+        "Fetch customer data from CRM",
+        "Submit order to fulfillment system",
+        "Call payment gateway API",
+        "Sync data with external database",
+        "Trigger external webhook",
+        "Query weather service API"
+      ]
     }
   ],
 
@@ -283,19 +392,19 @@ const workflowKnowledgeBase = {
     {
       name: "Simple Sequential Process",
       description: "Linear workflow with steps executed one after another",
-      structure: ["startProcess", "task", "task", "endEvent"],
+      structure: ["startProcess", "userTask", "dataProcess", "endEvent"],
       useCases: ["Simple approval", "Basic data processing", "Linear operations"]
     },
     {
       name: "Approval Workflow",
-      description: "Workflow requiring human approval",
-      structure: ["startProcess", "validation", "userTask", "decision", "endEvent"],
+      description: "Workflow requiring human approval with validation",
+      structure: ["startProcess", "validation", "userTask", "decision", "notification", "endEvent"],
       useCases: ["Expense approval", "Document review", "Access requests"]
     },
     {
       name: "Conditional Routing",
-      description: "Routes based on conditions",
-      structure: ["startProcess", "validation", "decision", "multiple_paths", "endEvent"],
+      description: "Routes based on conditions with notifications",
+      structure: ["startProcess", "validation", "decision", "notification", "endEvent"],
       useCases: ["Tiered approvals", "Priority-based routing", "Category-based processing"]
     },
     {
@@ -309,6 +418,30 @@ const workflowKnowledgeBase = {
       description: "Multiple tasks executed in parallel",
       structure: ["startProcess", "decision(parallel)", "multiple_userTasks", "endEvent"],
       useCases: ["Multi-approver workflows", "Parallel data processing", "Concurrent reviews"]
+    },
+    {
+      name: "AI-Powered Process",
+      description: "Uses LLM for intelligent processing",
+      structure: ["startProcess", "dataProcess", "llmTask", "decision", "notification", "endEvent"],
+      useCases: ["Content classification", "Sentiment analysis", "Intelligent routing", "AI-assisted decisions"]
+    },
+    {
+      name: "External Integration",
+      description: "Integrates with external systems via REST APIs",
+      structure: ["startProcess", "validation", "restApi", "dataProcess", "notification", "endEvent"],
+      useCases: ["CRM integration", "Payment processing", "Third-party data sync", "External service calls"]
+    },
+    {
+      name: "Scheduled Process",
+      description: "Time-based workflow with delays or scheduling",
+      structure: ["startProcess", "timerEvent", "scriptTask", "notification", "endEvent"],
+      useCases: ["Scheduled reminders", "Delayed actions", "Timeout handling", "Recurring tasks"]
+    },
+    {
+      name: "Complex Multi-stage Process",
+      description: "Multi-stage workflow with sub-workflows",
+      structure: ["startProcess", "validation", "userTask", "subWorkflow", "decision", "notification", "endEvent"],
+      useCases: ["Multi-department approvals", "Complex onboarding", "Enterprise processes"]
     }
   ]
 };
@@ -330,16 +463,40 @@ const searchComponents = (query) => {
 const getRecommendedPattern = (requirements) => {
   const lowerReq = requirements.toLowerCase();
 
+  // AI/LLM patterns
+  if (lowerReq.includes('ai') || lowerReq.includes('llm') || lowerReq.includes('intelligent') ||
+      lowerReq.includes('classify') || lowerReq.includes('sentiment') || lowerReq.includes('analyze')) {
+    return workflowKnowledgeBase.workflowPatterns.find(p => p.name === "AI-Powered Process");
+  }
+  // External integration patterns
+  if (lowerReq.includes('api') || lowerReq.includes('integration') || lowerReq.includes('external') ||
+      lowerReq.includes('sync') || lowerReq.includes('crm') || lowerReq.includes('payment')) {
+    return workflowKnowledgeBase.workflowPatterns.find(p => p.name === "External Integration");
+  }
+  // Scheduled/timer patterns
+  if (lowerReq.includes('schedule') || lowerReq.includes('timer') || lowerReq.includes('delay') ||
+      lowerReq.includes('reminder') || lowerReq.includes('timeout') || lowerReq.includes('recurring')) {
+    return workflowKnowledgeBase.workflowPatterns.find(p => p.name === "Scheduled Process");
+  }
+  // Complex multi-stage patterns
+  if (lowerReq.includes('complex') || lowerReq.includes('multi-stage') || lowerReq.includes('sub-workflow') ||
+      lowerReq.includes('enterprise') || lowerReq.includes('onboarding')) {
+    return workflowKnowledgeBase.workflowPatterns.find(p => p.name === "Complex Multi-stage Process");
+  }
+  // Approval patterns
   if (lowerReq.includes('approval') || lowerReq.includes('review')) {
     return workflowKnowledgeBase.workflowPatterns.find(p => p.name === "Approval Workflow");
   }
+  // Automated patterns
   if (lowerReq.includes('automated') || lowerReq.includes('automatic')) {
     return workflowKnowledgeBase.workflowPatterns.find(p => p.name === "Automated Process");
   }
-  if (lowerReq.includes('parallel') || lowerReq.includes('multiple')) {
+  // Parallel patterns
+  if (lowerReq.includes('parallel') || lowerReq.includes('multiple') || lowerReq.includes('concurrent')) {
     return workflowKnowledgeBase.workflowPatterns.find(p => p.name === "Parallel Processing");
   }
-  if (lowerReq.includes('condition') || lowerReq.includes('if')) {
+  // Conditional patterns
+  if (lowerReq.includes('condition') || lowerReq.includes('if') || lowerReq.includes('branch')) {
     return workflowKnowledgeBase.workflowPatterns.find(p => p.name === "Conditional Routing");
   }
 

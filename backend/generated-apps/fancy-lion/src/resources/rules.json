@@ -1,0 +1,182 @@
+[
+  {
+    "id": "rule_start_ticket_validation",
+    "name": "Start Registration Rule",
+    "description": "Validate required fields when ticket creation process starts",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.title",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Ticket.title",
+          "value": "",
+          "message": "Ticket title is required to start the registration process"
+        },
+        {
+          "type": "logMessage",
+          "field": "AuditLog.message",
+          "value": "Ticket creation failed - missing title",
+          "message": "Validation error logged"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1766588038884"
+  },
+  {
+    "id": "rule_submit_ticket_form_validation",
+    "name": "Submit Registration Form Rule",
+    "description": "Validate ticket data quality and completeness on form submission",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.description",
+          "operator": "lessThan",
+          "value": 10
+        },
+        {
+          "field": "Ticket.category_id",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Ticket.description",
+          "value": "minimum_length_10",
+          "message": "Description must be at least 10 characters"
+        },
+        {
+          "type": "throwError",
+          "field": "Ticket.category_id",
+          "value": "",
+          "message": "Please select a valid category before submitting"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1766588038884"
+  },
+  {
+    "id": "rule_validate_ticket_data",
+    "name": "Validate Registration Data Rule",
+    "description": "Validate ticket data against business rules for priority and assignment",
+    "type": "validation",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.priority",
+          "operator": "in",
+          "value": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ]
+        },
+        {
+          "field": "User.email",
+          "operator": "contains",
+          "value": "@"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Ticket.status",
+          "value": "Open",
+          "message": "Ticket status set to Open after validation"
+        },
+        {
+          "type": "updateData",
+          "field": "Ticket.created_at",
+          "value": "{{currentTimestamp}}",
+          "message": "Timestamp recorded"
+        },
+        {
+          "type": "logMessage",
+          "field": "AuditLog.action",
+          "value": "Ticket validated successfully",
+          "message": "Validation passed"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1766588038884"
+  },
+  {
+    "id": "rule_is_data_valid_decision",
+    "name": "Is Data Valid? Rule",
+    "description": "Evaluate ticket data validity to determine workflow routing path",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Ticket.status",
+          "operator": "equals",
+          "value": "Open"
+        },
+        {
+          "field": "Ticket.assigned_team_id",
+          "operator": "notEquals",
+          "value": null
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.nextStep",
+          "value": "assignToTeam",
+          "message": "Route to team assignment"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Notification.recipient",
+          "value": "{{Team.email}}",
+          "message": "New ticket assigned to your team"
+        },
+        {
+          "type": "updateData",
+          "field": "SLAMetric.start_time",
+          "value": "{{currentTimestamp}}",
+          "message": "SLA timer started"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "user-registration-workflow",
+    "workflowId": "user-registration-workflow",
+    "application_id": "app_1766588038884"
+  }
+]

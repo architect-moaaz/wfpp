@@ -163,18 +163,18 @@ const PropertiesPanel = ({ component, onUpdate, onClose }) => {
   };
 
   return (
-    <div className="properties-panel">
-      <div className="properties-header">
-        <div className="header-title">
+    <div className="fb-properties-panel">
+      <div className="fb-properties-header">
+        <div className="fb-header-title">
           <Settings size={18} />
           <span>Properties</span>
         </div>
-        <button className="close-btn" onClick={onClose}>
+        <button className="fb-close-btn" onClick={onClose}>
           <X size={18} />
         </button>
       </div>
 
-      <div className="properties-content">
+      <div className="fb-properties-content">
         {/* Basic Properties */}
         <div className="property-section">
           <h4 className="section-title">Basic</h4>
@@ -254,8 +254,8 @@ const PropertiesPanel = ({ component, onUpdate, onClose }) => {
         </div>
       </div>
 
-      <div className="properties-footer">
-        <div className="component-id">ID: {localComponent.id}</div>
+      <div className="fb-properties-footer">
+        <div className="fb-component-id">ID: {localComponent.id}</div>
       </div>
     </div>
   );

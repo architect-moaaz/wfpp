@@ -1,15 +1,15 @@
 [
   {
-    "id": "rule_parking_violation_detected",
-    "name": "Parking Violation Detected Rule",
-    "description": "Validate officer credentials and violation location data when parking violation is detected",
+    "id": "rule_start_survey_creation",
+    "name": "Start Survey Creation Rule",
+    "description": "Validate survey title and creator information before initiating survey creation process",
     "type": "validation",
-    "priority": 1,
+    "priority": 100,
     "is_active": true,
     "conditions": {
       "all": [
         {
-          "field": "Officer.badgeNumber",
+          "field": "Survey.title",
           "operator": "isNull",
           "value": true
         }
@@ -19,36 +19,71 @@
       "actions": [
         {
           "type": "throwError",
-          "field": "Officer.badgeNumber",
-          "message": "Officer badge number is required to initiate parking violation"
+          "field": "Survey.title",
+          "value": null,
+          "message": "Survey title is required to start survey creation"
         },
         {
           "type": "logMessage",
-          "message": "Parking violation detection failed - missing officer credentials"
+          "field": "system.log",
+          "value": "Survey creation failed - missing title",
+          "message": "Validation error logged"
         }
       ]
     },
-    "node_id": "node_start",
-    "workflow_id": "workflow_1735227156483",
-    "workflowId": "workflow_1735227156483",
-    "application_id": "app_1764935334155"
+    "node_id": "start-1",
+    "workflow_id": "workflow-create-survey",
+    "workflowId": "workflow-create-survey",
+    "application_id": "app_1768213814702"
   },
   {
-    "id": "rule_issue_parking_ticket",
-    "name": "Issue Parking Ticket Rule",
-    "description": "Validate vehicle license plate and violation type before issuing ticket",
+    "id": "rule_design_survey_validation",
+    "name": "Design Survey Rule",
+    "description": "Validate that survey has minimum required questions and valid question types",
     "type": "validation",
-    "priority": 2,
+    "priority": 90,
     "is_active": true,
     "conditions": {
       "all": [
         {
-          "field": "Vehicle.licensePlate",
-          "operator": "equals",
-          "value": ""
+          "field": "Survey.questions.length",
+          "operator": "lessThan",
+          "value": 1
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Survey.questions",
+          "value": null,
+          "message": "Survey must contain at least one question"
         },
         {
-          "field": "ViolationType.code",
+          "type": "setVariable",
+          "field": "Survey.status",
+          "value": "draft",
+          "message": "Survey status set to draft"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "workflow-create-survey",
+    "workflowId": "workflow-create-survey",
+    "application_id": "app_1768213814702"
+  },
+  {
+    "id": "rule_validate_survey_structure",
+    "name": "Validate Survey Structure Rule",
+    "description": "Check survey structure completeness including questions, types, and required fields",
+    "type": "validation",
+    "priority": 85,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Question.text",
           "operator": "isNull",
           "value": true
         }
@@ -58,345 +93,240 @@
       "actions": [
         {
           "type": "validateField",
-          "field": "Vehicle.licensePlate",
-          "message": "Valid license plate number is required"
+          "field": "Question.text",
+          "value": "required",
+          "message": "All questions must have text content"
         },
         {
-          "type": "validateField",
-          "field": "ViolationType.code",
-          "message": "Violation type must be selected"
+          "type": "setVariable",
+          "field": "Survey.validationStatus",
+          "value": "failed",
+          "message": "Validation failed"
         },
         {
-          "type": "stopWorkflow",
-          "message": "Cannot issue ticket without required vehicle and violation information"
+          "type": "logMessage",
+          "field": "system.log",
+          "value": "Survey structure validation failed",
+          "message": "Validation error recorded"
         }
       ]
     },
-    "node_id": "node_issue_ticket",
-    "workflow_id": "workflow_1735227156483",
-    "workflowId": "workflow_1735227156483",
-    "application_id": "app_1764935334155"
+    "node_id": "validation-1",
+    "workflow_id": "workflow-create-survey",
+    "workflowId": "workflow-create-survey",
+    "application_id": "app_1768213814702"
   },
   {
-    "id": "rule_validate_ticket_data",
-    "name": "Validate Ticket Data Rule",
-    "description": "Ensure ticket amount is within valid range and location data is complete",
-    "type": "validation",
-    "priority": 3,
+    "id": "rule_validation_passed_decision",
+    "name": "Validation Passed Decision Rule",
+    "description": "Determine if survey passes all validation checks to proceed to review",
+    "type": "decision",
+    "priority": 80,
     "is_active": true,
     "conditions": {
       "all": [
         {
-          "field": "Ticket.amount",
+          "field": "Survey.validationStatus",
+          "operator": "equals",
+          "value": "passed"
+        },
+        {
+          "field": "Survey.questions.length",
           "operator": "greaterThan",
-          "value": 1000
-        }
-      ]
-    },
-    "actions": {
-      "actions": [
-        {
-          "type": "throwError",
-          "field": "Ticket.amount",
-          "message": "Ticket amount exceeds maximum allowed limit of $1000"
-        },
-        {
-          "type": "logMessage",
-          "message": "Ticket validation failed - amount exceeds threshold"
-        },
-        {
-          "type": "updateData",
-          "field": "Ticket.status",
-          "value": "VALIDATION_FAILED"
-        }
-      ]
-    },
-    "node_id": "node_validate_ticket",
-    "workflow_id": "workflow_1735227156483",
-    "workflowId": "workflow_1735227156483",
-    "application_id": "app_1764935334155"
-  },
-  {
-    "id": "rule_validation_check",
-    "name": "Validation Check Rule",
-    "description": "Route ticket based on validation status to approval or rejection path",
-    "type": "decision",
-    "priority": 4,
-    "is_active": true,
-    "conditions": {
-      "all": [
-        {
-          "field": "Ticket.validationStatus",
-          "operator": "equals",
-          "value": "PASSED"
-        }
-      ]
-    },
-    "actions": {
-      "actions": [
-        {
-          "type": "setVariable",
-          "field": "workflowPath",
-          "value": "PROCEED_TO_NOTIFICATION"
-        },
-        {
-          "type": "updateData",
-          "field": "Ticket.status",
-          "value": "APPROVED"
-        },
-        {
-          "type": "logMessage",
-          "message": "Ticket validation passed - proceeding to notification"
-        }
-      ]
-    },
-    "node_id": "node_validation_decision",
-    "workflow_id": "workflow_1735227156483",
-    "workflowId": "workflow_1735227156483",
-    "application_id": "app_1764935334155"
-  },
-  {
-    "id": "rule_parallel_notification",
-    "name": "Parallel Notification Rule",
-    "description": "Determine notification channels based on ticket severity and amount",
-    "type": "decision",
-    "priority": 5,
-    "is_active": true,
-    "conditions": {
-      "all": [
-        {
-          "field": "Ticket.amount",
-          "operator": "greaterThan",
-          "value": 200
-        },
-        {
-          "field": "ViolationType.severity",
-          "operator": "equals",
-          "value": "HIGH"
-        }
-      ]
-    },
-    "actions": {
-      "actions": [
-        {
-          "type": "setVariable",
-          "field": "notificationChannels",
-          "value": "EMAIL_SMS_MAIL"
-        },
-        {
-          "type": "sendNotification",
-          "field": "Notification.type",
-          "value": "MULTI_CHANNEL",
-          "message": "High severity ticket issued - sending notifications via all channels"
-        },
-        {
-          "type": "logMessage",
-          "message": "Parallel notification triggered for high-value ticket"
-        }
-      ]
-    },
-    "node_id": "node_notification_split",
-    "workflow_id": "workflow_1735227156483",
-    "workflowId": "workflow_1735227156483",
-    "application_id": "app_1764935334155"
-  },
-  {
-    "id": "rule_citizen_action_decision",
-    "name": "Citizen Action Decision Rule",
-    "description": "Route workflow based on citizen response: payment, dispute, or no action",
-    "type": "decision",
-    "priority": 6,
-    "is_active": true,
-    "conditions": {
-      "all": [
-        {
-          "field": "Ticket.citizenAction",
-          "operator": "equals",
-          "value": "DISPUTE"
-        }
-      ]
-    },
-    "actions": {
-      "actions": [
-        {
-          "type": "setVariable",
-          "field": "workflowPath",
-          "value": "DISPUTE_REVIEW"
-        },
-        {
-          "type": "updateData",
-          "field": "Ticket.status",
-          "value": "UNDER_DISPUTE"
-        },
-        {
-          "type": "logMessage",
-          "message": "Citizen has filed dispute - routing to review process"
-        }
-      ]
-    },
-    "node_id": "node_citizen_action",
-    "workflow_id": "workflow_1735227156483",
-    "workflowId": "workflow_1735227156483",
-    "application_id": "app_1764935334155"
-  },
-  {
-    "id": "rule_review_dispute",
-    "name": "Review Dispute Rule",
-    "description": "Validate dispute submission has required evidence and reason",
-    "type": "validation",
-    "priority": 7,
-    "is_active": true,
-    "conditions": {
-      "all": [
-        {
-          "field": "Dispute.reason",
-          "operator": "equals",
-          "value": ""
-        }
-      ]
-    },
-    "actions": {
-      "actions": [
-        {
-          "type": "validateField",
-          "field": "Dispute.reason",
-          "message": "Dispute reason is required for review"
-        },
-        {
-          "type": "sendNotification",
-          "field": "Notification.recipient",
-          "value": "citizen",
-          "message": "Your dispute cannot be processed without a valid reason"
-        },
-        {
-          "type": "stopWorkflow",
-          "message": "Dispute review halted - incomplete information"
-        }
-      ]
-    },
-    "node_id": "node_dispute_review",
-    "workflow_id": "workflow_1735227156483",
-    "workflowId": "workflow_1735227156483",
-    "application_id": "app_1764935334155"
-  },
-  {
-    "id": "rule_dispute_resolution",
-    "name": "Dispute Resolution Rule",
-    "description": "Route ticket based on dispute decision: approved, rejected, or escalated",
-    "type": "decision",
-    "priority": 8,
-    "is_active": true,
-    "conditions": {
-      "all": [
-        {
-          "field": "Dispute.resolution",
-          "operator": "equals",
-          "value": "APPROVED"
-        }
-      ]
-    },
-    "actions": {
-      "actions": [
-        {
-          "type": "updateData",
-          "field": "Ticket.status",
-          "value": "DISMISSED"
-        },
-        {
-          "type": "setVariable",
-          "field": "Ticket.amountDue",
           "value": 0
-        },
-        {
-          "type": "sendNotification",
-          "field": "Notification.recipient",
-          "value": "citizen",
-          "message": "Your dispute has been approved and the ticket has been dismissed"
-        }
-      ]
-    },
-    "node_id": "node_dispute_decision",
-    "workflow_id": "workflow_1735227156483",
-    "workflowId": "workflow_1735227156483",
-    "application_id": "app_1764935334155"
-  },
-  {
-    "id": "rule_escalation_process",
-    "name": "Escalation Process Rule",
-    "description": "Validate escalation request has supervisor assignment and justification",
-    "type": "validation",
-    "priority": 9,
-    "is_active": true,
-    "conditions": {
-      "all": [
-        {
-          "field": "Dispute.escalationJustification",
-          "operator": "isNull",
-          "value": true
         }
       ]
     },
     "actions": {
       "actions": [
         {
-          "type": "validateField",
-          "field": "Dispute.escalationJustification",
-          "message": "Escalation justification is required for supervisor review"
-        },
-        {
-          "type": "logMessage",
-          "message": "Escalation validation failed - missing justification"
-        },
-        {
-          "type": "throwError",
-          "field": "Dispute.escalationJustification",
-          "message": "Cannot escalate dispute without proper justification"
-        }
-      ]
-    },
-    "node_id": "node_escalation",
-    "workflow_id": "workflow_1735227156483",
-    "workflowId": "workflow_1735227156483",
-    "application_id": "app_1764935334155"
-  },
-  {
-    "id": "rule_handle_system_error",
-    "name": "Handle System Error Rule",
-    "description": "Validate error recovery data and ensure audit trail is maintained",
-    "type": "validation",
-    "priority": 10,
-    "is_active": true,
-    "conditions": {
-      "all": [
-        {
-          "field": "AuditLog.errorCode",
-          "operator": "notEquals",
-          "value": ""
-        }
-      ]
-    },
-    "actions": {
-      "actions": [
-        {
-          "type": "logMessage",
-          "message": "System error detected - initiating error handling procedure"
+          "type": "setVariable",
+          "field": "workflow.nextStep",
+          "value": "review_and_approve",
+          "message": "Route to review and approval"
         },
         {
           "type": "updateData",
-          "field": "Ticket.status",
-          "value": "ERROR_STATE"
+          "field": "Survey.status",
+          "value": "pending_review",
+          "message": "Survey ready for review"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "workflow-create-survey",
+    "workflowId": "workflow-create-survey",
+    "application_id": "app_1768213814702"
+  },
+  {
+    "id": "rule_fix_validation_issues",
+    "name": "Fix Validation Issues Rule",
+    "description": "Track validation issue fixes and ensure all errors are addressed",
+    "type": "validation",
+    "priority": 75,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Survey.validationErrors.length",
+          "operator": "equals",
+          "value": 0
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Survey.validationStatus",
+          "value": "passed",
+          "message": "All validation issues resolved"
+        },
+        {
+          "type": "updateData",
+          "field": "Survey.lastModified",
+          "value": "currentTimestamp",
+          "message": "Update modification timestamp"
+        },
+        {
+          "type": "logMessage",
+          "field": "system.log",
+          "value": "Survey validation issues fixed",
+          "message": "Validation success logged"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "workflow-create-survey",
+    "workflowId": "workflow-create-survey",
+    "application_id": "app_1768213814702"
+  },
+  {
+    "id": "rule_review_approve_notification",
+    "name": "Review and Approve Rule",
+    "description": "Send notification to stakeholders when survey is submitted for approval",
+    "type": "notification",
+    "priority": 70,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Survey.status",
+          "operator": "equals",
+          "value": "pending_review"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "sendNotification",
+          "field": "Notification.recipient",
+          "value": "approver_email",
+          "message": "Survey is ready for review and approval"
+        },
+        {
+          "type": "setVariable",
+          "field": "Survey.submittedForReviewAt",
+          "value": "currentTimestamp",
+          "message": "Record review submission time"
+        }
+      ]
+    },
+    "node_id": "userTask-3",
+    "workflow_id": "workflow-create-survey",
+    "workflowId": "workflow-create-survey",
+    "application_id": "app_1768213814702"
+  },
+  {
+    "id": "rule_approved_decision",
+    "name": "Approved Decision Rule",
+    "description": "Route survey based on approval decision to publish or revise",
+    "type": "decision",
+    "priority": 65,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Survey.approvalStatus",
+          "operator": "equals",
+          "value": "approved"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Survey.status",
+          "value": "published",
+          "message": "Survey approved and published"
+        },
+        {
+          "type": "updateData",
+          "field": "Survey.publishedAt",
+          "value": "currentTimestamp",
+          "message": "Set publication timestamp"
         },
         {
           "type": "sendNotification",
           "field": "Notification.recipient",
-          "value": "system_admin",
-          "message": "Critical system error in parking ticket workflow requires attention"
+          "value": "creator_email",
+          "message": "Your survey has been approved and published"
         }
       ]
     },
-    "node_id": "node_error_handler",
-    "workflow_id": "workflow_1735227156483",
-    "workflowId": "workflow_1735227156483",
-    "application_id": "app_1764935334155"
+    "node_id": "decision-2",
+    "workflow_id": "workflow-create-survey",
+    "workflowId": "workflow-create-survey",
+    "application_id": "app_1768213814702"
+  },
+  {
+    "id": "rule_revise_survey",
+    "name": "Revise Survey Rule",
+    "description": "Handle survey revision requests and notify creator of required changes",
+    "type": "automation",
+    "priority": 60,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Survey.approvalStatus",
+          "operator": "equals",
+          "value": "rejected"
+        },
+        {
+          "field": "Survey.revisionComments",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "Survey.status",
+          "value": "revision_required",
+          "message": "Survey requires revision"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Notification.recipient",
+          "value": "creator_email",
+          "message": "Survey requires revisions. Please review feedback and resubmit"
+        },
+        {
+          "type": "setVariable",
+          "field": "workflow.nextStep",
+          "value": "design_survey",
+          "message": "Route back to design phase"
+        }
+      ]
+    },
+    "node_id": "userTask-4",
+    "workflow_id": "workflow-create-survey",
+    "workflowId": "workflow-create-survey",
+    "application_id": "app_1768213814702"
   }
 ]

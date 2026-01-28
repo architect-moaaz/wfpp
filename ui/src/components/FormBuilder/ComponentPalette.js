@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
-import { getComponentsByCategory } from './componentDefinitions';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { getComponentsByCategory, SHADCN_MAPPINGS } from './componentDefinitions';
 import './ComponentPalette.css';
 
-const ComponentPalette = ({ onDropComponent }) => {
+const ComponentPalette = ({ onDropComponent, onCollapseChange }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-
   const componentsByCategory = getComponentsByCategory();
+
+  const handleToggle = () => {
+    const newCollapsed = !isCollapsed;
+    setIsCollapsed(newCollapsed);
+    if (onCollapseChange) {
+      onCollapseChange(newCollapsed);
+    }
+  };
 
   const handleDragStart = (e, component) => {
     e.dataTransfer.effectAllowed = 'copy';
@@ -18,15 +25,16 @@ const ComponentPalette = ({ onDropComponent }) => {
 
   return (
     <div className={`component-palette ${isCollapsed ? 'collapsed' : ''}`}>
+      <button
+        className="palette-toggle"
+        onClick={handleToggle}
+        title={isCollapsed ? 'Show Components' : 'Hide Components'}
+      >
+        {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+      </button>
+
       {isCollapsed ? (
         <div className="palette-collapsed-content">
-          <button
-            className="palette-toggle-collapsed"
-            onClick={() => setIsCollapsed(false)}
-            title="Show Components"
-          >
-            <ChevronRight size={16} />
-          </button>
           {allComponents.map(component => {
             const IconComponent = component.icon;
             return (
@@ -40,7 +48,7 @@ const ComponentPalette = ({ onDropComponent }) => {
                 title={component.label}
               >
                 <div className="component-icon-only">
-                  <IconComponent size={20} />
+                  <IconComponent size={18} />
                 </div>
               </div>
             );
@@ -49,50 +57,48 @@ const ComponentPalette = ({ onDropComponent }) => {
       ) : (
         <>
           <div className="palette-header">
-            <div className="palette-header-content">
-              <h3>Components</h3>
-              <p>Drag to canvas or use AI</p>
-            </div>
-            <button
-              className="palette-toggle"
-              onClick={() => setIsCollapsed(true)}
-              title="Hide Components"
-            >
-              <ChevronLeft size={16} />
-            </button>
+            <h3>Components</h3>
+            <p>Drag to canvas or click to add</p>
           </div>
-
-          <div className="palette-content">
+          <div className="palette-items">
             {Object.entries(componentsByCategory).map(([category, components]) => {
               if (components.length === 0) return null;
 
               return (
-                <div key={category} className="component-category">
-                  <div className="category-title">{category.toUpperCase()}</div>
-
-                  <div className="category-components">
-                    {components.map(component => {
-                      const IconComponent = component.icon;
-                      return (
-                        <div
-                          key={component.type}
-                          className="component-card"
-                          data-type={component.type}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, component)}
-                          onClick={() => onDropComponent(component)}
-                        >
-                          <div className="component-icon">
-                            <IconComponent size={20} />
-                          </div>
-                          <div className="component-info">
-                            <div className="component-name">{component.label}</div>
-                            <div className="component-desc">{component.description}</div>
-                          </div>
+                <div key={category} className="palette-category">
+                  <div className="category-title">{category}</div>
+                  {components.map(component => {
+                    const IconComponent = component.icon;
+                    const shadcnMapping = SHADCN_MAPPINGS[component.type];
+                    return (
+                      <div
+                        key={component.type}
+                        className="palette-node"
+                        data-type={component.type}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, component)}
+                        onClick={() => onDropComponent(component)}
+                      >
+                        <div className="palette-node-icon">
+                          <IconComponent size={20} />
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className="palette-node-info">
+                          <div className="palette-node-label">
+                            {component.label}
+                            {shadcnMapping && (
+                              <span className="shadcn-badge">
+                                {shadcnMapping.component}
+                                {shadcnMapping.variants > 1 && (
+                                  <span className="variant-count">{shadcnMapping.variants}</span>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                          <div className="palette-node-desc">{component.description}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}

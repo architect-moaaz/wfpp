@@ -14,12 +14,21 @@ import {
   Package,
   Workflow,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Building2,
+  Network,
+  Shield,
+  UsersRound,
+  FolderTree,
+  BarChart3
 } from 'lucide-react';
 
 const Sidebar = () => {
   const { activeSidebar, setActiveSidebar } = useWorkflow();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isOrgExpanded, setIsOrgExpanded] = useState(false);
 
   const navGroups = [
     {
@@ -50,13 +59,24 @@ const Sidebar = () => {
       items: [
         { id: 'mobile-screens', label: 'Mobile Screens', icon: Smartphone }
       ]
+    },
+    {
+      title: 'Insights',
+      items: [
+        { id: 'analytics', label: 'Analytics', icon: BarChart3 }
+      ]
     }
   ];
 
-  const bottomItems = [
-    { id: 'invite-team', label: 'Invite Team', icon: Users },
-    { id: 'help', label: 'Help & Documentation', icon: HelpCircle }
+  const orgItems = [
+    { id: 'org-settings', label: 'Settings', icon: Building2 },
+    { id: 'org-chart', label: 'Org Chart', icon: Network },
+    { id: 'org-roles', label: 'Roles', icon: Shield },
+    { id: 'org-groups', label: 'Groups', icon: UsersRound },
+    { id: 'org-departments', label: 'Departments', icon: FolderTree }
   ];
+
+  const isOrgItemActive = orgItems.some(item => item.id === activeSidebar);
 
   return (
     <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
@@ -91,12 +111,59 @@ const Sidebar = () => {
       </div>
 
       <div className="sidebar-footer">
-        {bottomItems.map(item => (
-          <button key={item.id} className="footer-item" title={isCollapsed ? item.label : ''}>
-            <item.icon size={18} />
-            {!isCollapsed && <span>{item.label}</span>}
+        <div className={`org-section ${isOrgExpanded ? 'expanded' : ''} ${isOrgItemActive ? 'has-active' : ''}`}>
+          <button
+            className={`org-toggle ${isOrgItemActive ? 'active' : ''}`}
+            onClick={() => setIsOrgExpanded(!isOrgExpanded)}
+            title={isCollapsed ? 'Organization' : ''}
+          >
+            <Building2 size={18} />
+            {!isCollapsed && (
+              <>
+                <span>Organization</span>
+                {isOrgExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </>
+            )}
           </button>
-        ))}
+          {isOrgExpanded && !isCollapsed && (
+            <div className="org-items">
+              {orgItems.map(item => (
+                <button
+                  key={item.id}
+                  className={`org-item ${activeSidebar === item.id ? 'active' : ''}`}
+                  onClick={() => setActiveSidebar(item.id)}
+                >
+                  <item.icon size={16} />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {isOrgExpanded && isCollapsed && (
+            <div className="org-items-collapsed">
+              {orgItems.map(item => (
+                <button
+                  key={item.id}
+                  className={`org-item ${activeSidebar === item.id ? 'active' : ''}`}
+                  onClick={() => setActiveSidebar(item.id)}
+                  title={item.label}
+                >
+                  <item.icon size={16} />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button className="footer-item" title={isCollapsed ? 'Invite Team' : ''}>
+          <Users size={18} />
+          {!isCollapsed && <span>Invite Team</span>}
+        </button>
+
+        <button className="footer-item" title={isCollapsed ? 'Help & Documentation' : ''}>
+          <HelpCircle size={18} />
+          {!isCollapsed && <span>Help & Docs</span>}
+        </button>
       </div>
 
       {!isCollapsed && (

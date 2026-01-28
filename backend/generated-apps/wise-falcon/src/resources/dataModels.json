@@ -1,1 +1,899 @@
-[]
+[
+  {
+    "id": "user-model",
+    "name": "User",
+    "description": "Core user entity containing authentication credentials, profile information, and account metadata for personalized AI assistant interactions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user account",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "User's email address for authentication and communication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "passwordHash",
+        "type": "string",
+        "description": "Hashed password for secure authentication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "User's first name for personalization",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "description": "User's last name for personalization",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "profileImageUrl",
+        "type": "string",
+        "description": "URL to user's profile image",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "accountStatus",
+        "type": "string",
+        "description": "Current status of the account (active, suspended, pending)",
+        "required": true,
+        "defaultValue": "active"
+      },
+      {
+        "name": "lastLoginAt",
+        "type": "date",
+        "description": "Timestamp of the user's last login",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_user_email",
+        "fields": [
+          "email"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_user_account_status",
+        "fields": [
+          "accountStatus"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "email": {
+        "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+        "message": "Must be a valid email address"
+      },
+      "accountStatus": {
+        "enum": [
+          "active",
+          "suspended",
+          "pending",
+          "deleted"
+        ],
+        "message": "Must be a valid account status"
+      }
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "UserOnboardingWorkflow",
+        "UserAuthenticationWorkflow",
+        "UserProfileManagementWorkflow"
+      ],
+      "usedByForms": [
+        "UserRegistrationForm",
+        "LoginForm",
+        "ProfileSettingsForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "User",
+    "workflowId": "error-handling-workflow"
+  },
+  {
+    "id": "error-log",
+    "name": "ErrorLog",
+    "description": "Tracks system errors, AI processing failures, and exceptions for monitoring, debugging, and self-healing capabilities",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the error log entry",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "errorType",
+        "type": "string",
+        "description": "Category of error (e.g., AI_PROCESSING, NETWORK, DATABASE, VALIDATION)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "errorMessage",
+        "type": "string",
+        "description": "Human-readable error message describing what went wrong",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "stackTrace",
+        "type": "string",
+        "description": "Technical stack trace for debugging purposes",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "ID of the user associated with the error, if applicable",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "severity",
+        "type": "string",
+        "description": "Error severity level (LOW, MEDIUM, HIGH, CRITICAL)",
+        "required": true,
+        "defaultValue": "MEDIUM"
+      },
+      {
+        "name": "resolved",
+        "type": "boolean",
+        "description": "Whether the error has been resolved or acknowledged",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the error occurred",
+        "required": true,
+        "defaultValue": "now()"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedEntity": "User",
+        "foreignKey": "userId",
+        "description": "Links error to the user who experienced it"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_error_type_severity",
+        "fields": [
+          "errorType",
+          "severity"
+        ],
+        "description": "Optimize queries filtering by error type and severity"
+      },
+      {
+        "name": "idx_user_created",
+        "fields": [
+          "userId",
+          "createdAt"
+        ],
+        "description": "Optimize queries for user-specific error history"
+      },
+      {
+        "name": "idx_resolved_created",
+        "fields": [
+          "resolved",
+          "createdAt"
+        ],
+        "description": "Optimize queries for unresolved errors"
+      }
+    ],
+    "constraints": {
+      "errorType": "Must be one of: AI_PROCESSING, NETWORK, DATABASE, VALIDATION, AUTHENTICATION, AUTHORIZATION, SYSTEM",
+      "severity": "Must be one of: LOW, MEDIUM, HIGH, CRITICAL"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "MessageProcessingWorkflow",
+        "ErrorHandlingWorkflow"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "ErrorLog",
+    "workflowId": "error-handling-workflow"
+  },
+  {
+    "id": "user-preferences",
+    "name": "UserPreferences",
+    "description": "Store user-specific preferences for personalized AI responses and app settings",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for user preferences record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the User who owns these preferences",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "language",
+        "type": "string",
+        "description": "Preferred language code for AI responses (e.g., en, es, fr)",
+        "required": true,
+        "defaultValue": "en"
+      },
+      {
+        "name": "timezone",
+        "type": "string",
+        "description": "User's timezone for time-aware responses (e.g., America/New_York)",
+        "required": true,
+        "defaultValue": "UTC"
+      },
+      {
+        "name": "responseStyle",
+        "type": "string",
+        "description": "Preferred AI response style (e.g., concise, detailed, casual, formal)",
+        "required": true,
+        "defaultValue": "balanced"
+      },
+      {
+        "name": "interests",
+        "type": "array",
+        "description": "List of user interests and topics for personalized content",
+        "required": false,
+        "defaultValue": []
+      },
+      {
+        "name": "notificationPreferences",
+        "type": "object",
+        "description": "Notification settings including enabled channels and frequency",
+        "required": true,
+        "defaultValue": {
+          "push": true,
+          "email": false,
+          "frequency": "daily"
+        }
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp of last preference update",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "entity": "User",
+        "foreignKey": "userId",
+        "description": "Each preference set belongs to one user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_id",
+        "fields": [
+          "userId"
+        ],
+        "unique": true
+      }
+    ],
+    "constraints": {
+      "uniqueUserPreferences": "Each user can have only one preferences record",
+      "validLanguage": "Language must be a valid ISO 639-1 code",
+      "validTimezone": "Timezone must be a valid IANA timezone identifier"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "UserProfileManagementWorkflow",
+        "ChatSessionWorkflow"
+      ],
+      "usedByForms": [
+        "ProfileSettingsForm"
+      ],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "UserPreferences",
+    "workflowId": "error-handling-workflow"
+  },
+  {
+    "id": "chat-session",
+    "name": "ChatSession",
+    "description": "Represents a distinct chat conversation session with metadata for organizing conversations by topic or time period",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the chat session",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user who owns this chat session",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "User-defined or auto-generated title for the chat session",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the session (active, archived, deleted)",
+        "required": true,
+        "defaultValue": "active"
+      },
+      {
+        "name": "messageCount",
+        "type": "number",
+        "description": "Total number of messages in this session",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "lastActivityAt",
+        "type": "date",
+        "description": "Timestamp of the last message or activity in this session",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the chat session was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp when the chat session was last updated",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "entity": "User",
+        "foreignKey": "userId",
+        "description": "Each chat session belongs to a user"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId",
+          "lastActivityAt"
+        ],
+        "description": "Optimize queries for user's recent chat sessions"
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "description": "Filter sessions by status efficiently"
+      }
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "active",
+          "archived",
+          "deleted"
+        ],
+        "description": "Valid session status values"
+      },
+      "messageCount": {
+        "min": 0,
+        "description": "Message count cannot be negative"
+      }
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "ChatSessionWorkflow",
+        "ConversationHistoryWorkflow"
+      ],
+      "usedByForms": [
+        "NewChatSessionForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "ChatSession",
+    "workflowId": "error-handling-workflow"
+  },
+  {
+    "id": "conversation-context",
+    "name": "ConversationContext",
+    "description": "Stores contextual information and conversation state to enable coherent, context-aware AI responses across messages",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the conversation context",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sessionId",
+        "type": "string",
+        "description": "Reference to the associated chat session",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "contextSummary",
+        "type": "text",
+        "description": "Condensed summary of the conversation for quick context retrieval",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "entities",
+        "type": "json",
+        "description": "Extracted entities (people, places, dates, etc.) mentioned in the conversation",
+        "required": false,
+        "defaultValue": "[]"
+      },
+      {
+        "name": "topics",
+        "type": "array",
+        "description": "List of main topics discussed in the conversation",
+        "required": false,
+        "defaultValue": "[]"
+      },
+      {
+        "name": "sentiment",
+        "type": "string",
+        "description": "Overall sentiment of the conversation (positive, neutral, negative)",
+        "required": false,
+        "defaultValue": "neutral"
+      },
+      {
+        "name": "messageReferences",
+        "type": "array",
+        "description": "Array of message IDs that contributed to this context",
+        "required": false,
+        "defaultValue": "[]"
+      },
+      {
+        "name": "lastUpdated",
+        "type": "datetime",
+        "description": "Timestamp of the last context update",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedEntity": "ChatSession",
+        "foreignKey": "sessionId",
+        "description": "Each context belongs to one chat session"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_session_id",
+        "fields": [
+          "sessionId"
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_last_updated",
+        "fields": [
+          "lastUpdated"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "sentiment": {
+        "enum": [
+          "positive",
+          "neutral",
+          "negative"
+        ]
+      }
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "MessageProcessingWorkflow",
+        "ChatSessionWorkflow"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "ConversationContext",
+    "workflowId": "error-handling-workflow"
+  },
+  {
+    "id": "airesponse-001",
+    "name": "AIResponse",
+    "description": "Stores AI-generated responses with metadata for quality tracking and performance monitoring",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the AI response",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "messageId",
+        "type": "string",
+        "description": "Reference to the user message that triggered this response",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "responseContent",
+        "type": "text",
+        "description": "The actual AI-generated response content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "model",
+        "type": "string",
+        "description": "AI model used to generate the response (e.g., gpt-4, claude-3)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "confidenceScore",
+        "type": "number",
+        "description": "Confidence score of the response quality (0.0 to 1.0)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "processingTime",
+        "type": "number",
+        "description": "Time taken to generate response in milliseconds",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "tokensUsed",
+        "type": "number",
+        "description": "Total tokens consumed for this response generation",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "generatedAt",
+        "type": "date",
+        "description": "Timestamp when the response was generated",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedEntity": "ChatSession",
+        "description": "Multiple AI responses belong to one chat session"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "messageId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "generatedAt"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "model"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "confidenceScore": "Value must be between 0.0 and 1.0",
+      "processingTime": "Must be a positive number",
+      "tokensUsed": "Must be a positive integer"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "MessageProcessingWorkflow"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "AIResponse",
+    "workflowId": "error-handling-workflow"
+  },
+  {
+    "id": "user-session",
+    "name": "UserSession",
+    "description": "Manages user authentication sessions, tokens, and device information for security and session management",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique session identifier",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the authenticated user",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sessionToken",
+        "type": "string",
+        "description": "JWT or unique token for session authentication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "refreshToken",
+        "type": "string",
+        "description": "Token used to refresh expired session tokens",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "deviceInfo",
+        "type": "string",
+        "description": "Device details (OS, model, app version) in JSON format",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "ipAddress",
+        "type": "string",
+        "description": "IP address from which session was created",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "expiresAt",
+        "type": "date",
+        "description": "Timestamp when session expires",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastActivityAt",
+        "type": "date",
+        "description": "Timestamp of last user activity in this session",
+        "required": true,
+        "defaultValue": "now()"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedEntity": "User",
+        "foreignKey": "userId",
+        "description": "Each session belongs to one user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_sessions",
+        "fields": [
+          "userId"
+        ]
+      },
+      {
+        "name": "idx_session_token",
+        "fields": [
+          "sessionToken"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_expires_at",
+        "fields": [
+          "expiresAt"
+        ]
+      }
+    ],
+    "constraints": {
+      "sessionTokenUnique": "sessionToken must be unique across all active sessions",
+      "expirationValidation": "expiresAt must be greater than current timestamp",
+      "tokenSecurity": "sessionToken and refreshToken must be hashed/encrypted at rest"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "UserAuthenticationWorkflow"
+      ],
+      "usedByForms": [
+        "LoginForm"
+      ],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "UserSession",
+    "workflowId": "error-handling-workflow"
+  },
+  {
+    "id": "dm_message_1765965422483",
+    "name": "Message",
+    "description": "Stores individual chat messages exchanged between user and AI assistant with metadata and processing status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the message",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "sessionId",
+        "type": "string",
+        "description": "Reference to the chat session this message belongs to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user who owns this message",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "description": "The actual message text content",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "senderRole",
+        "type": "string",
+        "description": "Role of the sender (user or assistant)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "processingStatus",
+        "type": "string",
+        "description": "Current processing status (pending, processing, completed, failed)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "tokens",
+        "type": "number",
+        "description": "Number of tokens used for this message",
+        "required": false,
+        "defaultValue": 0
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the message was created",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "ChatSession",
+        "foreignKey": "sessionId",
+        "description": "Message belongs to a chat session"
+      },
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Message belongs to a user"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "sessionId",
+          "createdAt"
+        ],
+        "description": "Optimize retrieval of messages by session in chronological order"
+      },
+      {
+        "fields": [
+          "userId"
+        ],
+        "description": "Optimize queries for user's messages"
+      },
+      {
+        "fields": [
+          "processingStatus"
+        ],
+        "description": "Optimize queries for messages by processing status"
+      }
+    ],
+    "constraints": {
+      "senderRole": {
+        "enum": [
+          "user",
+          "assistant"
+        ],
+        "description": "Sender role must be either user or assistant"
+      },
+      "processingStatus": {
+        "enum": [
+          "pending",
+          "processing",
+          "completed",
+          "failed"
+        ],
+        "description": "Processing status must be one of the defined states"
+      }
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "ChatSessionWorkflow",
+        "MessageProcessingWorkflow",
+        "ConversationHistoryWorkflow"
+      ],
+      "usedByForms": [
+        "ChatInputForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "Message",
+    "workflowId": "error-handling-workflow"
+  }
+]

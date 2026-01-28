@@ -1,1 +1,296 @@
-[]
+[
+  {
+    "id": "rule_start_team_member_process",
+    "name": "Start Team Member Process Rule",
+    "description": "Validate initial process start and set default values for new team member workflow",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "TeamMember.email",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "TeamMember.firstName",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "processStatus",
+          "value": "initiated",
+          "message": "Team member process started successfully"
+        },
+        {
+          "type": "logMessage",
+          "field": "processLog",
+          "value": "New team member workflow initiated",
+          "message": "Process started for team member creation"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "team-member-management-wf",
+    "workflowId": "team-member-management-wf",
+    "application_id": "app_1765361941682"
+  },
+  {
+    "id": "rule_submit_member_information",
+    "name": "Submit Member Information Rule",
+    "description": "Validate team member information completeness before submission",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "TeamMember.departmentId",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "TeamMember.position",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "TeamMember.startDate",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "submissionStatus",
+          "value": "submitted",
+          "message": "Member information submitted successfully"
+        },
+        {
+          "type": "validateField",
+          "field": "TeamMember.email",
+          "value": "email_format",
+          "message": "Email format validated"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "team-member-management-wf",
+    "workflowId": "team-member-management-wf",
+    "application_id": "app_1765361941682"
+  },
+  {
+    "id": "rule_validate_required_fields",
+    "name": "Validate Required Fields Rule",
+    "description": "Ensure all mandatory team member fields are properly filled",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "TeamMember.lastName",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "TeamMember.phoneNumber",
+          "operator": "isNull",
+          "value": false
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "passed",
+          "message": "All required fields validated successfully"
+        },
+        {
+          "type": "logMessage",
+          "field": "validationLog",
+          "value": "Required fields validation completed",
+          "message": "Validation passed for team member data"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "team-member-management-wf",
+    "workflowId": "team-member-management-wf",
+    "application_id": "app_1765361941682"
+  },
+  {
+    "id": "rule_validation_passed_decision",
+    "name": "Validation Passed Decision Rule",
+    "description": "Determine workflow path based on validation results",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validationStatus",
+          "operator": "equals",
+          "value": "passed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "proceed_to_approval",
+          "message": "Validation passed, proceeding to approval check"
+        },
+        {
+          "type": "logMessage",
+          "field": "decisionLog",
+          "value": "Routing to approval process",
+          "message": "Workflow proceeding to next stage"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "team-member-management-wf",
+    "workflowId": "team-member-management-wf",
+    "application_id": "app_1765361941682"
+  },
+  {
+    "id": "rule_requires_approval_decision",
+    "name": "Requires Approval Decision Rule",
+    "description": "Determine if manager approval is required based on team member role",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "TeamMember.position",
+          "operator": "in",
+          "value": [
+            "Manager",
+            "Senior Developer",
+            "Team Lead"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "requiresApproval",
+          "value": "true",
+          "message": "Manager approval required for this position"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Department.managerId",
+          "value": "approval_request",
+          "message": "New team member requires your approval"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "team-member-management-wf",
+    "workflowId": "team-member-management-wf",
+    "application_id": "app_1765361941682"
+  },
+  {
+    "id": "rule_manager_approval",
+    "name": "Manager Approval Rule",
+    "description": "Validate manager approval decision and comments",
+    "type": "validation",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approvalDecision",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "Comment.content",
+          "operator": "notEquals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "approvalStatus",
+          "value": "reviewed",
+          "message": "Manager approval decision recorded"
+        },
+        {
+          "type": "updateData",
+          "field": "TeamMember.approvalDate",
+          "value": "currentTimestamp",
+          "message": "Approval timestamp updated"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "team-member-management-wf",
+    "workflowId": "team-member-management-wf",
+    "application_id": "app_1765361941682"
+  },
+  {
+    "id": "rule_approved_decision",
+    "name": "Approved Decision Rule",
+    "description": "Route workflow based on final approval decision",
+    "type": "decision",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "approvalDecision",
+          "operator": "equals",
+          "value": "approved"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "TeamMember.status",
+          "value": "active",
+          "message": "Team member approved and activated"
+        },
+        {
+          "type": "sendNotification",
+          "field": "TeamMember.email",
+          "value": "welcome_notification",
+          "message": "Welcome to the team! Your account has been activated"
+        },
+        {
+          "type": "executeScript",
+          "field": "createLeaveBalance",
+          "value": "initializeLeaveBalance",
+          "message": "Leave balance initialized for new team member"
+        }
+      ]
+    },
+    "node_id": "decision-3",
+    "workflow_id": "team-member-management-wf",
+    "workflowId": "team-member-management-wf",
+    "application_id": "app_1765361941682"
+  }
+]

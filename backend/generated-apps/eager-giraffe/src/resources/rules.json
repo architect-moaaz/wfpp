@@ -1,1 +1,247 @@
-[]
+[
+  {
+    "id": "rule_start_process_validation",
+    "name": "Start Process Validation",
+    "description": "Validate user authentication and employee ID before initiating leave status view",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.id",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "User.id",
+          "value": null,
+          "message": "User must be authenticated to view leave request status"
+        },
+        {
+          "type": "logMessage",
+          "field": "system.log",
+          "value": "Unauthorized access attempt to view leave status",
+          "message": "Authentication required"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "view-leave-request-status",
+    "workflowId": "view-leave-request-status",
+    "application_id": "app_1768460058777"
+  },
+  {
+    "id": "rule_select_view_options_validation",
+    "name": "Select View Options Validation",
+    "description": "Validate date range and filter selections for leave status view",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "viewOptions.dateRange",
+          "operator": "greaterThan",
+          "value": 365
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "viewOptions.dateRange",
+          "value": null,
+          "message": "Date range cannot exceed 365 days for leave status view"
+        },
+        {
+          "type": "setVariable",
+          "field": "viewOptions.dateRange",
+          "value": 365,
+          "message": "Date range reset to maximum allowed value"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "view-leave-request-status",
+    "workflowId": "view-leave-request-status",
+    "application_id": "app_1768460058777"
+  },
+  {
+    "id": "rule_validate_employee_access",
+    "name": "Validate Employee Access",
+    "description": "Check if user has permission to view requested leave status based on role and department",
+    "type": "validation",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.id",
+          "operator": "notEquals",
+          "value": "LeaveRequest.employee_id"
+        },
+        {
+          "field": "UserRole.role_name",
+          "operator": "notIn",
+          "value": [
+            "Manager",
+            "HR",
+            "Admin"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "accessValidation.result",
+          "value": "denied",
+          "message": "User does not have permission to view this leave request"
+        },
+        {
+          "type": "logMessage",
+          "field": "system.audit",
+          "value": "Access denied for unauthorized leave status view",
+          "message": "Permission validation failed"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "view-leave-request-status",
+    "workflowId": "view-leave-request-status",
+    "application_id": "app_1768460058777"
+  },
+  {
+    "id": "rule_access_granted_decision",
+    "name": "Access Granted Decision",
+    "description": "Determine workflow path based on access validation result",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "accessValidation.result",
+          "operator": "equals",
+          "value": "granted"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.nextStep",
+          "value": "displayLeaveStatus",
+          "message": "Access granted - proceed to display leave status"
+        },
+        {
+          "type": "logMessage",
+          "field": "system.audit",
+          "value": "User authorized to view leave request status",
+          "message": "Access validation successful"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "view-leave-request-status",
+    "workflowId": "view-leave-request-status",
+    "application_id": "app_1768460058777"
+  },
+  {
+    "id": "rule_display_leave_status_validation",
+    "name": "Display Leave Status Validation",
+    "description": "Validate leave request data exists and is properly formatted for display",
+    "type": "validation",
+    "priority": 5,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "LeaveRequest.id",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "LeaveRequest.id",
+          "value": null,
+          "message": "No leave request found for the specified criteria"
+        },
+        {
+          "type": "setVariable",
+          "field": "display.message",
+          "value": "No leave requests available to display",
+          "message": "Empty result set"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "view-leave-request-status",
+    "workflowId": "view-leave-request-status",
+    "application_id": "app_1768460058777"
+  },
+  {
+    "id": "rule_employee_action_decision",
+    "name": "Employee Action Decision",
+    "description": "Determine next workflow action based on employee selection after viewing status",
+    "type": "decision",
+    "priority": 6,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "employeeAction.type",
+          "operator": "equals",
+          "value": "cancel"
+        },
+        {
+          "field": "LeaveRequest.status",
+          "operator": "in",
+          "value": [
+            "Pending",
+            "Approved"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflow.nextStep",
+          "value": "processCancellation",
+          "message": "Route to leave cancellation workflow"
+        },
+        {
+          "type": "sendNotification",
+          "field": "Notification.recipient",
+          "value": "LeaveRequest.approver_id",
+          "message": "Employee has initiated cancellation of leave request"
+        },
+        {
+          "type": "logMessage",
+          "field": "system.audit",
+          "value": "Leave cancellation initiated from status view",
+          "message": "Employee action recorded"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "view-leave-request-status",
+    "workflowId": "view-leave-request-status",
+    "application_id": "app_1768460058777"
+  }
+]

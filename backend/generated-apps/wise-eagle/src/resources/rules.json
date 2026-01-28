@@ -1,0 +1,243 @@
+[
+  {
+    "id": "rule_start_process_validation",
+    "name": "Start Process Validation",
+    "description": "Validate that user is authenticated and has permission to create tasks",
+    "type": "validation",
+    "priority": 0,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "user.isAuthenticated",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "user.role",
+          "operator": "in",
+          "value": [
+            "admin",
+            "user",
+            "manager"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "processStatus",
+          "value": "initiated",
+          "message": "Process started successfully"
+        },
+        {
+          "type": "logMessage",
+          "field": "auditLog",
+          "value": "Task creation process initiated",
+          "message": "User initiated task creation"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "wf-create-new-task",
+    "workflowId": "wf-create-new-task",
+    "application_id": "app_1768590626842"
+  },
+  {
+    "id": "rule_enter_task_details_validation",
+    "name": "Task Details Input Validation",
+    "description": "Validate required task fields are provided with correct data types",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.title",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "task.dueDate",
+          "operator": "greaterThan",
+          "value": "currentDate"
+        },
+        {
+          "field": "task.priority",
+          "operator": "in",
+          "value": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "task.title",
+          "value": "valid",
+          "message": "Task title is required and cannot be empty"
+        },
+        {
+          "type": "validateField",
+          "field": "task.dueDate",
+          "value": "valid",
+          "message": "Due date must be in the future"
+        },
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "passed",
+          "message": "All required fields validated"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "wf-create-new-task",
+    "workflowId": "wf-create-new-task",
+    "application_id": "app_1768590626842"
+  },
+  {
+    "id": "rule_validate_task_data",
+    "name": "Task Data Business Rules Validation",
+    "description": "Validate task data against business constraints and completeness",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.description",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "task.assignee",
+          "operator": "notEquals",
+          "value": null
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "task.status",
+          "value": "pending",
+          "message": "Task status set to pending"
+        },
+        {
+          "type": "setVariable",
+          "field": "isValid",
+          "value": true,
+          "message": "Task data validation successful"
+        },
+        {
+          "type": "logMessage",
+          "field": "auditLog",
+          "value": "Task validated successfully",
+          "message": "Task passed all validation checks"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "wf-create-new-task",
+    "workflowId": "wf-create-new-task",
+    "application_id": "app_1768590626842"
+  },
+  {
+    "id": "rule_is_valid_decision",
+    "name": "Task Validation Decision Gateway",
+    "description": "Determine workflow path based on validation results",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "isValid",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "validationStatus",
+          "operator": "equals",
+          "value": "passed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "proceed",
+          "message": "Proceed to task creation"
+        },
+        {
+          "type": "sendNotification",
+          "field": "task.assignee",
+          "value": "notification",
+          "message": "New task has been assigned to you"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "wf-create-new-task",
+    "workflowId": "wf-create-new-task",
+    "application_id": "app_1768590626842"
+  },
+  {
+    "id": "rule_correct_task_details_validation",
+    "name": "Task Correction Validation",
+    "description": "Validate corrected task details after user modification",
+    "type": "validation",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "task.title",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "task.correctionAttempts",
+          "operator": "lessThan",
+          "value": 3
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "updateData",
+          "field": "task.correctionAttempts",
+          "value": "increment",
+          "message": "Correction attempt recorded"
+        },
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "revalidating",
+          "message": "Re-validating corrected task details"
+        },
+        {
+          "type": "logMessage",
+          "field": "auditLog",
+          "value": "Task details corrected and resubmitted",
+          "message": "User corrected task details"
+        }
+      ]
+    },
+    "node_id": "userTask-2",
+    "workflow_id": "wf-create-new-task",
+    "workflowId": "wf-create-new-task",
+    "application_id": "app_1768590626842"
+  }
+]

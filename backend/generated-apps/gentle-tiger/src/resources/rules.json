@@ -1,0 +1,114 @@
+[
+  {
+    "id": "rule_start_contact_creation",
+    "name": "Start Contact Creation Rule",
+    "description": "Validate user input and ensure required fields are present before starting contact creation process",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Contact.firstName",
+          "operator": "isNull",
+          "value": true
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "throwError",
+          "field": "Contact.firstName",
+          "message": "First name is required to create a contact"
+        },
+        {
+          "type": "stopWorkflow",
+          "message": "Contact creation stopped due to missing required fields"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1767693777702"
+  },
+  {
+    "id": "rule_validate_contact_data",
+    "name": "Validate Contact Data Rule",
+    "description": "Validate email format and phone number presence against business rules",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Contact.email",
+          "operator": "notEquals",
+          "value": ""
+        },
+        {
+          "field": "Contact.email",
+          "operator": "contains",
+          "value": "@"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "passed"
+        },
+        {
+          "type": "logMessage",
+          "message": "Contact data validation successful"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1767693777702"
+  },
+  {
+    "id": "rule_is_valid_decision",
+    "name": "Is Valid? Rule",
+    "description": "Evaluate validation status to determine if contact should be created or rejected",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validationStatus",
+          "operator": "equals",
+          "value": "passed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "createContact"
+        },
+        {
+          "type": "updateData",
+          "field": "Contact.status",
+          "value": "active"
+        },
+        {
+          "type": "sendNotification",
+          "message": "New contact has been successfully created and activated"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "wf-add-new-contact",
+    "workflowId": "wf-add-new-contact",
+    "application_id": "app_1767693777702"
+  }
+]

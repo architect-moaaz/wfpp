@@ -1,0 +1,188 @@
+[
+  {
+    "id": "rule_start_registration",
+    "name": "Start Registration Rule",
+    "description": "Validate user input fields are present and meet minimum requirements before starting registration process",
+    "type": "validation",
+    "priority": 1,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.email",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "User.username",
+          "operator": "isNull",
+          "value": false
+        },
+        {
+          "field": "User.password",
+          "operator": "greaterThan",
+          "value": 7
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "User.email",
+          "value": "email_format",
+          "message": "Valid email format required"
+        },
+        {
+          "type": "setVariable",
+          "field": "registrationStatus",
+          "value": "initiated",
+          "message": "Registration process started"
+        },
+        {
+          "type": "logMessage",
+          "field": "system_log",
+          "value": "User registration initiated",
+          "message": "New user registration attempt"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "wf-user-registration-001",
+    "workflowId": "wf-user-registration-001",
+    "application_id": "app_1767699150076"
+  },
+  {
+    "id": "rule_validate_input_data",
+    "name": "Validate Input Data Rule",
+    "description": "Validate user registration data against business rules including email format and username uniqueness requirements",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.email",
+          "operator": "contains",
+          "value": "@"
+        },
+        {
+          "field": "User.username",
+          "operator": "greaterThan",
+          "value": 2
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "User.username",
+          "value": "alphanumeric",
+          "message": "Username must be alphanumeric and at least 3 characters"
+        },
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "passed",
+          "message": "Input validation successful"
+        },
+        {
+          "type": "logMessage",
+          "field": "validation_log",
+          "value": "Input data validated successfully",
+          "message": "User data passed validation checks"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "wf-user-registration-001",
+    "workflowId": "wf-user-registration-001",
+    "application_id": "app_1767699150076"
+  },
+  {
+    "id": "rule_is_data_valid",
+    "name": "Is Data Valid? Rule",
+    "description": "Evaluate if validation status is passed to determine whether to proceed with registration or reject",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "validationStatus",
+          "operator": "equals",
+          "value": "passed"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "check_user_exists",
+          "message": "Proceed to user existence check"
+        },
+        {
+          "type": "logMessage",
+          "field": "decision_log",
+          "value": "Data validation passed, proceeding to next step",
+          "message": "Routing to user existence verification"
+        }
+      ]
+    },
+    "node_id": "decision-1",
+    "workflow_id": "wf-user-registration-001",
+    "workflowId": "wf-user-registration-001",
+    "application_id": "app_1767699150076"
+  },
+  {
+    "id": "rule_user_exists",
+    "name": "User Exists? Rule",
+    "description": "Check if user with same email or username already exists to prevent duplicate registrations",
+    "type": "decision",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.existingEmailCount",
+          "operator": "equals",
+          "value": 0
+        },
+        {
+          "field": "User.existingUsernameCount",
+          "operator": "equals",
+          "value": 0
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "create_new_user",
+          "message": "User does not exist, proceed with registration"
+        },
+        {
+          "type": "updateData",
+          "field": "User.status",
+          "value": "pending_creation",
+          "message": "User account ready for creation"
+        },
+        {
+          "type": "logMessage",
+          "field": "decision_log",
+          "value": "No existing user found, creating new account",
+          "message": "Unique user verified, proceeding with account creation"
+        }
+      ]
+    },
+    "node_id": "decision-2",
+    "workflow_id": "wf-user-registration-001",
+    "workflowId": "wf-user-registration-001",
+    "application_id": "app_1767699150076"
+  }
+]

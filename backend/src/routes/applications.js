@@ -9,6 +9,7 @@ const router = express.Router();
 const applicationService = require('../services/ApplicationService');
 const ApplicationGenerator = require('../generators/ApplicationGenerator');
 const DeploymentService = require('../services/DeploymentService');
+const SeedExpert = require('../services/moe/experts/SeedExpert');
 
 // Get all applications
 router.get('/', async (req, res) => {
@@ -113,6 +114,37 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Update application theme
+router.put('/:id/theme', async (req, res) => {
+  try {
+    const { theme } = req.body;
+
+    if (!theme) {
+      return res.status(400).json({
+        success: false,
+        error: 'Theme data is required'
+      });
+    }
+
+    const application = await applicationService.updateApplication(
+      req.params.id,
+      { theme }
+    );
+
+    res.json({
+      success: true,
+      application,
+      message: 'Theme updated successfully'
+    });
+  } catch (error) {
+    console.error('[Applications API] Failed to update theme:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Delete application
 router.delete('/:id', async (req, res) => {
   try {
@@ -170,7 +202,7 @@ router.post('/:id/deploy', async (req, res) => {
         url: result.url,
         port
       },
-      status: 'deployed'
+      status: 'production'
     });
 
     res.json({
@@ -195,7 +227,7 @@ router.post('/:id/start', async (req, res) => {
 
     const result = await deploymentService.start(application);
 
-    await applicationService.updateStatus(req.params.id, 'running');
+    await applicationService.updateStatus(req.params.id, 'production');
 
     res.json({
       success: true,
@@ -220,7 +252,7 @@ router.post('/:id/stop', async (req, res) => {
     const deploymentService = new DeploymentService();
 
     await deploymentService.stop(application);
-    await applicationService.updateStatus(req.params.id, 'stopped');
+    await applicationService.updateStatus(req.params.id, 'development');
 
     res.json({
       success: true,
@@ -300,14 +332,16 @@ router.get('/:id/open', async (req, res) => {
 // Add workflow to application
 router.post('/:id/workflows', async (req, res) => {
   try {
-    const application = await applicationService.addWorkflow(
+    const workflow = req.body;
+    await applicationService.addWorkflow(
       req.params.id,
-      req.body
+      workflow
     );
 
+    // Return just the workflow, not the entire application
     res.json({
       success: true,
-      application,
+      workflow,
       message: 'Workflow added to application'
     });
   } catch (error) {
@@ -322,14 +356,16 @@ router.post('/:id/workflows', async (req, res) => {
 // Add form to application
 router.post('/:id/forms', async (req, res) => {
   try {
-    const application = await applicationService.addForm(
+    const form = req.body;
+    await applicationService.addForm(
       req.params.id,
-      req.body
+      form
     );
 
+    // Return just the form, not the entire application
     res.json({
       success: true,
-      application,
+      form,
       message: 'Form added to application'
     });
   } catch (error) {
@@ -344,14 +380,16 @@ router.post('/:id/forms', async (req, res) => {
 // Add page to application
 router.post('/:id/pages', async (req, res) => {
   try {
-    const application = await applicationService.addPage(
+    const page = req.body;
+    await applicationService.addPage(
       req.params.id,
-      req.body
+      page
     );
 
+    // Return just the page, not the entire application
     res.json({
       success: true,
-      application,
+      page,
       message: 'Page added to application'
     });
   } catch (error) {
@@ -366,14 +404,16 @@ router.post('/:id/pages', async (req, res) => {
 // Add data model to application
 router.post('/:id/models', async (req, res) => {
   try {
-    const application = await applicationService.addDataModel(
+    const model = req.body;
+    await applicationService.addDataModel(
       req.params.id,
-      req.body
+      model
     );
 
+    // Return just the model, not the entire application
     res.json({
       success: true,
-      application,
+      model,
       message: 'Data model added to application'
     });
   } catch (error) {
@@ -388,18 +428,75 @@ router.post('/:id/models', async (req, res) => {
 // Add mobile UI to application
 router.post('/:id/mobile-ui', async (req, res) => {
   try {
-    const application = await applicationService.addMobileUI(
+    const mobileUI = req.body;
+    await applicationService.addMobileUI(
       req.params.id,
-      req.body
+      mobileUI
     );
 
+    // Return just the mobileUI, not the entire application
     res.json({
       success: true,
-      application,
+      mobileUI,
       message: 'Mobile UI added to application'
     });
   } catch (error) {
     console.error('[Applications API] Failed to add mobile UI:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Generate and insert sample data
+router.post('/:id/seed-data', async (req, res) => {
+  try {
+    const { recordsPerModel = 15 } = req.body;
+    const application = await applicationService.getApplication(req.params.id);
+
+    console.log(`[Applications API] Generating seed data for ${application.name}`);
+    console.log(`[Applications API] Application has ${application.resources?.dataModels?.length || 0} data models`);
+
+    const seedExpert = new SeedExpert();
+
+    // Generate sample data
+    const sampleData = await seedExpert.generateSampleData(application, {
+      recordsPerModel,
+      onProgress: (progress) => {
+        console.log(`[SeedExpert] ${progress.step}: ${progress.content}`);
+      }
+    });
+
+    if (sampleData.totalRecords === 0) {
+      return res.json({
+        success: true,
+        message: 'No data models found, no data to seed',
+        sampleData: { models: [], totalRecords: 0 }
+      });
+    }
+
+    // Get the path to the generated application
+    const path = require('path');
+    const appPath = path.join(__dirname, '../../generated-apps', application.slug || application.name.toLowerCase().replace(/\s+/g, '-'));
+
+    // Insert data into database
+    const insertResult = await seedExpert.insertSampleData(appPath, sampleData, (progress) => {
+      console.log(`[SeedExpert] ${progress.step}: ${progress.content}`);
+    });
+
+    res.json({
+      success: true,
+      message: `Successfully seeded ${insertResult.insertedCount} records`,
+      sampleData: {
+        models: sampleData.models.length,
+        totalRecords: sampleData.totalRecords,
+        insertedCount: insertResult.insertedCount
+      }
+    });
+
+  } catch (error) {
+    console.error('[Applications API] Failed to seed data:', error);
     res.status(500).json({
       success: false,
       error: error.message

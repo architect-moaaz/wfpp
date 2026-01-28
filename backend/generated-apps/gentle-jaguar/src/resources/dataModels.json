@@ -1,191 +1,464 @@
 [
   {
-    "id": "app_1764281341247_ticket",
-    "name": "Ticket",
-    "config": {},
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "required": true,
-        "description": "Unique identifier for the ticket",
-        "defaultValue": null
-      },
-      {
-        "name": "title",
-        "type": "string",
-        "required": true,
-        "description": "Brief summary of the ticket issue",
-        "defaultValue": null
-      },
-      {
-        "name": "description",
-        "type": "string",
-        "required": true,
-        "description": "Detailed description of the issue or request",
-        "defaultValue": null
-      },
-      {
-        "name": "status",
-        "type": "string",
-        "required": true,
-        "description": "Current ticket status: new, assigned, in-progress, or resolved",
-        "defaultValue": "new"
-      },
-      {
-        "name": "priority",
-        "type": "string",
-        "required": true,
-        "description": "Priority level: low, medium, or high",
-        "defaultValue": "medium"
-      },
-      {
-        "name": "category",
-        "type": "string",
-        "required": false,
-        "description": "Ticket category or type for classification",
-        "defaultValue": null
-      },
-      {
-        "name": "customerId",
-        "type": "string",
-        "required": true,
-        "description": "Reference to the customer who submitted the ticket",
-        "defaultValue": null
-      },
-      {
-        "name": "assignedAgentId",
-        "type": "string",
-        "required": false,
-        "description": "Reference to the support agent assigned to the ticket",
-        "defaultValue": null
-      },
-      {
-        "name": "createdAt",
-        "type": "date",
-        "required": true,
-        "description": "Timestamp when the ticket was created",
-        "defaultValue": "now"
-      },
-      {
-        "name": "updatedAt",
-        "type": "date",
-        "required": true,
-        "description": "Timestamp of the last ticket update",
-        "defaultValue": "now"
-      }
-    ],
-    "indexes": [
-      "status",
-      "priority",
-      "customerId",
-      "assignedAgentId",
-      "createdAt"
-    ],
-    "metadata": {},
-    "constraints": {
-      "status": [
-        "new",
-        "assigned",
-        "in-progress",
-        "resolved"
-      ],
-      "priority": [
-        "low",
-        "medium",
-        "high"
-      ]
-    },
-    "description": "Central data model capturing ticket details from submission through resolution with status tracking and assignment information",
-    "relationships": []
-  },
-  {
-    "id": "app_1764281341247_user",
+    "id": "user",
     "name": "User",
-    "config": {},
+    "description": "User account and profile information",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "required": true,
         "description": "Unique identifier for the user",
+        "required": true,
+        "primaryKey": true,
         "defaultValue": null
       },
       {
         "name": "email",
         "type": "string",
-        "required": true,
         "description": "User's email address for login and communication",
+        "required": true,
         "defaultValue": null
       },
       {
-        "name": "name",
+        "name": "firstName",
         "type": "string",
+        "description": "User's first name",
         "required": true,
-        "description": "Full name of the user",
         "defaultValue": null
       },
       {
-        "name": "role",
+        "name": "lastName",
         "type": "string",
+        "description": "User's last name",
         "required": true,
-        "description": "User role: customer, agent, or manager",
-        "defaultValue": "customer"
-      },
-      {
-        "name": "passwordHash",
-        "type": "string",
-        "required": true,
-        "description": "Hashed password for authentication",
         "defaultValue": null
       },
       {
         "name": "isActive",
         "type": "boolean",
+        "description": "Indicates whether the user account is active",
         "required": true,
-        "description": "Indicates if the user account is active",
         "defaultValue": true
       },
       {
         "name": "createdAt",
         "type": "date",
-        "required": true,
         "description": "Timestamp when the user account was created",
+        "required": true,
         "defaultValue": null
+      },
+      {
+        "name": "lastLoginAt",
+        "type": "date",
+        "description": "Timestamp of the user's last login",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "wf-user-registration-001"
+  },
+  {
+    "id": "task",
+    "name": "Task",
+    "description": "Core task entity with title, description, due date, and status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the task",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Title or name of the task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the task",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the task (e.g., pending, in-progress, completed)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Due date for task completion",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "ID of the user assigned to the task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the task was created",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Task belongs to a User"
       }
     ],
     "indexes": [
       {
         "fields": [
-          "email"
+          "userId"
         ],
-        "unique": true
+        "unique": false
       },
       {
         "fields": [
-          "role"
-        ]
-      }
-    ],
-    "metadata": {},
-    "constraints": {
-      "role": "Must be one of: customer, agent, manager",
-      "email": "Must be valid email format and unique"
-    },
-    "description": "Store user profiles for customers, agents, and managers with role-based access and contact information",
-    "relationships": [
-      {
-        "type": "oneToMany",
-        "foreignKey": "customerId",
-        "description": "Tickets created by this user as a customer",
-        "relatedModel": "Ticket"
+          "status"
+        ],
+        "unique": false
       },
       {
-        "type": "oneToMany",
-        "foreignKey": "assignedAgentId",
-        "description": "Tickets assigned to this user as an agent",
-        "relatedModel": "Ticket"
+        "fields": [
+          "dueDate"
+        ],
+        "unique": false
       }
-    ]
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "pending",
+          "in-progress",
+          "completed",
+          "cancelled"
+        ]
+      }
+    },
+    "workflowId": "wf-user-registration-001"
+  },
+  {
+    "id": "task-model",
+    "name": "Task",
+    "description": "Task entity with filtering and search capabilities for managing work items",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the task",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Title or name of the task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the task",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the task (e.g., pending, in-progress, completed)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Priority level of the task (e.g., low, medium, high)",
+        "required": false,
+        "defaultValue": "medium"
+      },
+      {
+        "name": "assignedUserId",
+        "type": "string",
+        "description": "ID of the user assigned to this task",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "dueDate",
+        "type": "date",
+        "description": "Due date for task completion",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the task was created",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "wf-user-registration-001"
+  },
+  {
+    "id": "task-filter",
+    "name": "TaskFilter",
+    "description": "Filter criteria for task queries",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the filter",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Filter tasks by status (e.g., pending, completed, in-progress)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedUserId",
+        "type": "string",
+        "description": "Filter tasks assigned to a specific user",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "priority",
+        "type": "string",
+        "description": "Filter tasks by priority level (e.g., low, medium, high)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "dueDateFrom",
+        "type": "date",
+        "description": "Filter tasks with due date from this date onwards",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "dueDateTo",
+        "type": "date",
+        "description": "Filter tasks with due date up to this date",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "searchText",
+        "type": "string",
+        "description": "Search text to filter tasks by title or description",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "wf-user-registration-001"
+  },
+  {
+    "id": "notification-preference",
+    "name": "NotificationPreference",
+    "description": "User preferences for notification settings",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification preference",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user who owns these preferences",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "emailEnabled",
+        "type": "boolean",
+        "description": "Whether email notifications are enabled",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "pushEnabled",
+        "type": "boolean",
+        "description": "Whether push notifications are enabled",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "taskAssignmentEnabled",
+        "type": "boolean",
+        "description": "Receive notifications when assigned to tasks",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "taskDueReminderEnabled",
+        "type": "boolean",
+        "description": "Receive notifications for upcoming task due dates",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp of last preference update",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "belongsTo",
+        "model": "User",
+        "foreignKey": "userId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": true
+      }
+    ],
+    "constraints": {},
+    "workflowId": "wf-user-registration-001"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Log of notifications sent to users",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "ID of the user receiving the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Type of notification (email, push, sms, in-app)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "description": "Subject or title of the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "message",
+        "type": "string",
+        "description": "Content of the notification message",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Delivery status (pending, sent, failed, read)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "sentAt",
+        "type": "date",
+        "description": "Timestamp when the notification was sent",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the notification was created",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Notification belongs to a user"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId",
+          "createdAt"
+        ],
+        "description": "Index for querying user notifications by date"
+      },
+      {
+        "fields": [
+          "status"
+        ],
+        "description": "Index for filtering by delivery status"
+      }
+    ],
+    "constraints": {
+      "type": [
+        "email",
+        "push",
+        "sms",
+        "in-app"
+      ],
+      "status": [
+        "pending",
+        "sent",
+        "failed",
+        "read"
+      ]
+    },
+    "workflowId": "wf-user-registration-001"
   }
 ]

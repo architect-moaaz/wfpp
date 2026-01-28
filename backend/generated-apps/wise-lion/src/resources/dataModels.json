@@ -1,1 +1,1008 @@
-[]
+[
+  {
+    "id": "parking-ticket",
+    "name": "ParkingTicket",
+    "description": "Primary entity capturing all details of a parking violation including vehicle information, violation details, location, timestamps, fine amount, and current status throughout its lifecycle",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the parking ticket",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketNumber",
+        "type": "string",
+        "description": "Human-readable ticket number for reference and tracking",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "licensePlate",
+        "type": "string",
+        "description": "Vehicle license plate number",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "violationType",
+        "type": "string",
+        "description": "Type of parking violation (e.g., expired meter, no parking zone, fire hydrant)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "violationLocation",
+        "type": "string",
+        "description": "Address or location where the violation occurred",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "violationDate",
+        "type": "date",
+        "description": "Date and time when the violation occurred",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fineAmount",
+        "type": "number",
+        "description": "Amount of the fine in dollars",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the ticket (e.g., issued, paid, appealed, dismissed, overdue)",
+        "required": true,
+        "defaultValue": "issued"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "ticketNumber",
+      "licensePlate",
+      "status",
+      "violationDate"
+    ],
+    "constraints": {
+      "uniqueFields": [
+        "ticketNumber"
+      ],
+      "statusValues": [
+        "issued",
+        "paid",
+        "appealed",
+        "dismissed",
+        "overdue",
+        "cancelled"
+      ]
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketIssuanceWorkflow",
+        "PaymentProcessingWorkflow",
+        "AppealHandlingWorkflow"
+      ],
+      "usedByForms": [
+        "TicketCreationForm",
+        "TicketDetailsViewForm",
+        "PaymentSubmissionForm",
+        "AppealSubmissionForm"
+      ],
+      "isPrimary": true,
+      "entityType": "main"
+    },
+    "_specName": "ParkingTicket",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "dm_officer_1765340981199",
+    "name": "Officer",
+    "description": "Parking enforcement officer information including identification, contact details, and assignment data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the officer record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "badgeNumber",
+        "type": "string",
+        "description": "Official badge number for the enforcement officer",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "Officer's first name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "description": "Officer's last name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Officer's official email address",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "department",
+        "type": "string",
+        "description": "Department or division assignment",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current employment status (active, inactive, suspended)",
+        "required": true,
+        "defaultValue": "active"
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when officer record was created",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "relatedEntity": "ParkingTicket",
+        "foreignKey": "officerId",
+        "description": "Officer can issue multiple parking tickets"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_badge_number",
+        "fields": [
+          "badgeNumber"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_status",
+        "fields": [
+          "status"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "uniqueFields": [
+        "badgeNumber",
+        "email"
+      ],
+      "statusValues": [
+        "active",
+        "inactive",
+        "suspended"
+      ]
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketIssuanceWorkflow"
+      ],
+      "usedByForms": [
+        "TicketCreationForm"
+      ],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Officer",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "violation-type",
+    "name": "ViolationType",
+    "description": "Lookup entity containing predefined violation categories, descriptions, and default fine amounts for consistent ticket issuance",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the violation type",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "code",
+        "type": "string",
+        "description": "Short alphanumeric code for the violation (e.g., 'NO-PARK-01', 'EXP-METER')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Display name of the violation type (e.g., 'Expired Meter', 'No Parking Zone')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the violation and when it applies",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "defaultFineAmount",
+        "type": "number",
+        "description": "Default fine amount in dollars for this violation type",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if this violation type is currently active and can be issued",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the violation type was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp when the violation type was last updated",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_violation_code",
+        "fields": [
+          "code"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_violation_active",
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "uniqueCode": "code must be unique across all violation types",
+      "positiveFine": "defaultFineAmount must be greater than 0"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketIssuanceWorkflow"
+      ],
+      "usedByForms": [
+        "TicketCreationForm"
+      ],
+      "isPrimary": false,
+      "entityType": "lookup"
+    },
+    "_specName": "ViolationType",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "dm_administrator_1765340981200",
+    "name": "Administrator",
+    "description": "Entity representing administrative personnel who process payments and review appeals",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the administrator",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "adminId",
+        "type": "string",
+        "description": "Employee/badge ID for the administrator",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "Administrator's first name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastName",
+        "type": "string",
+        "description": "Administrator's last name",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Administrator's email address for notifications and login",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "description": "Administrative role (e.g., PaymentProcessor, AppealReviewer, Supervisor)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "department",
+        "type": "string",
+        "description": "Department assignment (e.g., Finance, Appeals, Administration)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current employment status (active, inactive, suspended)",
+        "required": true,
+        "defaultValue": "active"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      "adminId",
+      "email",
+      "status"
+    ],
+    "constraints": {
+      "uniqueFields": [
+        "adminId",
+        "email"
+      ],
+      "statusValues": [
+        "active",
+        "inactive",
+        "suspended"
+      ]
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "PaymentProcessingWorkflow",
+        "AppealHandlingWorkflow"
+      ],
+      "usedByForms": [
+        "PaymentReviewForm",
+        "AppealReviewForm"
+      ],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Administrator",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "audit-log",
+    "name": "AuditLog",
+    "description": "Tracks all significant system actions and events for compliance, security auditing, and accountability purposes",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the audit log entry",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entityType",
+        "type": "string",
+        "description": "Type of entity affected (e.g., ParkingTicket, Payment, Appeal)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "entityId",
+        "type": "string",
+        "description": "Unique identifier of the affected entity",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "action",
+        "type": "string",
+        "description": "Action performed (e.g., CREATED, UPDATED, DELETED, STATUS_CHANGED, PAYMENT_PROCESSED)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "performedBy",
+        "type": "string",
+        "description": "ID of user who performed the action (Officer, Administrator, or system)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "performedByRole",
+        "type": "string",
+        "description": "Role of the user performing the action (Officer, Administrator, System, Citizen)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changes",
+        "type": "json",
+        "description": "JSON object containing before/after values of changed fields",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "timestamp",
+        "type": "datetime",
+        "description": "Date and time when the action occurred",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_entity_lookup",
+        "fields": [
+          "entityType",
+          "entityId"
+        ]
+      },
+      {
+        "name": "idx_timestamp",
+        "fields": [
+          "timestamp"
+        ]
+      },
+      {
+        "name": "idx_performed_by",
+        "fields": [
+          "performedBy"
+        ]
+      }
+    ],
+    "constraints": {
+      "immutable": true,
+      "retentionPolicy": "7 years minimum for compliance"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "TicketIssuanceWorkflow",
+        "PaymentProcessingWorkflow",
+        "AppealHandlingWorkflow"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "AuditLog",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "dm_payment_1765340981200",
+    "name": "Payment",
+    "description": "Entity storing payment transaction information for parking tickets including transaction details, payment method, amounts, and status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the payment record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the parking ticket being paid",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "transactionId",
+        "type": "string",
+        "description": "Unique transaction identifier from payment gateway",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "amount",
+        "type": "number",
+        "description": "Payment amount in dollars",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentMethod",
+        "type": "string",
+        "description": "Method of payment (credit_card, debit_card, cash, check, online)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentStatus",
+        "type": "string",
+        "description": "Current status of payment (pending, completed, failed, refunded)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "paymentDate",
+        "type": "date",
+        "description": "Timestamp when payment was processed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "receiptNumber",
+        "type": "string",
+        "description": "Unique receipt number for the transaction",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedEntity": "ParkingTicket",
+        "foreignKey": "ticketId",
+        "description": "Links payment to the parking ticket being paid"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_id",
+        "fields": [
+          "ticketId"
+        ]
+      },
+      {
+        "name": "idx_transaction_id",
+        "fields": [
+          "transactionId"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_payment_status",
+        "fields": [
+          "paymentStatus"
+        ]
+      },
+      {
+        "name": "idx_payment_date",
+        "fields": [
+          "paymentDate"
+        ]
+      }
+    ],
+    "constraints": {
+      "amount": {
+        "min": 0,
+        "description": "Payment amount must be positive"
+      },
+      "paymentMethod": {
+        "enum": [
+          "credit_card",
+          "debit_card",
+          "cash",
+          "check",
+          "online"
+        ],
+        "description": "Payment method must be one of the allowed types"
+      },
+      "paymentStatus": {
+        "enum": [
+          "pending",
+          "completed",
+          "failed",
+          "refunded"
+        ],
+        "description": "Payment status must be one of the defined states"
+      }
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "PaymentProcessingWorkflow"
+      ],
+      "usedByForms": [
+        "PaymentSubmissionForm",
+        "PaymentReviewForm"
+      ],
+      "isPrimary": false,
+      "entityType": "main"
+    },
+    "_specName": "Payment",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "dm_appeal_1765340981200",
+    "name": "Appeal",
+    "description": "Manages ticket appeal submissions and administrative review decisions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the appeal",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the parking ticket being appealed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "appealReason",
+        "type": "string",
+        "description": "Category or reason code for the appeal (e.g., 'incorrect_location', 'medical_emergency', 'meter_malfunction')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "appealDescription",
+        "type": "text",
+        "description": "Detailed explanation provided by the violator for the appeal",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "supportingDocuments",
+        "type": "array",
+        "description": "Array of file URLs or document references submitted as evidence",
+        "required": false,
+        "defaultValue": []
+      },
+      {
+        "name": "appealStatus",
+        "type": "string",
+        "description": "Current status of the appeal (e.g., 'submitted', 'under_review', 'approved', 'denied')",
+        "required": true,
+        "defaultValue": "submitted"
+      },
+      {
+        "name": "appealDecision",
+        "type": "string",
+        "description": "Final decision on the appeal ('approved', 'denied', 'partially_approved')",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "reviewerId",
+        "type": "string",
+        "description": "Reference to the administrator who reviewed the appeal",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedEntity": "ParkingTicket",
+        "foreignKey": "ticketId",
+        "description": "Each appeal is associated with one parking ticket"
+      },
+      {
+        "type": "many-to-one",
+        "relatedEntity": "Administrator",
+        "foreignKey": "reviewerId",
+        "description": "Each appeal is reviewed by one administrator"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "ticketId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "appealStatus"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "reviewerId"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "appealStatus": {
+        "enum": [
+          "submitted",
+          "under_review",
+          "approved",
+          "denied",
+          "withdrawn"
+        ]
+      },
+      "appealDecision": {
+        "enum": [
+          "approved",
+          "denied",
+          "partially_approved"
+        ]
+      }
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "AppealHandlingWorkflow"
+      ],
+      "usedByForms": [
+        "AppealSubmissionForm",
+        "AppealReviewForm"
+      ],
+      "isPrimary": false,
+      "entityType": "main"
+    },
+    "_specName": "Appeal",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "description": "Tracks all system notifications sent to users via email or SMS including ticket notifications, payment reminders, and appeal updates",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the notification",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the parking ticket associated with this notification",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientEmail",
+        "type": "string",
+        "description": "Email address of the notification recipient",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientPhone",
+        "type": "string",
+        "description": "Phone number of the notification recipient for SMS delivery",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "notificationType",
+        "type": "string",
+        "description": "Type of notification (ticket_issued, payment_reminder, appeal_update, payment_confirmation)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "channel",
+        "type": "string",
+        "description": "Delivery channel used (email, sms)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "description": "Subject line or title of the notification",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "deliveryStatus",
+        "type": "string",
+        "description": "Current delivery status (pending, sent, delivered, failed)",
+        "required": true,
+        "defaultValue": "pending"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedEntity": "ParkingTicket",
+        "foreignKey": "ticketId",
+        "description": "Links notification to the associated parking ticket"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ticket_id",
+        "fields": [
+          "ticketId"
+        ]
+      },
+      {
+        "name": "idx_recipient_email",
+        "fields": [
+          "recipientEmail"
+        ]
+      },
+      {
+        "name": "idx_delivery_status",
+        "fields": [
+          "deliveryStatus"
+        ]
+      }
+    ],
+    "constraints": {
+      "notificationType": [
+        "ticket_issued",
+        "payment_reminder",
+        "appeal_update",
+        "payment_confirmation",
+        "overdue_notice"
+      ],
+      "channel": [
+        "email",
+        "sms"
+      ],
+      "deliveryStatus": [
+        "pending",
+        "sent",
+        "delivered",
+        "failed"
+      ],
+      "recipientRequired": "At least one of recipientEmail or recipientPhone must be provided"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "NotificationWorkflow"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Notification",
+    "workflowId": "notification-workflow-001"
+  },
+  {
+    "id": "receipt",
+    "name": "Receipt",
+    "description": "Stores generated payment receipt information for paid parking tickets including receipt content, format, and generation timestamp",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the receipt",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "paymentId",
+        "type": "string",
+        "description": "Reference to the associated payment transaction",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ticketId",
+        "type": "string",
+        "description": "Reference to the parking ticket that was paid",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "receiptNumber",
+        "type": "string",
+        "description": "Human-readable unique receipt number for reference",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "receiptContent",
+        "type": "text",
+        "description": "Full content of the receipt including payment details and ticket information",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "format",
+        "type": "string",
+        "description": "Format of the receipt (PDF, HTML, JSON)",
+        "required": true,
+        "defaultValue": "PDF"
+      },
+      {
+        "name": "generatedDate",
+        "type": "date",
+        "description": "Timestamp when the receipt was generated",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Record creation timestamp",
+        "required": true,
+        "defaultValue": "CURRENT_TIMESTAMP"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedEntity": "Payment",
+        "foreignKey": "paymentId",
+        "description": "Each receipt belongs to one payment transaction"
+      },
+      {
+        "type": "many-to-one",
+        "relatedEntity": "ParkingTicket",
+        "foreignKey": "ticketId",
+        "description": "Each receipt is associated with one parking ticket"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_receipt_payment",
+        "fields": [
+          "paymentId"
+        ]
+      },
+      {
+        "name": "idx_receipt_ticket",
+        "fields": [
+          "ticketId"
+        ]
+      },
+      {
+        "name": "idx_receipt_number",
+        "fields": [
+          "receiptNumber"
+        ],
+        "unique": true
+      }
+    ],
+    "constraints": {
+      "uniqueReceiptNumber": "receiptNumber must be unique across all receipts",
+      "validFormat": "format must be one of: PDF, HTML, JSON"
+    },
+    "_dataModelAssociation": {
+      "usedByWorkflows": [
+        "PaymentProcessingWorkflow"
+      ],
+      "usedByForms": [],
+      "isPrimary": false,
+      "entityType": "supporting"
+    },
+    "_specName": "Receipt",
+    "workflowId": "notification-workflow-001"
+  }
+]

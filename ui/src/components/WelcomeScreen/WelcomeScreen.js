@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './WelcomeScreen.css';
-import { Plus, FolderOpen, Workflow, Search, ArrowLeft, X, Sparkles } from 'lucide-react';
+import { Plus, Workflow, Search, ArrowLeft, X, Building2, Settings2, Sparkles } from 'lucide-react';
 import { useWorkflow } from '../../context/WorkflowContext';
 import { useAres } from '../../context/AresContext';
 
@@ -8,18 +8,8 @@ const WelcomeScreen = ({ onCreateNew, onOpenExisting }) => {
   const [applications, setApplications] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const { setActiveSidebar, setCurrentApplication, setCurrentWorkflow, setConnectedForms, setDataModels, setConnectedPages } = useWorkflow();
+  const { currentApplication, activeSidebar, setActiveSidebar, setCurrentApplication, setCurrentWorkflow, setConnectedForms, setDataModels, setConnectedPages } = useWorkflow();
   const { open: openAres } = useAres();
-
-  useEffect(() => {
-    // Fetch applications
-    fetchApplications();
-
-    // Open ARES in modal mode when welcome screen loads
-    setTimeout(() => {
-      openAres(true);
-    }, 500);
-  }, []);
 
   const fetchApplications = () => {
     fetch('http://localhost:5000/api/applications')
@@ -32,6 +22,22 @@ const WelcomeScreen = ({ onCreateNew, onOpenExisting }) => {
       .catch(err => console.error('Error fetching applications:', err));
   };
 
+  useEffect(() => {
+    // Fetch applications
+    fetchApplications();
+
+    // Open ARES in modal mode when welcome screen loads
+    setTimeout(() => {
+      openAres(true);
+    }, 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Hide WelcomeScreen if an application is loaded or navigated to org management
+  if (currentApplication || activeSidebar === 'org-chart') {
+    return null;
+  }
+
   const handleCreateNew = () => {
     if (onCreateNew) {
       onCreateNew();
@@ -42,24 +48,32 @@ const WelcomeScreen = ({ onCreateNew, onOpenExisting }) => {
     setShowModal(true);
   };
 
+  const handleManageOrganization = () => {
+    // Navigate to org chart / organization management
+    setActiveSidebar('org-chart');
+  };
+
   const handleLoadApplication = async (app) => {
+    console.log('[WelcomeScreen] handleLoadApplication called for:', app.id, app.name);
     try {
       // Fetch full application data
       const response = await fetch(`http://localhost:5000/api/applications/${app.id}`);
       const data = await response.json();
+      console.log('[WelcomeScreen] API response:', data.success, data.application?.name);
 
       if (data.success && data.application) {
         const application = data.application;
 
         // Set the current application
+        console.log('[WelcomeScreen] Setting currentApplication:', application.name);
         setCurrentApplication(application);
 
         // Load all workflows from application resources
         const workflows = application.resources?.workflows || [];
-        console.log('[WelcomeScreen] Loaded workflows:', workflows.length, workflows);
+        console.log('[WelcomeScreen] Loaded workflows:', workflows.length);
         if (workflows.length > 0 && workflows[0]) {
           // Workflows are already complete objects in the application resources
-          console.log('[WelcomeScreen] Setting current workflow:', workflows[0]);
+          console.log('[WelcomeScreen] Setting current workflow:', workflows[0].name);
           setCurrentWorkflow(workflows[0]);
         }
 
@@ -76,21 +90,25 @@ const WelcomeScreen = ({ onCreateNew, onOpenExisting }) => {
         setConnectedPages(pages);
 
         // Navigate to workflow editor
+        console.log('[WelcomeScreen] Setting activeSidebar to workflows');
         setActiveSidebar('workflows');
 
         // Close modal
         setShowModal(false);
 
-        console.log(`Loaded application "${application.name}" with:`, {
+        console.log(`[WelcomeScreen] Loaded application "${application.name}" with:`, {
           workflows: workflows.length,
           forms: forms.length,
           models: models.length,
           pages: pages.length
         });
+      } else {
+        console.error('[WelcomeScreen] API returned unsuccessful:', data);
+        alert('Failed to load application: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
-      console.error('Failed to load application:', error);
-      alert('Failed to load application');
+      console.error('[WelcomeScreen] Failed to load application:', error);
+      alert('Failed to load application: ' + error.message);
     }
   };
 
@@ -103,44 +121,60 @@ const WelcomeScreen = ({ onCreateNew, onOpenExisting }) => {
     <>
       <div className="welcome-screen">
         <div className="welcome-container">
-          <div className="welcome-header">
-            <div className="welcome-logo">
-              <Workflow size={48} />
-            </div>
-            <h1 className="welcome-title">Welcome to Workflow Designer</h1>
-            <p className="welcome-subtitle">Create and manage your workflow applications</p>
+          <div className="quick-actions-header">
+            <h2 className="quick-actions-title">Quick Actions</h2>
+            <button className="quick-actions-close" onClick={() => openAres(true)}>
+              <X size={20} />
+            </button>
           </div>
 
-          <div className="welcome-actions">
-            <div className="action-card primary" onClick={() => openAres(true)}>
-              <div className="action-card-icon gradient">
-                <Sparkles size={32} />
+          <div className="quick-actions-list">
+            <div className="quick-action-card ares-card" onClick={() => openAres(true)}>
+              <div className="quick-action-icon ares">
+                <Sparkles size={24} />
               </div>
-              <h3 className="action-card-title">Ask ARES Assistant</h3>
-              <p className="action-card-description">
-                Let AI guide you through creating workflows and applications
-              </p>
+              <div className="quick-action-content centered">
+                <h3 className="quick-action-title">Build with ARES</h3>
+                <p className="quick-action-description">
+                  Let AI guide you through creating workflows and applications.
+                </p>
+              </div>
             </div>
 
-            <div className="action-card" onClick={handleCreateNew}>
-              <div className="action-card-icon">
-                <Plus size={32} />
+            <div className="quick-action-card" onClick={handleCreateNew}>
+              <div className="quick-action-icon create">
+                <Plus size={20} />
               </div>
-              <h3 className="action-card-title">Create New Application</h3>
-              <p className="action-card-description">
-                Start a new workflow application from scratch
-              </p>
+              <div className="quick-action-content">
+                <h3 className="quick-action-title">Create New Application</h3>
+                <p className="quick-action-description">
+                  Start from scratch manually. Define data models, UI, and logic.
+                </p>
+              </div>
             </div>
 
-            <div className="action-card" onClick={handleManageExisting}>
-              <div className="action-card-icon">
-                <FolderOpen size={32} />
+            <div className="quick-action-card" onClick={handleManageExisting}>
+              <div className="quick-action-icon manage">
+                <Settings2 size={20} />
               </div>
-              <h3 className="action-card-title">Manage Existing Applications</h3>
-              <p className="action-card-description">
-                Open and manage your existing applications
-                {applications.length > 0 && ` (${applications.length} total)`}
-              </p>
+              <div className="quick-action-content">
+                <h3 className="quick-action-title">Manage Applications</h3>
+                <p className="quick-action-description">
+                  Edit existing apps, configure settings, and monitor deployments.
+                </p>
+              </div>
+            </div>
+
+            <div className="quick-action-card" onClick={handleManageOrganization}>
+              <div className="quick-action-icon organization">
+                <Building2 size={20} />
+              </div>
+              <div className="quick-action-content">
+                <h3 className="quick-action-title">Manage Organisation</h3>
+                <p className="quick-action-description">
+                  Team members, roles, billing, and global settings.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -148,7 +182,7 @@ const WelcomeScreen = ({ onCreateNew, onOpenExisting }) => {
 
       {/* Applications Modal */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="welcome-modal-overlay" onClick={() => setShowModal(false)}>
           <div className="applications-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <button className="back-btn" onClick={() => setShowModal(false)}>
@@ -198,7 +232,7 @@ const WelcomeScreen = ({ onCreateNew, onOpenExisting }) => {
                           <span>{app.domain || 'General'}</span>
                           <span>•</span>
                           <span>
-                            {app.resources?.workflows?.length || 0} workflows
+                            {app.resourceCounts?.workflows || app.resources?.workflows?.length || 0} workflows
                           </span>
                         </div>
                       </div>

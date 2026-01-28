@@ -95,7 +95,7 @@ router.post('/stream', async (req, res) => {
  */
 router.post('/generate', async (req, res) => {
   try {
-    const { requirements, context, socketId, conversationHistory } = req.body;
+    const { requirements, context, socketId, sessionId, conversationHistory, themeConfig } = req.body;
 
     if (!requirements && !conversationHistory) {
       return res.status(400).json({
@@ -115,16 +115,33 @@ router.post('/generate', async (req, res) => {
       requirements,
       hasConversationHistory: !!conversationHistory,
       context,
-      socketId
+      socketId,
+      sessionId,
+      themeConfig: themeConfig ? { theme: themeConfig.theme, hasCustomCss: !!themeConfig.customCss } : null
     });
 
-    // Get Socket.io instance for progress updates
+    // Get Socket.io instance and session manager for progress updates
     const io = req.app.get('io');
+    const socketSessionManager = req.app.get('socketSessionManager');
 
-    // Create progress emitter function
+    // Create progress emitter function that uses sessionId for reconnection support
     const emitProgress = (event) => {
-      if (io && socketId) {
-        console.log('[ARES] Emitting progress:', event.type);
+      if (!io) return;
+
+      console.log('[ARES] Emitting progress:', event.type, { sessionId, socketId });
+
+      // Prefer session-based emitting for reconnection support
+      if (sessionId && socketSessionManager) {
+        const emitted = socketSessionManager.emitToSession(io, sessionId, 'ares:progress', event);
+        if (emitted) {
+          console.log('[ARES] Emitted via session:', sessionId);
+          return;
+        }
+        console.log('[ARES] Session emit failed, falling back to socketId');
+      }
+
+      // Fallback to direct socketId if no session
+      if (socketId) {
         io.to(socketId).emit('ares:progress', event);
       }
     };
@@ -141,11 +158,12 @@ router.post('/generate', async (req, res) => {
     res.json({
       success: true,
       message: 'Generation started. Progress will be sent via WebSocket.',
-      socketId: socketId
+      socketId: socketId,
+      sessionId: sessionId
     });
 
     // Run generation in background (don't await the response to client)
-    runGenerationInBackground(aresService, requirements, context, emitProgress, io, socketId);
+    runGenerationInBackground(aresService, requirements, context, emitProgress, io, socketId, themeConfig);
 
   } catch (error) {
     console.error('Error in ARES generate endpoint:', error);
@@ -161,10 +179,16 @@ router.post('/generate', async (req, res) => {
  * Background generation function
  * Runs after HTTP response is sent, emits completion via WebSocket
  */
-async function runGenerationInBackground(aresService, requirements, context, emitProgress, io, socketId) {
+async function runGenerationInBackground(aresService, requirements, context, emitProgress, io, socketId, themeConfig = null) {
   try {
+    // Add themeConfig to context for generation
+    const enrichedContext = {
+      ...context,
+      themeConfig: themeConfig
+    };
+
     // Trigger MoE generation with progress callback
-    const moeResult = await aresService.generateWithMoE(requirements, context || {}, emitProgress);
+    const moeResult = await aresService.generateWithMoE(requirements, enrichedContext, emitProgress);
 
     console.log('[ARES] MoE result:', moeResult);
 
@@ -175,10 +199,15 @@ async function runGenerationInBackground(aresService, requirements, context, emi
 
     const application = await appDb.findById(context.applicationId);
     if (!application) {
-      return res.status(404).json({
-        success: false,
-        error: 'Application not found'
-      });
+      console.error('[ARES] Application not found:', context.applicationId);
+      if (emitProgress) {
+        emitProgress({
+          type: 'error',
+          message: `Application not found: ${context.applicationId}`,
+          timestamp: Date.now()
+        });
+      }
+      return;
     }
 
     // Extract generated resources from MoE result
@@ -191,6 +220,7 @@ async function runGenerationInBackground(aresService, requirements, context, emi
     const generatedDataModels = resultWorkflow.dataModels || [];
     const generatedPages = resultWorkflow.pages || [];
     const generatedRules = resultWorkflow.rules || [];
+    const designAnalysis = resultWorkflow.designAnalysis || null;
 
     console.log('[ARES] Extracted resources:', {
       workflows: generatedWorkflows.length,
@@ -198,7 +228,9 @@ async function runGenerationInBackground(aresService, requirements, context, emi
       forms: generatedForms.length,
       dataModels: generatedDataModels.length,
       pages: generatedPages.length,
-      rules: generatedRules.length
+      rules: generatedRules.length,
+      hasDesignAnalysis: !!designAnalysis,
+      designSource: designAnalysis?.source || 'none'
     });
 
     // Add workflowId to all resources for filtering (use first workflow as primary)
@@ -215,7 +247,8 @@ async function runGenerationInBackground(aresService, requirements, context, emi
         forms: [],
         dataModels: [],
         pages: [],
-        rules: []
+        rules: [],
+        designAnalysis: null
       };
     }
 
@@ -260,6 +293,15 @@ async function runGenerationInBackground(aresService, requirements, context, emi
       application.resources.pages = application.resources.pages || [];
       application.resources.pages.push(...generatedPages);
       console.log('[ARES] Added pages to application.resources:', generatedPages.map(p => p.id || p.name));
+      // DEBUG: Log navigation state of pages before save
+      generatedPages.forEach(p => {
+        console.log('[ARES] Page', p.name, 'navigation status:', {
+          hasNavigation: !!p.navigation,
+          navigationKeys: p.navigation ? Object.keys(p.navigation) : [],
+          hasSections: !!p.sections,
+          sectionsCount: p.sections?.length || 0
+        });
+      });
     }
 
     // Add rules to application
@@ -282,7 +324,69 @@ async function runGenerationInBackground(aresService, requirements, context, emi
       }
     }
 
+    // Add designAnalysis to application (contains theme/CSS from DesignExpert)
+    if (designAnalysis) {
+      application.resources.designAnalysis = designAnalysis;
+      application.designAnalysis = designAnalysis; // Also add at root level for ApplicationGenerator
+
+      // Also save designAnalysis in metadata so it persists to database
+      // (the database update only saves specific fields including metadata)
+      if (!application.metadata) {
+        application.metadata = {};
+      }
+      application.metadata.designAnalysis = designAnalysis;
+
+      console.log('[ARES] Added designAnalysis to application:', {
+        source: designAnalysis.source || 'unknown',
+        hasGeneratedCSS: !!designAnalysis.generatedCSS,
+        themeName: designAnalysis.themeName || 'default'
+      });
+    }
+
     console.log('[ARES] About to save to database...');
+
+    // Deduplicate resources to prevent unique constraint violations
+    // MoE can sometimes generate duplicate IDs from different experts
+    const deduplicateResources = (resources) => {
+      const dedupe = (arr, name) => {
+        if (!arr || !Array.isArray(arr)) return [];
+        const seen = new Set();
+        const deduped = [];
+        let duplicateCount = 0;
+
+        for (const item of arr) {
+          const id = item.id;
+          if (!id) {
+            deduped.push(item);
+            continue;
+          }
+          if (seen.has(id)) {
+            duplicateCount++;
+            console.warn(`[ARES] Removing duplicate ${name} with id: ${id}`);
+          } else {
+            seen.add(id);
+            deduped.push(item);
+          }
+        }
+
+        if (duplicateCount > 0) {
+          console.log(`[ARES] Removed ${duplicateCount} duplicate ${name}(s)`);
+        }
+        return deduped;
+      };
+
+      return {
+        ...resources,
+        dataModels: dedupe(resources.dataModels, 'dataModel'),
+        forms: dedupe(resources.forms, 'form'),
+        workflows: dedupe(resources.workflows, 'workflow'),
+        pages: dedupe(resources.pages, 'page'),
+        rules: dedupe(resources.rules, 'rule')
+      };
+    };
+
+    application.resources = deduplicateResources(application.resources);
+
     console.log('[ARES] Application resources counts before save:', {
       workflows: application.resources.workflows.length,
       forms: application.resources.forms.length,
@@ -366,6 +470,44 @@ async function runGenerationInBackground(aresService, requirements, context, emi
                 continue; // Retry with fixed data
               }
             }
+          }
+
+          // Handle unique constraint violations (duplicate IDs)
+          if (dbError.code === '23505') {
+            console.log('[ARES] Detected unique constraint violation (duplicate IDs), attempting deduplication...');
+
+            // Extract table name from error detail
+            const tableMatch = dbError.detail?.match(/Key \(id\)=\(([^)]+)\) already exists/);
+            const duplicateId = tableMatch?.[1];
+
+            if (duplicateId) {
+              console.log(`[ARES] Duplicate ID detected: ${duplicateId}`);
+            }
+
+            // Re-run deduplication with more aggressive approach
+            const aggressiveDedupe = (arr) => {
+              if (!arr || !Array.isArray(arr)) return arr;
+              const seen = new Map();
+              for (const item of arr) {
+                if (item.id) {
+                  // Keep the most complete version (most keys)
+                  const existing = seen.get(item.id);
+                  if (!existing || Object.keys(item).length > Object.keys(existing).length) {
+                    seen.set(item.id, item);
+                  }
+                }
+              }
+              return Array.from(seen.values());
+            };
+
+            app.resources.dataModels = aggressiveDedupe(app.resources.dataModels);
+            app.resources.forms = aggressiveDedupe(app.resources.forms);
+            app.resources.workflows = aggressiveDedupe(app.resources.workflows);
+            app.resources.pages = aggressiveDedupe(app.resources.pages);
+            app.resources.rules = aggressiveDedupe(app.resources.rules);
+
+            console.log('[ARES] Aggressive deduplication complete, retrying...');
+            continue; // Retry with deduplicated data
           }
 
           // If this is the last attempt or we couldn't fix the error, throw

@@ -1,1 +1,2273 @@
-[]
+[
+  {
+    "id": "task-list-page-1768637100000-main",
+    "name": "Task List Page",
+    "title": "Task Management",
+    "description": "Main page displaying all tasks with filtering and status visualization",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "task-creation-form-1768637014948-phh4od"
+    ],
+    "sections": [
+      {
+        "id": "header-section",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "Tasks",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Manage and track all your tasks in one place",
+                    "variant": "subtitle"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "stats-section",
+        "type": "stats-row",
+        "layout": "grid-4",
+        "components": [
+          {
+            "type": "stat-card",
+            "config": {
+              "title": "Total Tasks",
+              "value": "{{tasks.totalCount}}",
+              "icon": "clipboard-list",
+              "iconColor": "primary",
+              "trend": "+8%",
+              "trendDirection": "up"
+            },
+            "style": {
+              "shadow": "md",
+              "borderRadius": "lg"
+            }
+          },
+          {
+            "type": "stat-card",
+            "config": {
+              "title": "Pending",
+              "value": "{{tasks.pendingCount}}",
+              "icon": "clock",
+              "iconColor": "warning"
+            },
+            "style": {
+              "shadow": "md",
+              "borderRadius": "lg"
+            }
+          },
+          {
+            "type": "stat-card",
+            "config": {
+              "title": "In Progress",
+              "value": "{{tasks.inProgressCount}}",
+              "icon": "refresh-cw",
+              "iconColor": "info"
+            },
+            "style": {
+              "shadow": "md",
+              "borderRadius": "lg"
+            }
+          },
+          {
+            "type": "stat-card",
+            "config": {
+              "title": "Completed",
+              "value": "{{tasks.completedCount}}",
+              "icon": "check-circle",
+              "iconColor": "success"
+            },
+            "style": {
+              "shadow": "md",
+              "borderRadius": "lg"
+            }
+          }
+        ]
+      },
+      {
+        "id": "actions-section",
+        "type": "actions",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "shadow": "sm",
+                    "children": [
+                      {
+                        "type": "container",
+                        "config": {
+                          "padding": "16px",
+                          "children": [
+                            {
+                              "type": "search",
+                              "config": {
+                                "placeholder": "Search tasks by title or description..."
+                              }
+                            },
+                            {
+                              "type": "spacer",
+                              "config": {
+                                "height": "16px"
+                              }
+                            },
+                            {
+                              "type": "buttonGroup",
+                              "config": {
+                                "buttons": [
+                                  {
+                                    "label": "All Tasks",
+                                    "variant": "secondary",
+                                    "icon": "list"
+                                  },
+                                  {
+                                    "label": "Pending",
+                                    "variant": "outline",
+                                    "icon": "clock"
+                                  },
+                                  {
+                                    "label": "In Progress",
+                                    "variant": "outline",
+                                    "icon": "refresh-cw"
+                                  },
+                                  {
+                                    "label": "Completed",
+                                    "variant": "outline",
+                                    "icon": "check-circle"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "spacer",
+                              "config": {
+                                "height": "16px"
+                              }
+                            },
+                            {
+                              "type": "button",
+                              "config": {
+                                "label": "Create New Task",
+                                "variant": "primary",
+                                "icon": "plus"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "style": {
+                    "borderRadius": "lg"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "tabs-section",
+        "type": "tabs",
+        "components": [
+          {
+            "type": "tabs",
+            "config": {
+              "variant": "underline",
+              "tabs": [
+                {
+                  "id": "all-tasks",
+                  "label": "All Tasks",
+                  "icon": "list",
+                  "content": [
+                    {
+                      "type": "container",
+                      "config": {
+                        "padding": "24px",
+                        "maxWidth": "1200px",
+                        "children": [
+                          {
+                            "type": "table",
+                            "config": {
+                              "columns": [
+                                {
+                                  "key": "title",
+                                  "label": "Task Title",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "description",
+                                  "label": "Description",
+                                  "sortable": false
+                                },
+                                {
+                                  "key": "status",
+                                  "label": "Status",
+                                  "sortable": true,
+                                  "render": "badge"
+                                },
+                                {
+                                  "key": "priority",
+                                  "label": "Priority",
+                                  "sortable": true,
+                                  "render": "badge"
+                                },
+                                {
+                                  "key": "dueDate",
+                                  "label": "Due Date",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "actions",
+                                  "label": "Actions",
+                                  "sortable": false
+                                }
+                              ],
+                              "dataBinding": "tasks.all"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "pending-tasks",
+                  "label": "Pending",
+                  "icon": "clock",
+                  "content": [
+                    {
+                      "type": "container",
+                      "config": {
+                        "padding": "24px",
+                        "maxWidth": "1200px",
+                        "children": [
+                          {
+                            "type": "alert",
+                            "config": {
+                              "variant": "warning",
+                              "title": "Pending Tasks",
+                              "message": "These tasks are waiting to be started",
+                              "dismissible": true
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "grid",
+                            "config": {
+                              "columns": 3,
+                              "gap": "24px"
+                            },
+                            "components": [
+                              {
+                                "type": "card",
+                                "config": {
+                                  "title": "{{task.title}}",
+                                  "description": "{{task.description}}",
+                                  "shadow": "md",
+                                  "hoverElevation": true,
+                                  "children": [
+                                    {
+                                      "type": "badge",
+                                      "config": {
+                                        "text": "Pending",
+                                        "variant": "warning"
+                                      }
+                                    },
+                                    {
+                                      "type": "spacer",
+                                      "config": {
+                                        "height": "8px"
+                                      }
+                                    },
+                                    {
+                                      "type": "text",
+                                      "config": {
+                                        "text": "Due: {{task.dueDate}}",
+                                        "variant": "caption"
+                                      }
+                                    }
+                                  ],
+                                  "actions": [
+                                    {
+                                      "label": "Start",
+                                      "icon": "play",
+                                      "action": "updateStatus"
+                                    },
+                                    {
+                                      "label": "Edit",
+                                      "icon": "edit",
+                                      "action": "edit"
+                                    },
+                                    {
+                                      "label": "View",
+                                      "icon": "eye",
+                                      "action": "view"
+                                    }
+                                  ]
+                                },
+                                "style": {
+                                  "borderRadius": "lg"
+                                },
+                                "dataBinding": "tasks.pending"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "in-progress-tasks",
+                  "label": "In Progress",
+                  "icon": "refresh-cw",
+                  "content": [
+                    {
+                      "type": "container",
+                      "config": {
+                        "padding": "24px",
+                        "maxWidth": "1200px",
+                        "children": [
+                          {
+                            "type": "alert",
+                            "config": {
+                              "variant": "info",
+                              "title": "Active Tasks",
+                              "message": "Tasks currently being worked on",
+                              "dismissible": true
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "grid",
+                            "config": {
+                              "columns": 3,
+                              "gap": "24px"
+                            },
+                            "components": [
+                              {
+                                "type": "card",
+                                "config": {
+                                  "title": "{{task.title}}",
+                                  "description": "{{task.description}}",
+                                  "shadow": "md",
+                                  "hoverElevation": true,
+                                  "children": [
+                                    {
+                                      "type": "badge",
+                                      "config": {
+                                        "text": "In Progress",
+                                        "variant": "info"
+                                      }
+                                    },
+                                    {
+                                      "type": "spacer",
+                                      "config": {
+                                        "height": "8px"
+                                      }
+                                    },
+                                    {
+                                      "type": "progress",
+                                      "config": {
+                                        "variant": "bar",
+                                        "value": "{{task.progress}}",
+                                        "showPercent": true
+                                      }
+                                    },
+                                    {
+                                      "type": "spacer",
+                                      "config": {
+                                        "height": "8px"
+                                      }
+                                    },
+                                    {
+                                      "type": "text",
+                                      "config": {
+                                        "text": "Due: {{task.dueDate}}",
+                                        "variant": "caption"
+                                      }
+                                    }
+                                  ],
+                                  "actions": [
+                                    {
+                                      "label": "Complete",
+                                      "icon": "check",
+                                      "action": "complete"
+                                    },
+                                    {
+                                      "label": "Edit",
+                                      "icon": "edit",
+                                      "action": "edit"
+                                    },
+                                    {
+                                      "label": "View",
+                                      "icon": "eye",
+                                      "action": "view"
+                                    }
+                                  ]
+                                },
+                                "style": {
+                                  "borderRadius": "lg"
+                                },
+                                "dataBinding": "tasks.inProgress"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "completed-tasks",
+                  "label": "Completed",
+                  "icon": "check-circle",
+                  "content": [
+                    {
+                      "type": "container",
+                      "config": {
+                        "padding": "24px",
+                        "maxWidth": "1200px",
+                        "children": [
+                          {
+                            "type": "alert",
+                            "config": {
+                              "variant": "success",
+                              "title": "Completed Tasks",
+                              "message": "Well done! These tasks have been completed",
+                              "dismissible": true
+                            }
+                          },
+                          {
+                            "type": "spacer",
+                            "config": {
+                              "height": "16px"
+                            }
+                          },
+                          {
+                            "type": "grid",
+                            "config": {
+                              "columns": 3,
+                              "gap": "24px"
+                            },
+                            "components": [
+                              {
+                                "type": "card",
+                                "config": {
+                                  "title": "{{task.title}}",
+                                  "description": "{{task.description}}",
+                                  "shadow": "md",
+                                  "hoverElevation": true,
+                                  "children": [
+                                    {
+                                      "type": "badge",
+                                      "config": {
+                                        "text": "Completed",
+                                        "variant": "success"
+                                      }
+                                    },
+                                    {
+                                      "type": "spacer",
+                                      "config": {
+                                        "height": "8px"
+                                      }
+                                    },
+                                    {
+                                      "type": "text",
+                                      "config": {
+                                        "text": "Completed: {{task.completedDate}}",
+                                        "variant": "caption"
+                                      }
+                                    }
+                                  ],
+                                  "actions": [
+                                    {
+                                      "label": "View",
+                                      "icon": "eye",
+                                      "action": "view"
+                                    },
+                                    {
+                                      "label": "Archive",
+                                      "icon": "archive",
+                                      "action": "archive"
+                                    }
+                                  ]
+                                },
+                                "style": {
+                                  "borderRadius": "lg"
+                                },
+                                "dataBinding": "tasks.completed"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "analytics-section",
+        "type": "section",
+        "components": [
+          {
+            "type": "section",
+            "config": {
+              "title": "Task Analytics",
+              "subtitle": "Visual overview of task performance",
+              "padding": "32px",
+              "children": [
+                {
+                  "type": "container",
+                  "config": {
+                    "maxWidth": "1200px",
+                    "children": [
+                      {
+                        "type": "grid",
+                        "config": {
+                          "columns": 2,
+                          "gap": "24px"
+                        },
+                        "components": [
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "Task Completion Trend",
+                              "shadow": "md",
+                              "children": [
+                                {
+                                  "type": "chart",
+                                  "config": {
+                                    "chartType": "line",
+                                    "title": "Completed Tasks Over Time",
+                                    "height": 300
+                                  }
+                                }
+                              ]
+                            },
+                            "style": {
+                              "borderRadius": "lg"
+                            }
+                          },
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "Task Status Distribution",
+                              "shadow": "md",
+                              "children": [
+                                {
+                                  "type": "chart",
+                                  "config": {
+                                    "chartType": "pie",
+                                    "title": "Tasks by Status",
+                                    "height": 300
+                                  }
+                                }
+                              ]
+                            },
+                            "style": {
+                              "borderRadius": "lg"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "footer-section",
+        "type": "footer",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "1200px",
+              "children": [
+                {
+                  "type": "divider",
+                  "config": {}
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "16px"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "© 2024 Task Management System. All rights reserved.",
+                    "variant": "caption"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "navigate",
+          "target": "/tasks/create"
+        },
+        "edit": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "updateStatus": {
+          "type": "workflow",
+          "workflow": "Update Task Status"
+        },
+        "complete": {
+          "type": "workflow",
+          "workflow": "Update Task Status"
+        },
+        "archive": {
+          "type": "workflow",
+          "workflow": "Archive Task"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks",
+          "icon": "list"
+        },
+        {
+          "label": "Create Task",
+          "route": "/tasks/create",
+          "icon": "plus"
+        },
+        {
+          "label": "Filtered View",
+          "route": "/tasks/filtered",
+          "icon": "filter"
+        },
+        {
+          "label": "Dashboard",
+          "route": "/dashboard",
+          "icon": "home"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-task"
+  },
+  {
+    "id": "filtered-task-view-1768637100000-xyz123",
+    "name": "Filtered Task View",
+    "title": "Filtered Tasks",
+    "description": "Dynamic view showing tasks matching selected filters with status-based organization",
+    "route": "/tasks/filtered",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "task-creation-form-1768637014948-phh4od"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "children": [
+                {
+                  "type": "breadcrumb",
+                  "config": {
+                    "items": [
+                      {
+                        "label": "Tasks",
+                        "href": "/tasks"
+                      },
+                      {
+                        "label": "Filtered View",
+                        "href": "/tasks/filtered"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "Filtered Tasks",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "View and manage tasks based on your selected filters",
+                    "variant": "subtitle"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "stats-section",
+        "type": "stats-row",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "0 24px",
+              "children": [
+                {
+                  "type": "grid",
+                  "config": {
+                    "columns": 4,
+                    "gap": "16px",
+                    "children": [
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Total Tasks",
+                          "value": "{{filteredTaskCount}}",
+                          "icon": "list",
+                          "iconColor": "primary"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Pending",
+                          "value": "{{pendingCount}}",
+                          "icon": "clock",
+                          "iconColor": "warning"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "In Progress",
+                          "value": "{{inProgressCount}}",
+                          "icon": "activity",
+                          "iconColor": "info"
+                        }
+                      },
+                      {
+                        "type": "stat-card",
+                        "config": {
+                          "title": "Completed",
+                          "value": "{{completedCount}}",
+                          "icon": "check-circle",
+                          "iconColor": "success",
+                          "trend": "+{{completionRate}}%",
+                          "trendDirection": "up"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "filters-section",
+        "type": "filters",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "title": "Active Filters",
+              "shadow": "sm",
+              "children": [
+                {
+                  "type": "container",
+                  "config": {
+                    "padding": "16px",
+                    "children": [
+                      {
+                        "type": "grid",
+                        "config": {
+                          "columns": 4,
+                          "gap": "12px",
+                          "children": [
+                            {
+                              "type": "select",
+                              "config": {
+                                "label": "Status",
+                                "options": [
+                                  "All",
+                                  "Pending",
+                                  "In Progress",
+                                  "Completed",
+                                  "Blocked"
+                                ]
+                              }
+                            },
+                            {
+                              "type": "select",
+                              "config": {
+                                "label": "Priority",
+                                "options": [
+                                  "All",
+                                  "Low",
+                                  "Medium",
+                                  "High",
+                                  "Urgent"
+                                ]
+                              }
+                            },
+                            {
+                              "type": "select",
+                              "config": {
+                                "label": "Assigned To",
+                                "options": [
+                                  "All",
+                                  "Me",
+                                  "Unassigned",
+                                  "Team"
+                                ]
+                              }
+                            },
+                            {
+                              "type": "search",
+                              "config": {
+                                "placeholder": "Search tasks..."
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "12px"
+                        }
+                      },
+                      {
+                        "type": "buttonGroup",
+                        "config": {
+                          "buttons": [
+                            {
+                              "label": "Apply Filters",
+                              "variant": "primary",
+                              "icon": "filter"
+                            },
+                            {
+                              "label": "Clear All",
+                              "variant": "secondary",
+                              "icon": "x"
+                            },
+                            {
+                              "label": "Save Filter",
+                              "variant": "outline",
+                              "icon": "bookmark"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "actions-bar",
+        "type": "actions",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "16px 24px",
+              "children": [
+                {
+                  "type": "buttonGroup",
+                  "config": {
+                    "buttons": [
+                      {
+                        "label": "Create Task",
+                        "variant": "primary",
+                        "icon": "plus"
+                      },
+                      {
+                        "label": "Export",
+                        "variant": "secondary",
+                        "icon": "download"
+                      },
+                      {
+                        "label": "Bulk Actions",
+                        "variant": "outline",
+                        "icon": "more-horizontal"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "tabs-section",
+        "type": "tabs",
+        "components": [
+          {
+            "type": "tabs",
+            "config": {
+              "variant": "underline",
+              "tabs": [
+                {
+                  "id": "list-view",
+                  "label": "List View",
+                  "icon": "list",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "shadow": "md",
+                        "children": [
+                          {
+                            "type": "table",
+                            "config": {
+                              "columns": [
+                                {
+                                  "key": "title",
+                                  "label": "Task Title",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "status",
+                                  "label": "Status",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "priority",
+                                  "label": "Priority",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "assignee",
+                                  "label": "Assigned To",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "dueDate",
+                                  "label": "Due Date",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "actions",
+                                  "label": "Actions",
+                                  "sortable": false
+                                }
+                              ],
+                              "dataBinding": "Task.filtered"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "board-view",
+                  "label": "Board View",
+                  "icon": "columns",
+                  "content": [
+                    {
+                      "type": "grid",
+                      "config": {
+                        "columns": 3,
+                        "gap": "16px",
+                        "children": [
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "Pending",
+                              "shadow": "sm",
+                              "children": [
+                                {
+                                  "type": "badge",
+                                  "config": {
+                                    "text": "{{pendingCount}} tasks",
+                                    "variant": "warning"
+                                  }
+                                },
+                                {
+                                  "type": "spacer",
+                                  "config": {
+                                    "height": "16px"
+                                  }
+                                },
+                                {
+                                  "type": "card",
+                                  "config": {
+                                    "title": "{{task.title}}",
+                                    "description": "{{task.description}}",
+                                    "shadow": "sm",
+                                    "hoverElevation": true,
+                                    "actions": [
+                                      {
+                                        "label": "View",
+                                        "icon": "eye"
+                                      },
+                                      {
+                                        "label": "Edit",
+                                        "icon": "edit"
+                                      }
+                                    ]
+                                  },
+                                  "dataBinding": "Task.pending"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "In Progress",
+                              "shadow": "sm",
+                              "children": [
+                                {
+                                  "type": "badge",
+                                  "config": {
+                                    "text": "{{inProgressCount}} tasks",
+                                    "variant": "info"
+                                  }
+                                },
+                                {
+                                  "type": "spacer",
+                                  "config": {
+                                    "height": "16px"
+                                  }
+                                },
+                                {
+                                  "type": "card",
+                                  "config": {
+                                    "title": "{{task.title}}",
+                                    "description": "{{task.description}}",
+                                    "shadow": "sm",
+                                    "hoverElevation": true,
+                                    "actions": [
+                                      {
+                                        "label": "View",
+                                        "icon": "eye"
+                                      },
+                                      {
+                                        "label": "Edit",
+                                        "icon": "edit"
+                                      }
+                                    ]
+                                  },
+                                  "dataBinding": "Task.inProgress"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "card",
+                            "config": {
+                              "title": "Completed",
+                              "shadow": "sm",
+                              "children": [
+                                {
+                                  "type": "badge",
+                                  "config": {
+                                    "text": "{{completedCount}} tasks",
+                                    "variant": "success"
+                                  }
+                                },
+                                {
+                                  "type": "spacer",
+                                  "config": {
+                                    "height": "16px"
+                                  }
+                                },
+                                {
+                                  "type": "card",
+                                  "config": {
+                                    "title": "{{task.title}}",
+                                    "description": "{{task.description}}",
+                                    "shadow": "sm",
+                                    "hoverElevation": true,
+                                    "actions": [
+                                      {
+                                        "label": "View",
+                                        "icon": "eye"
+                                      },
+                                      {
+                                        "label": "Archive",
+                                        "icon": "archive"
+                                      }
+                                    ]
+                                  },
+                                  "dataBinding": "Task.completed"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "calendar-view",
+                  "label": "Calendar View",
+                  "icon": "calendar",
+                  "content": [
+                    {
+                      "type": "alert",
+                      "config": {
+                        "variant": "info",
+                        "title": "Calendar View",
+                        "message": "View tasks organized by due date on the calendar",
+                        "dismissible": false
+                      }
+                    },
+                    {
+                      "type": "spacer",
+                      "config": {
+                        "height": "16px"
+                      }
+                    },
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Task Timeline",
+                        "shadow": "md",
+                        "children": [
+                          {
+                            "type": "chart",
+                            "config": {
+                              "chartType": "timeline",
+                              "title": "Tasks by Due Date",
+                              "height": 400
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "loading-state",
+        "type": "conditional",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "48px 24px",
+              "children": [
+                {
+                  "type": "spinner",
+                  "config": {
+                    "size": "large",
+                    "label": "Loading filtered tasks..."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "empty-state",
+        "type": "conditional",
+        "components": [
+          {
+            "type": "card",
+            "config": {
+              "shadow": "md",
+              "children": [
+                {
+                  "type": "container",
+                  "config": {
+                    "padding": "48px",
+                    "children": [
+                      {
+                        "type": "heading",
+                        "config": {
+                          "text": "No Tasks Found",
+                          "variant": "h3"
+                        }
+                      },
+                      {
+                        "type": "text",
+                        "config": {
+                          "text": "No tasks match your current filters. Try adjusting your filter criteria or create a new task.",
+                          "variant": "body"
+                        }
+                      },
+                      {
+                        "type": "spacer",
+                        "config": {
+                          "height": "24px"
+                        }
+                      },
+                      {
+                        "type": "buttonGroup",
+                        "config": {
+                          "buttons": [
+                            {
+                              "label": "Clear Filters",
+                              "variant": "primary",
+                              "icon": "x"
+                            },
+                            {
+                              "label": "Create Task",
+                              "variant": "secondary",
+                              "icon": "plus"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "navigate",
+          "target": "/tasks/create"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "edit": {
+          "type": "navigate",
+          "target": "/tasks"
+        }
+      },
+      "menu": [
+        {
+          "label": "All Tasks",
+          "route": "/tasks",
+          "icon": "list"
+        },
+        {
+          "label": "Create Task",
+          "route": "/tasks/create",
+          "icon": "plus"
+        },
+        {
+          "label": "Task List View",
+          "route": "/tasks",
+          "icon": "grid"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-task"
+  },
+  {
+    "id": "create-task-page-1768637014948",
+    "name": "Create Task Page",
+    "title": "Create New Task",
+    "description": "Page for creating a new task with form and navigation",
+    "route": "/tasks/create",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "task-creation-form-1768637014948-phh4od"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "breadcrumb",
+            "config": {
+              "items": [
+                {
+                  "label": "Tasks",
+                  "href": "/tasks"
+                },
+                {
+                  "label": "Create Task",
+                  "href": "/tasks/create"
+                }
+              ]
+            }
+          },
+          {
+            "type": "spacer",
+            "config": {
+              "height": "24px"
+            }
+          },
+          {
+            "type": "heading",
+            "config": {
+              "text": "Create New Task",
+              "variant": "h1"
+            }
+          },
+          {
+            "type": "text",
+            "config": {
+              "text": "Add a new task to your workflow. Fill in the details below to get started.",
+              "variant": "subtitle"
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "32px",
+              "maxWidth": "800px",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Task Details",
+                    "description": "Provide the essential information for your new task",
+                    "shadow": "md",
+                    "children": [
+                      {
+                        "type": "form",
+                        "formRef": "task-creation-form-1768637014948-phh4od",
+                        "config": {
+                          "title": ""
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Quick Tips",
+                    "shadow": "sm",
+                    "children": [
+                      {
+                        "type": "alert",
+                        "config": {
+                          "variant": "info",
+                          "title": "Task Organization",
+                          "message": "Use clear, descriptive titles and set realistic deadlines to keep your tasks organized and achievable.",
+                          "dismissible": false
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "actions",
+        "type": "footer",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "maxWidth": "800px",
+              "children": [
+                {
+                  "type": "divider",
+                  "config": {}
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "16px"
+                  }
+                },
+                {
+                  "type": "buttonGroup",
+                  "config": {
+                    "buttons": [
+                      {
+                        "label": "Cancel",
+                        "variant": "secondary",
+                        "icon": "x"
+                      },
+                      {
+                        "label": "Save as Draft",
+                        "variant": "outline",
+                        "icon": "save"
+                      },
+                      {
+                        "label": "Create Task",
+                        "variant": "primary",
+                        "icon": "check"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/tasks"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks"
+        },
+        {
+          "label": "Filtered Tasks",
+          "route": "/tasks/filtered"
+        },
+        {
+          "label": "Task List View",
+          "route": "/tasks"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-task"
+  },
+  {
+    "id": "edit-task-page-1768637033944",
+    "name": "Edit Task Page",
+    "title": "Edit Task",
+    "description": "Page for editing an existing task with form validation and status updates",
+    "route": "/tasks/:id/edit",
+    "type": "form",
+    "platform": "both",
+    "forms": [
+      "task-edit-form-1768637033944-akxcg2"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "breadcrumb",
+            "config": {
+              "items": [
+                {
+                  "label": "Tasks",
+                  "href": "/tasks"
+                },
+                {
+                  "label": "Edit Task",
+                  "href": ""
+                }
+              ]
+            }
+          },
+          {
+            "type": "spacer",
+            "config": {
+              "height": "16px"
+            }
+          },
+          {
+            "type": "container",
+            "config": {
+              "padding": "0",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "Edit Task",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Update task details and status",
+                    "variant": "subtitle"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "loading-state",
+        "type": "conditional",
+        "showWhen": "isLoading",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "48px",
+              "children": [
+                {
+                  "type": "spinner",
+                  "config": {
+                    "size": "large",
+                    "label": "Loading task details..."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "alerts",
+        "type": "alerts",
+        "components": [
+          {
+            "type": "alert",
+            "config": {
+              "variant": "info",
+              "title": "Editing Task",
+              "message": "Changes will be saved when you click Update Task",
+              "dismissible": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "main",
+        "type": "main",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "maxWidth": "800px",
+              "padding": "24px",
+              "children": [
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Task Information",
+                    "shadow": "md",
+                    "children": [
+                      {
+                        "type": "form",
+                        "formRef": "task-edit-form-1768637033944-akxcg2",
+                        "config": {
+                          "title": ""
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "card",
+                  "config": {
+                    "title": "Task Metadata",
+                    "shadow": "sm",
+                    "children": [
+                      {
+                        "type": "container",
+                        "config": {
+                          "padding": "16px",
+                          "children": [
+                            {
+                              "type": "text",
+                              "config": {
+                                "text": "Created: {{task.createdAt}}",
+                                "variant": "caption"
+                              }
+                            },
+                            {
+                              "type": "spacer",
+                              "config": {
+                                "height": "8px"
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "config": {
+                                "text": "Last Updated: {{task.updatedAt}}",
+                                "variant": "caption"
+                              }
+                            },
+                            {
+                              "type": "spacer",
+                              "config": {
+                                "height": "8px"
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "config": {
+                                "text": "Task ID: {{task.id}}",
+                                "variant": "caption"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "actions",
+        "type": "footer",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "maxWidth": "800px",
+              "padding": "24px",
+              "children": [
+                {
+                  "type": "divider",
+                  "config": {}
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "container",
+                  "config": {
+                    "padding": "0",
+                    "children": [
+                      {
+                        "type": "button",
+                        "config": {
+                          "label": "Update Task",
+                          "variant": "primary",
+                          "icon": "check"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "config": {
+                          "label": "Cancel",
+                          "variant": "secondary",
+                          "icon": "x"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "config": {
+                          "label": "Delete Task",
+                          "variant": "danger",
+                          "icon": "trash"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "submit": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "cancel": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "delete": {
+          "type": "navigate",
+          "target": "/tasks"
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks"
+        },
+        {
+          "label": "Create Task",
+          "route": "/tasks/create"
+        },
+        {
+          "label": "Filtered View",
+          "route": "/tasks/filtered"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-task"
+  },
+  {
+    "id": "task-list-view-1768637100000-main",
+    "name": "Task List View",
+    "title": "My Tasks",
+    "description": "Main page displaying filtered and organized tasks with separation between pending and completed items",
+    "route": "/tasks",
+    "type": "list",
+    "platform": "both",
+    "forms": [
+      "task-creation-form-1768637014948-phh4od"
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "type": "header",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "24px",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "My Tasks",
+                    "variant": "h1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Manage and organize your tasks efficiently",
+                    "variant": "subtitle"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "stats-overview",
+        "type": "stats-row",
+        "components": [
+          {
+            "type": "grid",
+            "config": {
+              "columns": 3,
+              "gap": "24px"
+            },
+            "components": [
+              {
+                "type": "stat-card",
+                "config": {
+                  "title": "Total Tasks",
+                  "value": "{{totalTaskCount}}",
+                  "icon": "clipboard-list",
+                  "iconColor": "primary",
+                  "trend": "+5 this week",
+                  "trendDirection": "up"
+                }
+              },
+              {
+                "type": "stat-card",
+                "config": {
+                  "title": "Pending",
+                  "value": "{{pendingTaskCount}}",
+                  "icon": "clock",
+                  "iconColor": "warning"
+                }
+              },
+              {
+                "type": "stat-card",
+                "config": {
+                  "title": "Completed",
+                  "value": "{{completedTaskCount}}",
+                  "icon": "check-circle",
+                  "iconColor": "success",
+                  "trend": "{{completionRate}}%",
+                  "trendDirection": "up"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "actions-filters",
+        "type": "actions",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "16px 24px",
+              "children": [
+                {
+                  "type": "grid",
+                  "config": {
+                    "columns": 2,
+                    "gap": "16px"
+                  },
+                  "components": [
+                    {
+                      "type": "search",
+                      "config": {
+                        "placeholder": "Search tasks..."
+                      }
+                    },
+                    {
+                      "type": "buttonGroup",
+                      "config": {
+                        "buttons": [
+                          {
+                            "label": "All",
+                            "variant": "secondary"
+                          },
+                          {
+                            "label": "Pending",
+                            "variant": "secondary"
+                          },
+                          {
+                            "label": "Completed",
+                            "variant": "secondary"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "16px"
+                  }
+                },
+                {
+                  "type": "button",
+                  "config": {
+                    "label": "Create New Task",
+                    "variant": "primary",
+                    "icon": "plus"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "tabs-section",
+        "type": "tabs",
+        "components": [
+          {
+            "type": "tabs",
+            "config": {
+              "variant": "underline",
+              "tabs": [
+                {
+                  "id": "pending-tasks",
+                  "label": "Pending Tasks",
+                  "icon": "clock",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Active Tasks",
+                        "description": "Tasks that need your attention",
+                        "shadow": "md",
+                        "children": [
+                          {
+                            "type": "table",
+                            "config": {
+                              "columns": [
+                                {
+                                  "key": "title",
+                                  "label": "Task",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "priority",
+                                  "label": "Priority",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "dueDate",
+                                  "label": "Due Date",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "assignee",
+                                  "label": "Assigned To",
+                                  "sortable": false
+                                },
+                                {
+                                  "key": "status",
+                                  "label": "Status",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "actions",
+                                  "label": "Actions",
+                                  "sortable": false
+                                }
+                              ],
+                              "dataBinding": "Task.pending"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "spacer",
+                      "config": {
+                        "height": "16px"
+                      }
+                    },
+                    {
+                      "type": "alert",
+                      "config": {
+                        "variant": "info",
+                        "title": "Quick Tip",
+                        "message": "Click on any task to view details or use the action menu to edit or update status",
+                        "dismissible": true
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "completed-tasks",
+                  "label": "Completed Tasks",
+                  "icon": "check-circle",
+                  "content": [
+                    {
+                      "type": "card",
+                      "config": {
+                        "title": "Completed Tasks",
+                        "description": "Tasks you've successfully finished",
+                        "shadow": "md",
+                        "children": [
+                          {
+                            "type": "table",
+                            "config": {
+                              "columns": [
+                                {
+                                  "key": "title",
+                                  "label": "Task",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "completedDate",
+                                  "label": "Completed On",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "assignee",
+                                  "label": "Completed By",
+                                  "sortable": false
+                                },
+                                {
+                                  "key": "duration",
+                                  "label": "Duration",
+                                  "sortable": true
+                                },
+                                {
+                                  "key": "actions",
+                                  "label": "Actions",
+                                  "sortable": false
+                                }
+                              ],
+                              "dataBinding": "Task.completed"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "spacer",
+                      "config": {
+                        "height": "16px"
+                      }
+                    },
+                    {
+                      "type": "alert",
+                      "config": {
+                        "variant": "success",
+                        "title": "Great Work!",
+                        "message": "You've completed {{completedTaskCount}} tasks. Keep up the momentum!",
+                        "dismissible": true
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "all-tasks",
+                  "label": "All Tasks",
+                  "icon": "list",
+                  "content": [
+                    {
+                      "type": "grid",
+                      "config": {
+                        "columns": 3,
+                        "gap": "24px"
+                      },
+                      "components": [
+                        {
+                          "type": "card",
+                          "config": {
+                            "title": "{{task.title}}",
+                            "description": "{{task.description}}",
+                            "shadow": "md",
+                            "hoverElevation": true,
+                            "children": [
+                              {
+                                "type": "badge",
+                                "config": {
+                                  "text": "{{task.status}}",
+                                  "variant": "{{task.statusVariant}}"
+                                }
+                              },
+                              {
+                                "type": "spacer",
+                                "config": {
+                                  "height": "12px"
+                                }
+                              },
+                              {
+                                "type": "text",
+                                "config": {
+                                  "text": "Due: {{task.dueDate}}",
+                                  "variant": "caption"
+                                }
+                              },
+                              {
+                                "type": "text",
+                                "config": {
+                                  "text": "Priority: {{task.priority}}",
+                                  "variant": "caption"
+                                }
+                              }
+                            ],
+                            "actions": [
+                              {
+                                "label": "View",
+                                "icon": "eye",
+                                "action": "view"
+                              },
+                              {
+                                "label": "Edit",
+                                "icon": "edit",
+                                "action": "edit"
+                              },
+                              {
+                                "label": "Complete",
+                                "icon": "check",
+                                "action": "complete"
+                              }
+                            ]
+                          },
+                          "dataBinding": "Task.all"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "empty-state",
+        "type": "conditional",
+        "showWhen": "noTasks",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "64px 24px",
+              "children": [
+                {
+                  "type": "heading",
+                  "config": {
+                    "text": "No Tasks Yet",
+                    "variant": "h2"
+                  }
+                },
+                {
+                  "type": "text",
+                  "config": {
+                    "text": "Get started by creating your first task",
+                    "variant": "body"
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "config": {
+                    "height": "24px"
+                  }
+                },
+                {
+                  "type": "button",
+                  "config": {
+                    "label": "Create Your First Task",
+                    "variant": "primary",
+                    "icon": "plus"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "loading-state",
+        "type": "conditional",
+        "showWhen": "isLoading",
+        "components": [
+          {
+            "type": "container",
+            "config": {
+              "padding": "48px 24px",
+              "children": [
+                {
+                  "type": "spinner",
+                  "config": {
+                    "size": "large",
+                    "label": "Loading your tasks..."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "navigation": {
+      "onAction": {
+        "create": {
+          "type": "navigate",
+          "target": "/tasks/create"
+        },
+        "view": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "edit": {
+          "type": "navigate",
+          "target": "/tasks"
+        },
+        "complete": {
+          "type": "workflow",
+          "workflow": "Update Task Status",
+          "params": {
+            "status": "completed"
+          }
+        }
+      },
+      "menu": [
+        {
+          "label": "Task List",
+          "route": "/tasks"
+        },
+        {
+          "label": "Create Task",
+          "route": "/tasks/create"
+        },
+        {
+          "label": "Filtered View",
+          "route": "/tasks/filtered"
+        }
+      ]
+    },
+    "pageAssociation": {
+      "requiresAuth": true
+    },
+    "workflowId": "workflow-create-task"
+  }
+]

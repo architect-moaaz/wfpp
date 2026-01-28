@@ -1,8 +1,873 @@
 [
   {
+    "id": "survey",
+    "name": "Survey",
+    "description": "Core survey entity with metadata and configuration",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the survey",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "description": "Title or name of the survey",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the survey purpose",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Current status of the survey (draft, active, closed)",
+        "required": true,
+        "defaultValue": "draft"
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the survey was created",
+        "required": true,
+        "defaultValue": "now"
+      },
+      {
+        "name": "expiresAt",
+        "type": "date",
+        "description": "Timestamp when the survey expires or closes",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isAnonymous",
+        "type": "boolean",
+        "description": "Whether responses are collected anonymously",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "survey-template",
+    "name": "SurveyTemplate",
+    "description": "Reusable survey templates for quick survey creation",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the survey template",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the survey template",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Description of the template's purpose and content",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "description": "Category or type of survey (e.g., Customer Satisfaction, Employee Feedback)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "questions",
+        "type": "json",
+        "description": "Array of predefined questions and their configuration",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the template is currently available for use",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the template was created",
+        "required": true,
+        "defaultValue": "now()"
+      },
+      {
+        "name": "usageCount",
+        "type": "number",
+        "description": "Number of times this template has been used to create surveys",
+        "required": true,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "relatedModel": "Survey",
+        "foreignKey": "templateId",
+        "description": "Surveys created from this template"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "category"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "isActive"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "name"
+      ]
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "question",
+    "name": "Question",
+    "description": "Survey question entity with text, type, and configuration",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the question",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the parent survey or template",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "description": "The question text displayed to respondents",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "description": "Question type (e.g., multiple-choice, text, rating, yes-no)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "order",
+        "type": "number",
+        "description": "Display order within the survey",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "description": "Whether the question must be answered",
+        "required": false,
+        "defaultValue": false
+      },
+      {
+        "name": "config",
+        "type": "json",
+        "description": "Additional configuration options (choices, validation rules, etc.)",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [],
+    "indexes": [],
+    "constraints": {},
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "question-type",
+    "name": "QuestionType",
+    "description": "Types of questions available (multiple choice, text, rating, etc.)",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the question type",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Display name of the question type (e.g., Multiple Choice, Text Input)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "code",
+        "type": "string",
+        "description": "Unique code identifier (e.g., MULTIPLE_CHOICE, TEXT, RATING)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Detailed description of the question type and its use case",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "allowsMultipleAnswers",
+        "type": "boolean",
+        "description": "Whether this question type supports multiple answer selections",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "requiresOptions",
+        "type": "boolean",
+        "description": "Whether this question type requires predefined answer options",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this question type is currently available for use",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [],
+    "indexes": [
+      {
+        "name": "idx_question_type_code",
+        "fields": [
+          "code"
+        ],
+        "unique": true
+      }
+    ],
+    "constraints": {
+      "unique": [
+        "code"
+      ]
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "response",
+    "name": "Response",
+    "description": "Survey response submission record",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the response",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the survey being responded to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "respondentId",
+        "type": "string",
+        "description": "Identifier of the person submitting the response",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "answers",
+        "type": "json",
+        "description": "Collection of question-answer pairs",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "submittedAt",
+        "type": "date",
+        "description": "Timestamp when the response was submitted",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Response status (draft, submitted, completed)",
+        "required": true,
+        "defaultValue": "draft"
+      },
+      {
+        "name": "ipAddress",
+        "type": "string",
+        "description": "IP address of the respondent for tracking purposes",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "surveyId"
+        ]
+      },
+      {
+        "fields": [
+          "submittedAt"
+        ]
+      }
+    ],
+    "constraints": {
+      "status": {
+        "enum": [
+          "draft",
+          "submitted",
+          "completed"
+        ]
+      }
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "respondent-info",
+    "name": "RespondentInfo",
+    "description": "Information about survey respondent",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the respondent",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the survey being responded to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "description": "Email address of the respondent",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Full name of the respondent",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "startedAt",
+        "type": "date",
+        "description": "Timestamp when respondent started the survey",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "completedAt",
+        "type": "date",
+        "description": "Timestamp when respondent completed the survey",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isAnonymous",
+        "type": "boolean",
+        "description": "Whether the response is anonymous",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId"
+      },
+      {
+        "type": "one-to-many",
+        "relatedModel": "Response",
+        "foreignKey": "respondentId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "surveyId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "email"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {},
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "survey-distribution",
+    "name": "SurveyDistribution",
+    "description": "Tracks survey distribution channels, recipients, and delivery status",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the distribution record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the survey being distributed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "distributionChannel",
+        "type": "string",
+        "description": "Channel used for distribution (email, sms, link, qr_code, etc.)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "recipientIdentifier",
+        "type": "string",
+        "description": "Email address, phone number, or other recipient identifier",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Distribution status (pending, sent, delivered, failed, opened, completed)",
+        "required": true,
+        "defaultValue": "pending"
+      },
+      {
+        "name": "sentAt",
+        "type": "date",
+        "description": "Timestamp when the survey was sent",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "expiresAt",
+        "type": "date",
+        "description": "Expiration date for the survey link",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "responseId",
+        "type": "string",
+        "description": "Reference to the response if completed",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId"
+      },
+      {
+        "type": "one-to-one",
+        "relatedModel": "Response",
+        "foreignKey": "responseId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "surveyId"
+        ]
+      },
+      {
+        "fields": [
+          "status"
+        ]
+      },
+      {
+        "fields": [
+          "recipientIdentifier"
+        ]
+      }
+    ],
+    "constraints": {
+      "distributionChannel": {
+        "enum": [
+          "email",
+          "sms",
+          "link",
+          "qr_code",
+          "embedded",
+          "social"
+        ]
+      },
+      "status": {
+        "enum": [
+          "pending",
+          "sent",
+          "delivered",
+          "failed",
+          "opened",
+          "completed"
+        ]
+      }
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "response-session",
+    "name": "ResponseSession",
+    "description": "Tracks in-progress survey sessions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the response session",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the survey being responded to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "respondentInfoId",
+        "type": "string",
+        "description": "Reference to the respondent information",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "sessionToken",
+        "type": "string",
+        "description": "Unique token for resuming the session",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "currentQuestionId",
+        "type": "string",
+        "description": "ID of the current question being answered",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "startedAt",
+        "type": "date",
+        "description": "Timestamp when the session was started",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "lastActivityAt",
+        "type": "date",
+        "description": "Timestamp of the last activity in this session",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isCompleted",
+        "type": "boolean",
+        "description": "Whether the session has been completed",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "RespondentInfo",
+        "foreignKey": "respondentInfoId"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Question",
+        "foreignKey": "currentQuestionId"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "sessionToken"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "surveyId",
+          "isCompleted"
+        ]
+      },
+      {
+        "fields": [
+          "lastActivityAt"
+        ]
+      }
+    ],
+    "constraints": {
+      "uniqueSessionToken": "sessionToken must be unique across all sessions"
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "analytics-data",
+    "name": "AnalyticsData",
+    "description": "Aggregated analytics data for survey responses",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for analytics record",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the survey being analyzed",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "questionId",
+        "type": "string",
+        "description": "Reference to specific question (null for survey-level metrics)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "metricType",
+        "type": "string",
+        "description": "Type of metric (e.g., response_count, completion_rate, average_score, sentiment)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "metricValue",
+        "type": "number",
+        "description": "Calculated metric value",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "aggregationPeriod",
+        "type": "string",
+        "description": "Time period for aggregation (e.g., daily, weekly, monthly, all_time)",
+        "required": true,
+        "defaultValue": "all_time"
+      },
+      {
+        "name": "calculatedAt",
+        "type": "date",
+        "description": "Timestamp when analytics were calculated",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId",
+        "description": "Analytics belong to a survey"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Question",
+        "foreignKey": "questionId",
+        "description": "Analytics may be for a specific question"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "surveyId",
+          "metricType"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "questionId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "calculatedAt"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "metricType": "Must be a valid metric type identifier",
+      "aggregationPeriod": "Must be one of: daily, weekly, monthly, all_time"
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "export-configuration",
+    "name": "ExportConfiguration",
+    "description": "Configuration settings for data exports",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the export configuration",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the survey being exported",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "exportFormat",
+        "type": "string",
+        "description": "Format of the export (CSV, JSON, Excel, PDF)",
+        "required": true,
+        "defaultValue": "CSV"
+      },
+      {
+        "name": "includeFields",
+        "type": "array",
+        "description": "List of field names to include in the export",
+        "required": false,
+        "defaultValue": []
+      },
+      {
+        "name": "dateRange",
+        "type": "object",
+        "description": "Start and end dates for filtering exported data",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "createdBy",
+        "type": "string",
+        "description": "User ID who created this export configuration",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the configuration was created",
+        "required": true,
+        "defaultValue": "now()"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId",
+        "description": "Links export configuration to a specific survey"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "surveyId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "createdBy"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "exportFormat": {
+        "enum": [
+          "CSV",
+          "JSON",
+          "Excel",
+          "PDF"
+        ]
+      }
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
     "id": "user",
     "name": "User",
-    "description": "Store user information for both support agents and customers/employees",
+    "description": "User account information and profile data",
     "fields": [
       {
         "name": "id",
@@ -29,21 +894,14 @@
       {
         "name": "role",
         "type": "string",
-        "description": "User role: 'agent' or 'customer' for access control",
+        "description": "User role (e.g., admin, manager, analyst, viewer)",
         "required": true,
-        "defaultValue": "customer"
-      },
-      {
-        "name": "passwordHash",
-        "type": "string",
-        "description": "Hashed password for authentication",
-        "required": true,
-        "defaultValue": null
+        "defaultValue": "viewer"
       },
       {
         "name": "isActive",
         "type": "boolean",
-        "description": "Account status indicating if user can access the system",
+        "description": "Indicates if the user account is active",
         "required": true,
         "defaultValue": true
       },
@@ -52,41 +910,36 @@
         "type": "date",
         "description": "Timestamp when the user account was created",
         "required": true,
-        "defaultValue": "CURRENT_TIMESTAMP"
+        "defaultValue": null
+      },
+      {
+        "name": "lastLoginAt",
+        "type": "date",
+        "description": "Timestamp of the user's last login",
+        "required": false,
+        "defaultValue": null
       }
     ],
     "relationships": [],
     "indexes": [
-      {
-        "name": "idx_user_email",
-        "fields": [
-          "email"
-        ],
-        "unique": true
-      },
-      {
-        "name": "idx_user_role",
-        "fields": [
-          "role"
-        ],
-        "unique": false
-      }
+      "email"
     ],
     "constraints": {
-      "email": "Must be valid email format and unique",
-      "role": "Must be either 'agent' or 'customer'"
+      "unique": [
+        "email"
+      ]
     },
-    "workflowId": "ticket-auto-close-workflow"
+    "workflowId": "archive-survey-workflow"
   },
   {
-    "id": "ticket-category",
-    "name": "TicketCategory",
-    "description": "Defines ticket categories for organizing and routing support tickets by type or department",
+    "id": "role",
+    "name": "Role",
+    "description": "User role definitions for access control",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the ticket category",
+        "description": "Unique identifier for the role",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
@@ -94,438 +947,1164 @@
       {
         "name": "name",
         "type": "string",
-        "description": "Display name of the category (e.g., Hardware, Software, Network)",
+        "description": "Role name (e.g., Admin, Manager, Viewer)",
         "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "parentCategoryId",
-        "type": "string",
-        "description": "Reference to parent category for hierarchical organization (null for top-level categories)",
-        "required": false,
         "defaultValue": null
       },
       {
         "name": "description",
         "type": "string",
-        "description": "Detailed description of what tickets belong in this category",
+        "description": "Detailed description of the role and its purpose",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "permissions",
+        "type": "array",
+        "description": "List of permission strings assigned to this role",
+        "required": true,
+        "defaultValue": []
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the role is currently active and can be assigned",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the role was created",
+        "required": true,
+        "defaultValue": "now"
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp when the role was last updated",
+        "required": true,
+        "defaultValue": "now"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "oneToMany",
+        "relatedModel": "User",
+        "foreignKey": "roleId",
+        "description": "Users assigned to this role"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "name"
+        ],
+        "unique": true
+      },
+      {
+        "fields": [
+          "isActive"
+        ]
+      }
+    ],
+    "constraints": {
+      "uniqueFields": [
+        "name"
+      ],
+      "validation": {
+        "name": "Must be alphanumeric with spaces and underscores only",
+        "permissions": "Must be a non-empty array for active roles"
+      }
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "permission",
+    "name": "Permission",
+    "description": "Granular permissions for system features and actions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the permission",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Unique name of the permission (e.g., 'survey.create', 'response.view')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "resource",
+        "type": "string",
+        "description": "Resource or entity the permission applies to (e.g., 'survey', 'user', 'analytics')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "action",
+        "type": "string",
+        "description": "Action allowed by this permission (e.g., 'create', 'read', 'update', 'delete', 'export')",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "description": "Human-readable description of what this permission grants",
         "required": false,
         "defaultValue": null
       },
       {
         "name": "isActive",
         "type": "boolean",
-        "description": "Indicates if the category is currently active and available for ticket assignment",
+        "description": "Whether this permission is currently active and can be assigned",
         "required": true,
         "defaultValue": true
-      },
-      {
-        "name": "routingDepartment",
-        "type": "string",
-        "description": "Default department or team to route tickets in this category",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "displayOrder",
-        "type": "number",
-        "description": "Sort order for displaying categories in lists and dropdowns",
-        "required": true,
-        "defaultValue": 0
       }
     ],
     "relationships": [
       {
-        "type": "self-referencing",
-        "name": "parentCategory",
-        "relatedModel": "TicketCategory",
-        "foreignKey": "parentCategoryId",
-        "description": "Supports hierarchical category structure"
+        "type": "manyToMany",
+        "relatedModel": "Role",
+        "description": "Roles that have this permission"
       }
     ],
     "indexes": [
       {
-        "name": "idx_parent_category",
         "fields": [
-          "parentCategoryId"
-        ]
+          "name"
+        ],
+        "unique": true
       },
       {
-        "name": "idx_active_categories",
         "fields": [
-          "isActive",
-          "displayOrder"
-        ]
+          "resource",
+          "action"
+        ],
+        "unique": false
       }
     ],
     "constraints": {
-      "unique": [
-        "name"
-      ],
-      "check": [
-        "displayOrder >= 0"
-      ]
+      "uniquePermissionName": "Permission name must be unique across the system",
+      "validAction": "Action must be one of: create, read, update, delete, export, manage"
     },
-    "workflowId": "ticket-auto-close-workflow"
+    "workflowId": "archive-survey-workflow"
   },
   {
-    "id": "ticket",
-    "name": "Ticket",
-    "description": "Central data model for storing and tracking IT support requests through their lifecycle",
+    "id": "survey-settings",
+    "name": "SurveySettings",
+    "description": "Configuration settings for survey behavior and appearance",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the ticket",
+        "description": "Unique identifier for survey settings",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "title",
+        "name": "surveyId",
         "type": "string",
-        "description": "Brief summary of the support request",
+        "description": "Reference to the associated survey",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "description",
+        "name": "allowAnonymous",
+        "type": "boolean",
+        "description": "Whether anonymous responses are permitted",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "allowMultipleResponses",
+        "type": "boolean",
+        "description": "Whether respondents can submit multiple times",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "showProgressBar",
+        "type": "boolean",
+        "description": "Display progress indicator to respondents",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "randomizeQuestions",
+        "type": "boolean",
+        "description": "Randomize question order for each respondent",
+        "required": true,
+        "defaultValue": false
+      },
+      {
+        "name": "theme",
         "type": "string",
-        "description": "Detailed description of the issue or request",
+        "description": "Visual theme or color scheme for survey display",
+        "required": false,
+        "defaultValue": "default"
+      },
+      {
+        "name": "completionMessage",
+        "type": "string",
+        "description": "Custom message displayed upon survey completion",
+        "required": false,
+        "defaultValue": "Thank you for completing this survey!"
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId",
+        "description": "Each settings configuration belongs to one survey"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_survey_settings_survey_id",
+        "fields": [
+          "surveyId"
+        ],
+        "unique": true
+      }
+    ],
+    "constraints": {
+      "uniqueSurveySettings": "Each survey should have only one settings configuration"
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "survey-version",
+    "name": "SurveyVersion",
+    "description": "Version history for survey changes and revisions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the survey version",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the parent survey",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "versionNumber",
+        "type": "number",
+        "description": "Sequential version number for the survey",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "changeDescription",
+        "type": "string",
+        "description": "Description of changes made in this version",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "snapshotData",
+        "type": "json",
+        "description": "Complete snapshot of survey configuration at this version",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "createdBy",
+        "type": "string",
+        "description": "User ID who created this version",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when this version was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if this is the currently active version",
+        "required": true,
+        "defaultValue": false
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId",
+        "description": "Each version belongs to one survey"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "createdBy",
+        "description": "Each version is created by one user"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_survey_version",
+        "fields": [
+          "surveyId",
+          "versionNumber"
+        ],
+        "unique": true
+      },
+      {
+        "name": "idx_survey_active",
+        "fields": [
+          "surveyId",
+          "isActive"
+        ]
+      },
+      {
+        "name": "idx_created_at",
+        "fields": [
+          "createdAt"
+        ]
+      }
+    ],
+    "constraints": {
+      "uniqueActiveVersion": "Only one version per survey can have isActive=true",
+      "positiveVersionNumber": "versionNumber must be greater than 0"
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "validation-rule",
+    "name": "ValidationRule",
+    "description": "Validation rules for question responses",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the validation rule",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "questionId",
+        "type": "string",
+        "description": "Reference to the question this rule applies to",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ruleType",
+        "type": "string",
+        "description": "Type of validation (e.g., required, minLength, maxLength, pattern, range, email)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "ruleValue",
+        "type": "string",
+        "description": "Value or parameter for the validation rule (e.g., regex pattern, min/max value)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "errorMessage",
+        "type": "string",
+        "description": "Custom error message to display when validation fails",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether this validation rule is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "priority",
+        "type": "number",
+        "description": "Order in which validation rules are executed (lower numbers first)",
+        "required": false,
+        "defaultValue": 0
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Question",
+        "foreignKey": "questionId",
+        "description": "Each validation rule belongs to one question"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "questionId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "questionId",
+          "priority"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "ruleType": "Must be one of: required, minLength, maxLength, pattern, range, email, url, numeric, date, custom",
+      "priority": "Must be a non-negative integer"
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "question-option",
+    "name": "QuestionOption",
+    "description": "Options for multiple choice, dropdown, and checkbox questions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the question option",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "questionId",
+        "type": "string",
+        "description": "Reference to the parent question",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "description": "Display text for the option",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "description": "Value stored when this option is selected",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "displayOrder",
+        "type": "number",
+        "description": "Order in which the option appears in the list",
+        "required": true,
+        "defaultValue": 0
+      },
+      {
+        "name": "isOther",
+        "type": "boolean",
+        "description": "Indicates if this is an 'Other' option with text input",
+        "required": false,
+        "defaultValue": false
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the option is currently active and selectable",
+        "required": false,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "manyToOne",
+        "relatedModel": "Question",
+        "foreignKey": "questionId",
+        "description": "Each option belongs to one question"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "questionId",
+          "displayOrder"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "questionId"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "uniqueValuePerQuestion": "Combination of questionId and value should be unique"
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "answer",
+    "name": "Answer",
+    "description": "Individual answer to a survey question",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the answer",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "responseId",
+        "type": "string",
+        "description": "Reference to the parent response",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "questionId",
+        "type": "string",
+        "description": "Reference to the question being answered",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "description": "The actual answer value (text, number, or serialized data)",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "selectedOptionIds",
+        "type": "array",
+        "description": "Array of selected option IDs for multiple choice questions",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "answeredAt",
+        "type": "date",
+        "description": "Timestamp when the answer was provided",
+        "required": true,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Response",
+        "foreignKey": "responseId",
+        "description": "Answer belongs to a response"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Question",
+        "foreignKey": "questionId",
+        "description": "Answer corresponds to a question"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "responseId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "questionId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "responseId",
+          "questionId"
+        ],
+        "unique": true
+      }
+    ],
+    "constraints": {
+      "uniqueAnswerPerQuestion": "Each question can only be answered once per response"
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "report",
+    "name": "Report",
+    "description": "Generated report configurations and metadata",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the report",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "surveyId",
+        "type": "string",
+        "description": "Reference to the survey this report is generated for",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "reportType",
+        "type": "string",
+        "description": "Type of report (summary, detailed, analytics, export)",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "configuration",
+        "type": "json",
+        "description": "Report configuration settings including filters, date ranges, and display options",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "generatedBy",
+        "type": "string",
+        "description": "User ID who generated the report",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "generatedAt",
+        "type": "date",
+        "description": "Timestamp when the report was generated",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "status",
         "type": "string",
-        "description": "Current status of the ticket (e.g., open, in_progress, resolved, closed)",
+        "description": "Current status of report generation (pending, completed, failed)",
         "required": true,
-        "defaultValue": "open"
+        "defaultValue": "pending"
       },
       {
-        "name": "priority",
+        "name": "fileUrl",
         "type": "string",
-        "description": "Priority level of the ticket (e.g., low, medium, high, critical)",
-        "required": true,
-        "defaultValue": "medium"
-      },
-      {
-        "name": "submitterId",
-        "type": "string",
-        "description": "Reference to the User who submitted the ticket",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "assignedAgentId",
-        "type": "string",
-        "description": "Reference to the User (agent) assigned to handle the ticket",
+        "description": "URL or path to the generated report file",
         "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "categoryId",
-        "type": "string",
-        "description": "Reference to the TicketCategory for classification",
-        "required": true,
         "defaultValue": null
       }
     ],
     "relationships": [
       {
-        "type": "manyToOne",
-        "relatedModel": "User",
-        "foreignKey": "submitterId",
-        "description": "Ticket is submitted by a User"
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId"
       },
       {
-        "type": "manyToOne",
+        "type": "many-to-one",
         "relatedModel": "User",
-        "foreignKey": "assignedAgentId",
-        "description": "Ticket is assigned to an agent (User)"
-      },
-      {
-        "type": "manyToOne",
-        "relatedModel": "TicketCategory",
-        "foreignKey": "categoryId",
-        "description": "Ticket belongs to a category"
+        "foreignKey": "generatedBy"
       }
     ],
     "indexes": [
       {
         "fields": [
-          "status"
-        ],
-        "description": "Index on status for efficient filtering"
+          "surveyId"
+        ]
       },
       {
         "fields": [
-          "submitterId"
-        ],
-        "description": "Index on submitter for user ticket lookups"
+          "generatedBy"
+        ]
       },
       {
         "fields": [
-          "assignedAgentId"
-        ],
-        "description": "Index on assigned agent for workload queries"
+          "generatedAt"
+        ]
       }
     ],
     "constraints": {
-      "status": {
-        "enum": [
-          "open",
-          "in_progress",
-          "resolved",
-          "closed"
-        ]
-      },
-      "priority": {
-        "enum": [
-          "low",
-          "medium",
-          "high",
-          "critical"
-        ]
-      }
+      "reportType": [
+        "summary",
+        "detailed",
+        "analytics",
+        "export"
+      ],
+      "status": [
+        "pending",
+        "completed",
+        "failed"
+      ]
     },
-    "workflowId": "ticket-auto-close-workflow"
+    "workflowId": "archive-survey-workflow"
   },
   {
-    "id": "ticket-comment",
-    "name": "TicketComment",
-    "description": "Store comments and updates made on tickets by agents and customers",
+    "id": "metrics",
+    "name": "Metrics",
+    "description": "Calculated metrics and KPIs for surveys",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the comment",
+        "description": "Unique identifier for the metric",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "ticketId",
+        "name": "surveyId",
         "type": "string",
-        "description": "Reference to the ticket this comment belongs to",
+        "description": "Reference to the survey this metric belongs to",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "authorId",
+        "name": "metricType",
         "type": "string",
-        "description": "Reference to the user who created the comment",
+        "description": "Type of metric (e.g., response_rate, completion_rate, avg_time, nps_score)",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "commentText",
-        "type": "string",
-        "description": "The actual content of the comment or update",
+        "name": "value",
+        "type": "number",
+        "description": "Calculated metric value",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "isInternal",
-        "type": "boolean",
-        "description": "Visibility flag - true for internal agent notes, false for customer-visible comments",
+        "name": "calculatedAt",
+        "type": "date",
+        "description": "Timestamp when the metric was calculated",
         "required": true,
-        "defaultValue": false
+        "defaultValue": null
+      },
+      {
+        "name": "periodStart",
+        "type": "date",
+        "description": "Start date of the period this metric covers",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "periodEnd",
+        "type": "date",
+        "description": "End date of the period this metric covers",
+        "required": false,
+        "defaultValue": null
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Survey",
+        "foreignKey": "surveyId",
+        "description": "Each metric belongs to one survey"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "surveyId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "metricType"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "calculatedAt"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "metricType": "Must be a valid metric type identifier",
+      "value": "Must be a numeric value representing the calculated metric"
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "export-file",
+    "name": "ExportFile",
+    "description": "Generated export file records tracking survey data exports",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the export file",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "configurationId",
+        "type": "string",
+        "description": "Reference to the export configuration used",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileName",
+        "type": "string",
+        "description": "Name of the generated export file",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileUrl",
+        "type": "string",
+        "description": "Storage URL or path to the export file",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "fileSize",
+        "type": "number",
+        "description": "Size of the export file in bytes",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "description": "Export status (pending, completed, failed)",
+        "required": true,
+        "defaultValue": "pending"
       },
       {
         "name": "createdAt",
         "type": "date",
-        "description": "Timestamp when the comment was created",
+        "description": "Timestamp when the export was initiated",
         "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "expiresAt",
+        "type": "date",
+        "description": "Timestamp when the export file will be deleted",
+        "required": false,
         "defaultValue": null
       }
     ],
     "relationships": [
       {
-        "type": "many-to-one",
-        "relatedModel": "Ticket",
-        "foreignKey": "ticketId",
-        "description": "Each comment belongs to one ticket"
-      },
-      {
-        "type": "many-to-one",
-        "relatedModel": "User",
-        "foreignKey": "authorId",
-        "description": "Each comment is authored by one user"
+        "type": "manyToOne",
+        "relatedModel": "ExportConfiguration",
+        "foreignKey": "configurationId"
       }
     ],
     "indexes": [
       {
         "fields": [
-          "ticketId",
-          "createdAt"
-        ],
-        "description": "Optimize retrieval of comments for a ticket in chronological order"
+          "configurationId"
+        ]
       },
       {
         "fields": [
-          "authorId"
-        ],
-        "description": "Optimize queries for comments by a specific user"
+          "status"
+        ]
+      },
+      {
+        "fields": [
+          "createdAt"
+        ]
       }
     ],
     "constraints": {
-      "commentText": "Maximum length of 10000 characters",
-      "createdAt": "Cannot be a future date"
+      "status": [
+        "pending",
+        "completed",
+        "failed"
+      ]
     },
-    "workflowId": "ticket-auto-close-workflow"
+    "workflowId": "archive-survey-workflow"
   },
   {
-    "id": "ticket-history",
-    "name": "TicketHistory",
-    "description": "Maintains complete audit trail of all ticket changes and status transitions",
+    "id": "export-schedule",
+    "name": "ExportSchedule",
+    "description": "Scheduled automatic exports for survey data and reports",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the history record",
+        "description": "Unique identifier for the export schedule",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "ticketId",
+        "name": "exportConfigurationId",
         "type": "string",
-        "description": "Reference to the ticket that was modified",
+        "description": "Reference to the export configuration to use",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "fieldName",
+        "name": "frequency",
         "type": "string",
-        "description": "Name of the field that was changed (e.g., status, priority, assignee)",
+        "description": "Schedule frequency (daily, weekly, monthly, custom)",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "oldValue",
+        "name": "cronExpression",
         "type": "string",
-        "description": "Previous value before the change",
+        "description": "Cron expression for custom scheduling",
         "required": false,
         "defaultValue": null
       },
       {
-        "name": "newValue",
-        "type": "string",
-        "description": "New value after the change",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "changedBy",
-        "type": "string",
-        "description": "Reference to the user who made the change",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "changedAt",
+        "name": "nextRunDate",
         "type": "date",
-        "description": "Timestamp when the change occurred",
+        "description": "Next scheduled execution date and time",
         "required": true,
-        "defaultValue": "CURRENT_TIMESTAMP"
+        "defaultValue": null
+      },
+      {
+        "name": "lastRunDate",
+        "type": "date",
+        "description": "Last execution date and time",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Whether the schedule is currently active",
+        "required": true,
+        "defaultValue": true
+      },
+      {
+        "name": "createdBy",
+        "type": "string",
+        "description": "User ID who created the schedule",
+        "required": true,
+        "defaultValue": null
       }
     ],
     "relationships": [
       {
         "type": "many-to-one",
-        "relatedModel": "Ticket",
-        "foreignKey": "ticketId",
-        "description": "Each history record belongs to one ticket"
+        "relatedModel": "ExportConfiguration",
+        "foreignKey": "exportConfigurationId"
       },
       {
         "type": "many-to-one",
         "relatedModel": "User",
-        "foreignKey": "changedBy",
-        "description": "Each history record is created by one user"
+        "foreignKey": "createdBy"
       }
     ],
     "indexes": [
       {
-        "name": "idx_ticket_history_ticket_id",
         "fields": [
-          "ticketId"
+          "exportConfigurationId"
         ]
       },
       {
-        "name": "idx_ticket_history_changed_at",
         "fields": [
-          "changedAt"
+          "nextRunDate"
+        ]
+      },
+      {
+        "fields": [
+          "isActive"
         ]
       }
     ],
     "constraints": {
-      "immutable": true,
-      "retentionPolicy": "Retain indefinitely for compliance and audit purposes"
+      "frequency": {
+        "enum": [
+          "daily",
+          "weekly",
+          "monthly",
+          "custom"
+        ]
+      }
     },
-    "workflowId": "ticket-auto-close-workflow"
+    "workflowId": "archive-survey-workflow"
   },
   {
-    "id": "notification",
-    "name": "Notification",
-    "description": "Store and track notifications sent to users about ticket events",
+    "id": "visualization",
+    "name": "Visualization",
+    "description": "Data visualization configurations and settings for survey analytics and reports",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the notification",
+        "description": "Unique identifier for the visualization",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "userId",
+        "name": "name",
         "type": "string",
-        "description": "ID of the user receiving the notification",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "ticketId",
-        "type": "string",
-        "description": "ID of the ticket related to this notification",
+        "description": "Name of the visualization",
         "required": true,
         "defaultValue": null
       },
       {
         "name": "type",
         "type": "string",
-        "description": "Type of notification (ticket_created, ticket_assigned, ticket_updated, comment_added, status_changed)",
+        "description": "Type of visualization (bar, pie, line, table, heatmap, etc.)",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "channel",
+        "name": "reportId",
         "type": "string",
-        "description": "Delivery channel for the notification (email, in-app, both)",
+        "description": "Reference to the associated report",
         "required": true,
-        "defaultValue": "in-app"
+        "defaultValue": null
       },
       {
-        "name": "content",
+        "name": "configuration",
+        "type": "json",
+        "description": "JSON object containing chart settings, colors, axes, filters, and display options",
+        "required": true,
+        "defaultValue": {}
+      },
+      {
+        "name": "dataSource",
         "type": "string",
-        "description": "Notification message content",
+        "description": "Reference to the data source (questionId, metricId, or analyticsDataId)",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "sentAt",
-        "type": "date",
-        "description": "Timestamp when the notification was sent",
-        "required": true,
-        "defaultValue": null
+        "name": "displayOrder",
+        "type": "number",
+        "description": "Order in which visualization appears in the report",
+        "required": false,
+        "defaultValue": 0
       },
       {
-        "name": "isRead",
+        "name": "isActive",
         "type": "boolean",
-        "description": "Whether the notification has been read by the user",
+        "description": "Whether the visualization is currently active and visible",
+        "required": false,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Report",
+        "foreignKey": "reportId",
+        "description": "Visualization belongs to a report"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Question",
+        "foreignKey": "dataSource",
+        "description": "Visualization may reference a specific question"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "reportId"
+        ],
+        "unique": false
+      },
+      {
+        "fields": [
+          "type"
+        ],
+        "unique": false
+      }
+    ],
+    "constraints": {
+      "type": {
+        "enum": [
+          "bar",
+          "pie",
+          "line",
+          "area",
+          "table",
+          "heatmap",
+          "scatter",
+          "gauge",
+          "funnel",
+          "wordcloud"
+        ]
+      }
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "dashboard",
+    "name": "Dashboard",
+    "description": "Custom dashboard configurations for analytics",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the dashboard",
         "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "Name of the dashboard",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "ID of the user who owns this dashboard",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "configuration",
+        "type": "json",
+        "description": "Dashboard layout and widget configuration settings",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "isDefault",
+        "type": "boolean",
+        "description": "Whether this is the default dashboard for the user",
+        "required": false,
         "defaultValue": false
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the dashboard was created",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "updatedAt",
+        "type": "date",
+        "description": "Timestamp when the dashboard was last updated",
+        "required": true,
+        "defaultValue": null
       }
     ],
     "relationships": [
@@ -533,60 +2112,238 @@
         "type": "many-to-one",
         "relatedModel": "User",
         "foreignKey": "userId",
-        "description": "Notification belongs to a user"
-      },
-      {
-        "type": "many-to-one",
-        "relatedModel": "Ticket",
-        "foreignKey": "ticketId",
-        "description": "Notification is related to a ticket"
+        "description": "Dashboard belongs to a user"
       }
     ],
     "indexes": [
       {
-        "name": "idx_user_id",
         "fields": [
           "userId"
-        ]
+        ],
+        "unique": false
       },
       {
-        "name": "idx_ticket_id",
-        "fields": [
-          "ticketId"
-        ]
-      },
-      {
-        "name": "idx_user_isread",
         "fields": [
           "userId",
-          "isRead"
-        ]
-      },
-      {
-        "name": "idx_sent_at",
-        "fields": [
-          "sentAt"
-        ]
+          "isDefault"
+        ],
+        "unique": false
       }
     ],
     "constraints": {
-      "type": {
-        "enum": [
-          "ticket_created",
-          "ticket_assigned",
-          "ticket_updated",
-          "comment_added",
-          "status_changed"
-        ]
-      },
-      "channel": {
-        "enum": [
-          "email",
-          "in-app",
-          "both"
-        ]
-      }
+      "uniqueDefaultPerUser": "Only one default dashboard per user"
     },
-    "workflowId": "ticket-auto-close-workflow"
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "user-role",
+    "name": "UserRole",
+    "description": "Association between users and their assigned roles",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the user-role association",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "Reference to the user being assigned a role",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "roleId",
+        "type": "string",
+        "description": "Reference to the role being assigned to the user",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "assignedAt",
+        "type": "date",
+        "description": "Timestamp when the role was assigned to the user",
+        "required": true,
+        "defaultValue": "now"
+      },
+      {
+        "name": "assignedBy",
+        "type": "string",
+        "description": "Reference to the user who assigned this role",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "expiresAt",
+        "type": "date",
+        "description": "Optional expiration date for temporary role assignments",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if the role assignment is currently active",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "The user who has this role"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Role",
+        "foreignKey": "roleId",
+        "description": "The role assigned to the user"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "assignedBy",
+        "description": "The user who performed the role assignment"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "userId",
+          "roleId"
+        ],
+        "unique": true,
+        "description": "Ensures a user cannot have the same role assigned multiple times"
+      },
+      {
+        "fields": [
+          "userId"
+        ],
+        "unique": false,
+        "description": "Optimizes queries for finding all roles of a user"
+      },
+      {
+        "fields": [
+          "roleId"
+        ],
+        "unique": false,
+        "description": "Optimizes queries for finding all users with a specific role"
+      },
+      {
+        "fields": [
+          "isActive"
+        ],
+        "unique": false,
+        "description": "Optimizes queries for active role assignments"
+      }
+    ],
+    "constraints": {
+      "uniqueUserRole": "A user can only have one active assignment of the same role",
+      "validExpiration": "If expiresAt is set, it must be in the future relative to assignedAt"
+    },
+    "workflowId": "archive-survey-workflow"
+  },
+  {
+    "id": "role-permission",
+    "name": "RolePermission",
+    "description": "Association between roles and their permissions",
+    "fields": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier for the role-permission association",
+        "required": true,
+        "primaryKey": true,
+        "defaultValue": null
+      },
+      {
+        "name": "roleId",
+        "type": "string",
+        "description": "Reference to the role being granted permissions",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "permissionId",
+        "type": "string",
+        "description": "Reference to the permission being assigned",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "grantedAt",
+        "type": "date",
+        "description": "Timestamp when the permission was granted to the role",
+        "required": true,
+        "defaultValue": "now()"
+      },
+      {
+        "name": "grantedBy",
+        "type": "string",
+        "description": "User ID who granted this permission to the role",
+        "required": false,
+        "defaultValue": null
+      },
+      {
+        "name": "isActive",
+        "type": "boolean",
+        "description": "Indicates if this permission assignment is currently active",
+        "required": true,
+        "defaultValue": true
+      }
+    ],
+    "relationships": [
+      {
+        "type": "many-to-one",
+        "relatedModel": "Role",
+        "foreignKey": "roleId",
+        "description": "The role that has this permission"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "Permission",
+        "foreignKey": "permissionId",
+        "description": "The permission assigned to the role"
+      },
+      {
+        "type": "many-to-one",
+        "relatedModel": "User",
+        "foreignKey": "grantedBy",
+        "description": "The user who granted this permission"
+      }
+    ],
+    "indexes": [
+      {
+        "fields": [
+          "roleId",
+          "permissionId"
+        ],
+        "unique": true,
+        "description": "Ensures a permission can only be assigned once to a role"
+      },
+      {
+        "fields": [
+          "roleId"
+        ],
+        "unique": false,
+        "description": "Optimizes queries for all permissions of a role"
+      },
+      {
+        "fields": [
+          "permissionId"
+        ],
+        "unique": false,
+        "description": "Optimizes queries for all roles with a specific permission"
+      }
+    ],
+    "constraints": {
+      "uniqueRolePermission": "A role cannot have the same permission assigned multiple times"
+    },
+    "workflowId": "archive-survey-workflow"
   }
 ]

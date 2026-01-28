@@ -1,533 +1,163 @@
 [
   {
-    "id": "book",
-    "name": "Book",
-    "description": "Store comprehensive book catalog information and availability status",
+    "id": "user",
+    "name": "User",
+    "description": "User account and authentication data",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the book",
+        "description": "Unique identifier for the user",
         "required": true,
         "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "isbn",
-        "type": "string",
-        "description": "International Standard Book Number for unique identification",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "title",
-        "type": "string",
-        "description": "Title of the book",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "author",
-        "type": "string",
-        "description": "Primary author or authors of the book",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "category",
-        "type": "string",
-        "description": "Genre or subject category for classification",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "publicationYear",
-        "type": "number",
-        "description": "Year the book was published",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "totalCopies",
-        "type": "number",
-        "description": "Total number of copies owned by the library",
-        "required": true,
-        "defaultValue": 1
-      },
-      {
-        "name": "availableCopies",
-        "type": "number",
-        "description": "Number of copies currently available for checkout",
-        "required": true,
-        "defaultValue": 1
-      }
-    ],
-    "relationships": [],
-    "indexes": [
-      "isbn",
-      "title",
-      "author",
-      "category"
-    ],
-    "constraints": {
-      "uniqueIsbn": "isbn must be unique",
-      "availabilityCheck": "availableCopies must be less than or equal to totalCopies"
-    },
-    "workflowId": "member-registration-workflow"
-  },
-  {
-    "id": "member",
-    "name": "Member",
-    "description": "Store library member profiles and membership status information",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for the member",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "membershipNumber",
-        "type": "string",
-        "description": "Unique membership card number for library identification",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "fullName",
-        "type": "string",
-        "description": "Full name of the library member",
-        "required": true,
         "defaultValue": null
       },
       {
         "name": "email",
         "type": "string",
-        "description": "Email address for communication and authentication",
+        "description": "User's email address for login and communication",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "phone",
+        "name": "passwordHash",
         "type": "string",
-        "description": "Contact phone number",
+        "description": "Hashed password for authentication",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "firstName",
+        "type": "string",
+        "description": "User's first name",
         "required": false,
         "defaultValue": null
       },
       {
-        "name": "membershipStatus",
+        "name": "lastName",
         "type": "string",
-        "description": "Current status of membership (active, expired, suspended)",
-        "required": true,
-        "defaultValue": "active"
-      },
-      {
-        "name": "membershipExpiryDate",
-        "type": "date",
-        "description": "Date when the membership expires",
-        "required": true,
+        "description": "User's last name",
+        "required": false,
         "defaultValue": null
       },
       {
-        "name": "registrationDate",
-        "type": "date",
-        "description": "Date when the member registered",
-        "required": true,
-        "defaultValue": null
-      }
-    ],
-    "relationships": [],
-    "indexes": [
-      "membershipNumber",
-      "email",
-      "membershipStatus"
-    ],
-    "constraints": {
-      "unique": [
-        "membershipNumber",
-        "email"
-      ],
-      "enum": {
-        "membershipStatus": [
-          "active",
-          "expired",
-          "suspended"
-        ]
-      }
-    },
-    "workflowId": "member-registration-workflow"
-  },
-  {
-    "id": "library-settings",
-    "name": "LibrarySettings",
-    "description": "Store system-wide configuration and operational parameters for library management",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for settings record",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "defaultLoanPeriodDays",
-        "type": "number",
-        "description": "Default number of days a book can be borrowed",
-        "required": true,
-        "defaultValue": 14
-      },
-      {
-        "name": "lateFeePerDay",
-        "type": "number",
-        "description": "Late fee amount charged per day in currency units",
-        "required": true,
-        "defaultValue": 0.5
-      },
-      {
-        "name": "maxBooksPerMember",
-        "type": "number",
-        "description": "Maximum number of books a member can borrow simultaneously",
-        "required": true,
-        "defaultValue": 5
-      },
-      {
-        "name": "reminderDaysBeforeDue",
-        "type": "number",
-        "description": "Number of days before due date to send reminder notification",
-        "required": true,
-        "defaultValue": 3
-      },
-      {
-        "name": "enableNotifications",
+        "name": "isActive",
         "type": "boolean",
-        "description": "Toggle to enable or disable email/SMS notifications",
+        "description": "Indicates if the user account is active",
         "required": true,
         "defaultValue": true
       },
       {
-        "name": "lastUpdated",
+        "name": "createdAt",
         "type": "date",
-        "description": "Timestamp of last settings modification",
+        "description": "Timestamp when the user account was created",
         "required": true,
-        "defaultValue": null
-      }
-    ],
-    "relationships": [],
-    "indexes": [],
-    "constraints": {
-      "singleton": "Only one settings record should exist in the system",
-      "positiveValues": "defaultLoanPeriodDays, lateFeePerDay, maxBooksPerMember, and reminderDaysBeforeDue must be positive numbers"
-    },
-    "workflowId": "member-registration-workflow"
-  },
-  {
-    "id": "notification-log",
-    "name": "NotificationLog",
-    "description": "Track all automated notifications sent to members with delivery status and audit trail",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for the notification log entry",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
+        "defaultValue": "now"
       },
       {
-        "name": "memberId",
-        "type": "string",
-        "description": "Reference to the member who received the notification",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "notificationType",
-        "type": "string",
-        "description": "Type of notification (e.g., DUE_REMINDER, OVERDUE_NOTICE, RESERVATION_READY, ACCOUNT_UPDATE)",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "deliveryChannel",
-        "type": "string",
-        "description": "Channel used for delivery (EMAIL, SMS, PUSH, IN_APP)",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "deliveryStatus",
-        "type": "string",
-        "description": "Current status of notification (PENDING, SENT, DELIVERED, FAILED, BOUNCED)",
-        "required": true,
-        "defaultValue": "PENDING"
-      },
-      {
-        "name": "sentAt",
+        "name": "lastLoginAt",
         "type": "date",
-        "description": "Timestamp when the notification was sent",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "retryCount",
-        "type": "number",
-        "description": "Number of delivery retry attempts made",
-        "required": true,
-        "defaultValue": 0
-      },
-      {
-        "name": "errorMessage",
-        "type": "string",
-        "description": "Error details if delivery failed",
+        "description": "Timestamp of the user's last login",
         "required": false,
         "defaultValue": null
       }
     ],
-    "relationships": [
-      {
-        "type": "many-to-one",
-        "relatedModel": "Member",
-        "foreignKey": "memberId",
-        "description": "Links notification to the recipient member"
-      }
-    ],
+    "relationships": [],
     "indexes": [
       {
-        "name": "idx_member_id",
+        "name": "idx_user_email",
         "fields": [
-          "memberId"
+          "email"
         ],
-        "description": "Index for querying notifications by member"
-      },
-      {
-        "name": "idx_sent_at",
-        "fields": [
-          "sentAt"
-        ],
-        "description": "Index for chronological queries and reporting"
-      },
-      {
-        "name": "idx_delivery_status",
-        "fields": [
-          "deliveryStatus"
-        ],
-        "description": "Index for filtering by delivery status for retry logic"
+        "unique": true
       }
     ],
     "constraints": {
-      "notificationType": "Must be one of: DUE_REMINDER, OVERDUE_NOTICE, RESERVATION_READY, ACCOUNT_UPDATE, RENEWAL_CONFIRMATION, FINE_NOTICE",
-      "deliveryChannel": "Must be one of: EMAIL, SMS, PUSH, IN_APP",
-      "deliveryStatus": "Must be one of: PENDING, SENT, DELIVERED, FAILED, BOUNCED",
-      "retryCount": "Must be non-negative integer, maximum 3 retries"
+      "unique": [
+        "email"
+      ]
     },
-    "workflowId": "member-registration-workflow"
+    "workflowId": "workflow-user-registration"
   },
   {
-    "id": "checkout",
-    "name": "Checkout",
-    "description": "Track active and historical book borrowing transactions with checkout dates, due dates, and return information",
+    "id": "task",
+    "name": "Task",
+    "description": "Core task entity with title, description, due date, and completion status",
     "fields": [
       {
         "name": "id",
         "type": "string",
-        "description": "Unique identifier for the checkout transaction",
+        "description": "Unique identifier for the task",
         "required": true,
         "primaryKey": true,
         "defaultValue": null
       },
       {
-        "name": "bookId",
+        "name": "title",
         "type": "string",
-        "description": "Reference to the borrowed book",
+        "description": "Title or name of the task",
         "required": true,
         "defaultValue": null
       },
       {
-        "name": "memberId",
+        "name": "description",
         "type": "string",
-        "description": "Reference to the member borrowing the book",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "checkoutDate",
-        "type": "date",
-        "description": "Date and time when the book was checked out",
-        "required": true,
+        "description": "Detailed description of the task",
+        "required": false,
         "defaultValue": null
       },
       {
         "name": "dueDate",
         "type": "date",
-        "description": "Date when the book is due to be returned",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "returnDate",
-        "type": "date",
-        "description": "Actual date when the book was returned (null if still checked out)",
+        "description": "Due date for task completion",
         "required": false,
         "defaultValue": null
       },
       {
-        "name": "status",
-        "type": "string",
-        "description": "Current status of the checkout (active, returned, overdue)",
+        "name": "isCompleted",
+        "type": "boolean",
+        "description": "Completion status of the task",
         "required": true,
-        "defaultValue": "active"
+        "defaultValue": false
+      },
+      {
+        "name": "userId",
+        "type": "string",
+        "description": "ID of the user assigned to the task",
+        "required": true,
+        "defaultValue": null
+      },
+      {
+        "name": "createdAt",
+        "type": "date",
+        "description": "Timestamp when the task was created",
+        "required": true,
+        "defaultValue": "now"
       }
     ],
     "relationships": [
       {
         "type": "many-to-one",
-        "relatedModel": "Book",
-        "foreignKey": "bookId",
-        "description": "Each checkout is associated with one book"
-      },
-      {
-        "type": "many-to-one",
-        "relatedModel": "Member",
-        "foreignKey": "memberId",
-        "description": "Each checkout is associated with one member"
+        "relatedModel": "User",
+        "foreignKey": "userId",
+        "description": "Task belongs to a User"
       }
     ],
     "indexes": [
       {
         "fields": [
-          "bookId"
+          "userId"
         ],
-        "description": "Index for querying checkouts by book"
-      },
-      {
-        "fields": [
-          "memberId"
-        ],
-        "description": "Index for querying member borrowing history"
-      },
-      {
-        "fields": [
-          "status"
-        ],
-        "description": "Index for filtering active/overdue checkouts"
+        "unique": false
       },
       {
         "fields": [
           "dueDate"
         ],
-        "description": "Index for identifying overdue items"
-      }
-    ],
-    "constraints": {
-      "statusValues": [
-        "active",
-        "returned",
-        "overdue"
-      ],
-      "businessRules": [
-        "returnDate must be null or greater than checkoutDate",
-        "dueDate must be greater than checkoutDate",
-        "status should be 'returned' when returnDate is set"
-      ]
-    },
-    "workflowId": "member-registration-workflow"
-  },
-  {
-    "id": "overdue-record",
-    "name": "OverdueRecord",
-    "description": "Track overdue books and associated late fee calculations",
-    "fields": [
-      {
-        "name": "id",
-        "type": "string",
-        "description": "Unique identifier for the overdue record",
-        "required": true,
-        "primaryKey": true,
-        "defaultValue": null
-      },
-      {
-        "name": "checkoutId",
-        "type": "string",
-        "description": "Reference to the overdue checkout",
-        "required": true,
-        "defaultValue": null
-      },
-      {
-        "name": "daysOverdue",
-        "type": "number",
-        "description": "Number of days the item is overdue",
-        "required": true,
-        "defaultValue": 0
-      },
-      {
-        "name": "lateFeeAmount",
-        "type": "number",
-        "description": "Calculated late fee amount in currency",
-        "required": true,
-        "defaultValue": 0
-      },
-      {
-        "name": "paymentStatus",
-        "type": "string",
-        "description": "Payment status: pending, paid, waived",
-        "required": true,
-        "defaultValue": "pending"
-      },
-      {
-        "name": "lastNotificationDate",
-        "type": "date",
-        "description": "Date of the last overdue notification sent",
-        "required": false,
-        "defaultValue": null
-      },
-      {
-        "name": "resolvedDate",
-        "type": "date",
-        "description": "Date when the overdue was resolved (returned or paid)",
-        "required": false,
-        "defaultValue": null
-      }
-    ],
-    "relationships": [
-      {
-        "type": "many-to-one",
-        "relatedModel": "Checkout",
-        "foreignKey": "checkoutId",
-        "description": "Links to the checkout that became overdue"
-      }
-    ],
-    "indexes": [
-      {
-        "fields": [
-          "checkoutId"
-        ],
-        "unique": false
-      },
-      {
-        "fields": [
-          "paymentStatus"
-        ],
-        "unique": false
-      },
-      {
-        "fields": [
-          "resolvedDate"
-        ],
         "unique": false
       }
     ],
-    "constraints": {
-      "paymentStatus": [
-        "pending",
-        "paid",
-        "waived"
-      ],
-      "daysOverdue": "Must be greater than or equal to 0",
-      "lateFeeAmount": "Must be greater than or equal to 0"
-    },
-    "workflowId": "member-registration-workflow"
+    "constraints": {},
+    "workflowId": "workflow-user-registration"
   }
 ]

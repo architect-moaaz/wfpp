@@ -6,6 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const pageDatabase = require('../database/PageDatabase');
+const db = require('../config/database');
 
 /**
  * GET /api/pages
@@ -32,12 +33,51 @@ router.get('/', async (req, res) => {
 
 /**
  * GET /api/pages/:id
- * Get page by ID
+ * Get page by ID - checks PostgreSQL first, then file-based storage
  */
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
+    // First try PostgreSQL database
+    const result = await db.query('SELECT * FROM k1.pages WHERE id = $1', [id]);
+
+    if (result.rows.length > 0) {
+      const row = result.rows[0];
+      const metadata = row.metadata || {};
+
+      // Sections can be stored in row.sections OR inside metadata.sections
+      // Check if row.sections has content, otherwise use metadata.sections
+      const rowSections = row.sections && row.sections.length > 0 ? row.sections : null;
+      const sections = rowSections || metadata.sections || [];
+
+      const page = {
+        id: row.id,
+        name: row.name,
+        type: row.type || metadata.pageType,
+        route: row.route,
+        platform: row.platform || metadata.platform,
+        layout: row.layout,
+        sections: sections,
+        components: row.components || [], // Include components for PageBuilderPro
+        navigation: row.navigation || metadata.navigation,
+        dataBindings: row.data_bindings,
+        forms: row.forms,
+        metadata: row.metadata,
+        workflowId: row.workflow_id,
+        applicationId: row.application_id,
+        version: row.version,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      };
+
+      return res.status(200).json({
+        success: true,
+        page
+      });
+    }
+
+    // Fall back to file-based storage
     const page = pageDatabase.getPageById(id);
 
     if (!page) {
@@ -220,15 +260,19 @@ router.post('/', async (req, res) => {
 
 /**
  * DELETE /api/pages/:id
- * Delete a page
+ * Delete a page from both PostgreSQL and file-based storage
  */
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = pageDatabase.deletePage(id);
+    // Delete from PostgreSQL
+    const dbResult = await db.query('DELETE FROM k1.pages WHERE id = $1 RETURNING id', [id]);
 
-    if (!result) {
+    // Also delete from file-based storage (for legacy data)
+    const fileResult = pageDatabase.deletePage(id);
+
+    if (dbResult.rows.length === 0 && !fileResult) {
       return res.status(404).json({
         success: false,
         error: 'Page not found'

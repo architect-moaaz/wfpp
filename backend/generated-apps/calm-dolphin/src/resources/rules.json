@@ -1,62 +1,25 @@
 [
   {
-    "id": "rule_start_validate_input",
-    "name": "ValidateTicketAutoCloseInput",
-    "description": "Validate that tickets exist and last activity date is present before processing auto-close workflow",
+    "id": "rule_start_archive_process",
+    "name": "Start Archive Process Rule",
+    "description": "Validate survey status and completion before initiating archive process",
     "type": "validation",
-    "priority": 0,
-    "is_active": true,
-    "conditions": {
-      "all": [
-        {
-          "field": "Ticket.id",
-          "operator": "isNull",
-          "value": true
-        }
-      ]
-    },
-    "actions": {
-      "actions": [
-        {
-          "type": "throwError",
-          "field": "workflowError",
-          "value": "VALIDATION_FAILED",
-          "message": "No valid ticket ID provided for auto-close workflow"
-        },
-        {
-          "type": "logMessage",
-          "field": "errorLog",
-          "value": "ERROR",
-          "message": "Ticket auto-close validation failed: Missing ticket identifier"
-        }
-      ]
-    },
-    "node_id": "start-1",
-    "workflow_id": "ticket-auto-close-workflow",
-    "workflowId": "ticket-auto-close-workflow",
-    "application_id": "app_1765088649444"
-  },
-  {
-    "id": "rule_decision_tickets_found",
-    "name": "EvaluateTicketsForAutoClose",
-    "description": "Determine if tickets are eligible for auto-close based on status and inactivity period",
-    "type": "decision",
     "priority": 1,
     "is_active": true,
     "conditions": {
       "all": [
         {
-          "field": "Ticket.status",
+          "field": "Survey.status",
           "operator": "in",
           "value": [
-            "pending",
-            "waiting_customer"
+            "closed",
+            "completed"
           ]
         },
         {
-          "field": "Ticket.lastActivityDays",
-          "operator": "greaterThan",
-          "value": 30
+          "field": "Survey.endDate",
+          "operator": "lessThan",
+          "value": "{{currentDate}}"
         }
       ]
     },
@@ -64,27 +27,147 @@
       "actions": [
         {
           "type": "setVariable",
-          "field": "eligibleForAutoClose",
-          "value": true,
-          "message": "Ticket meets auto-close criteria"
+          "field": "archiveEligible",
+          "value": "true"
+        },
+        {
+          "type": "logMessage",
+          "message": "Survey validation passed - eligible for archiving"
+        }
+      ]
+    },
+    "node_id": "start-1",
+    "workflow_id": "archive-survey-workflow",
+    "workflowId": "archive-survey-workflow",
+    "application_id": "app_1767349844748"
+  },
+  {
+    "id": "rule_validate_survey_status",
+    "name": "Validate Survey Status Rule",
+    "description": "Ensure survey has no active response sessions before archiving",
+    "type": "validation",
+    "priority": 2,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "ResponseSession.activeCount",
+          "operator": "equals",
+          "value": "0"
+        },
+        {
+          "field": "Survey.hasUnprocessedResponses",
+          "operator": "equals",
+          "value": "false"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "Survey.status",
+          "value": "validated"
+        },
+        {
+          "type": "setVariable",
+          "field": "validationStatus",
+          "value": "passed"
+        }
+      ]
+    },
+    "node_id": "validation-1",
+    "workflow_id": "archive-survey-workflow",
+    "workflowId": "archive-survey-workflow",
+    "application_id": "app_1767349844748"
+  },
+  {
+    "id": "rule_is_survey_eligible",
+    "name": "Is Survey Eligible Rule",
+    "description": "Determine if survey meets retention policy requirements for archiving",
+    "type": "decision",
+    "priority": 3,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "Survey.responseCount",
+          "operator": "greaterThan",
+          "value": "0"
+        },
+        {
+          "field": "Survey.retentionPeriodDays",
+          "operator": "greaterThan",
+          "value": "30"
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "setVariable",
+          "field": "workflowPath",
+          "value": "proceed_to_archive"
         },
         {
           "type": "updateData",
-          "field": "Ticket.status",
-          "value": "auto_closed",
-          "message": "Updating ticket status to auto-closed"
+          "field": "Survey.archiveStatus",
+          "value": "eligible"
         },
         {
-          "type": "sendNotification",
-          "field": "User.email",
-          "value": "TICKET_AUTO_CLOSED",
-          "message": "Your ticket has been automatically closed due to 30 days of inactivity"
+          "type": "logMessage",
+          "message": "Survey meets eligibility criteria - proceeding to archive"
         }
       ]
     },
     "node_id": "decision-1",
-    "workflow_id": "ticket-auto-close-workflow",
-    "workflowId": "ticket-auto-close-workflow",
-    "application_id": "app_1765088649444"
+    "workflow_id": "archive-survey-workflow",
+    "workflowId": "archive-survey-workflow",
+    "application_id": "app_1767349844748"
+  },
+  {
+    "id": "rule_review_archive_request",
+    "name": "Review Archive Request Rule",
+    "description": "Validate user permissions and archive request details before approval",
+    "type": "validation",
+    "priority": 4,
+    "is_active": true,
+    "conditions": {
+      "all": [
+        {
+          "field": "User.hasPermission",
+          "operator": "equals",
+          "value": "archive_survey"
+        },
+        {
+          "field": "archiveRequest.reason",
+          "operator": "notEquals",
+          "value": ""
+        }
+      ]
+    },
+    "actions": {
+      "actions": [
+        {
+          "type": "validateField",
+          "field": "archiveRequest",
+          "value": "approved"
+        },
+        {
+          "type": "sendNotification",
+          "field": "User.email",
+          "message": "Archive request has been validated and approved for processing"
+        },
+        {
+          "type": "setVariable",
+          "field": "reviewStatus",
+          "value": "approved"
+        }
+      ]
+    },
+    "node_id": "userTask-1",
+    "workflow_id": "archive-survey-workflow",
+    "workflowId": "archive-survey-workflow",
+    "application_id": "app_1767349844748"
   }
 ]
