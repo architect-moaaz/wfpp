@@ -1,0 +1,459 @@
+/**
+ * FigmaToMobileConverter
+ *
+ * Directly converts Figma-extracted layout trees into React Native component
+ * JSON, bypassing AI generation so the output faithfully mirrors the Figma
+ * design's structure, hierarchy, and styling.
+ *
+ * Output format matches what ComponentRenderer (mobile) and
+ * SimulatorComponentRenderer (web) expect:
+ *   { type, props, style, children }
+ * where `style` is a top-level field (not nested inside props).
+ */
+
+const { tokens } = require('../../config/design-tokens');
+
+class FigmaToMobileConverter {
+
+  /**
+   * Convert an array of Figma mobile screens to the mobile-UI format
+   * expected by ApplicationGenerator.
+   *
+   * @param {Object[]} figmaMobileScreens - screens from FigmaDirectClient.processFrame()
+   * @param {Object|null} designSystem     - merged design system (colors, typography, etc.)
+   * @returns {{ screens: Object[], navigation: Object }}
+   */
+  convert(figmaMobileScreens, designSystem) {
+    const ds = this._resolveDesignSystem(designSystem);
+    const screens = figmaMobileScreens
+      .filter(s => s.layoutTree && s.layoutTree.length > 0)
+      .map(s => this._convertScreen(s, ds));
+
+    const navigation = this._inferNavigation(screens);
+
+    return { screens, navigation };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Screen conversion
+  // ---------------------------------------------------------------------------
+
+  _convertScreen(screen, ds) {
+    const name = this._toPascalCase(screen.name || screen.title || 'Screen');
+    const components = (screen.layoutTree || [])
+      .map(node => this._convertNode(node, ds))
+      .filter(Boolean);
+    const screenType = this._inferScreenType(screen.layoutTree);
+
+    return {
+      id: screen.id || `screen_${name.toLowerCase()}`,
+      name,
+      type: screenType,
+      platform: 'cross-platform',
+      framework: 'react-native',
+      components: [{
+        type: 'SafeAreaView',
+        props: {},
+        style: { flex: 1 },
+        children: [{
+          type: 'ScrollView',
+          props: { contentContainerStyle: { padding: ds.spacing } },
+          style: { flex: 1 },
+          children: components
+        }]
+      }],
+      navigation: { showHeader: true, headerTitle: screen.name || screen.title }
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Node -> RN component mapping
+  // ---------------------------------------------------------------------------
+
+  _convertNode(node, ds) {
+    if (!node) return null;
+
+    switch (node.type) {
+      case 'container': return this._convertContainer(node, ds);
+      case 'text':      return this._convertText(node, ds);
+      case 'button':    return this._convertButton(node, ds);
+      case 'input':     return this._convertInput(node, ds);
+      case 'checkbox':  return this._convertCheckbox(node, ds);
+      case 'switch':    return this._convertSwitch(node, ds);
+      case 'select':    return this._convertSelect(node, ds);
+      case 'icon':      return this._convertIcon(node, ds);
+      case 'image':     return this._convertImage(node, ds);
+      case 'card':      return this._convertCard(node, ds);
+      case 'chart':     return this._convertChart(node, ds);
+      case 'table':     return this._convertList(node, ds);
+      case 'divider':   return this._convertDivider(node, ds);
+      default:          return null;
+    }
+  }
+
+  _convertContainer(node, ds) {
+    const children = (node.children || [])
+      .map(c => this._convertNode(c, ds))
+      .filter(Boolean);
+
+    if (children.length === 0) return null;
+
+    const style = {};
+    if (node.layout) {
+      style.flexDirection = node.layout.direction === 'HORIZONTAL' ? 'row' : 'column';
+      if (node.layout.gap) style.gap = node.layout.gap;
+      if (node.layout.align) {
+        style.justifyContent = this._mapAlign(node.layout.align);
+      }
+      if (node.layout.crossAlign) {
+        style.alignItems = this._mapAlign(node.layout.crossAlign);
+      }
+      if (node.layout.padding) {
+        const p = node.layout.padding;
+        style.paddingTop = p.top || 0;
+        style.paddingRight = p.right || 0;
+        style.paddingBottom = p.bottom || 0;
+        style.paddingLeft = p.left || 0;
+      }
+    }
+
+    if (node.dimensions) {
+      if (node.dimensions.width) style.width = node.dimensions.width;
+      if (node.dimensions.height) style.height = node.dimensions.height;
+    }
+
+    this._applyStyling(style, node);
+
+    return { type: 'View', props: {}, style, children };
+  }
+
+  _convertText(node, ds) {
+    const style = {};
+
+    switch (node.variant) {
+      case 'h1':
+        style.fontSize = ds.fontSizes.h1;
+        style.fontWeight = String(ds.fontWeights.bold);
+        style.color = ds.colors.text;
+        break;
+      case 'h2':
+        style.fontSize = ds.fontSizes.h2;
+        style.fontWeight = String(ds.fontWeights.semibold);
+        style.color = ds.colors.text;
+        break;
+      case 'h3':
+        style.fontSize = ds.fontSizes.h3;
+        style.fontWeight = String(ds.fontWeights.semibold);
+        style.color = ds.colors.text;
+        break;
+      default:
+        style.fontSize = ds.fontSizes.body;
+        style.fontWeight = String(ds.fontWeights.normal);
+        style.color = ds.colors.textSecondary;
+    }
+
+    // Override with Figma-extracted styling when available
+    if (node.styling) {
+      if (node.styling.color) style.color = node.styling.color;
+      if (node.styling.fontSize) style.fontSize = parseInt(node.styling.fontSize, 10);
+      if (node.styling.fontWeight) style.fontWeight = String(node.styling.fontWeight);
+    }
+
+    return {
+      type: 'Text',
+      props: { text: node.content || '' },
+      style
+    };
+  }
+
+  _convertButton(node, ds) {
+    const bg = node.styling?.background || ds.colors.primary;
+    const style = {
+      backgroundColor: bg,
+      borderColor: bg,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: ds.borderRadius,
+      alignItems: 'center'
+    };
+    this._applyStyling(style, node);
+    return {
+      type: 'Button',
+      props: { title: node.label || 'Button', primary: true },
+      style
+    };
+  }
+
+  _convertInput(node, ds) {
+    const props = {
+      placeholder: node.placeholder || '',
+      name: (node.placeholder || '').toLowerCase().replace(/[^a-z0-9]/g, '_'),
+      label: node.placeholder || ''
+    };
+
+    if (node.fieldType === 'password') {
+      props.secureTextEntry = true;
+    }
+    if (node.fieldType === 'email') {
+      props.keyboardType = 'email-address';
+    }
+    if (node.fieldType === 'number') {
+      props.keyboardType = 'numeric';
+    }
+    if (node.fieldType === 'tel') {
+      props.keyboardType = 'phone-pad';
+    }
+
+    const style = {
+      borderWidth: 1,
+      borderColor: ds.colors.border,
+      borderRadius: ds.borderRadius,
+      padding: 12,
+      fontSize: ds.fontSizes.body,
+      color: ds.colors.text,
+      backgroundColor: ds.colors.card
+    };
+    this._applyStyling(style, node);
+    return { type: 'TextInput', props, style };
+  }
+
+  _convertCheckbox(node, ds) {
+    const style = { marginVertical: 8 };
+    this._applyStyling(style, node);
+    return { type: 'Checkbox', props: { label: node.label || '' }, style };
+  }
+
+  _convertSwitch(node, ds) {
+    const style = { marginVertical: 8 };
+    this._applyStyling(style, node);
+    return {
+      type: 'Switch',
+      props: { label: node.label || '', trackColor: { true: ds.colors.primary, false: ds.colors.border } },
+      style
+    };
+  }
+
+  _convertSelect(node, ds) {
+    const style = {
+      borderWidth: 1,
+      borderColor: ds.colors.border,
+      borderRadius: ds.borderRadius,
+      padding: 12,
+      backgroundColor: ds.colors.card
+    };
+    this._applyStyling(style, node);
+    return { type: 'Picker', props: { placeholder: node.placeholder || 'Select...' }, style };
+  }
+
+  _convertIcon(node, ds) {
+    return {
+      type: 'View',
+      props: { accessibilityLabel: node.name || 'icon' },
+      style: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }
+    };
+  }
+
+  _convertImage(node, ds) {
+    const style = { borderRadius: ds.borderRadius };
+    if (node.dimensions) {
+      style.width = node.dimensions.width;
+      style.height = node.dimensions.height;
+    } else {
+      style.width = '100%';
+      style.height = 200;
+    }
+    this._applyStyling(style, node);
+    return {
+      type: 'Image',
+      props: { source: { uri: 'placeholder' }, accessibilityLabel: node.name || 'image' },
+      style
+    };
+  }
+
+  _convertCard(node, ds) {
+    const children = (node.children || [])
+      .map(c => this._convertNode(c, ds))
+      .filter(Boolean);
+
+    const style = {
+      backgroundColor: ds.colors.card,
+      borderRadius: ds.borderRadius,
+      padding: ds.spacing,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 2,
+      marginBottom: 12
+    };
+    this._applyStyling(style, node);
+
+    return {
+      type: 'Card',
+      props: {},
+      style,
+      children: children.length > 0 ? children : undefined
+    };
+  }
+
+  _convertChart(node, ds) {
+    return {
+      type: 'View',
+      props: { accessibilityLabel: node.name || 'chart' },
+      style: {
+        height: 200,
+        backgroundColor: ds.colors.card,
+        borderRadius: ds.borderRadius,
+        padding: ds.spacing,
+        justifyContent: 'center',
+        alignItems: 'center'
+      },
+      children: [{
+        type: 'Text',
+        props: { text: node.name || 'Chart' },
+        style: { color: ds.colors.textSecondary, fontSize: ds.fontSizes.body }
+      }]
+    };
+  }
+
+  _convertList(node, ds) {
+    return {
+      type: 'FlatList',
+      props: { data: [], accessibilityLabel: node.name || 'list' },
+      style: { flex: 1 }
+    };
+  }
+
+  _convertDivider(node, ds) {
+    const style = { height: 1, backgroundColor: ds.colors.border, marginVertical: 8 };
+    this._applyStyling(style, node);
+    return { type: 'Divider', props: {}, style };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Navigation inference
+  // ---------------------------------------------------------------------------
+
+  _inferNavigation(screens) {
+    const screenNames = screens.map(s => s.name);
+
+    if (screens.length >= 4) {
+      return { type: 'tab', screens: screenNames };
+    }
+
+    return { type: 'stack', screens: screenNames };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Screen type inference
+  // ---------------------------------------------------------------------------
+
+  _inferScreenType(layoutTree) {
+    if (!layoutTree || layoutTree.length === 0) return 'detail';
+
+    const types = this._collectTypes(layoutTree);
+
+    const hasInputs = types.includes('input') || types.includes('checkbox') ||
+                      types.includes('switch') || types.includes('select');
+    const hasLists = types.includes('table');
+    const hasCharts = types.includes('chart');
+
+    if (hasInputs && !hasLists) return 'form';
+    if (hasLists && !hasInputs) return 'list';
+    if (hasCharts) return 'dashboard';
+    return 'detail';
+  }
+
+  _collectTypes(nodes) {
+    const types = [];
+    for (const node of nodes) {
+      if (node.type) types.push(node.type);
+      if (node.children) types.push(...this._collectTypes(node.children));
+    }
+    return types;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Design system resolution
+  // ---------------------------------------------------------------------------
+
+  _resolveDesignSystem(designSystem) {
+    const lightColors = tokens.colors.light;
+
+    const colors = {
+      primary: designSystem?.colors?.primary || lightColors.primary,
+      text: designSystem?.colors?.text || lightColors.foreground,
+      textSecondary: designSystem?.colors?.textSecondary || lightColors.mutedForeground,
+      background: designSystem?.colors?.background || lightColors.background,
+      card: designSystem?.colors?.cardBackground || lightColors.card,
+      border: designSystem?.colors?.border || lightColors.border,
+    };
+
+    const fontSizes = {
+      h1: parseInt(designSystem?.typography?.fontSize?.h1 || tokens.typography.fontSize['3xl'], 10),
+      h2: parseInt(designSystem?.typography?.fontSize?.h2 || tokens.typography.fontSize['2xl'], 10),
+      h3: parseInt(designSystem?.typography?.fontSize?.h3 || tokens.typography.fontSize.xl, 10),
+      body: parseInt(designSystem?.typography?.fontSize?.base || tokens.typography.fontSize.base, 10),
+    };
+
+    const fontWeights = {
+      bold: designSystem?.typography?.fontWeight?.title || tokens.typography.fontWeight.bold,
+      semibold: designSystem?.typography?.fontWeight?.label || tokens.typography.fontWeight.semibold,
+      normal: designSystem?.typography?.fontWeight?.input || tokens.typography.fontWeight.normal,
+    };
+
+    const spacing = parseInt(designSystem?.spacing?.container || tokens.spacing.base, 10);
+    const borderRadius = parseInt(designSystem?.borderRadius?.input || tokens.borderRadius.md, 10);
+
+    return { colors, fontSizes, fontWeights, spacing, borderRadius };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  _toPascalCase(str) {
+    return str
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join('');
+  }
+
+  /**
+   * Merge Figma-extracted visual styling into a RN style object.
+   * Called at the end of each _convert* method so Figma values
+   * override design-system defaults when present.
+   */
+  _applyStyling(style, node) {
+    if (!node || !node.styling) return;
+    const s = node.styling;
+    if (s.backgroundColor) style.backgroundColor = s.backgroundColor;
+    if (s.borderRadius !== undefined) style.borderRadius = s.borderRadius;
+    if (s.borderColor) {
+      style.borderColor = s.borderColor;
+      style.borderWidth = s.borderWidth || 1;
+    }
+    if (s.shadowColor) {
+      style.shadowColor = s.shadowColor;
+      style.shadowOffset = { width: s.shadowOffsetX || 0, height: s.shadowOffsetY || 0 };
+      style.shadowOpacity = s.shadowOpacity || 0.1;
+      style.shadowRadius = s.shadowRadius || 4;
+      style.elevation = 2;
+    }
+    if (s.opacity !== undefined && s.opacity < 1) style.opacity = s.opacity;
+  }
+
+  _mapAlign(figmaAlign) {
+    const mapping = {
+      'MIN': 'flex-start',
+      'CENTER': 'center',
+      'MAX': 'flex-end',
+      'SPACE_BETWEEN': 'space-between',
+    };
+    return mapping[figmaAlign] || 'flex-start';
+  }
+}
+
+module.exports = FigmaToMobileConverter;
