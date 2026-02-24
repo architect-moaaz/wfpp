@@ -8,7 +8,9 @@
 const fs = require('fs').promises;
 const path = require('path');
 const ShadcnComponentGenerator = require('./ShadcnComponentGenerator');
+const UICodeGenerator = require('./UICodeGenerator');
 const DesignExpert = require('../services/moe/experts/DesignExpert');
+const { mergeWithTheme, LIGHT_COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS, LAYOUT, COMPONENTS, TRANSITION, STATUS_COLORS } = require('../config/design-tokens');
 
 class ApplicationGenerator {
   constructor(application) {
@@ -187,13 +189,34 @@ class ApplicationGenerator {
         winston: '^3.9.0',
         bull: '^4.12.0',
         nodemailer: '^6.9.0',
-        '@anthropic-ai/sdk': '^0.71.0'
+        '@anthropic-ai/sdk': '^0.71.0',
+        // Auth / OAuth / SSO
+        'passport': '^0.7.0',
+        'passport-local': '^1.0.0',
+        'passport-google-oauth20': '^2.0.0',
+        'passport-github2': '^0.1.12',
+        'express-session': '^1.17.3',
+        'jsonwebtoken': '^9.0.2',
+        'bcryptjs': '^2.4.3',
+        // Real-time
+        'socket.io': '^4.7.4',
+        // PDF
+        'pdfkit': '^0.13.0',
+        // File management
+        'multer': '^1.4.5-lts.1',
+        // i18n
+        'i18next': '^23.7.0',
+        'i18next-fs-backend': '^2.3.0',
+        'i18next-http-middleware': '^3.5.0'
       },
       optionalDependencies: {
         '@sendgrid/mail': '^8.1.0',
         '@aws-sdk/client-ses': '^3.400.0',
         'firebase-admin': '^12.0.0',
-        'pusher': '^5.2.0'
+        'pusher': '^5.2.0',
+        '@aws-sdk/client-s3': '^3.400.0',
+        'passport-azure-ad': '^4.3.5',
+        'stripe': '^14.0.0'
       },
       devDependencies: {
         nodemon: '^2.0.22',
@@ -311,10 +334,111 @@ class RuntimeEngine {
       const workflowsData = await fs.readFile(workflowsPath, 'utf8');
       this.workflows = JSON.parse(workflowsData);
       logger.info(\`Loaded \${this.workflows.length} workflows\`);
+
+      // Load rules and attach to validation nodes
+      try {
+        const rulesPath = path.join(__dirname, '../resources/rules.json');
+        const rulesData = await fs.readFile(rulesPath, 'utf8');
+        this.rules = JSON.parse(rulesData);
+        logger.info(\`Loaded \${this.rules.length} rules\`);
+
+        // Attach rules to matching validation nodes
+        for (const workflow of this.workflows) {
+          if (!workflow.nodes) continue;
+          for (const node of workflow.nodes) {
+            if (node.type === 'validation' && !node.data?.rules?.length) {
+              const matchingRules = this.rules.filter(r =>
+                r.workflowId === workflow.id || r.nodeId === node.id
+              );
+              if (matchingRules.length > 0) {
+                node.data = node.data || {};
+                node.data.rules = matchingRules;
+              }
+            }
+          }
+        }
+      } catch (rulesError) {
+        logger.warn('No rules.json found, validation nodes will use inline rules only');
+        this.rules = [];
+      }
+
+      // Set up scheduled workflows (timerStartEvent)
+      this.setupScheduledWorkflows();
     } catch (error) {
       logger.error('Failed to load workflows:', error);
       throw error;
     }
+  }
+
+  setupScheduledWorkflows() {
+    this.scheduledJobs = [];
+
+    for (const workflow of this.workflows) {
+      if (!workflow.nodes) continue;
+
+      // Timer start events - cron scheduling
+      const timerStart = workflow.nodes.find(n => n.type === 'timerStartEvent');
+      if (timerStart && timerStart.data?.schedule) {
+        try {
+          const cron = require('node-cron');
+          const schedule = timerStart.data.schedule;
+          if (cron.validate(schedule)) {
+            const job = cron.schedule(schedule, () => {
+              logger.info(\`[Scheduler] Triggering workflow "\${workflow.name}" on schedule: \${schedule}\`);
+              this.startWorkflow(workflow.id, { triggeredBy: 'timer', schedule }).catch(err => {
+                logger.error(\`[Scheduler] Failed to trigger "\${workflow.name}":\`, err);
+              });
+            }, { timezone: timerStart.data.timezone || 'UTC' });
+            this.scheduledJobs.push(job);
+            logger.info(\`[Scheduler] Registered cron for "\${workflow.name}": \${schedule}\`);
+          } else {
+            logger.warn(\`[Scheduler] Invalid cron expression for "\${workflow.name}": \${schedule}\`);
+          }
+        } catch (cronError) {
+          logger.warn('node-cron not available, timer scheduling disabled');
+        }
+      }
+
+      // Conditional start events - periodic polling
+      const condStart = workflow.nodes.find(n => n.type === 'conditionalStartEvent');
+      if (condStart && condStart.data?.condition) {
+        const intervalMs = this.parseInterval(condStart.data.pollIntervalValue, condStart.data.pollIntervalUnit) || 60000;
+        const timer = setInterval(async () => {
+          try {
+            const conditionMet = this.evaluateCondition(condStart.data.condition, {});
+            if (conditionMet) {
+              logger.info(\`[Scheduler] Condition met for "\${workflow.name}", triggering workflow\`);
+              await this.startWorkflow(workflow.id, { triggeredBy: 'condition', condition: condStart.data.condition });
+            }
+          } catch (err) {
+            logger.error(\`[Scheduler] Condition check failed for "\${workflow.name}":\`, err.message);
+          }
+        }, intervalMs);
+        this.scheduledJobs.push({ stop: () => clearInterval(timer) });
+        logger.info(\`[Scheduler] Registered condition poll for "\${workflow.name}" every \${intervalMs}ms\`);
+      }
+
+      // Message start events - log webhook path for external systems
+      const msgStart = workflow.nodes.find(n => n.type === 'messageStartEvent');
+      if (msgStart) {
+        const webhookPath = msgStart.data?.webhookPath || \`/webhook/\${workflow.id}\`;
+        logger.info(\`[Scheduler] Workflow "\${workflow.name}" can be triggered via POST /api/workflows/\${workflow.id}/start or webhook: \${webhookPath}\`);
+      }
+
+      // Signal start events - log signal name for event bus
+      const sigStart = workflow.nodes.find(n => n.type === 'signalStartEvent');
+      if (sigStart && sigStart.data?.signalName) {
+        logger.info(\`[Scheduler] Workflow "\${workflow.name}" listens for signal: \${sigStart.data.signalName}\`);
+      }
+    }
+  }
+
+  parseInterval(value, unit) {
+    if (!value) return null;
+    const num = parseInt(value);
+    if (isNaN(num)) return null;
+    const multipliers = { seconds: 1000, minutes: 60000, hours: 3600000 };
+    return num * (multipliers[unit] || 60000);
   }
 
   /**
@@ -653,16 +777,486 @@ Fix the script to accomplish the original intent while:
 
       exclusiveGateway: async (node, context) => {
         logger.info(\`Exclusive gateway: \${node.id}\`);
-        // Evaluate conditions and choose path
+        const nextNode = await this.evaluateGateway(node, context);
+        return { status: 'completed', data: context.data, nextNode };
+      },
+
+      // Platform UI creates decision nodes (alias for exclusiveGateway)
+      decision: async (node, context) => {
+        logger.info(\`Decision gateway: \${node.id}\`);
         const nextNode = await this.evaluateGateway(node, context);
         return { status: 'completed', data: context.data, nextNode };
       },
 
       parallelGateway: async (node, context) => {
         logger.info(\`Parallel gateway: \${node.id}\`);
-        return { status: 'completed', data: context.data };
+        const nextNode = await this.evaluateGateway(node, context);
+        return { status: 'completed', data: context.data, nextNode };
+      },
+
+      // REST API call node
+      restApi: async (node, context) => {
+        logger.info(\`REST API call: \${node.data?.label}\`);
+        const taskData = node.data || {};
+        const headers = taskData.headers ? (typeof taskData.headers === 'string' ? JSON.parse(taskData.headers) : taskData.headers) : {};
+
+        // Handle authentication
+        if (taskData.authType === 'bearer' && taskData.authToken) {
+          headers['Authorization'] = \`Bearer \${this.interpolateString(taskData.authToken, context.data)}\`;
+        } else if (taskData.authType === 'basic' && taskData.authUsername) {
+          const credentials = Buffer.from(
+            \`\${this.interpolateString(taskData.authUsername, context.data)}:\${this.interpolateString(taskData.authPassword || '', context.data)}\`
+          ).toString('base64');
+          headers['Authorization'] = \`Basic \${credentials}\`;
+        } else if (taskData.authType === 'apiKey' && taskData.apiKeyHeader && taskData.apiKeyValue) {
+          headers[taskData.apiKeyHeader] = this.interpolateString(taskData.apiKeyValue, context.data);
+        }
+
+        // Handle query params
+        let url = taskData.url || '';
+        if (taskData.queryParams) {
+          try {
+            const params = typeof taskData.queryParams === 'string' ? JSON.parse(taskData.queryParams) : taskData.queryParams;
+            const qs = Object.entries(params)
+              .map(([k, v]) => \`\${encodeURIComponent(k)}=\${encodeURIComponent(this.interpolateString(String(v), context.data))}\`)
+              .join('&');
+            if (qs) url += (url.includes('?') ? '&' : '?') + qs;
+          } catch (e) {}
+        }
+
+        const result = await this.executeHttpService({
+          url,
+          method: taskData.method || 'GET',
+          headers,
+          body: taskData.body ? (typeof taskData.body === 'string' ? JSON.parse(taskData.body) : taskData.body) : undefined,
+          outputVariable: taskData.outputVariable,
+          timeout: taskData.timeout || 30000,
+          onError: taskData.errorHandling || 'throw'
+        }, context);
+        return { status: 'completed', data: result };
+      },
+
+      // LLM / AI task node
+      llmTask: async (node, context) => {
+        logger.info(\`LLM task: \${node.data?.label}\`);
+        const taskData = node.data || {};
+        const prompt = this.interpolateString(taskData.prompt || '', context.data);
+        const outputVariable = taskData.outputVariable || 'llmResult';
+
+        try {
+          // Use fetch to call the Claude API or configured LLM endpoint
+          const model = taskData.model || 'claude-sonnet-4-5-20250514';
+          const temperature = parseFloat(taskData.temperature) || 0.7;
+          const maxTokens = parseInt(taskData.maxTokens) || 1024;
+
+          const apiKey = process.env.ANTHROPIC_API_KEY;
+          if (!apiKey) {
+            logger.warn('[RuntimeEngine] No ANTHROPIC_API_KEY set, storing prompt as result');
+            return {
+              status: 'completed',
+              data: { ...context.data, [outputVariable]: \`[LLM not configured] Prompt: \${prompt}\` }
+            };
+          }
+
+          const response = await require('axios').post('https://api.anthropic.com/v1/messages', {
+            model,
+            max_tokens: maxTokens,
+            messages: [{ role: 'user', content: prompt }]
+          }, {
+            headers: {
+              'x-api-key': apiKey,
+              'anthropic-version': '2023-06-01',
+              'content-type': 'application/json'
+            },
+            timeout: 60000
+          });
+
+          const llmResponse = response.data?.content?.[0]?.text || '';
+          logger.info(\`[RuntimeEngine] LLM response received (\${llmResponse.length} chars)\`);
+
+          return {
+            status: 'completed',
+            data: { ...context.data, [outputVariable]: llmResponse }
+          };
+        } catch (error) {
+          logger.error(\`[RuntimeEngine] LLM task failed: \${error.message}\`);
+          if (taskData.onError === 'continue') {
+            return {
+              status: 'completed',
+              data: { ...context.data, [outputVariable]: null, _llmError: error.message }
+            };
+          }
+          throw error;
+        }
+      },
+
+      // Sub-workflow invocation
+      subWorkflow: async (node, context) => {
+        logger.info(\`Sub-workflow: \${node.data?.label}\`);
+        const taskData = node.data || {};
+        const targetWorkflowId = taskData.targetWorkflow;
+        const isAsync = taskData.executionMode === 'async';
+
+        if (!targetWorkflowId) {
+          throw new Error(\`Sub-workflow node \${node.id} has no target workflow configured\`);
+        }
+
+        // Build input from mapping
+        const subInput = {};
+        if (taskData.inputMapping) {
+          const mappings = typeof taskData.inputMapping === 'string'
+            ? taskData.inputMapping.split('\\n').filter(Boolean)
+            : Object.entries(taskData.inputMapping);
+
+          for (const mapping of mappings) {
+            if (typeof mapping === 'string') {
+              const [target, source] = mapping.split(':').map(s => s.trim());
+              if (target && source) {
+                subInput[target] = this.getNestedValue(context.data, source) ?? source;
+              }
+            } else {
+              subInput[mapping[0]] = this.getNestedValue(context.data, mapping[1]) ?? mapping[1];
+            }
+          }
+        }
+
+        if (isAsync) {
+          // Fire and forget
+          this.startWorkflow(targetWorkflowId, { ...context.data, ...subInput }).catch(err => {
+            logger.error(\`[RuntimeEngine] Async sub-workflow failed: \${err.message}\`);
+          });
+          return { status: 'completed', data: context.data };
+        }
+
+        // Synchronous execution
+        const subInstance = await this.startWorkflow(targetWorkflowId, { ...context.data, ...subInput });
+
+        // Map output back
+        const result = { ...context.data };
+        if (taskData.outputMapping) {
+          const mappings = typeof taskData.outputMapping === 'string'
+            ? taskData.outputMapping.split('\\n').filter(Boolean)
+            : Object.entries(taskData.outputMapping);
+
+          for (const mapping of mappings) {
+            if (typeof mapping === 'string') {
+              const [target, source] = mapping.split(':').map(s => s.trim());
+              if (target && source) {
+                result[target] = this.getNestedValue(subInstance.data, source);
+              }
+            } else {
+              result[mapping[0]] = this.getNestedValue(subInstance.data, mapping[1]);
+            }
+          }
+        }
+        result._subWorkflowResult = subInstance.data;
+
+        return { status: 'completed', data: result };
+      },
+
+      // Data process node (CRUD operations)
+      dataProcess: async (node, context) => {
+        logger.info(\`Data process: \${node.data?.label}\`);
+        const taskData = node.data || {};
+        const operation = taskData.operation || 'read';
+        const table = taskData.targetTable || taskData.dataModel;
+        const outputVariable = taskData.outputVariable || '_dataResult';
+
+        if (!table && operation !== 'transform') {
+          throw new Error(\`Data process node \${node.id}: no target table specified\`);
+        }
+
+        const result = await this.executeDatabaseService({
+          operation: operation === 'create' ? 'insert' : operation === 'read' ? 'select' : operation,
+          table,
+          query: taskData.queryFilter ? \`SELECT * FROM \${table} WHERE \${this.interpolateString(taskData.queryFilter, context.data)}\` : undefined,
+          data: taskData.fieldMapping ? this.parseFieldMapping(taskData.fieldMapping, context.data) : undefined,
+          where: taskData.whereCondition ? this.interpolateString(taskData.whereCondition, context.data) : undefined,
+          outputVariable
+        }, context);
+
+        return { status: 'completed', data: result };
+      },
+
+      // Validation node (rule enforcement)
+      validation: async (node, context) => {
+        logger.info(\`Validation: \${node.data?.label}\`);
+        const taskData = node.data || {};
+        const rules = taskData.rules || [];
+        const evaluationMode = taskData.evaluationMode || 'all';
+        const onFailure = taskData.onFailure || 'block';
+        const stopOnFirst = taskData.stopOnFirstFailure !== false;
+
+        const validationResults = [];
+        let passedCount = 0;
+        let failedCount = 0;
+
+        for (const rule of rules) {
+          if (rule.condition) {
+            const passed = this.evaluateCondition(rule.condition, context.data);
+            const errorMsg = taskData.errorMessage
+              ? taskData.errorMessage.replace('{rule.name}', rule.name || rule.id).replace('{rule.message}', rule.errorMessage || '')
+              : (rule.errorMessage || \`Validation failed: \${rule.name}\`);
+            validationResults.push({
+              rule: rule.name || rule.id,
+              passed,
+              message: passed ? 'Passed' : errorMsg
+            });
+            if (passed) passedCount++;
+            else failedCount++;
+            if (!passed && stopOnFirst && evaluationMode === 'all') break;
+          }
+        }
+
+        // Determine overall pass/fail based on evaluation mode
+        let allPassed;
+        if (evaluationMode === 'any') {
+          allPassed = passedCount > 0 || rules.length === 0;
+        } else if (evaluationMode === 'none') {
+          allPassed = failedCount === rules.length || rules.length === 0;
+        } else {
+          allPassed = failedCount === 0;
+        }
+
+        const result = {
+          ...context.data,
+          _validationResults: validationResults,
+          _validationPassed: allPassed,
+          _evaluationMode: evaluationMode
+        };
+
+        if (!allPassed && onFailure === 'block') {
+          return { status: 'failed', data: result, error: 'Validation failed' };
+        }
+
+        return { status: 'completed', data: result };
+      },
+
+      // Notification node
+      notification: async (node, context) => {
+        logger.info(\`Notification: \${node.data?.label}\`);
+        const taskData = node.data || {};
+        const channel = taskData.channel || 'email';
+
+        const notification = {
+          channel,
+          recipient: this.interpolateString(taskData.recipient || '', context.data),
+          subject: this.interpolateString(taskData.subject || '', context.data),
+          body: this.interpolateString(taskData.message || taskData.messageBody || '', context.data),
+          cc: taskData.cc ? this.interpolateString(taskData.cc, context.data) : undefined,
+          webhookUrl: taskData.webhookUrl || undefined
+        };
+
+        logger.info(\`[RuntimeEngine] Sending \${channel} notification to: \${notification.recipient}\`);
+
+        if (channel === 'email') {
+          try {
+            const emailService = require('../services/EmailService');
+            await emailService.send({
+              to: notification.recipient,
+              subject: notification.subject,
+              body: notification.body,
+              cc: notification.cc
+            });
+          } catch (err) {
+            logger.warn(\`[RuntimeEngine] Email send failed (non-blocking): \${err.message}\`);
+          }
+        } else if (channel === 'webhook' && notification.webhookUrl) {
+          try {
+            await require('axios').post(notification.webhookUrl, {
+              recipient: notification.recipient,
+              subject: notification.subject,
+              body: notification.body,
+              timestamp: new Date().toISOString()
+            }, { timeout: 10000 });
+          } catch (err) {
+            logger.warn(\`[RuntimeEngine] Webhook notification failed (non-blocking): \${err.message}\`);
+          }
+        }
+
+        return {
+          status: 'completed',
+          data: {
+            ...context.data,
+            _lastNotification: {
+              ...notification,
+              sentAt: new Date().toISOString()
+            }
+          }
+        };
+      },
+
+      // Timer event (intermediate wait)
+      timerEvent: async (node, context) => {
+        logger.info(\`Timer event: \${node.data?.label}\`);
+        const taskData = node.data || {};
+        const timerType = taskData.timerType || 'duration';
+
+        let waitMs = 0;
+
+        if (timerType === 'duration') {
+          const value = parseInt(taskData.durationValue) || 0;
+          const unit = taskData.durationUnit || 'minutes';
+          const multipliers = { seconds: 1000, minutes: 60000, hours: 3600000, days: 86400000 };
+          waitMs = value * (multipliers[unit] || 60000);
+        } else if (timerType === 'date' && taskData.targetDate) {
+          const target = new Date(taskData.targetDate);
+          waitMs = Math.max(0, target.getTime() - Date.now());
+        }
+
+        if (waitMs > 0 && waitMs <= 300000) {
+          // Inline wait for short durations (<=5 minutes)
+          await new Promise(resolve => setTimeout(resolve, waitMs));
+        } else if (waitMs > 300000) {
+          // For long timers, schedule a delayed resume and pause the workflow
+          const resumeAt = new Date(Date.now() + waitMs);
+          logger.info(\`[RuntimeEngine] Timer scheduled for \${resumeAt.toISOString()}, pausing workflow\`);
+
+          // Store timer metadata for resume
+          context.data._timerResumeAt = resumeAt.toISOString();
+          context.data._timerNodeId = node.id;
+
+          // Schedule the resume using setTimeout (capped at max safe setTimeout ~24.8 days)
+          const safeDelay = Math.min(waitMs, 2147483647);
+          setTimeout(async () => {
+            try {
+              const instance = this.instances.get(context.instanceId);
+              if (instance && instance.status === 'waiting') {
+                logger.info(\`[RuntimeEngine] Timer fired, resuming workflow \${context.instanceId}\`);
+                instance.status = 'running';
+                instance.data._timerCompleted = new Date().toISOString();
+                delete instance.data._timerResumeAt;
+                const nextNodeId = this.getNextNode(instance, node.id);
+                if (nextNodeId) {
+                  await this.executeNode(instance, nextNodeId);
+                }
+              }
+            } catch (err) {
+              logger.error(\`[RuntimeEngine] Timer resume failed: \${err.message}\`);
+            }
+          }, safeDelay);
+
+          return {
+            status: 'waiting',
+            data: {
+              ...context.data,
+              _timerScheduled: true,
+              _timerResumeAt: resumeAt.toISOString(),
+              _timerDuration: waitMs
+            }
+          };
+        }
+
+        return {
+          status: 'completed',
+          data: {
+            ...context.data,
+            _timerCompleted: new Date().toISOString(),
+            _timerDuration: waitMs
+          }
+        };
+      },
+
+      // Intermediate event (message catch, signal catch, timer boundary)
+      intermediateEvent: async (node, context) => {
+        logger.info(\`Intermediate event: \${node.data?.label || node.id}\`);
+        const taskData = node.data || {};
+        const eventType = taskData.eventType || 'message';
+
+        if (eventType === 'timer') {
+          const durationMs = this.parseDurationMs(taskData.duration || '1h');
+          if (durationMs > 0 && durationMs <= 300000) {
+            await new Promise(resolve => setTimeout(resolve, durationMs));
+          } else if (durationMs > 300000) {
+            // Schedule delayed resume for long intermediate timers
+            const resumeAt = new Date(Date.now() + durationMs);
+            logger.info(\`[RuntimeEngine] Intermediate timer scheduled for \${resumeAt.toISOString()}\`);
+            context.data._timerResumeAt = resumeAt.toISOString();
+            const safeDelay = Math.min(durationMs, 2147483647);
+            setTimeout(async () => {
+              try {
+                const instance = this.instances.get(context.instanceId);
+                if (instance && instance.status === 'waiting') {
+                  instance.status = 'running';
+                  delete instance.data._timerResumeAt;
+                  const nextNodeId = this.getNextNode(instance, node.id);
+                  if (nextNodeId) await this.executeNode(instance, nextNodeId);
+                }
+              } catch (err) {
+                logger.error(\`[RuntimeEngine] Intermediate timer resume failed: \${err.message}\`);
+              }
+            }, safeDelay);
+            return { status: 'waiting', data: { ...context.data, _timerResumeAt: resumeAt.toISOString() } };
+          }
+        }
+
+        return {
+          status: 'completed',
+          data: {
+            ...context.data,
+            _intermediateEvent: { type: eventType, completedAt: new Date().toISOString() }
+          }
+        };
+      },
+
+      // Start event aliases for specialized start types
+      startProcess: async (node, context) => {
+        logger.info(\`Start process: \${node.id}\`);
+        return { status: 'completed', data: context.input || {} };
+      },
+
+      timerStartEvent: async (node, context) => {
+        logger.info(\`Timer start event: \${node.id} (schedule: \${node.data?.schedule || 'none'})\`);
+        return { status: 'completed', data: context.input || {} };
+      },
+
+      messageStartEvent: async (node, context) => {
+        logger.info(\`Message start event: \${node.id} (channel: \${node.data?.channel || 'none'})\`);
+        return { status: 'completed', data: context.input || {} };
+      },
+
+      signalStartEvent: async (node, context) => {
+        logger.info(\`Signal start event: \${node.id} (signal: \${node.data?.signalName || 'none'})\`);
+        return { status: 'completed', data: context.input || {} };
+      },
+
+      conditionalStartEvent: async (node, context) => {
+        logger.info(\`Conditional start event: \${node.id}\`);
+        return { status: 'completed', data: context.input || {} };
+      },
+
+      // Inclusive gateway (OR) - activates all branches with matching conditions
+      inclusiveGateway: async (node, context) => {
+        logger.info(\`Inclusive gateway: \${node.id}\`);
+        const nextNode = await this.evaluateGateway(node, context);
+        return { status: 'completed', data: context.data, nextNode };
+      },
+
+      // Aliases for backward compatibility
+      sendTask: async (node, context) => {
+        return this.nodeExecutors.notification(node, context);
+      },
+
+      businessRuleTask: async (node, context) => {
+        return this.nodeExecutors.validation(node, context);
       }
     };
+  }
+
+  // Helper: Parse field mapping string (field: value per line) into object
+  parseFieldMapping(mappingStr, data) {
+    if (!mappingStr || typeof mappingStr !== 'string') return {};
+    const result = {};
+    const lines = mappingStr.split('\\n').filter(Boolean);
+    for (const line of lines) {
+      const colonIdx = line.indexOf(':');
+      if (colonIdx > 0) {
+        const key = line.substring(0, colonIdx).trim();
+        const value = line.substring(colonIdx + 1).trim();
+        result[key] = this.interpolateString(value, data);
+      }
+    }
+    return result;
   }
 
   async executeServiceTask(node, context) {
@@ -859,23 +1453,30 @@ Fix the script to accomplish the original intent while:
   }
 
   async evaluateGateway(node, context) {
-    const { edges = [], nodes = [] } = context.workflow || this.workflows.find(w => w.id === context.workflowId) || {};
+    const workflow = context.workflow || this.workflows.find(w => w.id === context.workflowId) || {};
+    const allEdges = workflow.edges || workflow.connections || [];
 
     // Find outgoing edges from this gateway
-    const outgoing = edges.filter(e => e.source === node.id);
+    const outgoing = allEdges.filter(e => e.source === node.id);
 
     if (outgoing.length === 0) {
       logger.warn(\`[RuntimeEngine] Gateway \${node.id} has no outgoing edges\`);
       return null;
     }
 
-    // For exclusive gateway, evaluate conditions in order
-    if (node.type === 'exclusiveGateway') {
-      for (const edge of outgoing) {
-        const condition = edge.data?.condition || edge.label;
+    const gatewayType = node.data?.gatewayType || 'exclusive';
+    const isExclusive = node.type === 'exclusiveGateway' || node.type === 'decision' || gatewayType === 'exclusive';
+    const isParallel = node.type === 'parallelGateway' || gatewayType === 'parallel';
 
-        if (!condition || condition === 'default') {
-          continue; // Skip default path for now
+    // For exclusive/decision gateway, evaluate conditions in order
+    if (isExclusive) {
+      for (const edge of outgoing) {
+        const condition = edge.condition || edge.data?.condition;
+        const isDefault = edge.isDefault || edge.data?.isDefault;
+
+        // Skip default path and edges without conditions
+        if (isDefault || !condition) {
+          continue;
         }
 
         if (this.evaluateCondition(condition, context.data)) {
@@ -885,22 +1486,48 @@ Fix the script to accomplish the original intent while:
       }
 
       // If no conditions matched, use default path
-      const defaultEdge = outgoing.find(e =>
-        !e.data?.condition || e.data?.condition === 'default' || e.label === 'default'
-      );
+      const defaultEdge = outgoing.find(e => e.isDefault || e.data?.isDefault);
 
       if (defaultEdge) {
         logger.info(\`[RuntimeEngine] Using default gateway path\`);
         return defaultEdge.target;
       }
 
-      // Fallback to first edge
+      // Fallback to first edge without a condition (implicit default)
+      const implicitDefault = outgoing.find(e => !(e.condition || e.data?.condition));
+      if (implicitDefault) {
+        return implicitDefault.target;
+      }
+
+      // Last resort: first edge
       return outgoing[0]?.target;
     }
 
-    // For parallel gateway, return all targets (handled by workflow engine)
-    if (node.type === 'parallelGateway') {
+    // For parallel gateway, return all targets (execute all branches)
+    if (isParallel) {
       return outgoing.map(e => e.target);
+    }
+
+    // For inclusive gateway, evaluate ALL conditions and activate all matching branches
+    const isInclusive = node.type === 'inclusiveGateway' || gatewayType === 'inclusive';
+    if (isInclusive) {
+      const matchedTargets = [];
+      for (const edge of outgoing) {
+        const condition = edge.condition || edge.data?.condition;
+        const isDefault = edge.isDefault || edge.data?.isDefault;
+        if (isDefault) continue;
+        if (!condition || this.evaluateCondition(condition, context.data)) {
+          matchedTargets.push(edge.target);
+        }
+      }
+      // If no conditions matched, use default path
+      if (matchedTargets.length === 0) {
+        const defaultEdge = outgoing.find(e => e.isDefault || e.data?.isDefault);
+        if (defaultEdge) return defaultEdge.target;
+        return outgoing[0]?.target;
+      }
+      // If only one matched, return single target; if multiple, return array for parallel execution
+      return matchedTargets.length === 1 ? matchedTargets[0] : matchedTargets;
     }
 
     return outgoing[0]?.target;
@@ -919,9 +1546,14 @@ Fix the script to accomplish the original intent while:
           return JSON.stringify(value);
         });
 
-      // Safe evaluation with data context
-      const fn = new Function('data', \`with(data) { return \${expr}; }\`);
-      return fn(data);
+      // Evaluate with data as context
+      // Supports both "data.field" format (from platform UI) and direct "field" format
+      const fn = new Function('data', \`
+        try { return \${expr}; } catch(e) {
+          try { with(data) { return \${expr}; } } catch(e2) { return false; }
+        }
+      \`);
+      return fn(data || {});
     } catch (error) {
       logger.error(\`[RuntimeEngine] Condition evaluation failed: \${error.message}\`);
       return false;
@@ -975,6 +1607,16 @@ Fix the script to accomplish the original intent while:
       logger.error(\`[RuntimeEngine] Expression evaluation failed: \${error.message}\`);
       return null;
     }
+  }
+
+  parseDurationMs(duration) {
+    if (!duration) return 3600000;
+    const match = duration.match(/^(\\d+)(ms|s|m|h|d)?$/);
+    if (!match) return 3600000;
+    const val = parseInt(match[1]);
+    const unit = match[2] || 'h';
+    const multipliers = { ms: 1, s: 1000, m: 60000, h: 3600000, d: 86400000 };
+    return val * (multipliers[unit] || 3600000);
   }
 
   async startWorkflow(workflowId, input = {}) {
@@ -1115,7 +1757,8 @@ Fix the script to accomplish the original intent while:
   }
 
   async executeWorkflow(instance) {
-    const startNode = instance.workflow.nodes.find(n => n.type === 'startEvent');
+    const startTypes = ['startEvent', 'startProcess', 'timerStartEvent', 'messageStartEvent', 'signalStartEvent', 'conditionalStartEvent'];
+    const startNode = instance.workflow.nodes.find(n => startTypes.includes(n.type));
     if (!startNode) {
       throw new Error('No start event found');
     }
@@ -1164,11 +1807,26 @@ Fix the script to accomplish the original intent while:
         // Persist state after node completion
         await this.persistInstance(instance);
 
-        // Find next node
+        // Find next node(s) - may be array for parallel/inclusive gateways
         const nextNodeId = result.nextNode || this.getNextNode(instance, nodeId);
 
         if (nextNodeId) {
-          await this.executeNode(instance, nextNodeId);
+          // Handle parallel execution (array of next nodes from parallel/inclusive gateways)
+          if (Array.isArray(nextNodeId)) {
+            logger.info(\`[RuntimeEngine] Parallel execution: \${nextNodeId.length} branches from \${nodeId}\`);
+            // Execute all branches concurrently
+            const branchResults = await Promise.allSettled(
+              nextNodeId.map(branchNodeId => this.executeNode(instance, branchNodeId))
+            );
+            // Log any failed branches
+            branchResults.forEach((result, i) => {
+              if (result.status === 'rejected') {
+                logger.error(\`[RuntimeEngine] Branch \${nextNodeId[i]} failed: \${result.reason?.message}\`);
+              }
+            });
+          } else {
+            await this.executeNode(instance, nextNodeId);
+          }
         } else {
           // Workflow complete
           instance.status = 'completed';
@@ -1196,8 +1854,16 @@ Fix the script to accomplish the original intent while:
 
   getNextNode(instance, currentNodeId) {
     const connections = instance.workflow.connections || instance.workflow.edges || [];
-    const nextConnection = connections.find(c => c.source === currentNodeId);
-    return nextConnection?.target;
+    const outgoing = connections.filter(c => c.source === currentNodeId);
+
+    // Single outgoing edge: straightforward
+    if (outgoing.length <= 1) {
+      return outgoing[0]?.target;
+    }
+
+    // Multiple outgoing edges from a non-gateway node: take first
+    // (Gateway nodes handle their own routing via evaluateGateway)
+    return outgoing[0]?.target;
   }
 
   async resumeWorkflow(instanceId, data) {
@@ -1400,14 +2066,877 @@ module.exports = new RuntimeEngine();
   }
 
   async generateAPIRoutes() {
+    const appName = this.application.name || 'App';
     const apiRoutes = `/**
  * API Routes for Workflow Management
+ * Includes: RBAC, Auth, File Management, PDF Export, Aggregation
  */
 
 const express = require('express');
 const router = express.Router();
 const runtimeEngine = require('../runtime/engine');
 const logger = require('../utils/logger');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const PDFDocument = require('pdfkit');
+const { v4: uuidv4 } = require('uuid');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'app-secret-change-in-production';
+
+// ===========================================================================
+// AUTH MIDDLEWARE (RBAC)
+// ===========================================================================
+
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, error: 'Authentication required' });
+  }
+  try {
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ success: false, error: 'Invalid or expired token' });
+  }
+}
+
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.user) return res.status(401).json({ success: false, error: 'Authentication required' });
+    if (roles.length === 0) return next();
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ success: false, error: 'Insufficient permissions' });
+    }
+    next();
+  };
+}
+
+// ===========================================================================
+// AUTH ROUTES
+// ===========================================================================
+
+router.post('/auth/register', async (req, res) => {
+  try {
+    const { email, password, name, role } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: 'Email and password are required' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const database = require('../database');
+    // Check if user exists
+    const existing = await database.query('SELECT id FROM users WHERE email = $1', [email]).catch(() => ({ rows: [] }));
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ success: false, error: 'User already exists' });
+    }
+    const userId = uuidv4();
+    await database.query(
+      'INSERT INTO users (id, email, password_hash, name, role, created_at) VALUES ($1, $2, $3, $4, $5, NOW())',
+      [userId, email, hashedPassword, name || email.split('@')[0], role || 'user']
+    );
+    const token = jwt.sign({ id: userId, email, name: name || email.split('@')[0], role: role || 'user' }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ success: true, token, user: { id: userId, email, name: name || email.split('@')[0], role: role || 'user' } });
+  } catch (error) {
+    logger.error('Registration failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post('/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const database = require('../database');
+    const result = await database.query('SELECT * FROM users WHERE email = $1', [email]).catch(() => ({ rows: [] }));
+    if (result.rows.length === 0) {
+      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    }
+    const user = result.rows[0];
+    const validPassword = await bcrypt.compare(password, user.password_hash);
+    if (!validPassword) {
+      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    }
+    const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ success: true, token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+  } catch (error) {
+    logger.error('Login failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get('/auth/profile', authMiddleware, (req, res) => {
+  res.json({ success: true, user: req.user });
+});
+
+router.post('/auth/logout', (req, res) => {
+  res.json({ success: true, message: 'Logged out' });
+});
+
+router.post('/auth/forgot-password', async (req, res) => {
+  // In production, send email with reset token
+  res.json({ success: true, message: 'If an account exists with this email, a reset link has been sent.' });
+});
+
+router.post('/auth/refresh', authMiddleware, (req, res) => {
+  const token = jwt.sign({ id: req.user.id, email: req.user.email, name: req.user.name, role: req.user.role }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ success: true, token });
+});
+
+// ===========================================================================
+// OAUTH ROUTES (Google, GitHub)
+// ===========================================================================
+
+let passport;
+try {
+  passport = require('passport');
+  const GoogleStrategy = require('passport-google-oauth20').Strategy;
+  const GitHubStrategy = require('passport-github2').Strategy;
+
+  if (process.env.GOOGLE_CLIENT_ID) {
+    passport.use(new GoogleStrategy({
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback'
+    }, async (accessToken, refreshToken, profile, done) => {
+      try {
+        const database = require('../database');
+        const email = profile.emails?.[0]?.value;
+        let result = await database.query('SELECT * FROM users WHERE email = $1', [email]).catch(() => ({ rows: [] }));
+        if (result.rows.length === 0) {
+          const userId = uuidv4();
+          await database.query(
+            'INSERT INTO users (id, email, name, role, oauth_provider, oauth_id, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
+            [userId, email, profile.displayName, 'user', 'google', profile.id]
+          );
+          result = await database.query('SELECT * FROM users WHERE id = $1', [userId]);
+        }
+        done(null, result.rows[0]);
+      } catch (err) { done(err); }
+    }));
+  }
+
+  if (process.env.GITHUB_CLIENT_ID) {
+    passport.use(new GitHubStrategy({
+      clientID: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: process.env.GITHUB_CALLBACK_URL || '/api/auth/github/callback'
+    }, async (accessToken, refreshToken, profile, done) => {
+      try {
+        const database = require('../database');
+        const email = profile.emails?.[0]?.value || profile.username + '@github.local';
+        let result = await database.query('SELECT * FROM users WHERE email = $1', [email]).catch(() => ({ rows: [] }));
+        if (result.rows.length === 0) {
+          const userId = uuidv4();
+          await database.query(
+            'INSERT INTO users (id, email, name, role, oauth_provider, oauth_id, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
+            [userId, email, profile.displayName || profile.username, 'user', 'github', profile.id]
+          );
+          result = await database.query('SELECT * FROM users WHERE id = $1', [userId]);
+        }
+        done(null, result.rows[0]);
+      } catch (err) { done(err); }
+    }));
+  }
+
+  // OAuth callback handler
+  const oauthCallback = (provider) => (req, res) => {
+    const user = req.user;
+    const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    res.redirect(\`/?token=\${token}\`);
+  };
+
+  if (process.env.GOOGLE_CLIENT_ID) {
+    router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
+    router.get('/auth/google/callback', passport.authenticate('google', { session: false, failureRedirect: '/login' }), oauthCallback('google'));
+  }
+
+  if (process.env.GITHUB_CLIENT_ID) {
+    router.get('/auth/github', passport.authenticate('github', { scope: ['user:email'], session: false }));
+    router.get('/auth/github/callback', passport.authenticate('github', { session: false, failureRedirect: '/login' }), oauthCallback('github'));
+  }
+} catch (e) {
+  logger.info('OAuth dependencies not available, OAuth routes disabled');
+}
+
+// ===========================================================================
+// FILE MANAGEMENT ROUTES
+// ===========================================================================
+
+const uploadDir = path.join(__dirname, '../../uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, uuidv4() + ext);
+  }
+});
+const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB max
+
+router.post('/files/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, error: 'No file uploaded' });
+    const database = require('../database');
+    const fileId = uuidv4();
+    await database.query(
+      'INSERT INTO files (id, original_name, stored_name, mime_type, size, uploaded_by, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
+      [fileId, req.file.originalname, req.file.filename, req.file.mimetype, req.file.size, req.user?.id || 'anonymous']
+    ).catch(() => {});
+    res.json({
+      success: true,
+      file: { id: fileId, name: req.file.originalname, storedName: req.file.filename, mimeType: req.file.mimetype, size: req.file.size, url: \`/api/files/\${fileId}\` }
+    });
+  } catch (error) {
+    logger.error('File upload failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post('/files/upload-multiple', upload.array('files', 10), async (req, res) => {
+  try {
+    const files = (req.files || []).map(f => ({
+      id: uuidv4(), name: f.originalname, storedName: f.filename, mimeType: f.mimetype, size: f.size, url: \`/api/files/\${f.filename}\`
+    }));
+    res.json({ success: true, files });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get('/files/:id', async (req, res) => {
+  try {
+    const database = require('../database');
+    const result = await database.query('SELECT * FROM files WHERE id = $1', [req.params.id]).catch(() => ({ rows: [] }));
+    if (result.rows.length === 0) {
+      // Try direct file lookup
+      const filePath = path.join(uploadDir, req.params.id);
+      if (fs.existsSync(filePath)) return res.sendFile(filePath);
+      return res.status(404).json({ success: false, error: 'File not found' });
+    }
+    const file = result.rows[0];
+    res.sendFile(path.join(uploadDir, file.stored_name));
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get('/files', async (req, res) => {
+  try {
+    const database = require('../database');
+    const result = await database.query('SELECT * FROM files ORDER BY created_at DESC').catch(() => ({ rows: [] }));
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.delete('/files/:id', async (req, res) => {
+  try {
+    const database = require('../database');
+    const result = await database.query('SELECT * FROM files WHERE id = $1', [req.params.id]).catch(() => ({ rows: [] }));
+    if (result.rows.length > 0) {
+      const filePath = path.join(uploadDir, result.rows[0].stored_name);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      await database.query('DELETE FROM files WHERE id = $1', [req.params.id]);
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ===========================================================================
+// PDF EXPORT ROUTES
+// ===========================================================================
+
+router.get('/export/:model/pdf', async (req, res) => {
+  try {
+    const database = require('../database');
+    const tableName = toSnakeCase(req.params.model);
+    const limit = Math.min(parseInt(req.query.limit) || 500, 2000);
+    const result = await database.query(\`SELECT * FROM \${tableName} ORDER BY created_at DESC LIMIT \${limit}\`);
+
+    const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', \`attachment; filename=\${req.params.model}-export.pdf\`);
+    doc.pipe(res);
+
+    const pageWidth = doc.page.width;
+    const contentWidth = pageWidth - 100;
+    const modelTitle = req.params.model.charAt(0).toUpperCase() + req.params.model.slice(1);
+    let pageNum = 1;
+
+    // --- Header bar ---
+    const drawHeader = () => {
+      doc.save();
+      doc.rect(0, 0, pageWidth, 70).fill('#1e293b');
+      doc.fillColor('#ffffff').fontSize(18).font('Helvetica-Bold').text('${appName}', 50, 18);
+      doc.fontSize(10).font('Helvetica').text(\`\${modelTitle} Report\`, 50, 42);
+      doc.restore();
+      doc.fillColor('#000000');
+      doc.y = 85;
+    };
+
+    // --- Footer ---
+    const drawFooter = (pg) => {
+      doc.save();
+      doc.moveTo(50, doc.page.height - 45).lineTo(pageWidth - 50, doc.page.height - 45).stroke('#e2e8f0');
+      doc.fontSize(7).fillColor('#94a3b8')
+        .text(\`Generated: \${new Date().toLocaleString()}\`, 50, doc.page.height - 35)
+        .text(\`Page \${pg}\`, pageWidth - 100, doc.page.height - 35, { width: 50, align: 'right' });
+      doc.restore();
+      doc.fillColor('#000000');
+    };
+
+    drawHeader();
+
+    // Summary line
+    doc.fontSize(10).fillColor('#475569').text(\`\${result.rows.length} record(s) exported on \${new Date().toLocaleDateString()}\`, { align: 'center' });
+    doc.fillColor('#000000');
+    doc.moveDown(1.5);
+
+    if (result.rows.length > 0) {
+      const columns = Object.keys(result.rows[0]).filter(c => c !== 'password_hash' && c !== 'password');
+      const displayCols = columns.slice(0, 6);
+      const colWidth = contentWidth / displayCols.length;
+      const rowHeight = 18;
+
+      // --- Table header row ---
+      const drawTableHeader = () => {
+        const y = doc.y;
+        doc.save();
+        doc.rect(50, y, contentWidth, rowHeight + 4).fill('#f1f5f9');
+        doc.fillColor('#334155').fontSize(7).font('Helvetica-Bold');
+        displayCols.forEach((col, i) => {
+          doc.text(col.replace(/_/g, ' ').toUpperCase(), 54 + i * colWidth, y + 4, { width: colWidth - 8, lineBreak: false });
+        });
+        doc.restore();
+        doc.fillColor('#000000');
+        doc.y = y + rowHeight + 4;
+        // Separator line
+        doc.moveTo(50, doc.y).lineTo(50 + contentWidth, doc.y).stroke('#cbd5e1');
+        doc.y += 2;
+      };
+
+      drawTableHeader();
+
+      // --- Table rows ---
+      result.rows.forEach((row, rowIndex) => {
+        // Page break check
+        if (doc.y > doc.page.height - 70) {
+          drawFooter(pageNum);
+          doc.addPage();
+          pageNum++;
+          drawHeader();
+          drawTableHeader();
+        }
+
+        const y = doc.y;
+        // Alternating row background
+        if (rowIndex % 2 === 0) {
+          doc.save();
+          doc.rect(50, y - 1, contentWidth, rowHeight).fill('#fafafa');
+          doc.restore();
+          doc.fillColor('#000000');
+        }
+
+        doc.font('Helvetica').fontSize(7).fillColor('#1e293b');
+        displayCols.forEach((col, i) => {
+          let val = row[col];
+          if (val === null || val === undefined) val = '-';
+          else if (typeof val === 'boolean') val = val ? 'Yes' : 'No';
+          else if (typeof val === 'object') val = JSON.stringify(val).substring(0, 35);
+          else val = String(val).substring(0, 35);
+          doc.text(val, 54 + i * colWidth, y + 3, { width: colWidth - 8, lineBreak: false });
+        });
+        doc.y = y + rowHeight;
+      });
+
+      // Summary bar at bottom of table
+      doc.moveDown(0.5);
+      doc.moveTo(50, doc.y).lineTo(50 + contentWidth, doc.y).stroke('#cbd5e1');
+      doc.moveDown(0.3);
+      doc.fontSize(8).fillColor('#475569').font('Helvetica-Bold')
+        .text(\`Total: \${result.rows.length} record(s)\`, 50)
+        .text(columns.length > 6 ? \`Showing \${displayCols.length} of \${columns.length} columns\` : '', { align: 'right' });
+      doc.fillColor('#000000');
+    } else {
+      doc.moveDown(4);
+      doc.fontSize(14).fillColor('#94a3b8').text('No records found.', { align: 'center' });
+      doc.fillColor('#000000');
+    }
+
+    drawFooter(pageNum);
+    doc.end();
+  } catch (error) {
+    logger.error('PDF export failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Single-record PDF export with formatted layout
+router.get('/export/:model/:id/pdf', async (req, res) => {
+  try {
+    const database = require('../database');
+    const tableName = toSnakeCase(req.params.model);
+    const result = await database.query(\`SELECT * FROM \${tableName} WHERE id = $1\`, [req.params.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Record not found' });
+    }
+
+    const record = result.rows[0];
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', \`attachment; filename=\${req.params.model}-\${req.params.id}.pdf\`);
+    doc.pipe(res);
+
+    // Header bar
+    doc.rect(0, 0, doc.page.width, 80).fill('#1e293b');
+    doc.fillColor('#ffffff').fontSize(22).text('${appName}', 50, 25, { align: 'left' });
+    doc.fontSize(10).text(\`\${req.params.model.charAt(0).toUpperCase() + req.params.model.slice(1)} Record\`, 50, 52, { align: 'left' });
+    doc.fillColor('#000000');
+
+    doc.moveDown(3);
+
+    // Record title
+    const displayTitle = record.name || record.title || record.subject || \`\${req.params.model} #\${record.id}\`;
+    doc.fontSize(18).font('Helvetica-Bold').text(displayTitle);
+    doc.moveDown(0.5);
+    doc.fontSize(9).font('Helvetica').fillColor('#64748b').text(\`Generated: \${new Date().toLocaleString()}  |  ID: \${record.id}\`);
+    doc.fillColor('#000000');
+    doc.moveDown(1.5);
+
+    // Draw separator
+    doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).stroke('#e2e8f0');
+    doc.moveDown(1);
+
+    // Field-value pairs in two-column layout
+    const fields = Object.keys(record).filter(k => k !== 'password_hash' && k !== 'password');
+    const labelWidth = 150;
+    const valueWidth = doc.page.width - 100 - labelWidth;
+
+    fields.forEach((field, i) => {
+      if (doc.y > doc.page.height - 80) { doc.addPage(); }
+      const y = doc.y;
+      const label = field.replace(/_/g, ' ').replace(/\\b\\w/g, c => c.toUpperCase());
+      let value = record[field];
+      if (value === null || value === undefined) value = '-';
+      else if (typeof value === 'object') value = JSON.stringify(value, null, 2);
+      else if (typeof value === 'boolean') value = value ? 'Yes' : 'No';
+      else value = String(value);
+
+      // Alternating row background
+      if (i % 2 === 0) {
+        doc.rect(45, y - 3, doc.page.width - 90, 20).fill('#f8fafc');
+        doc.fillColor('#000000');
+      }
+
+      doc.font('Helvetica-Bold').fontSize(9).fillColor('#475569').text(label, 50, y, { width: labelWidth });
+      doc.font('Helvetica').fontSize(9).fillColor('#1e293b').text(value.substring(0, 200), 50 + labelWidth, y, { width: valueWidth });
+      doc.moveDown(0.8);
+    });
+
+    // Footer
+    doc.fontSize(7).fillColor('#94a3b8').text('${appName}', 50, doc.page.height - 40, { align: 'center' });
+    doc.end();
+  } catch (error) {
+    logger.error('Single-record PDF export failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ===========================================================================
+// DATA AGGREGATION ROUTES
+// ===========================================================================
+
+router.get('/data/:model/aggregate', async (req, res) => {
+  try {
+    const database = require('../database');
+    const tableName = toSnakeCase(req.params.model);
+    const { groupBy, sum, count, avg, min, max } = req.query;
+
+    let selectParts = [];
+    let groupByClause = '';
+
+    if (groupBy) {
+      const groupCol = toSnakeCase(groupBy);
+      selectParts.push(\`\${groupCol} as group_key\`);
+      groupByClause = \`GROUP BY \${groupCol}\`;
+    }
+
+    if (count) selectParts.push(\`COUNT(*) as count\`);
+    else selectParts.push('COUNT(*) as count');
+    if (sum) selectParts.push(\`SUM(\${toSnakeCase(sum)}) as sum\`);
+    if (avg) selectParts.push(\`AVG(\${toSnakeCase(avg)}) as average\`);
+    if (min) selectParts.push(\`MIN(\${toSnakeCase(min)}) as minimum\`);
+    if (max) selectParts.push(\`MAX(\${toSnakeCase(max)}) as maximum\`);
+
+    const sql = \`SELECT \${selectParts.join(', ')} FROM \${tableName} \${groupByClause} ORDER BY count DESC LIMIT 100\`;
+    const result = await database.query(sql);
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    logger.error('Aggregation failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ===========================================================================
+// PAYMENT ROUTES (Stripe)
+// ===========================================================================
+
+let stripe;
+try {
+  if (process.env.STRIPE_SECRET_KEY) {
+    stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+    router.post('/payments/create-checkout', authMiddleware, async (req, res) => {
+      try {
+        const { items, successUrl, cancelUrl } = req.body;
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ['card'],
+          line_items: items.map(item => ({
+            price_data: {
+              currency: item.currency || 'usd',
+              product_data: { name: item.name },
+              unit_amount: Math.round(item.price * 100)
+            },
+            quantity: item.quantity || 1
+          })),
+          mode: 'payment',
+          success_url: successUrl || \`\${req.protocol}://\${req.get('host')}/payment-success\`,
+          cancel_url: cancelUrl || \`\${req.protocol}://\${req.get('host')}/payment-cancel\`
+        });
+        res.json({ success: true, sessionId: session.id, url: session.url });
+      } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+      }
+    });
+
+    router.post('/payments/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+      const sig = req.headers['stripe-signature'];
+      try {
+        const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+        if (event.type === 'checkout.session.completed') {
+          logger.info('Payment completed:', event.data.object.id);
+        }
+        res.json({ received: true });
+      } catch (err) {
+        res.status(400).json({ error: err.message });
+      }
+    });
+  }
+} catch (e) {
+  logger.info('Stripe not configured, payment routes disabled');
+}
+
+// ===========================================================================
+// MULTI-TENANCY MANAGEMENT ROUTES
+// ===========================================================================
+
+// Create a new tenant (authenticated users)
+router.post('/tenants', authMiddleware, async (req, res) => {
+  try {
+    const database = require('../database');
+    const { name, domain, settings } = req.body;
+    if (!name) return res.status(400).json({ success: false, error: 'Tenant name is required' });
+
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const tenantId = uuidv4();
+
+    // Check slug uniqueness
+    const existing = await database.query('SELECT id FROM tenants WHERE slug = $1', [slug]);
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ success: false, error: 'Tenant with this name already exists' });
+    }
+
+    await database.query(
+      'INSERT INTO tenants (id, name, slug, domain, owner_id, settings, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
+      [tenantId, name, slug, domain || null, req.user?.id || 'system', JSON.stringify(settings || {})]
+    );
+
+    // Add creator as admin member
+    if (req.user?.id) {
+      await database.query(
+        'INSERT INTO tenant_members (id, tenant_id, user_id, role) VALUES ($1, $2, $3, $4)',
+        [uuidv4(), tenantId, req.user.id, 'admin']
+      );
+      // Update user's tenant_id
+      await database.query('UPDATE users SET tenant_id = $1 WHERE id = $2', [tenantId, req.user.id]);
+    }
+
+    res.status(201).json({ success: true, tenant: { id: tenantId, name, slug, domain } });
+  } catch (error) {
+    logger.error('Create tenant failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// List tenants (admin: all, regular user: their memberships)
+router.get('/tenants', authMiddleware, async (req, res) => {
+  try {
+    const database = require('../database');
+    let result;
+    if (req.user?.role === 'admin' || req.user?.role === 'superadmin') {
+      result = await database.query('SELECT id, name, slug, domain, plan, is_active, created_at FROM tenants ORDER BY created_at DESC');
+    } else {
+      result = await database.query(
+        \`SELECT t.id, t.name, t.slug, t.domain, t.plan, t.is_active, tm.role as member_role, t.created_at
+         FROM tenants t
+         JOIN tenant_members tm ON tm.tenant_id = t.id
+         WHERE tm.user_id = $1
+         ORDER BY t.created_at DESC\`,
+        [req.user?.id]
+      );
+    }
+    res.json({ success: true, tenants: result.rows });
+  } catch (error) {
+    logger.error('List tenants failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get single tenant
+router.get('/tenants/:tenantId', authMiddleware, async (req, res) => {
+  try {
+    const database = require('../database');
+    const result = await database.query(
+      'SELECT id, name, slug, domain, plan, settings, is_active, created_at FROM tenants WHERE id = $1',
+      [req.params.tenantId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Tenant not found' });
+
+    // Get member count
+    const members = await database.query(
+      'SELECT COUNT(*) as count FROM tenant_members WHERE tenant_id = $1',
+      [req.params.tenantId]
+    );
+    const tenant = result.rows[0];
+    tenant.memberCount = parseInt(members.rows[0].count);
+
+    res.json({ success: true, tenant });
+  } catch (error) {
+    logger.error('Get tenant failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Update tenant (owner/admin only)
+router.put('/tenants/:tenantId', authMiddleware, async (req, res) => {
+  try {
+    const database = require('../database');
+    const { name, domain, settings, plan, is_active } = req.body;
+
+    // Verify ownership or admin role
+    const tenant = await database.query('SELECT owner_id FROM tenants WHERE id = $1', [req.params.tenantId]);
+    if (tenant.rows.length === 0) return res.status(404).json({ success: false, error: 'Tenant not found' });
+
+    const isOwner = tenant.rows[0].owner_id === req.user?.id;
+    const isAdmin = req.user?.role === 'admin' || req.user?.role === 'superadmin';
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ success: false, error: 'Only tenant owner or admin can update' });
+    }
+
+    const updates = [];
+    const values = [];
+    let idx = 1;
+    if (name !== undefined) { updates.push(\`name = $\${idx++}\`); values.push(name); }
+    if (domain !== undefined) { updates.push(\`domain = $\${idx++}\`); values.push(domain); }
+    if (settings !== undefined) { updates.push(\`settings = $\${idx++}\`); values.push(JSON.stringify(settings)); }
+    if (plan !== undefined && isAdmin) { updates.push(\`plan = $\${idx++}\`); values.push(plan); }
+    if (is_active !== undefined && isAdmin) { updates.push(\`is_active = $\${idx++}\`); values.push(is_active); }
+
+    if (updates.length === 0) return res.status(400).json({ success: false, error: 'No fields to update' });
+
+    updates.push(\`updated_at = NOW()\`);
+    values.push(req.params.tenantId);
+    await database.query(\`UPDATE tenants SET \${updates.join(', ')} WHERE id = $\${idx}\`, values);
+
+    res.json({ success: true, message: 'Tenant updated' });
+  } catch (error) {
+    logger.error('Update tenant failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Delete tenant (owner or superadmin only)
+router.delete('/tenants/:tenantId', authMiddleware, async (req, res) => {
+  try {
+    const database = require('../database');
+    const tenant = await database.query('SELECT owner_id FROM tenants WHERE id = $1', [req.params.tenantId]);
+    if (tenant.rows.length === 0) return res.status(404).json({ success: false, error: 'Tenant not found' });
+
+    const isOwner = tenant.rows[0].owner_id === req.user?.id;
+    const isSuperAdmin = req.user?.role === 'superadmin';
+    if (!isOwner && !isSuperAdmin) {
+      return res.status(403).json({ success: false, error: 'Only tenant owner or superadmin can delete' });
+    }
+
+    // Soft delete: deactivate instead of hard delete
+    await database.query('UPDATE tenants SET is_active = false, updated_at = NOW() WHERE id = $1', [req.params.tenantId]);
+    res.json({ success: true, message: 'Tenant deactivated' });
+  } catch (error) {
+    logger.error('Delete tenant failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Add member to tenant
+router.post('/tenants/:tenantId/members', authMiddleware, async (req, res) => {
+  try {
+    const database = require('../database');
+    const { userId, role } = req.body;
+    if (!userId) return res.status(400).json({ success: false, error: 'userId is required' });
+
+    // Verify caller has admin role in this tenant
+    const membership = await database.query(
+      'SELECT role FROM tenant_members WHERE tenant_id = $1 AND user_id = $2',
+      [req.params.tenantId, req.user?.id]
+    );
+    if (membership.rows.length === 0 || membership.rows[0].role !== 'admin') {
+      const tenant = await database.query('SELECT owner_id FROM tenants WHERE id = $1', [req.params.tenantId]);
+      if (tenant.rows.length === 0 || tenant.rows[0].owner_id !== req.user?.id) {
+        return res.status(403).json({ success: false, error: 'Only tenant admins can add members' });
+      }
+    }
+
+    await database.query(
+      'INSERT INTO tenant_members (id, tenant_id, user_id, role) VALUES ($1, $2, $3, $4) ON CONFLICT (tenant_id, user_id) DO UPDATE SET role = $4',
+      [uuidv4(), req.params.tenantId, userId, role || 'member']
+    );
+    await database.query('UPDATE users SET tenant_id = $1 WHERE id = $2', [req.params.tenantId, userId]);
+
+    res.json({ success: true, message: 'Member added' });
+  } catch (error) {
+    logger.error('Add tenant member failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// List tenant members
+router.get('/tenants/:tenantId/members', authMiddleware, async (req, res) => {
+  try {
+    const database = require('../database');
+    const result = await database.query(
+      \`SELECT u.id, u.email, u.name, u.avatar_url, tm.role, tm.joined_at
+       FROM tenant_members tm
+       JOIN users u ON u.id = tm.user_id
+       WHERE tm.tenant_id = $1
+       ORDER BY tm.joined_at ASC\`,
+      [req.params.tenantId]
+    );
+    res.json({ success: true, members: result.rows });
+  } catch (error) {
+    logger.error('List tenant members failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Remove member from tenant
+router.delete('/tenants/:tenantId/members/:userId', authMiddleware, async (req, res) => {
+  try {
+    const database = require('../database');
+    // Verify caller has admin role
+    const membership = await database.query(
+      'SELECT role FROM tenant_members WHERE tenant_id = $1 AND user_id = $2',
+      [req.params.tenantId, req.user?.id]
+    );
+    if (membership.rows.length === 0 || membership.rows[0].role !== 'admin') {
+      const tenant = await database.query('SELECT owner_id FROM tenants WHERE id = $1', [req.params.tenantId]);
+      if (tenant.rows.length === 0 || tenant.rows[0].owner_id !== req.user?.id) {
+        return res.status(403).json({ success: false, error: 'Only tenant admins can remove members' });
+      }
+    }
+
+    await database.query('DELETE FROM tenant_members WHERE tenant_id = $1 AND user_id = $2', [req.params.tenantId, req.params.userId]);
+    await database.query('UPDATE users SET tenant_id = $1 WHERE id = $2', ['default', req.params.userId]);
+
+    res.json({ success: true, message: 'Member removed' });
+  } catch (error) {
+    logger.error('Remove tenant member failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Switch tenant context
+router.post('/tenants/:tenantId/switch', authMiddleware, async (req, res) => {
+  try {
+    const database = require('../database');
+    // Verify user is member of target tenant
+    const membership = await database.query(
+      'SELECT role FROM tenant_members WHERE tenant_id = $1 AND user_id = $2',
+      [req.params.tenantId, req.user?.id]
+    );
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ success: false, error: 'Not a member of this tenant' });
+    }
+
+    // Update user's active tenant
+    await database.query('UPDATE users SET tenant_id = $1, updated_at = NOW() WHERE id = $2', [req.params.tenantId, req.user.id]);
+
+    // Issue new JWT with tenant context
+    const token = jwt.sign(
+      { id: req.user.id, email: req.user.email, name: req.user.name, role: req.user.role, tenant_id: req.params.tenantId },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({ success: true, token, tenantId: req.params.tenantId });
+  } catch (error) {
+    logger.error('Switch tenant failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ===========================================================================
+// I18N / LOCALIZATION ROUTES
+// ===========================================================================
+
+// Get available locales
+router.get('/locales', (req, res) => {
+  res.json({
+    success: true,
+    locales: ['en'],
+    defaultLocale: 'en'
+  });
+});
+
+// Get translations for a locale
+router.get('/locales/:lng', (req, res) => {
+  const translations = {
+    en: {
+      common: {
+        save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit',
+        create: 'Create', search: 'Search', loading: 'Loading...',
+        noData: 'No data available', confirm: 'Confirm', back: 'Back',
+        next: 'Next', submit: 'Submit', actions: 'Actions', status: 'Status',
+        yes: 'Yes', no: 'No'
+      },
+      auth: {
+        signIn: 'Sign In', signUp: 'Sign Up', signOut: 'Sign Out',
+        email: 'Email', password: 'Password', forgotPassword: 'Forgot password?',
+        noAccount: "Don't have an account?", hasAccount: 'Already have an account?'
+      },
+      nav: {
+        home: 'Home', dashboard: 'Dashboard', settings: 'Settings', profile: 'Profile'
+      },
+      pages: {
+        notFound: 'Page Not Found', goToDashboard: 'Go to Dashboard',
+        underConstruction: 'Page under construction.', noPages: 'No pages configured.',
+        accessDenied: 'Access Denied', welcome: 'Welcome to {{appName}}'
+      }
+    }
+  };
+  const lng = req.params.lng || 'en';
+  res.json({ success: true, locale: lng, translations: translations[lng] || translations.en });
+});
+
+// ===========================================================================
+// WORKFLOW ROUTES
+// ===========================================================================
 
 // Get all workflows
 router.get('/workflows', (req, res) => {
@@ -1519,6 +3048,53 @@ router.post('/instances/:id/tasks/:taskId/claim', async (req, res) => {
   }
 });
 
+// Get current task for an instance
+router.get('/instances/:id/task', (req, res) => {
+  try {
+    const instance = runtimeEngine.getInstance(req.params.id);
+    if (!instance) {
+      return res.status(404).json({ success: false, error: 'Instance not found' });
+    }
+    const currentTask = instance.currentTask || instance.pendingTask || null;
+    res.json({ success: true, task: currentTask });
+  } catch (error) {
+    logger.error('Failed to get current task:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get execution history for an instance
+router.get('/instances/:id/history', (req, res) => {
+  try {
+    const instance = runtimeEngine.getInstance(req.params.id);
+    if (!instance) {
+      return res.status(404).json({ success: false, error: 'Instance not found' });
+    }
+    const history = instance.history || instance.executionHistory || [];
+    res.json({ success: true, history });
+  } catch (error) {
+    logger.error('Failed to get instance history:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Cancel a running workflow instance
+router.post('/instances/:id/cancel', async (req, res) => {
+  try {
+    const instance = runtimeEngine.getInstance(req.params.id);
+    if (!instance) {
+      return res.status(404).json({ success: false, error: 'Instance not found' });
+    }
+    instance.status = 'cancelled';
+    instance.cancelledAt = new Date().toISOString();
+    instance.cancelReason = req.body.reason || 'Cancelled by user';
+    res.json({ success: true, instance: { id: instance.id, status: instance.status, cancelledAt: instance.cancelledAt } });
+  } catch (error) {
+    logger.error('Failed to cancel instance:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Get all instances
 router.get('/instances', (req, res) => {
   try {
@@ -1565,11 +3141,22 @@ function toSnakeCase(str) {
   return str.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
 }
 
-// List all records for a model
+// List all records for a model (with optional tenant filtering)
 router.get('/data/:model', async (req, res) => {
   try {
     const tableName = toSnakeCase(req.params.model);
-    const result = await database.query(\`SELECT * FROM \${tableName} ORDER BY created_at DESC\`);
+    // Check if table has tenant_id column for multi-tenancy filtering
+    let result;
+    if (req.tenantId && req.tenantId !== 'default') {
+      try {
+        result = await database.query(\`SELECT * FROM \${tableName} WHERE tenant_id = $1 ORDER BY created_at DESC\`, [req.tenantId]);
+      } catch (e) {
+        // Table may not have tenant_id column, fall back to unfiltered
+        result = await database.query(\`SELECT * FROM \${tableName} ORDER BY created_at DESC\`);
+      }
+    } else {
+      result = await database.query(\`SELECT * FROM \${tableName} ORDER BY created_at DESC\`);
+    }
     res.json({ success: true, data: result.rows });
   } catch (error) {
     logger.error(\`Failed to list \${req.params.model}:\`, error);
@@ -1592,11 +3179,16 @@ router.get('/data/:model/:id', async (req, res) => {
   }
 });
 
-// Create new record
+// Create new record (auto-injects tenant_id when multi-tenancy active)
 router.post('/data/:model', async (req, res) => {
   try {
     const tableName = toSnakeCase(req.params.model);
-    const data = req.body;
+    const data = { ...req.body };
+
+    // Inject tenant_id if multi-tenancy is active
+    if (req.tenantId && req.tenantId !== 'default') {
+      data.tenant_id = req.tenantId;
+    }
 
     // Convert field names to snake_case
     const columns = Object.keys(data).map(toSnakeCase);
@@ -1665,7 +3257,7 @@ module.exports = router;
     const server = `/**
  * Application Server
  * Main entry point for the generated application
- * Supports SSR hybrid rendering for optimal initial load
+ * Supports SSR, WebSockets, OAuth, and file serving
  */
 
 require('dotenv').config();
@@ -1673,6 +3265,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const http = require('http');
 const config = require('./config');
 const runtimeEngine = require('./runtime/engine');
 const apiRoutes = require('./routes/api');
@@ -1685,15 +3278,119 @@ const pageDataService = require('./ssr/PageDataService');
 const htmlRenderer = require('./ssr/HtmlRenderer');
 
 const app = express();
+const server = http.createServer(app);
+
+// ===========================================================================
+// SOCKET.IO REAL-TIME SETUP
+// ===========================================================================
+
+let io;
+try {
+  const { Server } = require('socket.io');
+  io = new Server(server, {
+    cors: { origin: '*', methods: ['GET', 'POST'] }
+  });
+
+  io.on('connection', (socket) => {
+    logger.info('Client connected:', socket.id);
+
+    socket.on('join-room', (room) => {
+      socket.join(room);
+      logger.info(\`Socket \${socket.id} joined room: \${room}\`);
+    });
+
+    socket.on('disconnect', () => {
+      logger.info('Client disconnected:', socket.id);
+    });
+  });
+
+  // Make io available globally for route handlers
+  app.set('io', io);
+  logger.info('Socket.IO initialized');
+} catch (e) {
+  logger.info('Socket.IO not available, real-time features disabled');
+}
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Request logging
 app.use((req, res, next) => {
   logger.info(\`\${req.method} \${req.path}\`);
+  next();
+});
+
+// Passport initialization for OAuth
+try {
+  const passport = require('passport');
+  app.use(passport.initialize());
+} catch (e) {}
+
+// Multi-tenancy middleware - extracts and validates tenant context
+app.use(async (req, res, next) => {
+  // Priority: X-Tenant-ID header > subdomain > JWT tenant_id > 'default'
+  let tenantId = req.headers['x-tenant-id'];
+  if (!tenantId) {
+    const host = req.hostname || '';
+    const parts = host.split('.');
+    if (parts.length > 2) tenantId = parts[0];
+  }
+  if (!tenantId && req.user?.tenant_id) tenantId = req.user.tenant_id;
+  req.tenantId = tenantId || 'default';
+
+  // Validate tenant exists and is active (skip for default tenant and auth routes)
+  if (req.tenantId !== 'default' && !req.path.startsWith('/api/auth')) {
+    try {
+      const database = require('./database');
+      const result = await database.query(
+        'SELECT id, is_active FROM tenants WHERE id = $1 OR slug = $1',
+        [req.tenantId]
+      );
+      if (result.rows.length > 0) {
+        if (!result.rows[0].is_active) {
+          return res.status(403).json({ success: false, error: 'Tenant is deactivated' });
+        }
+        req.tenantId = result.rows[0].id; // Normalize to ID
+      }
+    } catch (e) {
+      // Database not ready yet or table doesn't exist -- allow through
+    }
+  }
+  next();
+});
+
+// Emit data change events via Socket.IO
+app.use((req, res, next) => {
+  const originalJson = res.json.bind(res);
+  res.json = function(data) {
+    if (io && data && data.success && ['POST', 'PUT', 'DELETE'].includes(req.method)) {
+      const modelMatch = req.path.match(/\\/api\\/data\\/([^/]+)/);
+      if (modelMatch) {
+        io.emit('data-change', {
+          model: modelMatch[1],
+          action: req.method === 'POST' ? 'create' : req.method === 'PUT' ? 'update' : 'delete',
+          data: data.data,
+          timestamp: new Date().toISOString()
+        });
+      }
+      // Emit workflow state changes
+      const workflowMatch = req.path.match(/\\/api\\/(workflows|instances)/);
+      if (workflowMatch) {
+        io.emit('workflow-change', {
+          type: workflowMatch[1],
+          action: req.method,
+          data: data.instance || data.data,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+    return originalJson(data);
+  };
   next();
 });
 
@@ -1704,55 +3401,35 @@ app.use('/api/execution-logs', executionLogsRoutes);
 // Serve static files from frontend build
 const frontendBuildPath = path.join(__dirname, '../frontend/build');
 app.use(express.static(frontendBuildPath, {
-  // Don't serve index.html for static - we'll handle it with SSR
   index: false
 }));
 
 // SSR middleware for page routes
 const ssrHandler = async (req, res, next) => {
-  // Skip API routes
-  if (req.path.startsWith('/api')) {
-    return next();
-  }
-
-  // Skip static assets
-  if (req.path.match(/\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|map)$/)) {
-    return next();
-  }
+  if (req.path.startsWith('/api')) return next();
+  if (req.path.match(/\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|map)$/)) return next();
 
   try {
     logger.info(\`SSR rendering: \${req.path}\`);
-
-    // Get initial state for this route
     const db = config.database.enabled ? database : null;
     const initialState = await pageDataService.getInitialState(req.path, db);
-
-    // Render HTML with initial state
     const html = htmlRenderer.render(initialState);
-
     res.set('Content-Type', 'text/html');
     res.send(html);
   } catch (error) {
     logger.error('SSR Error:', error);
-    // Fall back to serving static index.html
     res.sendFile(path.join(frontendBuildPath, 'index.html'), (err) => {
-      if (err) {
-        res.status(500).send('Error loading application');
-      }
+      if (err) res.status(500).send('Error loading application');
     });
   }
 };
 
-// Apply SSR to all page routes
 app.get('*', ssrHandler);
 
 // Error handling
 app.use((err, req, res, next) => {
   logger.error('Error:', err);
-  res.status(500).json({
-    success: false,
-    error: err.message
-  });
+  res.status(500).json({ success: false, error: err.message });
 });
 
 // Initialize and start server
@@ -1760,23 +3437,19 @@ async function start() {
   try {
     logger.info('Starting application...');
 
-    // Initialize database
     if (config.database.enabled) {
       await database.initialize();
       logger.info('Database initialized');
     }
 
-    // Initialize runtime engine
     await runtimeEngine.initialize();
     logger.info('Runtime engine initialized');
 
-    // Start server
     const PORT = config.server.port;
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       logger.info(\`Server running on port \${PORT}\`);
       logger.info(\`Health check: http://localhost:\${PORT}/api/health\`);
-      logger.info(\`API docs: http://localhost:\${PORT}/api/workflows\`);
-      logger.info(\`Execution logs: http://localhost:\${PORT}/api/execution-logs/statistics\`);
+      if (io) logger.info(\`WebSocket: ws://localhost:\${PORT}\`);
     });
   } catch (error) {
     logger.error('Failed to start application:', error);
@@ -1784,18 +3457,9 @@ async function start() {
   }
 }
 
-// Handle shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  process.exit(0);
-});
+process.on('SIGTERM', async () => { logger.info('SIGTERM received'); process.exit(0); });
+process.on('SIGINT', async () => { logger.info('SIGINT received'); process.exit(0); });
 
-process.on('SIGINT', async () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
-
-// Start the application
 start();
 `;
 
@@ -1849,6 +3513,35 @@ KAFKA_CLIENT_ID=${this.application.name.toLowerCase().replace(/\s+/g, '_')}
 # PUSHER_KEY=your_pusher_key
 # PUSHER_SECRET=your_pusher_secret
 # PUSHER_CLUSTER=us2
+
+# JWT Secret (change in production)
+JWT_SECRET=change-this-to-a-secure-random-string
+
+# OAuth - Google (optional)
+# GOOGLE_CLIENT_ID=your_google_client_id
+# GOOGLE_CLIENT_SECRET=your_google_client_secret
+# GOOGLE_CALLBACK_URL=http://localhost:4000/api/auth/google/callback
+
+# OAuth - GitHub (optional)
+# GITHUB_CLIENT_ID=your_github_client_id
+# GITHUB_CLIENT_SECRET=your_github_client_secret
+# GITHUB_CALLBACK_URL=http://localhost:4000/api/auth/github/callback
+
+# Stripe Payments (optional)
+# STRIPE_SECRET_KEY=sk_test_...
+# STRIPE_WEBHOOK_SECRET=whsec_...
+# For frontend (create frontend/.env):
+# REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+# Multi-Tenancy
+# MULTI_TENANT_MODE=true
+# DEFAULT_TENANT_PLAN=free
+
+# File Storage
+FILE_STORAGE=local
+# FILE_STORAGE=s3
+# AWS_S3_BUCKET=your-bucket
+# AWS_S3_REGION=us-east-1
 
 # AI Self-Healing Configuration
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
@@ -2072,16 +3765,92 @@ class Database {
         )
       \`);
 
-      // Create indexes for workflow tables
+      // Create users table (for RBAC and OAuth)
       await client.query(\`
-        CREATE INDEX IF NOT EXISTS idx_workflow_instances_workflow_id
-        ON workflow_instances(workflow_id)
+        CREATE TABLE IF NOT EXISTS users (
+          id VARCHAR(255) PRIMARY KEY,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          password_hash VARCHAR(255),
+          name VARCHAR(255),
+          role VARCHAR(50) DEFAULT 'user',
+          oauth_provider VARCHAR(50),
+          oauth_id VARCHAR(255),
+          avatar_url VARCHAR(500),
+          tenant_id VARCHAR(255) DEFAULT 'default',
+          is_active BOOLEAN DEFAULT true,
+          last_login TIMESTAMP,
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW()
+        )
       \`);
 
+      // Create files table (for file management)
       await client.query(\`
-        CREATE INDEX IF NOT EXISTS idx_workflow_instances_status
-        ON workflow_instances(status)
+        CREATE TABLE IF NOT EXISTS files (
+          id VARCHAR(255) PRIMARY KEY,
+          original_name VARCHAR(500) NOT NULL,
+          stored_name VARCHAR(255) NOT NULL,
+          mime_type VARCHAR(100),
+          size BIGINT,
+          uploaded_by VARCHAR(255),
+          entity_type VARCHAR(100),
+          entity_id VARCHAR(255),
+          created_at TIMESTAMP DEFAULT NOW()
+        )
       \`);
+
+      // Create notifications table (for real-time)
+      await client.query(\`
+        CREATE TABLE IF NOT EXISTS notifications (
+          id VARCHAR(255) PRIMARY KEY,
+          user_id VARCHAR(255),
+          title VARCHAR(255),
+          message TEXT,
+          type VARCHAR(50) DEFAULT 'info',
+          is_read BOOLEAN DEFAULT false,
+          link VARCHAR(500),
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      \`);
+
+      // Create tenants table (for multi-tenancy management)
+      await client.query(\`
+        CREATE TABLE IF NOT EXISTS tenants (
+          id VARCHAR(255) PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          slug VARCHAR(255) UNIQUE NOT NULL,
+          domain VARCHAR(255),
+          owner_id VARCHAR(255) REFERENCES users(id),
+          plan VARCHAR(50) DEFAULT 'free',
+          settings JSONB DEFAULT '{}',
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW()
+        )
+      \`);
+
+      // Create tenant_members table (user-tenant associations)
+      await client.query(\`
+        CREATE TABLE IF NOT EXISTS tenant_members (
+          id VARCHAR(255) PRIMARY KEY,
+          tenant_id VARCHAR(255) REFERENCES tenants(id) ON DELETE CASCADE,
+          user_id VARCHAR(255) REFERENCES users(id) ON DELETE CASCADE,
+          role VARCHAR(50) DEFAULT 'member',
+          joined_at TIMESTAMP DEFAULT NOW(),
+          UNIQUE(tenant_id, user_id)
+        )
+      \`);
+
+      // Create indexes
+      await client.query(\`CREATE INDEX IF NOT EXISTS idx_workflow_instances_workflow_id ON workflow_instances(workflow_id)\`);
+      await client.query(\`CREATE INDEX IF NOT EXISTS idx_workflow_instances_status ON workflow_instances(status)\`);
+      await client.query(\`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)\`);
+      await client.query(\`CREATE INDEX IF NOT EXISTS idx_users_tenant ON users(tenant_id)\`);
+      await client.query(\`CREATE INDEX IF NOT EXISTS idx_files_entity ON files(entity_type, entity_id)\`);
+      await client.query(\`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read)\`);
+      await client.query(\`CREATE INDEX IF NOT EXISTS idx_tenants_slug ON tenants(slug)\`);
+      await client.query(\`CREATE INDEX IF NOT EXISTS idx_tenant_members_user ON tenant_members(user_id)\`);
+      await client.query(\`CREATE INDEX IF NOT EXISTS idx_tenant_members_tenant ON tenant_members(tenant_id)\`);
 
       // Load and create tables from data models
       await this.createDataModelTables(client);
@@ -2964,7 +4733,7 @@ ${this.application.description || 'Generated workflow application'}
 
 ## Generated Application
 
-This is a complete, standalone application generated by the Workflow Platform.
+This is a complete, standalone application generated by Tentoro AI Designer.
 
 ### Features
 
@@ -3123,7 +4892,7 @@ Change the \`PORT\` in \`.env\` file
 
 ## Support
 
-For issues or questions, refer to the main Workflow Platform documentation.
+For issues or questions, refer to the Tentoro AI Designer documentation.
 
 ---
 
@@ -3469,10 +5238,7 @@ module.exports = new NotificationService();
     // 1. Generate frontend package.json
     files.push(await this.generateFrontendPackageJson(frontendDir));
 
-    // 2. Generate public/index.html
-    files.push(await this.generateIndexHtml(frontendDir));
-
-    // 3. Generate theme and layout using LLM - it will detect industry and app type
+    // 2. Generate theme and layout using LLM - it will detect industry and app type
     const preferredMode = this.application.designPreset === 'darkElegance' ||
                           this.application.theme?.mode === 'dark' ||
                           this.application.theme === 'dark' ? 'dark' : 'light';
@@ -3496,13 +5262,22 @@ module.exports = new NotificationService();
     // Store generated theme for use in other generation methods
     this.generatedTheme = generatedTheme;
 
+    // 3. Generate public/index.html (after theme so it can use theme colors)
+    files.push(await this.generateIndexHtml(frontendDir));
+
     // 4. Generate Shadcn/ui infrastructure with the generated theme
     const designPreset = this.application.designPreset || 'minimal';
+    // Extract Figma colors for the ShadCN CSS variable bridge
+    const figmaDesignColors = this.application.metadata?.preciseDesignSystem?.colors ||
+                              this.application.designAnalysis?.designSystem?.colors ||
+                              null;
+
     const shadcnGenerator = new ShadcnComponentGenerator(this.outputPath, {
       preset: designPreset,
       includeDarkMode: this.application.includeDarkMode !== false,
       applicationName: this.application.name || 'App',
-      generatedTheme // Pass the fully LLM-generated theme (includes industry, type, layout)
+      generatedTheme, // Pass the fully LLM-generated theme (includes industry, type, layout)
+      figmaColors: figmaDesignColors // Bridge Figma hex colors into ShadCN HSL vars
     });
     await shadcnGenerator.generate();
     files.push('frontend/tailwind.config.js');
@@ -3512,6 +5287,21 @@ module.exports = new NotificationService();
     files.push('frontend/src/ThemeContext.js');
     files.push('frontend/src/theme.json');
     files.push('frontend/src/components/ui/*');
+
+    // 4b. Write precise Figma components if available
+    if (this.application.metadata?.preciseComponents) {
+      const preciseFiles = await this.writePreciseComponents(
+        frontendDir,
+        this.application.metadata.preciseComponents
+      );
+      files.push(...preciseFiles);
+    }
+    if (this.application.metadata?.preciseAssets) {
+      await this.downloadPreciseAssets(
+        frontendDir,
+        this.application.metadata.preciseAssets
+      );
+    }
 
     // 5. Generate src/index.js
     files.push(await this.generateFrontendIndex(frontendDir));
@@ -3528,8 +5318,17 @@ module.exports = new NotificationService();
     // 8. Generate components
     files.push(...await this.generateFrontendComponents(frontendDir));
 
+    // 8b. Generate ChartWrapper component
+    files.push(await this.generateChartWrapper(frontendDir));
+
     // 9. Generate pages
     files.push(...await this.generateFrontendPages(frontendDir));
+
+    // 10. LLM-powered UI code generation: convert pages.json into actual React components
+    const uiGeneratedPages = await this.generateUICodePages(frontendDir);
+    if (uiGeneratedPages.length > 0) {
+      files.push(...uiGeneratedPages);
+    }
 
     return files;
   }
@@ -3579,7 +5378,32 @@ module.exports = new NotificationService();
         'lucide-react': '^0.294.0',
         'recharts': '^2.10.3',
         'react-day-picker': '^8.9.1',
-        'date-fns': '^2.30.0'
+        'date-fns': '^2.30.0',
+        // Rich text editor
+        '@tiptap/react': '^2.1.0',
+        '@tiptap/starter-kit': '^2.1.0',
+        '@tiptap/extension-placeholder': '^2.1.0',
+        '@tiptap/extension-image': '^2.1.0',
+        '@tiptap/extension-table': '^2.1.0',
+        '@tiptap/extension-table-row': '^2.1.0',
+        '@tiptap/extension-table-cell': '^2.1.0',
+        '@tiptap/extension-table-header': '^2.1.0',
+        // Real-time
+        'socket.io-client': '^4.7.4',
+        // Drag and drop
+        '@dnd-kit/core': '^6.1.0',
+        '@dnd-kit/sortable': '^8.0.0',
+        '@dnd-kit/utilities': '^3.2.2',
+        // Maps
+        'react-leaflet': '^4.2.1',
+        'leaflet': '^1.9.4',
+        // i18n
+        'react-i18next': '^13.5.0',
+        'i18next': '^23.7.0',
+        'i18next-browser-languagedetector': '^7.2.0',
+        // Payments
+        '@stripe/stripe-js': '^2.4.0',
+        '@stripe/react-stripe-js': '^2.4.0'
       },
       devDependencies: {
         'tailwindcss': '^3.3.6',
@@ -3608,17 +5432,24 @@ module.exports = new NotificationService();
 
   async generateIndexHtml(frontendDir) {
     const appName = this.application.name || 'Application';
+    const themeColor = this.generatedTheme?.theme?.colors?.primary || '#3b82f6';
+    const fontFamily = this.generatedTheme?.theme?.typography?.fontFamily || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    const googleFontsUrl = this.application.metadata?.googleFontsUrl;
+    const fontLinks = googleFontsUrl ? `
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="${googleFontsUrl}" rel="stylesheet" />` : '';
     const html = `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#3b82f6" />
-    <meta name="description" content="${this.application.description || 'Generated Application'}" />
+    <meta name="theme-color" content="${themeColor}" />
+    <meta name="description" content="${this.application.description || 'Generated Application'}" />${fontLinks}
     <title>${appName}</title>
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      body { font-family: ${fontFamily}; }
     </style>
   </head>
   <body>
@@ -3638,6 +5469,113 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from './ThemeContext';
 import App from './App';
 import './index.css';
+
+// i18n setup
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources: {
+      en: {
+        translation: {
+          common: {
+            save: 'Save',
+            cancel: 'Cancel',
+            delete: 'Delete',
+            edit: 'Edit',
+            create: 'Create',
+            search: 'Search',
+            loading: 'Loading...',
+            noData: 'No data available',
+            confirm: 'Confirm',
+            back: 'Back',
+            next: 'Next',
+            submit: 'Submit',
+            actions: 'Actions',
+            status: 'Status',
+            yes: 'Yes',
+            no: 'No'
+          },
+          auth: {
+            signIn: 'Sign In',
+            signUp: 'Sign Up',
+            signOut: 'Sign Out',
+            email: 'Email',
+            password: 'Password',
+            forgotPassword: 'Forgot password?',
+            noAccount: "Don't have an account?",
+            hasAccount: 'Already have an account?'
+          },
+          nav: {
+            home: 'Home',
+            dashboard: 'Dashboard',
+            settings: 'Settings',
+            profile: 'Profile'
+          },
+          pages: {
+            notFound: 'Page Not Found',
+            goToDashboard: 'Go to Dashboard',
+            underConstruction: 'Page under construction.',
+            noPages: 'No pages configured.',
+            accessDenied: 'Access Denied',
+            accessDeniedMsg: 'You need the "{{role}}" role to view this page.',
+            welcome: 'Welcome to {{appName}}'
+          }
+        }
+      }
+    },
+      es: {
+        translation: {
+          common: {
+            save: 'Guardar', cancel: 'Cancelar', delete: 'Eliminar', edit: 'Editar',
+            create: 'Crear', search: 'Buscar', loading: 'Cargando...', noData: 'Sin datos',
+            confirm: 'Confirmar', back: 'Volver', next: 'Siguiente', submit: 'Enviar',
+            actions: 'Acciones', status: 'Estado', yes: 'Si', no: 'No'
+          },
+          auth: {
+            signIn: 'Iniciar sesion', signUp: 'Registrarse', signOut: 'Cerrar sesion',
+            email: 'Correo', password: 'Contrasena', forgotPassword: 'Olvidaste tu contrasena?',
+            noAccount: 'No tienes cuenta?', hasAccount: 'Ya tienes cuenta?'
+          },
+          nav: { home: 'Inicio', dashboard: 'Panel', settings: 'Configuracion', profile: 'Perfil' },
+          pages: {
+            notFound: 'Pagina no encontrada', goToDashboard: 'Ir al panel',
+            underConstruction: 'Pagina en construccion.', noPages: 'Sin paginas configuradas.',
+            accessDenied: 'Acceso denegado', accessDeniedMsg: 'Necesitas el rol "{{role}}" para ver esta pagina.',
+            welcome: 'Bienvenido a {{appName}}'
+          }
+        }
+      },
+      fr: {
+        translation: {
+          common: {
+            save: 'Enregistrer', cancel: 'Annuler', delete: 'Supprimer', edit: 'Modifier',
+            create: 'Creer', search: 'Rechercher', loading: 'Chargement...', noData: 'Aucune donnee',
+            confirm: 'Confirmer', back: 'Retour', next: 'Suivant', submit: 'Soumettre',
+            actions: 'Actions', status: 'Statut', yes: 'Oui', no: 'Non'
+          },
+          auth: {
+            signIn: 'Se connecter', signUp: "S'inscrire", signOut: 'Se deconnecter',
+            email: 'Email', password: 'Mot de passe', forgotPassword: 'Mot de passe oublie?',
+            noAccount: "Pas de compte?", hasAccount: 'Deja un compte?'
+          },
+          nav: { home: 'Accueil', dashboard: 'Tableau de bord', settings: 'Parametres', profile: 'Profil' },
+          pages: {
+            notFound: 'Page non trouvee', goToDashboard: 'Aller au tableau de bord',
+            underConstruction: 'Page en construction.', noPages: 'Aucune page configuree.',
+            accessDenied: 'Acces refuse', accessDeniedMsg: 'Vous avez besoin du role "{{role}}" pour voir cette page.',
+            welcome: 'Bienvenue sur {{appName}}'
+          }
+        }
+      }
+    },
+    fallbackLng: 'en',
+    interpolation: { escapeValue: false }
+  });
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -3659,41 +5597,313 @@ root.render(
 
     // Get layout values from LLM-generated theme, with sensible defaults
     const layout = this.generatedTheme?.layout || {};
+    const layoutType = layout.type || 'sidebar'; // 'sidebar' | 'topnav' | 'hybrid'
     const sidebarWidth = layout.sidebarWidth || '256px';
+    const headerHeight = layout.headerHeight || '64px';
     const containerMaxWidth = layout.containerMaxWidth || '1280px';
     const contentPadding = layout.contentPadding || '24px';
 
+    // Compute layout-specific app shell based on DesignExpert layout type
+    let appShellReturn;
+    if (layoutType === 'topnav') {
+      appShellReturn = `  return (
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="border-b bg-card sticky top-0 z-50" style={{ height: '${headerHeight}' }}>
+        <div className="flex items-center justify-between h-full px-6" style={{ maxWidth: '${containerMaxWidth}', margin: '0 auto' }}>
+          <div className="flex items-center gap-8">
+            <h2 className="text-xl font-bold tracking-tight">${appName}</h2>
+            <nav className="hidden md:flex items-center gap-1">
+              {filteredNavigation.filter(n => n.type !== 'section').map((item, index) => (
+                <Link key={index} to={item.route} className={cn("flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap", isActiveRoute(item.route) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground")}>
+                  <Icon name={item.icon} /><span>{item.label}</span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <NotificationCenter notifications={notifications} unreadCount={unreadCount} onMarkRead={() => setUnreadCount(0)} />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+                {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
+              </div>
+              <span className="text-sm font-medium hidden lg:block">{user?.name || user?.email}</span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleLogout}><LogOut className="w-4 h-4" /></Button>
+          </div>
+        </div>
+      </header>
+      <main className="flex-1 overflow-auto" style={{ padding: '${contentPadding}' }}>
+        <div style={{ maxWidth: '${containerMaxWidth}', margin: '0 auto' }}>
+        <Breadcrumb items={buildBreadcrumbs()} />
+        <ErrorBoundary>
+        <Routes>
+          <Route path="/" element={defaultPage ? <Navigate to={defaultPage.route} replace /> : <div className="flex flex-col items-center justify-center h-full"><h2 className="text-2xl font-semibold">{t('pages.welcome', { appName: '${appName}' })}</h2><p className="text-muted-foreground mt-2">{t('pages.noPages')}</p></div>} />
+          {pages.map(page => <Route key={page.id} path={page.route} element={<ErrorBoundary><PageRenderer page={page} forms={forms} user={user} workflowContext={{ instance: workflowInstance, currentTask, startWorkflow, completeTask, onFormSubmit: handleFormSubmit }} socket={socket} /></ErrorBoundary>} />)}
+          {filteredNavigation.filter(n => !n.pageExists && n.type !== 'section').map((item, i) => <Route key={\`fb-\${i}\`} path={item.route} element={<div className="flex flex-col items-center justify-center h-full py-16"><h2 className="text-2xl font-semibold">{item.label}</h2><p className="text-muted-foreground mt-2">{t('pages.underConstruction')}</p></div>} />)}
+${figmaRoutes}
+          <Route path="*" element={<div className="flex flex-col items-center justify-center h-full py-16"><h2 className="text-2xl font-semibold">{t('pages.notFound')}</h2><Link to="/" className="text-primary hover:underline mt-2">{t('pages.goToDashboard')}</Link></div>} />
+        </Routes>
+        </ErrorBoundary>
+        </div>
+      </main>
+    </div>
+  );`;
+    } else if (layoutType === 'hybrid') {
+      appShellReturn = `  return (
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="border-b bg-card sticky top-0 z-50" style={{ height: '${headerHeight}' }}>
+        <div className="flex items-center justify-between h-full px-6">
+          <h2 className="text-xl font-bold tracking-tight">${appName}</h2>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <NotificationCenter notifications={notifications} unreadCount={unreadCount} onMarkRead={() => setUnreadCount(0)} />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+                {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
+              </div>
+              <span className="text-sm font-medium hidden lg:block">{user?.name || user?.email}</span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleLogout}><LogOut className="w-4 h-4" /></Button>
+          </div>
+        </div>
+      </header>
+      <div className="flex flex-1 overflow-hidden">
+        <nav className="border-r bg-card flex flex-col shrink-0" style={{ width: '${sidebarWidth}' }}>
+          <div className="flex-1 py-4 px-3 space-y-1 overflow-auto">
+            {filteredNavigation.map((item, index) => {
+              if (item.type === 'section') {
+                const sectionEnd = filteredNavigation.findIndex((n, i) => i > index && n.type === 'section');
+                const children = filteredNavigation.slice(index + 1, sectionEnd === -1 ? undefined : sectionEnd).filter(n => n.type !== 'section');
+                if (children.length === 0) return null;
+                return (
+                  <NavGroup key={index} label={item.label} defaultOpen={children.some(c => isActiveRoute(c.route))}>
+                    {children.map((child, ci) => (
+                      <Link key={ci} to={child.route} className={cn("flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors", isActiveRoute(child.route) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground")}>
+                        <Icon name={child.icon} /><span>{child.label}</span>
+                      </Link>
+                    ))}
+                  </NavGroup>
+                );
+              }
+              const prevSection = filteredNavigation.slice(0, index).reverse().find(n => n.type === 'section');
+              if (prevSection) return null;
+              return (
+                <Link key={index} to={item.route} className={cn("flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors", isActiveRoute(item.route) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground")}>
+                  <Icon name={item.icon} /><span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+        <main className="flex-1 overflow-auto" style={{ padding: '${contentPadding}' }}>
+          <div style={{ maxWidth: '${containerMaxWidth}', margin: '0 auto' }}>
+          <Breadcrumb items={buildBreadcrumbs()} />
+          <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={defaultPage ? <Navigate to={defaultPage.route} replace /> : <div className="flex flex-col items-center justify-center h-full"><h2 className="text-2xl font-semibold">{t('pages.welcome', { appName: '${appName}' })}</h2><p className="text-muted-foreground mt-2">{t('pages.noPages')}</p></div>} />
+            {pages.map(page => <Route key={page.id} path={page.route} element={<ErrorBoundary><PageRenderer page={page} forms={forms} user={user} workflowContext={{ instance: workflowInstance, currentTask, startWorkflow, completeTask, onFormSubmit: handleFormSubmit }} socket={socket} /></ErrorBoundary>} />)}
+            {filteredNavigation.filter(n => !n.pageExists && n.type !== 'section').map((item, i) => <Route key={\`fb-\${i}\`} path={item.route} element={<div className="flex flex-col items-center justify-center h-full py-16"><h2 className="text-2xl font-semibold">{item.label}</h2><p className="text-muted-foreground mt-2">{t('pages.underConstruction')}</p></div>} />)}
+${figmaRoutes}
+            <Route path="*" element={<div className="flex flex-col items-center justify-center h-full py-16"><h2 className="text-2xl font-semibold">{t('pages.notFound')}</h2><Link to="/" className="text-primary hover:underline mt-2">{t('pages.goToDashboard')}</Link></div>} />
+          </Routes>
+          </ErrorBoundary>
+          </div>
+        </main>
+      </div>
+    </div>
+  );`;
+    } else {
+      // Default: sidebar layout with mobile drawer support
+      appShellReturn = `  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      {/* Mobile overlay */}
+      {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />}
+      {/* Mobile hamburger */}
+      <button onClick={() => setSidebarOpen(!sidebarOpen)} className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg bg-card border shadow-sm">
+        <List className="w-5 h-5" />
+      </button>
+      <nav className={\`border-r bg-card flex flex-col fixed md:relative z-40 h-full transition-transform duration-200 \${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}\`} style={{ width: '${sidebarWidth}' }}>
+        <div className="p-6 border-b flex items-center justify-between">
+          <h2 className="text-xl font-bold tracking-tight">${appName}</h2>
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden p-1 rounded hover:bg-accent"><ChevronRight className="w-4 h-4" /></button>
+        </div>
+        <div className="flex-1 py-4 px-3 space-y-1 overflow-auto">
+          {filteredNavigation.map((item, index) => {
+            if (item.type === 'section') {
+              const sectionEnd = filteredNavigation.findIndex((n, i) => i > index && n.type === 'section');
+              const children = filteredNavigation.slice(index + 1, sectionEnd === -1 ? undefined : sectionEnd).filter(n => n.type !== 'section');
+              if (children.length === 0) return null;
+              return (
+                <NavGroup key={index} label={item.label} defaultOpen={children.some(c => isActiveRoute(c.route))}>
+                  {children.map((child, ci) => (
+                    <Link key={ci} to={child.route} className={cn("flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors", isActiveRoute(child.route) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground")}>
+                      <Icon name={child.icon} /><span>{child.label}</span>
+                    </Link>
+                  ))}
+                </NavGroup>
+              );
+            }
+            const prevSection = filteredNavigation.slice(0, index).reverse().find(n => n.type === 'section');
+            if (prevSection) return null;
+            return (
+              <Link key={index} to={item.route} className={cn("flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors", isActiveRoute(item.route) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground")}>
+                <Icon name={item.icon} /><span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+        <div className="p-4 border-t space-y-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">{user?.name || user?.email || 'User'}</p>
+              {user?.role && <p className="text-xs text-muted-foreground capitalize">{user.role}</p>}
+            </div>
+            <div className="flex items-center gap-1">
+              <LanguageSwitcher />
+              <NotificationCenter notifications={notifications} unreadCount={unreadCount} onMarkRead={() => setUnreadCount(0)} />
+            </div>
+          </div>
+          <Button variant="outline" size="sm" className="w-full" onClick={handleLogout}>
+            <LogOut className="w-4 h-4 mr-2" />{t('auth.signOut')}
+          </Button>
+        </div>
+      </nav>
+      <main className="flex-1 overflow-auto" style={{ padding: '${contentPadding}' }}>
+        <div style={{ maxWidth: '${containerMaxWidth}', margin: '0 auto' }}>
+        <Breadcrumb items={buildBreadcrumbs()} />
+        <ErrorBoundary>
+        <Routes>
+          <Route path="/" element={defaultPage ? <Navigate to={defaultPage.route} replace /> : <div className="flex flex-col items-center justify-center h-full"><h2 className="text-2xl font-semibold">{t('pages.welcome', { appName: '${appName}' })}</h2><p className="text-muted-foreground mt-2">{t('pages.noPages')}</p></div>} />
+          {pages.map(page => <Route key={page.id} path={page.route} element={<ErrorBoundary><PageRenderer page={page} forms={forms} user={user} workflowContext={{ instance: workflowInstance, currentTask, startWorkflow, completeTask, onFormSubmit: handleFormSubmit }} socket={socket} /></ErrorBoundary>} />)}
+          {filteredNavigation.filter(n => !n.pageExists && n.type !== 'section').map((item, i) => <Route key={\`fb-\${i}\`} path={item.route} element={<div className="flex flex-col items-center justify-center h-full py-16"><h2 className="text-2xl font-semibold">{item.label}</h2><p className="text-muted-foreground mt-2">{t('pages.underConstruction')}</p></div>} />)}
+${figmaRoutes}
+          <Route path="*" element={<div className="flex flex-col items-center justify-center h-full py-16"><h2 className="text-2xl font-semibold">{t('pages.notFound')}</h2><Link to="/" className="text-primary hover:underline mt-2">{t('pages.goToDashboard')}</Link></div>} />
+        </Routes>
+        </ErrorBoundary>
+        </div>
+      </main>
+    </div>
+  );`;
+    }
+
+    // Build Figma page imports and routes if precise components are available
+    // Use precisePageConfigs for routes (matches navigationGraph routes baked into components)
+    let figmaImports = '';
+    let figmaRoutes = '';
+    let figmaNavItems = '';
+    const preciseComps = this.application.metadata?.preciseComponents;
+    const pageConfigs = this.application.metadata?.precisePageConfigs;
+    if (preciseComps && preciseComps.length > 0) {
+      // Build a lookup from componentName -> pageConfig for route/name info
+      const configByComponent = {};
+      if (pageConfigs) {
+        for (const pc of pageConfigs) {
+          if (pc.component) configByComponent[pc.component] = pc;
+        }
+      }
+
+      const figmaPages = preciseComps.filter(c => c.filePath && c.componentName);
+      figmaImports = figmaPages.map(c => {
+        const importPath = './' + c.filePath.replace(/^src\//, '').replace(/\.jsx?$/, '');
+        return `import ${c.componentName} from '${importPath}';`;
+      }).join('\n');
+
+      figmaRoutes = figmaPages.map(c => {
+        // Use pageConfig route (matches navigationGraph) or fallback to derived route
+        const pc = configByComponent[c.componentName];
+        const route = pc?.route || ('/' + (c.componentName || 'page').replace(/^FigmaPage_/i, '').toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+        return `          <Route path="${route}" element={<ErrorBoundary><${c.componentName} /></ErrorBoundary>} />`;
+      }).join('\n');
+
+      figmaNavItems = figmaPages.map(c => {
+        const pc = configByComponent[c.componentName];
+        const route = pc?.route || ('/' + (c.componentName || 'page').replace(/^FigmaPage_/i, '').toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+        const label = pc?.name || (c.componentName || 'Page').replace(/^FigmaPage_/, '').replace(/([A-Z])/g, ' $1').trim();
+        return `{ label: '${label}', route: '${route}', icon: 'file', pageExists: true }`;
+      }).join(',\n          ');
+    }
+
     const appJs = `import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import PageRenderer from './components/PageRenderer';
-import { formsApi, setAuthToken, workflowApi } from './api/client';
+import ErrorBoundary from './components/ErrorBoundary';
+import NotificationCenter from './components/NotificationCenter';
+import LanguageSwitcher from './components/LanguageSwitcher';
+import { formsApi, setAuthToken, workflowApi, notificationsApi } from './api/client';
 import { Button } from './components/ui/button';
 import { cn } from './lib/utils';
 import './App.css';
+import { LayoutDashboard, Home, PlusCircle, List, BarChart3, HelpCircle, ShoppingCart, BookOpen, User, Users, Settings, Search, Bell, Calendar, FolderOpen, FileText, DollarSign, AlertTriangle, Package, CheckSquare, Ticket, Circle, ChevronDown, ChevronRight, LogOut, Globe } from 'lucide-react';
+${figmaImports}
 
-// Icon component for navigation
+// Socket.IO for real-time
+let socket = null;
+try {
+  const io = require('socket.io-client');
+  socket = io(window.location.origin, { transports: ['websocket', 'polling'] });
+} catch (e) {}
+
+// Icon component for navigation using Lucide React
+const iconMap = {
+  home: Home, dashboard: LayoutDashboard, book: BookOpen, books: BookOpen,
+  users: Users, user: User, settings: Settings, list: List,
+  cart: ShoppingCart, calendar: Calendar, bell: Bell, search: Search,
+  plus: PlusCircle, chart: BarChart3, folder: FolderOpen, file: FileText,
+  money: DollarSign, alert: AlertTriangle, warning: AlertTriangle, package: Package,
+  inventory: Package, checkout: CheckSquare, help: HelpCircle, ticket: Ticket,
+  globe: Globe, default: Circle
+};
 const Icon = ({ name }) => {
-  const icons = {
-    home: '\u2302', dashboard: '\u25A6', book: '\u2610', books: '\u2610',
-    users: '\u263B\u263B', user: '\u263B', settings: '\u2699', list: '\u2630',
-    cart: '\u26D2', calendar: '\u2637', bell: '\u266A', search: '\u2315',
-    plus: '\u271A', chart: '\u2261', folder: '\u2610', file: '\u2610',
-    money: '\u2211', alert: '\u26A0', warning: '\u26A0', package: '\u25A1',
-    inventory: '\u25A1', checkout: '\u2713', help: '\u2753', ticket: '\u2630',
-    default: '\u25CF'
-  };
-  return <span className="nav-icon">{icons[name] || icons.default}</span>;
+  const LucideIcon = iconMap[name] || iconMap.default;
+  return <LucideIcon className="nav-icon w-4 h-4" />;
 };
 
-// Protected Route wrapper
-const ProtectedRoute = ({ children, isAuthenticated }) => {
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+// Breadcrumb component
+const Breadcrumb = ({ items }) => (
+  <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-4">
+    {items.map((item, i) => (
+      <React.Fragment key={i}>
+        {i > 0 && <span>/</span>}
+        {item.route ? (
+          <Link to={item.route} className="hover:text-foreground transition-colors">{item.label}</Link>
+        ) : (
+          <span className="text-foreground font-medium">{item.label}</span>
+        )}
+      </React.Fragment>
+    ))}
+  </nav>
+);
+
+// Collapsible nav group for multi-level navigation
+const NavGroup = ({ label, children, defaultOpen = false }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  return (
+    <div>
+      <button onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:bg-accent/50 rounded-lg transition-colors">
+        <span>{label}</span>
+        {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+      </button>
+      {isOpen && <div className="ml-2 space-y-0.5">{children}</div>}
+    </div>
+  );
+};
+
+// Protected Route wrapper with RBAC
+const ProtectedRoute = ({ children, isAuthenticated, requiredRole, userRole }) => {
+  const { t } = useTranslation();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (requiredRole && userRole !== requiredRole && userRole !== 'admin') {
+    return <div className="flex flex-col items-center justify-center h-full py-16"><h2 className="text-2xl font-semibold">{t('pages.accessDenied')}</h2><p className="text-muted-foreground mt-2">{t('pages.accessDeniedMsg', { role: requiredRole })}</p></div>;
   }
   return children;
 };
 
 function App() {
+  const { t } = useTranslation();
   const [pages, setPages] = useState([]);
   const [forms, setForms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -3709,16 +5919,65 @@ function App() {
   const [currentTask, setCurrentTask] = useState(null);
   const [workflowNavigation, setWorkflowNavigation] = useState(null);
 
-  // Check for existing auth on mount
+  // Notifications state
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Check for existing auth on mount (including OAuth redirect tokens)
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const savedUser = localStorage.getItem('user');
-    if (token && savedUser) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(savedUser));
-      setAuthToken(token);
+    // Check for OAuth token in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const oauthToken = urlParams.get('token');
+    if (oauthToken) {
+      setAuthToken(oauthToken);
+      // Decode user from token
+      try {
+        const payload = JSON.parse(atob(oauthToken.split('.')[1]));
+        setUser(payload);
+        setIsAuthenticated(true);
+        localStorage.setItem('user', JSON.stringify(payload));
+      } catch (e) {}
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    } else {
+      const token = localStorage.getItem('authToken');
+      const savedUser = localStorage.getItem('user');
+      if (token && savedUser) {
+        setIsAuthenticated(true);
+        setUser(JSON.parse(savedUser));
+        setAuthToken(token);
+      }
     }
     setAuthChecked(true);
+  }, []);
+
+  // Real-time notifications via Socket.IO
+  useEffect(() => {
+    if (!socket) return;
+    socket.on('data-change', (event) => {
+      // Refresh page data when relevant data changes
+      setNotifications(prev => [{
+        id: Date.now(),
+        title: \`\${event.model} \${event.action}d\`,
+        message: \`A record was \${event.action}d in \${event.model}\`,
+        type: 'info',
+        isRead: false,
+        createdAt: event.timestamp
+      }, ...prev].slice(0, 50));
+      setUnreadCount(prev => prev + 1);
+    });
+    socket.on('workflow-change', (event) => {
+      setNotifications(prev => [{
+        id: Date.now(),
+        title: 'Workflow Update',
+        message: \`Workflow instance \${event.action === 'POST' ? 'started' : 'updated'}\`,
+        type: 'info',
+        isRead: false,
+        createdAt: event.timestamp
+      }, ...prev].slice(0, 50));
+      setUnreadCount(prev => prev + 1);
+    });
+    return () => { socket.off('data-change'); socket.off('workflow-change'); };
   }, []);
 
   // Always load pages first to determine if there are auth pages to show
@@ -3922,6 +6181,13 @@ function App() {
         }));
       }
 
+      // Add Figma page navigation entries if present
+      const figmaNav = [${figmaNavItems}];
+      if (figmaNav.length > 0) {
+        navItems.push({ type: 'section', label: 'Figma Pages' });
+        navItems.push(...figmaNav);
+      }
+
       setNavigation(navItems);
     } catch (error) {
       console.error('Error loading app data:', error);
@@ -3939,7 +6205,7 @@ function App() {
 
   // Show loading while checking auth
   if (!authChecked) {
-    return <div className="flex items-center justify-center h-screen bg-background"><div className="text-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div><p className="mt-4 text-muted-foreground">Loading...</p></div></div>;
+    return <div className="flex items-center justify-center h-screen bg-background"><div className="text-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div><p className="mt-4 text-muted-foreground">{t('common.loading')}</p></div></div>;
   }
 
   if (loading) {
@@ -3947,8 +6213,16 @@ function App() {
   }
 
   // Separate auth pages from protected pages based on MoE-generated metadata
-  const authPages = pages.filter(p => p.type === 'auth' || p.pageAssociation?.requiresAuth === false);
-  const protectedPages = pages.filter(p => p.type !== 'auth' && p.pageAssociation?.requiresAuth !== false);
+  // Include pages with 'login', 'register', 'forgot-password', 'reset-password' in route as auth pages
+  // This allows /admin/login and similar routes to work for unauthenticated users
+  const isAuthPage = (p) => {
+    if (p.type === 'auth' || p.pageAssociation?.requiresAuth === false) return true;
+    const route = (p.route || '').toLowerCase();
+    const authRoutePatterns = ['/login', '/register', '/signup', '/forgot-password', '/reset-password', '/auth'];
+    return authRoutePatterns.some(pattern => route.includes(pattern) || route.endsWith(pattern));
+  };
+  const authPages = pages.filter(isAuthPage);
+  const protectedPages = pages.filter(p => !isAuthPage(p));
 
   // Find entry point - prioritize isEntryPoint flag, then auth login, then dashboard
   const entryPointPage = pages.find(p => p.pageAssociation?.isEntryPoint === true);
@@ -3963,58 +6237,49 @@ function App() {
     const authEntryPoint = entryPointPage || loginPage || authPages[0];
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
+        <ErrorBoundary>
         <Routes>
           {authPages.map(page => (
             <Route
               key={page.id}
               path={page.route}
-              element={<PageRenderer page={page} forms={forms} onAuthSuccess={handleLogin} />}
+              element={<ErrorBoundary><PageRenderer page={page} forms={forms} onAuthSuccess={handleLogin} /></ErrorBoundary>}
             />
           ))}
           <Route path="*" element={<Navigate to={authEntryPoint?.route || '/login'} replace />} />
         </Routes>
+        </ErrorBoundary>
       </div>
     );
   }
 
   const defaultPage = dashboardPage || pages[0];
 
-  return (
-    <div className="flex min-h-screen bg-background">
-      <nav className="border-r bg-card flex flex-col" style={{ width: '${sidebarWidth}' }}>
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-bold tracking-tight">${appName}</h2>
-        </div>
-        <div className="flex-1 py-4 px-3 space-y-1 overflow-auto">
-          {navigation.map((item, index) => (
-            item.type === 'section' ? (
-              <div key={index} className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{item.label}</div>
-            ) : (
-              <Link key={index} to={item.route} className={cn("flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors", isActiveRoute(item.route) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground")}>
-                <Icon name={item.icon} /><span>{item.label}</span>
-              </Link>
-            )
-          ))}
-        </div>
-        <div className="p-4 border-t">
-          <div className="mb-3">
-            <span className="text-sm font-medium">{user?.name || user?.email || 'User'}</span>
-          </div>
-          <Button variant="outline" size="sm" className="w-full" onClick={handleLogout}>Sign Out</Button>
-        </div>
-      </nav>
-      <main className="flex-1 overflow-auto" style={{ padding: '${contentPadding}' }}>
-        <div style={{ maxWidth: '${containerMaxWidth}', margin: '0 auto' }}>
-        <Routes>
-          <Route path="/" element={defaultPage ? <Navigate to={defaultPage.route} replace /> : <div className="flex flex-col items-center justify-center h-full"><h2 className="text-2xl font-semibold">Welcome to ${appName}</h2><p className="text-muted-foreground mt-2">No pages configured.</p></div>} />
-          {pages.map(page => <Route key={page.id} path={page.route} element={<PageRenderer page={page} forms={forms} workflowContext={{ instance: workflowInstance, currentTask, startWorkflow, completeTask, onFormSubmit: handleFormSubmit }} />} />)}
-          {navigation.filter(n => !n.pageExists).map((item, i) => <Route key={\`fb-\${i}\`} path={item.route} element={<div className="flex flex-col items-center justify-center h-full py-16"><h2 className="text-2xl font-semibold">{item.label}</h2><p className="text-muted-foreground mt-2">Page under construction.</p></div>} />)}
-          <Route path="*" element={<div className="flex flex-col items-center justify-center h-full py-16"><h2 className="text-2xl font-semibold">Page Not Found</h2><Link to="/" className="text-primary hover:underline mt-2">Go to Dashboard</Link></div>} />
-        </Routes>
-        </div>
-      </main>
-    </div>
-  );
+  // Build breadcrumbs from current route
+  const buildBreadcrumbs = () => {
+    const parts = location.pathname.split('/').filter(Boolean);
+    const crumbs = [{ label: 'Home', route: '/' }];
+    let path = '';
+    parts.forEach((part, i) => {
+      path += '/' + part;
+      const page = pages.find(p => p.route === path);
+      crumbs.push({
+        label: page?.title || part.replace(/-/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase()),
+        route: i < parts.length - 1 ? path : null
+      });
+    });
+    return crumbs;
+  };
+
+  // Filter navigation by user role (RBAC)
+  const filteredNavigation = navigation.filter(item => {
+    if (item.type === 'section') return true;
+    if (!item.requiredRole) return true;
+    if (user?.role === 'admin') return true;
+    return user?.role === item.requiredRole;
+  });
+
+${appShellReturn}
 }
 
 export default App;`;
@@ -4039,6 +6304,21 @@ export default App;`;
                            this.application.resources?.designAnalysis ||
                            {};
     if (designAnalysis.generatedCSS) {
+      const currentLayoutType = this.generatedTheme?.layout?.type || 'sidebar';
+      // If we have the design system and layout type differs from default sidebar,
+      // regenerate CSS with correct layout config so nav CSS matches the app shell
+      if (currentLayoutType !== 'sidebar' && designAnalysis.designSystem) {
+        console.log(`[ApplicationGenerator] Regenerating DesignExpert CSS for layout type: ${currentLayoutType}`);
+        const DesignExpert = require('../services/moe/experts/DesignExpert');
+        const designExpert = new DesignExpert();
+        const layoutAwareCSS = designExpert.generateCSSFromDesignSystem(designAnalysis.designSystem, {
+          type: currentLayoutType,
+          sidebarWidth: this.generatedTheme?.layout?.sidebarWidth,
+          headerHeight: this.generatedTheme?.layout?.headerHeight
+        });
+        await fs.writeFile(path.join(frontendDir, 'src/App.css'), layoutAwareCSS);
+        return 'frontend/src/App.css';
+      }
       console.log('[ApplicationGenerator] Using DesignExpert generated CSS from:', {
         source: designAnalysis.source || 'unknown',
         theme: designAnalysis.themeName || 'default',
@@ -4050,142 +6330,202 @@ export default App;`;
 
     // Fallback to default CSS if no generated CSS available
     console.log('[ApplicationGenerator] Using default CSS (no DesignExpert CSS available)');
+    const t = mergeWithTheme(this.generatedTheme);
+    const c = t.colors;
+    const fallbackLayoutType = t.layout.type;
+    const fallbackSidebarWidth = t.layout.sidebarWidth;
+    const fallbackHeaderHeight = t.layout.headerHeight;
+    const sc = t.statusColors;
     const css = `/* Global Styles */
 * {
   box-sizing: border-box;
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: ${t.typography.fontFamily};
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
-  background: #f8fafc;
-  color: #1e293b;
+  background: ${c.background};
+  color: ${c.foreground};
 }
 
 /* App Styles */
 .app {
   display: flex;
+  ${fallbackLayoutType === 'topnav' || fallbackLayoutType === 'hybrid' ? 'flex-direction: column;' : ''}
   min-height: 100vh;
 }
 
+${fallbackLayoutType === 'topnav' || fallbackLayoutType === 'hybrid' ? `
+.app-header {
+  height: ${fallbackHeaderHeight};
+  background: ${c.card};
+  color: ${c.cardForeground};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 ${t.spacing.xl};
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid ${c.border};
+}
+
+.app-header .logo h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.app-header nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.app-header .nav-link {
+  display: flex;
+  align-items: center;
+  gap: ${t.spacing.sm};
+  padding: ${t.spacing.sm} ${t.spacing.md};
+  color: ${c.mutedForeground};
+  text-decoration: none;
+  border-radius: ${t.borderRadius.base};
+  font-size: ${t.typography.fontSize.base};
+  white-space: nowrap;
+  transition: all ${t.transition.base};
+}
+
+.app-header .nav-link:hover {
+  background: ${c.muted};
+  color: ${c.foreground};
+}
+
+.app-header .nav-link.active {
+  background: ${c.primary};
+  color: ${c.primaryForeground};
+}
+` : ''}
+
+${fallbackLayoutType !== 'topnav' ? `
 .sidebar {
-  width: 240px;
-  background: #1e293b;
-  color: white;
-  padding: 20px 0;
-  position: fixed;
-  height: 100vh;
+  width: ${fallbackSidebarWidth};
+  background: ${c.card};
+  color: ${c.cardForeground};
+  padding: ${t.spacing.lg} 0;
+  ${fallbackLayoutType === 'sidebar' ? 'position: fixed; height: 100vh;' : ''}
   overflow-y: auto;
+  border-right: 1px solid ${c.border};
 }
 
 .logo {
-  padding: 0 20px 20px;
-  border-bottom: 1px solid #334155;
+  padding: 0 ${t.spacing.lg} ${t.spacing.lg};
+  border-bottom: 1px solid ${c.border};
 }
 
 .logo h2 {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: ${t.typography.fontSize.xl};
+  font-weight: ${t.typography.fontWeight.semibold};
 }
 
 .nav-links {
-  padding: 20px 0;
+  padding: ${t.spacing.lg} 0;
 }
 
 .nav-link {
   display: block;
-  padding: 12px 20px;
-  color: #94a3b8;
+  padding: ${t.spacing.md} ${t.spacing.lg};
+  color: ${c.mutedForeground};
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all ${t.transition.base};
 }
 
 .nav-link:hover {
-  background: #334155;
-  color: white;
+  background: ${c.muted};
+  color: ${c.foreground};
 }
 
 .nav-section {
-  padding: 20px 20px 8px;
-  font-size: 11px;
+  padding: ${t.spacing.lg} ${t.spacing.lg} ${t.spacing.sm};
+  font-size: ${t.typography.fontSize.xs};
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #64748b;
+  color: ${c.mutedForeground};
 }
+` : ''}
 
 .main-content {
   flex: 1;
-  margin-left: 240px;
-  padding: 24px;
-  background: #f8fafc;
-  min-height: 100vh;
+  ${fallbackLayoutType === 'sidebar' ? `margin-left: ${fallbackSidebarWidth};` : 'margin-left: 0;'}
+  padding: ${t.spacing.xl};
+  background: ${c.background};
+  min-height: ${fallbackLayoutType === 'sidebar' ? '100vh' : '0'};
 }
 
 /* Page Header */
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: ${t.spacing.xl};
 }
 
 .page-header h1 {
-  font-size: 24px;
-  color: #1e293b;
-  margin-bottom: 8px;
+  font-size: ${t.typography.fontSize['3xl']};
+  color: ${c.foreground};
+  margin-bottom: ${t.spacing.sm};
 }
 
 .page-header p {
-  color: #64748b;
+  color: ${c.mutedForeground};
 }
 
 /* Cards */
 .card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  padding: 20px;
-  margin-bottom: 16px;
+  background: ${c.card};
+  border-radius: ${t.borderRadius.card};
+  box-shadow: ${t.shadows.sm};
+  padding: ${t.spacing.lg};
+  margin-bottom: ${t.spacing.base};
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: ${t.spacing.base};
 }
 
 .card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1e293b;
+  font-size: ${t.typography.fontSize.lg};
+  font-weight: ${t.typography.fontWeight.semibold};
+  color: ${c.foreground};
 }
 
 /* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: ${t.spacing.base};
+  margin-bottom: ${t.spacing.xl};
 }
 
 .stat-card {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  background: ${c.card};
+  border-radius: ${t.borderRadius.card};
+  padding: ${t.spacing.lg};
+  box-shadow: ${t.shadows.sm};
 }
 
 .stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: #3b82f6;
+  font-size: ${t.typography.fontSize['4xl']};
+  font-weight: ${t.typography.fontWeight.bold};
+  color: ${c.primary};
 }
 
 .stat-label {
-  color: #64748b;
-  font-size: 14px;
-  margin-top: 4px;
+  color: ${c.mutedForeground};
+  font-size: ${t.typography.fontSize.base};
+  margin-top: ${t.spacing.xs};
 }
 
 /* Data Table */
@@ -4196,102 +6536,102 @@ body {
 
 .data-table th,
 .data-table td {
-  padding: 12px;
+  padding: ${t.spacing.md};
   text-align: left;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid ${c.border};
 }
 
 .data-table th {
-  background: #f8fafc;
-  font-weight: 600;
-  color: #475569;
-  font-size: 12px;
+  background: ${c.background};
+  font-weight: ${t.typography.fontWeight.semibold};
+  color: ${c.mutedForeground};
+  font-size: ${t.typography.fontSize.xs};
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .data-table tr:hover {
-  background: #f8fafc;
+  background: ${c.background};
 }
 
 /* Buttons */
 .btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: ${t.spacing.sm} ${t.spacing.base};
+  border-radius: ${t.borderRadius.button};
+  font-size: ${t.typography.fontSize.base};
+  font-weight: ${t.typography.fontWeight.medium};
   cursor: pointer;
   border: none;
-  transition: all 0.2s;
+  transition: all ${t.transition.base};
 }
 
 .btn-primary {
-  background: #3b82f6;
-  color: white;
+  background: ${c.primary};
+  color: ${c.primaryForeground};
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: ${c.primaryHover};
 }
 
 .btn-secondary {
-  background: #e2e8f0;
-  color: #475569;
+  background: ${c.muted};
+  color: ${c.mutedForeground};
 }
 
 .btn-success {
-  background: #10b981;
-  color: white;
+  background: ${c.success};
+  color: ${c.primaryForeground};
 }
 
 .btn-danger {
-  background: #ef4444;
-  color: white;
+  background: ${c.destructive};
+  color: ${c.destructiveForeground};
 }
 
 /* Forms */
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: ${t.spacing.base};
 }
 
 .form-label {
   display: block;
   margin-bottom: 6px;
-  font-weight: 500;
-  color: #374151;
-  font-size: 14px;
+  font-weight: ${t.typography.fontWeight.medium};
+  color: ${c.labelText};
+  font-size: ${t.typography.fontSize.base};
 }
 
 .form-input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: border-color 0.2s;
+  padding: ${t.spacing.inputPadding};
+  border: 1px solid ${c.inputBorder};
+  border-radius: ${t.borderRadius.input};
+  font-size: ${t.typography.fontSize.base};
+  transition: border-color ${t.transition.base};
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  border-color: ${c.focus};
+  box-shadow: 0 0 0 3px ${c.focus}1a;
 }
 
 .form-select {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  background: white;
+  padding: ${t.spacing.inputPadding};
+  border: 1px solid ${c.inputBorder};
+  border-radius: ${t.borderRadius.input};
+  font-size: ${t.typography.fontSize.base};
+  background: ${c.card};
 }
 
 .form-textarea {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
+  padding: ${t.spacing.inputPadding};
+  border: 1px solid ${c.inputBorder};
+  border-radius: ${t.borderRadius.input};
+  font-size: ${t.typography.fontSize.base};
   min-height: 100px;
   resize: vertical;
 }
@@ -4311,10 +6651,10 @@ body {
 }
 
 .modal {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  max-width: 500px;
+  background: ${c.card};
+  border-radius: ${t.borderRadius.modal};
+  padding: ${t.spacing.xl};
+  max-width: ${t.layout.modalMaxWidth};
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
@@ -4324,42 +6664,42 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: ${t.spacing.lg};
 }
 
 .modal-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: ${t.typography.fontSize.xl};
+  font-weight: ${t.typography.fontWeight.semibold};
 }
 
 .modal-close {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: ${t.typography.fontSize['3xl']};
   cursor: pointer;
-  color: #64748b;
+  color: ${c.mutedForeground};
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
+  gap: ${t.spacing.buttonGap};
+  margin-top: ${t.spacing.xl};
 }
 
 /* Workflow Status */
 .status-badge {
   display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
+  padding: ${t.components.badge.padding};
+  border-radius: ${t.borderRadius.badge};
+  font-size: ${t.components.badge.fontSize};
+  font-weight: ${t.typography.fontWeight.medium};
 }
 
-.status-running { background: #dbeafe; color: #1d4ed8; }
-.status-completed { background: #d1fae5; color: #065f46; }
-.status-failed { background: #fee2e2; color: #991b1b; }
-.status-pending { background: #fef3c7; color: #92400e; }
+.status-running { background: ${sc.running.bg}; color: ${sc.running.text}; }
+.status-completed { background: ${sc.completed.bg}; color: ${sc.completed.text}; }
+.status-failed { background: ${sc.failed.bg}; color: ${sc.failed.text}; }
+.status-pending { background: ${sc.pending.bg}; color: ${sc.pending.text}; }
 
 /* Action Buttons */
 .action-buttons {
@@ -4376,19 +6716,19 @@ body {
 .loading {
   text-align: center;
   padding: 40px;
-  color: #64748b;
+  color: ${c.mutedForeground};
 }
 
 /* Empty State */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #64748b;
+  color: ${c.mutedForeground};
 }
 
 .empty-state h3 {
-  margin-bottom: 8px;
-  color: #374151;
+  margin-bottom: ${t.spacing.sm};
+  color: ${c.labelText};
 }
 
 /* App Loading */
@@ -4398,17 +6738,17 @@ body {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: #f8fafc;
+  background: ${c.background};
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e2e8f0;
-  border-top-color: #3b82f6;
+  border: 3px solid ${c.border};
+  border-top-color: ${c.primary};
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  margin-bottom: ${t.spacing.base};
 }
 
 @keyframes spin {
@@ -4417,100 +6757,100 @@ body {
 
 /* Navigation Icons */
 .nav-icon {
-  margin-right: 10px;
-  font-size: 16px;
+  margin-right: ${t.spacing.md};
+  font-size: ${t.typography.fontSize.lg};
 }
 
 .nav-link.active {
-  background: #334155;
-  color: white;
-  border-left: 3px solid #3b82f6;
+  background: color-mix(in srgb, ${c.foreground} 20%, transparent);
+  color: ${c.primaryForeground};
+  border-left: 3px solid ${c.primary};
 }
 
 /* Page Container */
 .page-container {
-  max-width: 1200px;
+  max-width: ${this.generatedTheme?.layout?.containerMaxWidth || '1280px'};
 }
 
 .page-description {
-  color: #64748b;
-  margin-top: 8px;
+  color: ${c.mutedForeground};
+  margin-top: ${t.spacing.sm};
 }
 
 /* Page Sections */
 .page-header-section {
-  margin-bottom: 24px;
+  margin-bottom: ${t.spacing.xl};
 }
 
 .page-main-section {
   display: grid;
-  gap: 24px;
+  gap: ${t.spacing.xl};
 }
 
 .page-sidebar-section {
-  background: #f8fafc;
-  padding: 20px;
-  border-radius: 8px;
+  background: ${c.muted};
+  padding: ${t.spacing.lg};
+  border-radius: ${t.borderRadius.card};
 }
 
 /* Page Cards */
 .page-card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border: 1px solid #e5e5e5;
-  margin-bottom: 16px;
+  background: ${c.card};
+  border-radius: ${t.borderRadius.lg};
+  padding: ${t.spacing.xl};
+  box-shadow: ${t.shadows.sm};
+  border: 1px solid ${c.border};
+  margin-bottom: ${t.spacing.base};
 }
 
 .page-card .card-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 8px;
+  font-size: ${t.typography.fontSize.xl};
+  font-weight: ${t.typography.fontWeight.semibold};
+  color: ${c.foreground};
+  margin-bottom: ${t.spacing.sm};
 }
 
 .page-card .card-description {
-  color: #666666;
-  font-size: 14px;
-  margin-bottom: 16px;
+  color: ${c.helperText};
+  font-size: ${t.typography.fontSize.base};
+  margin-bottom: ${t.spacing.base};
 }
 
 /* Page Tables */
 .page-table {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border: 1px solid #e5e5e5;
+  background: ${c.card};
+  border-radius: ${t.borderRadius.lg};
+  padding: ${t.spacing.xl};
+  box-shadow: ${t.shadows.sm};
+  border: 1px solid ${c.border};
 }
 
 .table-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-size: ${t.typography.fontSize.lg};
+  font-weight: ${t.typography.fontWeight.semibold};
+  margin-bottom: ${t.spacing.base};
 }
 
 /* Metric Cards */
 .metric-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border: 1px solid #e5e5e5;
+  background: ${c.card};
+  border-radius: ${t.borderRadius.lg};
+  padding: ${t.spacing.lg};
+  box-shadow: ${t.shadows.sm};
+  border: 1px solid ${c.border};
   text-align: center;
 }
 
 .metric-value {
-  font-size: 32px;
-  font-weight: 700;
-  color: #3b82f6;
-  margin-bottom: 4px;
+  font-size: ${t.typography.fontSize['5xl']};
+  font-weight: ${t.typography.fontWeight.bold};
+  color: ${c.primary};
+  margin-bottom: ${t.spacing.xs};
 }
 
 .metric-label {
-  color: #64748b;
-  font-size: 14px;
+  color: ${c.mutedForeground};
+  font-size: ${t.typography.fontSize.base};
 }
 
 /* Badges */
@@ -4522,23 +6862,23 @@ body {
   font-weight: 500;
 }
 
-.badge-default { background: #e2e8f0; color: #475569; }
-.badge-primary { background: #dbeafe; color: #1d4ed8; }
-.badge-success { background: #d1fae5; color: #065f46; }
-.badge-warning { background: #fef3c7; color: #92400e; }
-.badge-danger { background: #fee2e2; color: #991b1b; }
+.badge-default { background: ${c.muted}; color: ${c.secondaryHover}; }
+.badge-primary { background: ${sc.info.bg}; color: ${sc.info.text}; }
+.badge-success { background: ${sc.success.bg}; color: ${sc.success.text}; }
+.badge-warning { background: ${sc.warning.bg}; color: ${sc.warning.text}; }
+.badge-danger { background: ${sc.error.bg}; color: ${sc.error.text}; }
 
 /* Modern Form Input Focus States */
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: ${c.ring} !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, ${c.ring} 10%, transparent);
 }
 
 /* Button Hover/Active States */
 button:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: ${t.shadows.cardHover};
 }
 
 button:not(:disabled):active {
@@ -4552,8 +6892,8 @@ button:disabled {
 
 /* Card Hover Effect */
 .page-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease;
+  box-shadow: ${t.shadows.cardHover};
+  transition: box-shadow ${t.transition.base};
 }
 
 /* Scrollbar Styling */
@@ -4563,38 +6903,43 @@ button:disabled {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
+  background: ${c.muted};
+  border-radius: ${t.borderRadius.xs};
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: ${c.input};
+  border-radius: ${t.borderRadius.xs};
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: ${c.mutedForeground};
 }
 
 /* Table Row Hover */
 .data-table tbody tr {
-  transition: background-color 0.15s ease;
+  transition: background-color ${t.transition.fast};
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  ${fallbackLayoutType !== 'topnav' ? `
   .sidebar {
     width: 60px;
     padding: 10px 0;
   }
-
   .logo h2, .nav-section, .nav-link span {
     display: none;
   }
-
   .main-content {
-    margin-left: 60px;
+    ${fallbackLayoutType === 'sidebar' ? 'margin-left: 60px;' : ''}
   }
+  ` : ''}
+  ${fallbackLayoutType === 'topnav' || fallbackLayoutType === 'hybrid' ? `
+  .app-header nav {
+    display: none;
+  }
+  ` : ''}
 }
 
 /* Authentication Styles */
@@ -4603,8 +6948,8 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  background: linear-gradient(135deg, ${c.primary} 0%, color-mix(in srgb, ${c.primary} 60%, ${c.accent}) 100%);
+  padding: ${t.spacing.lg};
 }
 
 .auth-container {
@@ -4613,43 +6958,43 @@ button:disabled {
 }
 
 .auth-card {
-  background: white;
-  border-radius: 16px;
-  padding: 40px;
+  background: ${c.card};
+  border-radius: ${t.borderRadius.xl};
+  padding: ${t.spacing['3xl']};
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
 .auth-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: ${t.spacing['2xl']};
 }
 
 .auth-header h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 8px;
+  font-size: ${t.typography.fontSize['4xl']};
+  font-weight: ${t.typography.fontWeight.bold};
+  color: ${c.foreground};
+  margin-bottom: ${t.spacing.sm};
 }
 
 .auth-header p {
-  color: #64748b;
-  font-size: 15px;
+  color: ${c.mutedForeground};
+  font-size: ${t.typography.fontSize.md};
 }
 
 .auth-error {
-  background: #fef2f2;
-  color: #dc2626;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  border: 1px solid #fecaca;
+  background: ${sc.error.bg};
+  color: ${c.destructive};
+  padding: ${t.spacing.md} ${t.spacing.base};
+  border-radius: ${t.borderRadius.card};
+  margin-bottom: ${t.spacing.lg};
+  font-size: ${t.typography.fontSize.base};
+  border: 1px solid color-mix(in srgb, ${c.destructive} 30%, transparent);
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: ${t.spacing.lg};
 }
 
 .auth-form .form-group {
@@ -4659,23 +7004,23 @@ button:disabled {
 }
 
 .auth-form label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
+  font-size: ${t.typography.fontSize.base};
+  font-weight: ${t.typography.fontWeight.medium};
+  color: ${c.labelText};
 }
 
 .auth-form input {
-  padding: 12px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 15px;
-  transition: all 0.2s;
+  padding: ${t.spacing.md} ${t.spacing.base};
+  border: 1px solid ${c.inputBorder};
+  border-radius: ${t.borderRadius.card};
+  font-size: ${t.typography.fontSize.md};
+  transition: all ${t.transition.base};
 }
 
 .auth-form input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: ${c.primary};
+  box-shadow: 0 0 0 3px color-mix(in srgb, ${c.primary} 10%, transparent);
 }
 
 .auth-links {
@@ -4684,8 +7029,8 @@ button:disabled {
 }
 
 .auth-links a {
-  color: #667eea;
-  font-size: 14px;
+  color: ${c.primary};
+  font-size: ${t.typography.fontSize.base};
   text-decoration: none;
 }
 
@@ -4696,20 +7041,20 @@ button:disabled {
 .auth-btn {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, ${c.primary} 0%, color-mix(in srgb, ${c.primary} 60%, ${c.accent}) 100%);
+  color: ${c.primaryForeground};
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: ${t.borderRadius.card};
+  font-size: ${t.typography.fontSize.lg};
+  font-weight: ${t.typography.fontWeight.semibold};
   cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 8px;
+  transition: all ${t.transition.base};
+  margin-top: ${t.spacing.sm};
 }
 
 .auth-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px color-mix(in srgb, ${c.primary} 40%, transparent);
 }
 
 .auth-btn:disabled {
@@ -4720,24 +7065,84 @@ button:disabled {
 
 .auth-footer {
   text-align: center;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
+  margin-top: ${t.spacing.xl};
+  padding-top: ${t.spacing.xl};
+  border-top: 1px solid ${c.border};
 }
 
 .auth-footer p {
-  color: #64748b;
-  font-size: 14px;
+  color: ${c.mutedForeground};
+  font-size: ${t.typography.fontSize.base};
 }
 
 .auth-footer a {
-  color: #667eea;
-  font-weight: 500;
+  color: ${c.primary};
+  font-weight: ${t.typography.fontWeight.medium};
   text-decoration: none;
 }
 
 .auth-footer a:hover {
   text-decoration: underline;
+}
+
+.auth-divider {
+  position: relative;
+  text-align: center;
+  margin: ${t.spacing.xl} 0;
+}
+
+.auth-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: ${c.border};
+}
+
+.auth-divider span {
+  position: relative;
+  background: ${c.card};
+  padding: 0 ${t.spacing.base};
+  color: ${c.mutedForeground};
+  font-size: ${t.typography.fontSize.sm};
+}
+
+.auth-social {
+  display: flex;
+  gap: ${t.spacing.md};
+  margin-bottom: ${t.spacing.sm};
+}
+
+.social-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${t.spacing.sm};
+  padding: ${t.spacing.md} ${t.spacing.base};
+  border: 1px solid ${c.border};
+  border-radius: ${t.borderRadius.card};
+  background: ${c.card};
+  color: ${c.labelText};
+  font-size: ${t.typography.fontSize.base};
+  font-weight: ${t.typography.fontWeight.medium};
+  cursor: pointer;
+  transition: all ${t.transition.base};
+}
+
+.social-btn:hover {
+  background: ${c.muted};
+  border-color: ${c.inputBorder};
+}
+
+.google-btn:hover {
+  border-color: ${c.info};
+}
+
+.github-btn:hover {
+  border-color: ${c.foreground};
 }
 
 /* Sidebar Footer (Logout) */
@@ -4746,37 +7151,37 @@ button:disabled {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16px 20px;
-  border-top: 1px solid #334155;
-  background: #1e293b;
+  padding: ${t.spacing.base} ${t.spacing.lg};
+  border-top: 1px solid ${c.border};
+  background: color-mix(in srgb, ${c.card} 95%, ${c.foreground});
 }
 
 .user-info {
-  margin-bottom: 12px;
+  margin-bottom: ${t.spacing.md};
 }
 
 .user-name {
-  color: #e2e8f0;
-  font-size: 14px;
-  font-weight: 500;
+  color: ${c.cardForeground};
+  font-size: ${t.typography.fontSize.base};
+  font-weight: ${t.typography.fontWeight.medium};
 }
 
 .logout-btn {
   width: 100%;
-  padding: 10px;
+  padding: ${t.spacing.md};
   background: transparent;
-  border: 1px solid #475569;
-  color: #94a3b8;
-  border-radius: 6px;
+  border: 1px solid ${c.border};
+  color: ${c.mutedForeground};
+  border-radius: ${t.borderRadius.base};
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
+  font-size: ${t.typography.fontSize.base};
+  transition: all ${t.transition.base};
 }
 
 .logout-btn:hover {
-  background: #334155;
-  color: white;
-  border-color: #64748b;
+  background: ${c.muted};
+  color: ${c.foreground};
+  border-color: ${c.mutedForeground};
 }`;
 
     await fs.writeFile(path.join(frontendDir, 'src/App.css'), css);
@@ -4860,7 +7265,50 @@ export const authApi = {
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
   getProfile: () => api.get('/auth/profile'),
-  refresh: () => api.post('/auth/refresh')
+  refresh: () => api.post('/auth/refresh'),
+  googleLogin: () => window.location.href = API_BASE_URL + '/auth/google',
+  githubLogin: () => window.location.href = API_BASE_URL + '/auth/github'
+};
+
+// Files API
+export const filesApi = {
+  upload: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/files/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  uploadMultiple: (files) => {
+    const formData = new FormData();
+    files.forEach(f => formData.append('files', f));
+    return api.post('/files/upload-multiple', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  list: () => api.get('/files'),
+  get: (id) => api.get(\`/files/\${id}\`),
+  delete: (id) => api.delete(\`/files/\${id}\`),
+  getUrl: (id) => \`\${API_BASE_URL}/files/\${id}\`
+};
+
+// PDF Export API
+export const exportApi = {
+  pdf: (model) => api.get(\`/export/\${model}/pdf\`, { responseType: 'blob' }),
+  pdfRecord: (model, id) => api.get(\`/export/\${model}/\${id}/pdf\`, { responseType: 'blob' })
+};
+
+// Aggregation API
+export const aggregateApi = {
+  query: (model, params) => api.get(\`/data/\${model}/aggregate\`, { params })
+};
+
+// Notifications API
+export const notificationsApi = {
+  list: () => api.get('/data/notifications'),
+  markRead: (id) => api.put(\`/data/notifications/\${id}\`, { is_read: true }),
+  markAllRead: () => api.post('/notifications/mark-all-read')
+};
+
+// Payments API
+export const paymentsApi = {
+  createCheckout: (items) => api.post('/payments/create-checkout', { items })
 };
 
 // Workflow Navigation API - handles workflow execution with page navigation
@@ -4879,10 +7327,34 @@ export const workflowApi = {
   getCurrentTask: (instanceId) => api.get(\`/instances/\${instanceId}/task\`),
 
   // Claim a group task
-  claimTask: (instanceId, taskId) => api.post(\`/instances/\${instanceId}/claim\`, { taskId }),
+  claimTask: (instanceId, taskId) => api.post(\`/instances/\${instanceId}/tasks/\${taskId}/claim\`),
 
   // Get workflow execution history
-  getHistory: (instanceId) => api.get(\`/instances/\${instanceId}/history\`)
+  getHistory: (instanceId) => api.get(\`/instances/\${instanceId}/history\`),
+
+  // Resume a paused workflow instance
+  resume: (instanceId, inputData = {}) => api.post(\`/instances/\${instanceId}/resume\`, inputData),
+
+  // List all workflow instances (optionally filtered by status)
+  listInstances: (status) => api.get(\`/instances\${status ? '?status=' + status : ''}\`),
+
+  // List available workflows
+  listWorkflows: () => api.get('/workflows'),
+
+  // Cancel a workflow instance
+  cancel: (instanceId, reason) => api.post(\`/instances/\${instanceId}/cancel\`, { reason })
+};
+
+export const tenantApi = {
+  create: (data) => api.post('/tenants', data),
+  list: () => api.get('/tenants'),
+  get: (tenantId) => api.get(\`/tenants/\${tenantId}\`),
+  update: (tenantId, data) => api.put(\`/tenants/\${tenantId}\`, data),
+  remove: (tenantId) => api.delete(\`/tenants/\${tenantId}\`),
+  addMember: (tenantId, userId, role) => api.post(\`/tenants/\${tenantId}/members\`, { userId, role }),
+  listMembers: (tenantId) => api.get(\`/tenants/\${tenantId}/members\`),
+  removeMember: (tenantId, userId) => api.delete(\`/tenants/\${tenantId}/members/\${userId}\`),
+  switchTenant: (tenantId) => api.post(\`/tenants/\${tenantId}/switch\`)
 };
 
 // Add auth token to requests
@@ -4912,150 +7384,312 @@ export default api;`;
     const files = [];
     const componentsDir = path.join(frontendDir, 'src/components');
 
-    // 1. FormRenderer component
-    const formRenderer = `import React, { useState } from 'react';
+    // 1. FormRenderer component - with Shadcn inputs, validation, conditional fields
+    const formRenderer = `import React, { useState, useEffect } from 'react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Textarea } from './ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Checkbox } from './ui/checkbox';
+import { Separator } from './ui/separator';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { cn } from '../lib/utils';
 
-export default function FormRenderer({ form, onSubmit, onCancel }) {
-  const [formData, setFormData] = useState({});
+export default function FormRenderer({ form, onSubmit, onCancel, initialData = {}, loading: externalLoading = false }) {
+  const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [touched, setTouched] = useState({});
+  const [currentStep, setCurrentStep] = useState(0);
+
+  useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      setFormData(initialData);
+    }
+  }, []);
+
+  const fields = form?.fields || [];
+  const steps = form?.steps || [];
+  const hasSteps = steps.length > 0;
+
+  const currentFields = hasSteps
+    ? fields.filter(f => f.step === steps[currentStep]?.id || f.step === currentStep)
+    : fields;
+
+  const visibleFields = currentFields.filter(field => {
+    if (!field.condition) return true;
+    const { field: depField, operator, value: depValue } = field.condition;
+    const current = formData[depField];
+    switch (operator) {
+      case 'equals': return current === depValue;
+      case 'not_equals': return current !== depValue;
+      case 'contains': return String(current || '').includes(depValue);
+      case 'not_empty': return current != null && current !== '';
+      default: return true;
+    }
+  });
 
   const handleChange = (fieldName, value) => {
     setFormData(prev => ({ ...prev, [fieldName]: value }));
+    setTouched(prev => ({ ...prev, [fieldName]: true }));
     if (errors[fieldName]) {
-      setErrors(prev => ({ ...prev, [fieldName]: null }));
+      setErrors(prev => { const n = { ...prev }; delete n[fieldName]; return n; });
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Basic validation
+  const validate = (fieldsToValidate) => {
     const newErrors = {};
-    (form.fields || []).forEach(field => {
-      if (field.required && !formData[field.name]) {
+    for (const field of fieldsToValidate) {
+      const val = formData[field.name];
+      if (field.required && (val === undefined || val === null || val === '')) {
         newErrors[field.name] = \`\${field.label || field.name} is required\`;
       }
-    });
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
+      if (field.type === 'email' && val && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(val)) {
+        newErrors[field.name] = 'Please enter a valid email address';
+      }
+      if (field.minLength && val && String(val).length < field.minLength) {
+        newErrors[field.name] = \`Must be at least \${field.minLength} characters\`;
+      }
+      if (field.maxLength && val && String(val).length > field.maxLength) {
+        newErrors[field.name] = \`Must be at most \${field.maxLength} characters\`;
+      }
+      if (field.min != null && val != null && Number(val) < field.min) {
+        newErrors[field.name] = \`Must be at least \${field.min}\`;
+      }
+      if (field.max != null && val != null && Number(val) > field.max) {
+        newErrors[field.name] = \`Must be at most \${field.max}\`;
+      }
     }
-
-    onSubmit(formData);
+    return newErrors;
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newErrors = validate(fields);
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setTouched(Object.fromEntries(Object.keys(newErrors).map(k => [k, true])));
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await onSubmit(formData);
+    } catch (err) {
+      console.error('Form submission error:', err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleNext = () => {
+    const stepErrors = validate(visibleFields);
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors);
+      setTouched(Object.fromEntries(Object.keys(stepErrors).map(k => [k, true])));
+      return;
+    }
+    setCurrentStep(s => Math.min(s + 1, steps.length - 1));
+  };
+
+  const handleBack = () => setCurrentStep(s => Math.max(s - 1, 0));
+
   const renderField = (field) => {
-    const value = formData[field.name] || '';
-    const error = errors[field.name];
+    const value = formData[field.name];
+    const error = touched[field.name] ? errors[field.name] : null;
+    const fieldId = \`field-\${field.name}\`;
+
+    const wrapper = (children) => (
+      <div key={field.name} className="space-y-2">
+        <Label htmlFor={fieldId} className={cn("text-sm font-medium", error && "text-destructive")}>
+          {field.label || field.name}
+          {field.required && <span className="text-destructive ml-0.5">*</span>}
+        </Label>
+        {children}
+        {field.helperText && !error && (
+          <p className="text-xs text-muted-foreground">{field.helperText}</p>
+        )}
+        {error && (
+          <div className="flex items-center gap-1.5 text-destructive text-xs animate-slide-up">
+            <AlertTriangle className="w-3 h-3" />
+            <span>{error}</span>
+          </div>
+        )}
+      </div>
+    );
 
     switch (field.type) {
       case 'textarea':
-        return (
-          <textarea
-            className="form-textarea"
-            value={value}
+        return wrapper(
+          <Textarea
+            id={fieldId}
+            value={value || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder}
+            rows={field.rows || 4}
+            className={cn(error && "border-destructive focus-visible:ring-destructive")}
           />
         );
 
       case 'select':
       case 'dropdown':
-        return (
-          <select
-            className="form-select"
-            value={value}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-          >
-            <option value="">Select {field.label}...</option>
-            {(field.options || []).map((opt, i) => (
-              <option key={i} value={opt.value || opt}>
-                {opt.label || opt}
-              </option>
-            ))}
-          </select>
+        return wrapper(
+          <Select value={value || ''} onValueChange={(v) => handleChange(field.name, v)}>
+            <SelectTrigger id={fieldId} className={cn("w-full", error && "border-destructive")}>
+              <SelectValue placeholder={\`Select \${field.label || field.name}...\`} />
+            </SelectTrigger>
+            <SelectContent>
+              {(field.options || []).map((opt, i) => (
+                <SelectItem key={i} value={String(opt.value || opt)}>
+                  {opt.label || opt}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         );
 
       case 'checkbox':
         return (
-          <input
-            type="checkbox"
-            checked={!!value}
-            onChange={(e) => handleChange(field.name, e.target.checked)}
-          />
+          <div key={field.name} className="flex items-center gap-3 py-1">
+            <Checkbox
+              id={fieldId}
+              checked={!!value}
+              onCheckedChange={(checked) => handleChange(field.name, checked)}
+            />
+            <Label htmlFor={fieldId} className="text-sm font-normal cursor-pointer">
+              {field.label || field.name}
+              {field.required && <span className="text-destructive ml-0.5">*</span>}
+            </Label>
+          </div>
         );
 
       case 'number':
-        return (
-          <input
+        return wrapper(
+          <Input
+            id={fieldId}
             type="number"
-            className="form-input"
-            value={value}
-            onChange={(e) => handleChange(field.name, e.target.value)}
+            value={value ?? ''}
+            onChange={(e) => handleChange(field.name, e.target.value === '' ? '' : Number(e.target.value))}
             placeholder={field.placeholder}
+            min={field.min}
+            max={field.max}
+            step={field.step}
+            className={cn(error && "border-destructive focus-visible:ring-destructive")}
           />
         );
 
       case 'date':
-        return (
-          <input
+        return wrapper(
+          <Input
+            id={fieldId}
             type="date"
-            className="form-input"
-            value={value}
+            value={value || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
+            className={cn(error && "border-destructive focus-visible:ring-destructive")}
           />
         );
 
       case 'email':
-        return (
-          <input
+        return wrapper(
+          <Input
+            id={fieldId}
             type="email"
-            className="form-input"
-            value={value}
+            value={value || ''}
+            onChange={(e) => handleChange(field.name, e.target.value)}
+            placeholder={field.placeholder || 'email@example.com'}
+            className={cn(error && "border-destructive focus-visible:ring-destructive")}
+          />
+        );
+
+      case 'password':
+        return wrapper(
+          <Input
+            id={fieldId}
+            type="password"
+            value={value || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder}
+            className={cn(error && "border-destructive focus-visible:ring-destructive")}
           />
         );
 
       default:
-        return (
-          <input
+        return wrapper(
+          <Input
+            id={fieldId}
             type="text"
-            className="form-input"
-            value={value}
+            value={value || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder}
+            className={cn(error && "border-destructive focus-visible:ring-destructive")}
           />
         );
     }
   };
 
+  const isLoading = submitting || externalLoading;
+  const isLastStep = !hasSteps || currentStep === steps.length - 1;
+
   return (
-    <form onSubmit={handleSubmit}>
-      {(form.fields || []).map((field, index) => (
-        <div key={index} className="form-group">
-          <label className="form-label">
-            {field.label || field.name}
-            {field.required && <span style={{ color: '#ef4444' }}> *</span>}
-          </label>
-          {renderField(field)}
-          {errors[field.name] && (
-            <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
-              {errors[field.name]}
-            </div>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {hasSteps && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            {steps.map((step, i) => (
+              <React.Fragment key={i}>
+                <div className={cn(
+                  "flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-colors",
+                  i < currentStep ? "bg-primary text-primary-foreground" :
+                  i === currentStep ? "bg-primary text-primary-foreground ring-4 ring-primary/20" :
+                  "bg-muted text-muted-foreground"
+                )}>
+                  {i < currentStep ? '\\u2713' : i + 1}
+                </div>
+                {i < steps.length - 1 && (
+                  <div className={cn("flex-1 h-0.5 transition-colors", i < currentStep ? "bg-primary" : "bg-muted")} />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+          {steps[currentStep]?.title && (
+            <h3 className="text-lg font-semibold">{steps[currentStep].title}</h3>
           )}
         </div>
-      ))}
-      <div className="modal-footer">
-        {onCancel && (
-          <button type="button" className="btn btn-secondary" onClick={onCancel}>
-            Cancel
-          </button>
+      )}
+
+      <div className="space-y-4">
+        {visibleFields.map(field => {
+          if (field.type === 'section') {
+            return (
+              <div key={field.name} className="pt-2">
+                <h4 className="text-sm font-semibold text-foreground mb-1">{field.label}</h4>
+                {field.description && <p className="text-xs text-muted-foreground">{field.description}</p>}
+                <Separator className="mt-2" />
+              </div>
+            );
+          }
+          return renderField(field);
+        })}
+      </div>
+
+      <div className="flex items-center justify-end gap-2 pt-2">
+        {hasSteps && currentStep > 0 && (
+          <Button type="button" variant="outline" onClick={handleBack}>Back</Button>
         )}
-        <button type="submit" className="btn btn-primary">
-          Submit
-        </button>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+        )}
+        {hasSteps && !isLastStep ? (
+          <Button type="button" onClick={handleNext}>Next</Button>
+        ) : (
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</>
+            ) : (
+              form?.submitLabel || 'Submit'
+            )}
+          </Button>
+        )}
       </div>
     </form>
   );
@@ -5064,76 +7698,220 @@ export default function FormRenderer({ form, onSubmit, onCancel }) {
     await fs.writeFile(path.join(componentsDir, 'FormRenderer.js'), formRenderer);
     files.push('frontend/src/components/FormRenderer.js');
 
-    // 2. DataTable component
-    const dataTable = `import React from 'react';
+    // 2. DataTable component - with search, sort, pagination, row actions
+    const dataTable = `import React, { useState, useMemo } from 'react';
+import { Search, ChevronUp, ChevronDown, ChevronsUpDown, MoreHorizontal, Eye, Edit, Trash2, FileText } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
+import { Skeleton } from './ui/skeleton';
+import { Badge } from './ui/badge';
 
-export default function DataTable({ columns, data, onEdit, onDelete, onView }) {
-  if (!data || data.length === 0) {
+export default function DataTable({ columns, data, onEdit, onDelete, onView, loading = false, searchable = true, sortable = true, paginated = true, pageSize: initialPageSize = 10 }) {
+  const [search, setSearch] = useState('');
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDir, setSortDir] = useState('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(initialPageSize);
+
+  const handleSort = (key) => {
+    if (!sortable) return;
+    if (sortKey === key) {
+      setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  };
+
+  const filtered = useMemo(() => {
+    if (!data) return [];
+    if (!search.trim()) return data;
+    const q = search.toLowerCase();
+    return data.filter(row =>
+      columns.some(col => {
+        const val = row[col.name || col.key];
+        return val != null && String(val).toLowerCase().includes(q);
+      })
+    );
+  }, [data, search, columns]);
+
+  const sorted = useMemo(() => {
+    if (!sortKey) return filtered;
+    return [...filtered].sort((a, b) => {
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      const cmp = typeof aVal === 'number' ? aVal - bVal : String(aVal).localeCompare(String(bVal));
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [filtered, sortKey, sortDir]);
+
+  const totalPages = paginated ? Math.max(1, Math.ceil(sorted.length / pageSize)) : 1;
+  const paginatedData = paginated ? sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize) : sorted;
+
+  // Reset to page 1 when search changes
+  React.useEffect(() => { setCurrentPage(1); }, [search]);
+
+  if (loading) {
     return (
-      <div className="empty-state">
-        <h3>No Data</h3>
-        <p>No records found. Create one to get started.</p>
+      <div className="space-y-3">
+        <Skeleton className="h-10 w-64 rounded-lg" />
+        <div className="border rounded-xl overflow-hidden">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex gap-4 p-3 border-b last:border-0">
+              {columns.map((_, ci) => <Skeleton key={ci} className="h-5 flex-1 rounded" />)}
+              <Skeleton className="h-5 w-20 rounded" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
+  const isEmpty = !data || data.length === 0;
+
   return (
-    <table className="data-table">
-      <thead>
-        <tr>
-          {columns.map((col, i) => (
-            <th key={i}>{col.label || col.name}</th>
-          ))}
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((row, rowIndex) => (
-          <tr key={row.id || rowIndex}>
-            {columns.map((col, colIndex) => (
-              <td key={colIndex}>
-                {formatValue(row[col.name], col.type)}
-              </td>
-            ))}
-            <td>
-              <div className="action-buttons">
-                {onView && (
-                  <button className="btn btn-secondary action-btn" onClick={() => onView(row)}>
-                    View
-                  </button>
+    <div className="space-y-3">
+      {searchable && (
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <span className="text-sm text-muted-foreground">{sorted.length} record{sorted.length !== 1 ? 's' : ''}</span>
+        </div>
+      )}
+
+      <div className="border rounded-xl overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-muted/50">
+              {columns.map((col, i) => {
+                const key = col.name || col.key;
+                const isActive = sortKey === key;
+                return (
+                  <th
+                    key={i}
+                    className={\`text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 \${sortable ? 'cursor-pointer select-none hover:text-foreground transition-colors' : ''}\`}
+                    onClick={() => handleSort(key)}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span>{col.label || col.name || col.key}</span>
+                      {sortable && (
+                        <span className="text-muted-foreground/50">
+                          {isActive ? (sortDir === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />) : <ChevronsUpDown className="w-3.5 h-3.5" />}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                );
+              })}
+              {(onView || onEdit || onDelete) && (
+                <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 w-16"></th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {paginatedData.length > 0 ? paginatedData.map((row, rowIndex) => (
+              <tr key={row.id || rowIndex} className="hover:bg-muted/30 transition-colors">
+                {columns.map((col, colIndex) => (
+                  <td key={colIndex} className="px-4 py-3 text-sm">
+                    {formatValue(row[col.name || col.key], col.type)}
+                  </td>
+                ))}
+                {(onView || onEdit || onDelete) && (
+                  <td className="px-4 py-3 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-36">
+                        {onView && <DropdownMenuItem onClick={() => onView(row)}><Eye className="w-4 h-4 mr-2" />View</DropdownMenuItem>}
+                        {onEdit && <DropdownMenuItem onClick={() => onEdit(row)}><Edit className="w-4 h-4 mr-2" />Edit</DropdownMenuItem>}
+                        {onDelete && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => onDelete(row)}>
+                              <Trash2 className="w-4 h-4 mr-2" />Delete
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
                 )}
-                {onEdit && (
-                  <button className="btn btn-primary action-btn" onClick={() => onEdit(row)}>
-                    Edit
-                  </button>
-                )}
-                {onDelete && (
-                  <button className="btn btn-danger action-btn" onClick={() => onDelete(row)}>
-                    Delete
-                  </button>
-                )}
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+              </tr>
+            )) : (
+              <tr>
+                <td colSpan={columns.length + (onView || onEdit || onDelete ? 1 : 0)} className="text-center py-12">
+                  <div className="flex flex-col items-center gap-2">
+                    <FileText className="w-10 h-10 text-muted-foreground/40" />
+                    <p className="text-sm text-muted-foreground">{search ? 'No matching records found.' : 'No records yet.'}</p>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {paginated && sorted.length > pageSize && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">
+            Showing {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, sorted.length)} of {sorted.length}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</Button>
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+              let page;
+              if (totalPages <= 5) page = i + 1;
+              else if (currentPage <= 3) page = i + 1;
+              else if (currentPage >= totalPages - 2) page = totalPages - 4 + i;
+              else page = currentPage - 2 + i;
+              return (
+                <Button key={page} variant={page === currentPage ? 'default' : 'outline'} size="sm" className="w-9" onClick={() => setCurrentPage(page)}>
+                  {page}
+                </Button>
+              );
+            })}
+            <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
 function formatValue(value, type) {
-  if (value === null || value === undefined) return '-';
+  if (value === null || value === undefined) return <span className="text-muted-foreground">-</span>;
 
   switch (type) {
     case 'date':
     case 'datetime':
-      return new Date(value).toLocaleDateString();
+      try { return new Date(value).toLocaleDateString(); } catch { return String(value); }
     case 'boolean':
-      return value ? 'Yes' : 'No';
+      return <Badge variant={value ? 'default' : 'secondary'}>{value ? 'Yes' : 'No'}</Badge>;
+    case 'status':
+      const statusColors = { active: 'default', completed: 'default', pending: 'secondary', failed: 'destructive', cancelled: 'outline' };
+      return <Badge variant={statusColors[String(value).toLowerCase()] || 'secondary'}>{String(value)}</Badge>;
     case 'json':
-      return JSON.stringify(value).substring(0, 50) + '...';
+      return <span className="font-mono text-xs">{JSON.stringify(value).substring(0, 50)}...</span>;
+    case 'number':
+    case 'integer':
+    case 'decimal':
+      return typeof value === 'number' ? value.toLocaleString() : String(value);
     default:
-      return String(value);
+      const str = String(value);
+      return str.length > 80 ? str.substring(0, 80) + '...' : str;
   }
 }`;
 
@@ -5162,11 +7940,505 @@ export default function Modal({ isOpen, onClose, title, children }) {
     await fs.writeFile(path.join(componentsDir, 'Modal.js'), modal);
     files.push('frontend/src/components/Modal.js');
 
+    // 3.5. NotificationCenter component
+    const notificationCenter = `import React, { useState } from 'react';
+import { Bell } from 'lucide-react';
+
+export default function NotificationCenter({ notifications = [], unreadCount = 0, onMarkRead }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => { setIsOpen(!isOpen); if (onMarkRead) onMarkRead(); }}
+        className="relative p-2 rounded-lg hover:bg-accent transition-colors"
+      >
+        <Bell className="w-4 h-4" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground rounded-full text-[10px] flex items-center justify-center font-bold">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 bottom-full mb-2 w-80 bg-card border rounded-xl shadow-lg z-50 max-h-96 overflow-hidden">
+          <div className="p-3 border-b font-semibold text-sm">Notifications</div>
+          <div className="overflow-auto max-h-72">
+            {notifications.length === 0 ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">No notifications</div>
+            ) : notifications.map((n, i) => (
+              <div key={n.id || i} className="p-3 border-b last:border-0 hover:bg-accent/50 transition-colors">
+                <p className="text-sm font-medium">{n.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}`;
+
+    await fs.writeFile(path.join(componentsDir, 'NotificationCenter.js'), notificationCenter);
+    files.push('frontend/src/components/NotificationCenter.js');
+
+    // 3.5b. LanguageSwitcher component
+    const languageSwitcher = `import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Globe } from 'lucide-react';
+
+const LANGUAGES = [
+  { code: 'en', label: 'English', flag: 'EN' },
+  { code: 'es', label: 'Espanol', flag: 'ES' },
+  { code: 'fr', label: 'Francais', flag: 'FR' },
+];
+
+export default function LanguageSwitcher() {
+  const { i18n } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
+  const current = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
+
+  useEffect(() => {
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setIsOpen(false); };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const changeLanguage = (code) => {
+    i18n.changeLanguage(code);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={ref}>
+      <button onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors" title="Change language">
+        <Globe className="w-4 h-4" />
+        <span className="text-xs font-medium">{current.flag}</span>
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-1 bg-card border rounded-lg shadow-lg py-1 min-w-[140px] z-50">
+          {LANGUAGES.map(lang => (
+            <button key={lang.code} onClick={() => changeLanguage(lang.code)} className={\`flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors \${lang.code === i18n.language ? 'bg-primary/10 text-primary font-medium' : 'text-foreground hover:bg-accent'}\`}>
+              <span className="text-xs font-mono w-5">{lang.flag}</span>
+              <span>{lang.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}`;
+    await fs.writeFile(path.join(componentsDir, 'LanguageSwitcher.js'), languageSwitcher);
+    files.push('frontend/src/components/LanguageSwitcher.js');
+
+    // 3.6. RichTextEditor component (TipTap)
+    const richTextEditor = `import React, { useCallback } from 'react';
+import { Bold, Italic, Strikethrough, Code, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Minus, Undo, Redo, Image as ImageIcon, Table as TableIcon } from 'lucide-react';
+
+let EditorContent, useEditor, StarterKit, Placeholder, ImageExt, TableExt, TableRow, TableCell, TableHeader;
+try {
+  const tiptapReact = require('@tiptap/react');
+  EditorContent = tiptapReact.EditorContent;
+  useEditor = tiptapReact.useEditor;
+  StarterKit = require('@tiptap/starter-kit').default;
+  try { Placeholder = require('@tiptap/extension-placeholder').default; } catch(e) {}
+  try { ImageExt = require('@tiptap/extension-image').default; } catch(e) {}
+  try {
+    TableExt = require('@tiptap/extension-table').default;
+    TableRow = require('@tiptap/extension-table-row').default;
+    TableCell = require('@tiptap/extension-table-cell').default;
+    TableHeader = require('@tiptap/extension-table-header').default;
+  } catch(e) {}
+} catch (e) {}
+
+function ToolbarButton({ onClick, active, disabled, title, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={"p-1.5 rounded transition-colors " + (active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground") + (disabled ? " opacity-40 cursor-not-allowed" : "")}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ToolbarDivider() {
+  return <div className="w-px h-5 bg-border mx-1" />;
+}
+
+export default function RichTextEditor({ value, onChange, placeholder }) {
+  if (!useEditor) {
+    return <textarea className="w-full min-h-[200px] p-3 border rounded-lg" value={value || ''} onChange={e => onChange && onChange(e.target.value)} placeholder={placeholder} />;
+  }
+
+  const extensions = [StarterKit];
+  if (Placeholder) extensions.push(Placeholder.configure({ placeholder: placeholder || 'Start typing...' }));
+  if (ImageExt) extensions.push(ImageExt.configure({ inline: true }));
+  if (TableExt && TableRow && TableCell && TableHeader) {
+    extensions.push(TableExt.configure({ resizable: true }));
+    extensions.push(TableRow);
+    extensions.push(TableCell);
+    extensions.push(TableHeader);
+  }
+
+  const editor = useEditor({
+    extensions,
+    content: value || '',
+    onUpdate: ({ editor }) => {
+      if (onChange) onChange(editor.getHTML());
+    }
+  });
+
+  const addImage = useCallback(() => {
+    if (!editor || !ImageExt) return;
+    const url = window.prompt('Image URL');
+    if (url) editor.chain().focus().setImage({ src: url }).run();
+  }, [editor]);
+
+  const addTable = useCallback(() => {
+    if (!editor || !TableExt) return;
+    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  }, [editor]);
+
+  const iconSize = 16;
+
+  return (
+    <div className="border rounded-lg overflow-hidden">
+      <div className="flex flex-wrap items-center gap-0.5 p-1.5 border-b bg-muted/30">
+        <ToolbarButton onClick={() => editor?.chain().focus().toggleBold().run()} active={editor?.isActive('bold')} title="Bold">
+          <Bold size={iconSize} />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor?.chain().focus().toggleItalic().run()} active={editor?.isActive('italic')} title="Italic">
+          <Italic size={iconSize} />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor?.chain().focus().toggleStrike().run()} active={editor?.isActive('strike')} title="Strikethrough">
+          <Strikethrough size={iconSize} />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor?.chain().focus().toggleCode().run()} active={editor?.isActive('code')} title="Inline Code">
+          <Code size={iconSize} />
+        </ToolbarButton>
+
+        <ToolbarDivider />
+
+        <ToolbarButton onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()} active={editor?.isActive('heading', { level: 1 })} title="Heading 1">
+          <Heading1 size={iconSize} />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} active={editor?.isActive('heading', { level: 2 })} title="Heading 2">
+          <Heading2 size={iconSize} />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} active={editor?.isActive('heading', { level: 3 })} title="Heading 3">
+          <Heading3 size={iconSize} />
+        </ToolbarButton>
+
+        <ToolbarDivider />
+
+        <ToolbarButton onClick={() => editor?.chain().focus().toggleBulletList().run()} active={editor?.isActive('bulletList')} title="Bullet List">
+          <List size={iconSize} />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor?.chain().focus().toggleOrderedList().run()} active={editor?.isActive('orderedList')} title="Ordered List">
+          <ListOrdered size={iconSize} />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor?.chain().focus().toggleBlockquote().run()} active={editor?.isActive('blockquote')} title="Blockquote">
+          <Quote size={iconSize} />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor?.chain().focus().setHorizontalRule().run()} title="Horizontal Rule">
+          <Minus size={iconSize} />
+        </ToolbarButton>
+
+        <ToolbarDivider />
+
+        {ImageExt && (
+          <ToolbarButton onClick={addImage} title="Insert Image">
+            <ImageIcon size={iconSize} />
+          </ToolbarButton>
+        )}
+        {TableExt && (
+          <ToolbarButton onClick={addTable} title="Insert Table">
+            <TableIcon size={iconSize} />
+          </ToolbarButton>
+        )}
+
+        <div className="flex-1" />
+
+        <ToolbarButton onClick={() => editor?.chain().focus().undo().run()} disabled={!editor?.can().undo()} title="Undo">
+          <Undo size={iconSize} />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor?.chain().focus().redo().run()} disabled={!editor?.can().redo()} title="Redo">
+          <Redo size={iconSize} />
+        </ToolbarButton>
+      </div>
+      <EditorContent editor={editor} className="prose prose-sm max-w-none p-3 min-h-[150px] focus:outline-none [&_.ProseMirror]:min-h-[150px] [&_.ProseMirror]:outline-none" />
+    </div>
+  );
+}`;
+
+    await fs.writeFile(path.join(componentsDir, 'RichTextEditor.js'), richTextEditor);
+    files.push('frontend/src/components/RichTextEditor.js');
+
+    // 3.7. FileUpload component
+    const fileUpload = `import React, { useState, useRef } from 'react';
+import { Upload, X, FileText, Image } from 'lucide-react';
+import { filesApi } from '../api/client';
+
+export default function FileUpload({ value, onChange, multiple = false, accept }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState(value ? (Array.isArray(value) ? value : [value]) : []);
+  const inputRef = useRef(null);
+
+  const handleUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setUploading(true);
+    try {
+      const results = [];
+      for (const file of files) {
+        const res = await filesApi.upload(file);
+        const uploaded = res.data?.file || res.file || res.data;
+        if (uploaded) results.push(uploaded);
+      }
+      const newFiles = [...uploadedFiles, ...results];
+      setUploadedFiles(newFiles);
+      if (onChange) onChange(multiple ? newFiles : newFiles[newFiles.length - 1]);
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeFile = (index) => {
+    const newFiles = uploadedFiles.filter((_, i) => i !== index);
+    setUploadedFiles(newFiles);
+    if (onChange) onChange(multiple ? newFiles : newFiles[0] || null);
+  };
+
+  const getIcon = (mimeType) => {
+    if (mimeType?.startsWith('image/')) return <Image className="w-4 h-4" />;
+    return <FileText className="w-4 h-4" />;
+  };
+
+  return (
+    <div className="space-y-2">
+      <div
+        onClick={() => inputRef.current?.click()}
+        className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors"
+      >
+        <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+        <p className="text-sm text-muted-foreground">{uploading ? 'Uploading...' : 'Click or drag files here'}</p>
+        <input ref={inputRef} type="file" className="hidden" multiple={multiple} accept={accept} onChange={handleUpload} />
+      </div>
+      {uploadedFiles.length > 0 && (
+        <div className="space-y-1">
+          {uploadedFiles.map((file, i) => (
+            <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 text-sm">
+              {getIcon(file.mimeType)}
+              <span className="flex-1 truncate">{file.name || file.original_name || 'File'}</span>
+              <button onClick={() => removeFile(i)} className="p-1 hover:bg-destructive/10 rounded"><X className="w-3 h-3" /></button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}`;
+
+    await fs.writeFile(path.join(componentsDir, 'FileUpload.js'), fileUpload);
+    files.push('frontend/src/components/FileUpload.js');
+
+    // Compute theme-aware colors for components that need them
+    const themeColors = this.generatedTheme?.theme?.colors || {};
+
+    // 3.8. KanbanBoard component
+    const kanbanBoard = `import React, { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+
+export default function KanbanBoard({ columns = [], items = [], onItemMove, statusField = 'status' }) {
+  const [draggingItem, setDraggingItem] = useState(null);
+
+  const getItemsForColumn = (columnId) => items.filter(item => item[statusField] === columnId);
+
+  const handleDragStart = (e, item) => { setDraggingItem(item); e.dataTransfer.effectAllowed = 'move'; };
+  const handleDragOver = (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; };
+  const handleDrop = (e, columnId) => {
+    e.preventDefault();
+    if (draggingItem && onItemMove) onItemMove(draggingItem, columnId);
+    setDraggingItem(null);
+  };
+
+  const defaultColumns = columns.length > 0 ? columns : [
+    { id: 'todo', label: 'To Do', color: '${themeColors.secondary || '#6b7280'}' },
+    { id: 'in_progress', label: 'In Progress', color: '${themeColors.primary || '#3b82f6'}' },
+    { id: 'done', label: 'Done', color: '${themeColors.success || '#10b981'}' }
+  ];
+
+  return (
+    <div className="flex gap-4 overflow-x-auto pb-4">
+      {defaultColumns.map(col => (
+        <div key={col.id} className="flex-shrink-0 w-72" onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, col.id)}>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: col.color }} />
+            <h3 className="font-semibold text-sm">{col.label}</h3>
+            <span className="text-xs text-muted-foreground ml-auto">{getItemsForColumn(col.id).length}</span>
+          </div>
+          <div className="space-y-2 min-h-[100px] bg-muted/30 rounded-lg p-2">
+            {getItemsForColumn(col.id).map((item, i) => (
+              <Card key={item.id || i} draggable onDragStart={(e) => handleDragStart(e, item)} className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow">
+                <CardContent className="p-3">
+                  <p className="text-sm font-medium">{item.title || item.name || JSON.stringify(item).substring(0, 50)}</p>
+                  {item.description && <p className="text-xs text-muted-foreground mt-1">{item.description}</p>}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}`;
+
+    await fs.writeFile(path.join(componentsDir, 'KanbanBoard.js'), kanbanBoard);
+    files.push('frontend/src/components/KanbanBoard.js');
+
+    // 3.9. MapView component (Leaflet)
+    const mapView = `import React from 'react';
+
+let MapContainer, TileLayer, Marker, Popup;
+try {
+  const rl = require('react-leaflet');
+  MapContainer = rl.MapContainer;
+  TileLayer = rl.TileLayer;
+  Marker = rl.Marker;
+  Popup = rl.Popup;
+  require('leaflet/dist/leaflet.css');
+} catch (e) {}
+
+export default function MapView({ center = [51.505, -0.09], zoom = 13, markers = [], height = '400px' }) {
+  if (!MapContainer) {
+    return <div className="border rounded-lg p-8 text-center text-muted-foreground" style={{ height }}>Map requires leaflet. Install react-leaflet and leaflet.</div>;
+  }
+
+  return (
+    <div style={{ height }} className="rounded-lg overflow-hidden border">
+      <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap contributors' />
+        {markers.map((m, i) => (
+          <Marker key={i} position={[m.lat, m.lng]}>
+            {m.label && <Popup>{m.label}</Popup>}
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
+  );
+}`;
+
+    await fs.writeFile(path.join(componentsDir, 'MapView.js'), mapView);
+    files.push('frontend/src/components/MapView.js');
+
+    // 3.10. PaymentForm component (Stripe)
+    const paymentForm = `import React, { useState } from 'react';
+import { paymentsApi } from '../api/client';
+
+let loadStripe, Elements, CardElement, useStripe, useElements;
+try {
+  loadStripe = require('@stripe/stripe-js').loadStripe;
+  const stripeReact = require('@stripe/react-stripe-js');
+  Elements = stripeReact.Elements;
+  CardElement = stripeReact.CardElement;
+  useStripe = stripeReact.useStripe;
+  useElements = stripeReact.useElements;
+} catch (e) {}
+
+const STRIPE_PK = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = loadStripe && STRIPE_PK ? loadStripe(STRIPE_PK) : null;
+
+function CheckoutForm({ items, amount, currency = 'usd', onSuccess, onError, buttonLabel }) {
+  const [processing, setProcessing] = useState(false);
+
+  const handleCheckout = async () => {
+    setProcessing(true);
+    try {
+      const response = await paymentsApi.createCheckout(items || [{ name: 'Payment', amount, quantity: 1 }]);
+      const { url } = response.data;
+      if (url) {
+        window.location.href = url;
+      } else if (onSuccess) {
+        onSuccess(response.data);
+      }
+    } catch (err) {
+      if (onError) onError(err);
+      else alert('Payment failed: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {amount && (
+        <div className="text-center p-4 bg-muted rounded-lg">
+          <p className="text-sm text-muted-foreground">Total</p>
+          <p className="text-2xl font-bold">{currency.toUpperCase()} {(amount / 100).toFixed(2)}</p>
+        </div>
+      )}
+      <button
+        onClick={handleCheckout}
+        disabled={processing}
+        className="w-full py-3 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50"
+      >
+        {processing ? 'Processing...' : buttonLabel || 'Pay Now'}
+      </button>
+    </div>
+  );
+}
+
+export default function PaymentForm(props) {
+  if (!stripePromise) {
+    return (
+      <div className="border rounded-lg p-6 text-center text-muted-foreground">
+        <p className="mb-2 font-medium">Payments not configured</p>
+        <p className="text-sm">Set REACT_APP_STRIPE_PUBLISHABLE_KEY to enable payments.</p>
+      </div>
+    );
+  }
+
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutForm {...props} />
+    </Elements>
+  );
+}`;
+
+    await fs.writeFile(path.join(componentsDir, 'PaymentForm.js'), paymentForm);
+    files.push('frontend/src/components/PaymentForm.js');
+
+    // Compute theme-aware chart palette from DesignExpert colors
+    const chartColorPalette = [
+      themeColors.primary || '#3b82f6',
+      themeColors.success || '#10b981',
+      themeColors.accent || '#f59e0b',
+      themeColors.error || '#ef4444',
+      themeColors.info || '#8b5cf6',
+      themeColors.warning || '#ec4899',
+      themeColors.secondary || '#06b6d4',
+      themeColors.focus || '#84cc16'
+    ];
+
     // 4. PageRenderer component - renders pages dynamically with Shadcn UI components
     const pageRenderer = `import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DataTable from './DataTable';
-import { dataApi } from '../api/client';
+import RichTextEditor from './RichTextEditor';
+import FileUpload from './FileUpload';
+import KanbanBoard from './KanbanBoard';
+import MapView from './MapView';
+import PaymentForm from './PaymentForm';
+import { dataApi, filesApi, exportApi, aggregateApi } from '../api/client';
+import { BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, RadialBarChart, RadialBar, ComposedChart } from 'recharts';
 
 // Shadcn UI Components
 import { Button } from './ui/button';
@@ -5181,9 +8453,39 @@ import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Separator } from './ui/separator';
 import { Skeleton } from './ui/skeleton';
+import { Slider } from './ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from './ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from './ui/dialog';
+import { BadgeOverlay } from './ui/badge-overlay';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+import { Progress } from './ui/progress';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './ui/tooltip';
+import { useToast } from './ui/use-toast';
+import { Toaster } from './ui/toaster';
 import { cn } from '../lib/utils';
+import { ClipboardList, Clock, CheckCircle, Circle, Plus, X, Check, Users, BarChart3, DollarSign, Package, ShoppingCart, FileText, AlertTriangle, TrendingUp, TrendingDown, Edit, Trash2, Eye, Download, Upload, Search, Filter, RefreshCw, Settings, Mail, Phone, MapPin, Calendar, Star, Heart, Bookmark, Share2, ArrowRight, ArrowLeft } from 'lucide-react';
 
-export default function PageRenderer({ page, forms, workflowContext = {}, onAuthSuccess }) {
+// Lucide icon helper for dynamic icon rendering
+const lucideIconMap = {
+  'clipboard-list': ClipboardList, 'clock': Clock, 'check-circle': CheckCircle,
+  'plus': Plus, 'x': X, 'check': Check, 'users': Users, 'bar-chart': BarChart3,
+  'dollar-sign': DollarSign, 'package': Package, 'cart': ShoppingCart,
+  'file-text': FileText, 'alert-triangle': AlertTriangle, 'trending-up': TrendingUp,
+  'trending-down': TrendingDown, 'edit': Edit, 'trash': Trash2, 'eye': Eye,
+  'download': Download, 'upload': Upload, 'search': Search, 'filter': Filter,
+  'refresh': RefreshCw, 'settings': Settings, 'mail': Mail, 'phone': Phone,
+  'map-pin': MapPin, 'calendar': Calendar, 'star': Star, 'heart': Heart,
+  'bookmark': Bookmark, 'share': Share2, 'arrow-right': ArrowRight, 'arrow-left': ArrowLeft,
+  'circle': Circle
+};
+const LucideIcon = ({ name, className = 'w-5 h-5' }) => {
+  const IconComponent = lucideIconMap[name] || Circle;
+  return <IconComponent className={className} />;
+};
+
+export default function PageRenderer({ page, forms, workflowContext = {}, onAuthSuccess, user, socket }) {
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({});
@@ -5193,6 +8495,7 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
 
   // Destructure workflow context for easy access
   const { instance: workflowInstance, currentTask, onFormSubmit: workflowFormSubmit } = workflowContext;
+  const { toast } = useToast();
 
   useEffect(() => {
     if (page) loadPageData();
@@ -5222,16 +8525,141 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
 
   const findDataBindings = (sections) => {
     const bindings = new Set();
+    const extractTemplateModels = (str) => {
+      if (!str || typeof str !== 'string') return;
+      const matches = str.match(/\\{\\{(\\w+)\\./g);
+      if (matches) matches.forEach(m => bindings.add(m.replace('{{', '').replace('.', '')));
+    };
     const traverse = (items) => {
       if (!items) return;
       for (const item of items) {
         if (item.dataBinding) bindings.add(item.dataBinding);
+        // Scan config values for {{Model.xxx}} template patterns
+        if (item.config) {
+          Object.values(item.config).forEach(v => {
+            if (typeof v === 'string') extractTemplateModels(v);
+          });
+        }
         if (item.components) traverse(item.components);
         if (item.children) traverse(item.children);
+        if (item.config?.children) traverse(item.config.children);
       }
     };
     traverse(sections);
     return Array.from(bindings);
+  };
+
+  // Resolve {{Model.field}} or {{Model.count}} or {{Model.count(filter)}} templates
+  const resolveTemplate = (template, data) => {
+    if (!template || typeof template !== 'string') return template;
+    const templateMatch = template.match(/^\\{\\{(\\w+)\\.(\\w+)(?:\\((.*)\\))?\\}\\}$/);
+    if (!templateMatch) return template;
+    const [, model, method, filterStr] = templateMatch;
+    const modelData = data[model] || [];
+    if (method === 'count') {
+      if (filterStr) {
+        // Parse simple filter like status='completed' or active=true
+        const filterMatch = filterStr.match(/(\\w+)=['\"]?(\\w+)['\"]?/);
+        if (filterMatch) {
+          const [, field, value] = filterMatch;
+          const boolVal = value === 'true' ? true : value === 'false' ? false : null;
+          return modelData.filter(r => boolVal !== null ? r[field] === boolVal : String(r[field]).toLowerCase() === value.toLowerCase()).length;
+        }
+      }
+      return modelData.length;
+    }
+    if (method === 'sum') return modelData.reduce((s, r) => s + (Number(r[method]) || 0), 0);
+    return template;
+  };
+
+  // Resolve {{style:condition?trueValue:falseValue}} patterns for conditional styling
+  const resolveStyleBinding = (template, data) => {
+    if (!template || typeof template !== 'string') return undefined;
+    const styleMatch = template.match(/^\\{\\{style:(.+)\\}\\}$/);
+    if (!styleMatch) return undefined;
+    const expr = styleMatch[1];
+    // Parse chained ternaries: field>N?val1:field>M?val2:val3
+    const segments = expr.split(/(?<=^|:)([^?:]+(?:[><=!]+[^?:]+)?)\\?([^:]+)/g);
+    // Simplified evaluator: walk condition?value pairs
+    const parts = expr.split(':');
+    for (const part of parts) {
+      const condMatch = part.match(/^(.+?)\\?(.+)$/);
+      if (condMatch) {
+        const [, condition, value] = condMatch;
+        if (evaluateStyleCondition(condition, data)) return value.trim();
+      } else {
+        // Final fallback value (no condition)
+        return part.trim();
+      }
+    }
+    return undefined;
+  };
+
+  const evaluateStyleCondition = (condition, data) => {
+    // Supports: field>N, field<N, field>=N, field<=N, field==value, field!=value
+    const opMatch = condition.match(/^([\\w.\\[\\]]+)\\s*(>=|<=|>|<|==|!=)\\s*(.+)$/);
+    if (!opMatch) return false;
+    const [, path, op, rawRight] = opMatch;
+    // Resolve left side from data: e.g. intentScore or Orders[0].intentScore
+    const pathParts = path.split('.');
+    let leftVal = data;
+    for (const p of pathParts) {
+      const arrMatch = p.match(/(\\w+)\\[(\\d+)\\]/);
+      if (arrMatch) {
+        leftVal = (leftVal || {})[arrMatch[1]];
+        leftVal = Array.isArray(leftVal) ? leftVal[Number(arrMatch[2])] : undefined;
+      } else {
+        leftVal = (leftVal || {})[p];
+        if (Array.isArray(leftVal)) leftVal = leftVal[0];
+      }
+    }
+    const right = isNaN(rawRight) ? rawRight.replace(/['"]/g, '') : Number(rawRight);
+    const left = typeof right === 'number' ? Number(leftVal) || 0 : String(leftVal || '');
+    switch (op) {
+      case '>': return left > right;
+      case '<': return left < right;
+      case '>=': return left >= right;
+      case '<=': return left <= right;
+      case '==': return left == right;
+      case '!=': return left != right;
+      default: return false;
+    }
+  };
+
+  // Resolve {{item.field}} templates in a component tree for data-cards repeater
+  const resolveItemTemplate = (template, item) => {
+    if (!template) return template;
+    if (typeof template === 'string') {
+      // Handle {{style:item.field...}} conditional style bindings
+      if (template.startsWith('{{style:item.')) {
+        const resolved = template.replace(/item\\.(\\w+)/g, (_, field) => {
+          const val = item[field];
+          return val !== undefined ? val : '';
+        });
+        return resolveStyleBinding(resolved, data);
+      }
+      // Exact single-field reference -> return raw value (preserves arrays, numbers, objects)
+      const exactMatch = template.match(/^\\{\\{item\\.(\\w+)\\}\\}$/);
+      if (exactMatch) {
+        const val = item[exactMatch[1]];
+        return val !== undefined ? val : '';
+      }
+      return template.replace(/\\{\\{item\\.(\\w+)\\}\\}/g, (_, field) => {
+        const val = item[field];
+        return val !== undefined ? val : '';
+      });
+    }
+    if (Array.isArray(template)) {
+      return template.map(t => resolveItemTemplate(t, item));
+    }
+    if (typeof template === 'object' && template !== null) {
+      const result = {};
+      for (const [key, value] of Object.entries(template)) {
+        result[key] = resolveItemTemplate(value, item);
+      }
+      return result;
+    }
+    return template;
   };
 
   const handleFormChange = (formId, fieldName, value) => {
@@ -5244,7 +8672,13 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
   const handleFormSubmit = async (form) => {
     const formValues = formData[form.id] || {};
     const errors = {};
+    const currentRole = user?.role || 'user';
     (form.fields || []).forEach(field => {
+      // Skip validation for RBAC-hidden fields
+      if (field.roleAccess) {
+        const access = field.roleAccess[currentRole] || field.roleAccess['*'] || 'visible';
+        if (access === 'hidden' || access === 'readonly') return;
+      }
       if (field.required && !formValues[field.name]) errors[field.name] = field.label + ' is required';
     });
     if (Object.keys(errors).length > 0) { setFormErrors(prev => ({ ...prev, [form.id]: errors })); return; }
@@ -5318,10 +8752,21 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
   const handleAction = (action) => {
     if (!action) return;
     if (action.type === 'navigate') navigate(action.target);
+    if (action.type === 'toast') toast({ title: action.title, description: action.description, variant: action.variant });
   };
 
   // Render a form field with Shadcn UI components
   const renderFormField = (field, form) => {
+    // Field-level RBAC: check roleAccess for visibility/editability
+    const userRole = user?.role || 'user';
+    if (field.roleAccess) {
+      const access = field.roleAccess[userRole] || field.roleAccess['*'] || 'visible';
+      if (access === 'hidden') return null;
+      if (access === 'readonly') {
+        const formValues = formData[form.id] || {};
+        return <div key={field.id} className="mb-4 space-y-2 opacity-75"><Label>{field.label}</Label><div className="px-3 py-2 border rounded-md bg-muted text-sm">{formValues[field.name] || '-'}</div></div>;
+      }
+    }
     const formValues = formData[form.id] || {};
     const errors = formErrors[form.id] || {};
     const hasError = !!errors[field.name];
@@ -5333,6 +8778,15 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
         case 'date': return <Input type="date" value={formValues[field.name] || ''} onChange={(e) => handleFormChange(form.id, field.name, e.target.value)} className={cn(hasError && "border-destructive")} />;
         case 'number': return <Input type="number" placeholder={field.placeholder} value={formValues[field.name] || ''} onChange={(e) => handleFormChange(form.id, field.name, e.target.value)} className={cn(hasError && "border-destructive")} />;
         case 'email': return <Input type="email" placeholder={field.placeholder} value={formValues[field.name] || ''} onChange={(e) => handleFormChange(form.id, field.name, e.target.value)} className={cn(hasError && "border-destructive")} />;
+        case 'richtext': return <RichTextEditor value={formValues[field.name] || ''} onChange={(val) => handleFormChange(form.id, field.name, val)} placeholder={field.placeholder} />;
+        case 'file': return <FileUpload value={formValues[field.name]} onChange={(val) => handleFormChange(form.id, field.name, val)} multiple={field.multiple} accept={field.accept} />;
+        case 'switch': return <div className="flex items-center space-x-2"><input type="checkbox" role="switch" checked={formValues[field.name] || false} onChange={(e) => handleFormChange(form.id, field.name, e.target.checked)} className="w-10 h-5 rounded-full appearance-none bg-muted checked:bg-primary transition cursor-pointer" /><Label>{field.label}</Label></div>;
+        case 'color': return <Input type="color" value={formValues[field.name] || '#000000'} onChange={(e) => handleFormChange(form.id, field.name, e.target.value)} className="w-16 h-10 p-1" />;
+        case 'url': return <Input type="url" placeholder={field.placeholder || 'https://'} value={formValues[field.name] || ''} onChange={(e) => handleFormChange(form.id, field.name, e.target.value)} className={cn(hasError && "border-destructive")} />;
+        case 'datetime-local': return <Input type="datetime-local" value={formValues[field.name] || ''} onChange={(e) => handleFormChange(form.id, field.name, e.target.value)} className={cn(hasError && "border-destructive")} />;
+        case 'tel': return <Input type="tel" placeholder={field.placeholder} value={formValues[field.name] || ''} onChange={(e) => handleFormChange(form.id, field.name, e.target.value)} className={cn(hasError && "border-destructive")} />;
+        case 'search': return <Input type="search" placeholder={field.placeholder || 'Search...'} value={formValues[field.name] || ''} onChange={(e) => handleFormChange(form.id, field.name, e.target.value)} className={cn(hasError && "border-destructive")} />;
+        case 'radio': return <div className="space-y-2">{(field.options || []).map((opt, i) => <label key={i} className="flex items-center gap-2 cursor-pointer"><input type="radio" name={field.name} value={typeof opt === 'object' ? opt.value : opt} checked={formValues[field.name] === (typeof opt === 'object' ? opt.value : opt)} onChange={(e) => handleFormChange(form.id, field.name, e.target.value)} /><span className="text-sm">{typeof opt === 'object' ? opt.label : opt}</span></label>)}</div>;
         default: return <Input type="text" placeholder={field.placeholder} value={formValues[field.name] || ''} onChange={(e) => handleFormChange(form.id, field.name, e.target.value)} className={cn(hasError && "border-destructive")} />;
       }
     };
@@ -5342,8 +8796,26 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
 
   // Render inline form within a card
   const renderInlineForm = (formId) => {
-    const form = forms.find(f => f.id === formId);
-    if (!form) return <p className="text-muted-foreground">Form not found</p>;
+    // Try exact ID match first
+    let form = forms.find(f => f.id === formId);
+    // If not found, try by name (case-insensitive)
+    if (!form && formId) {
+      const normalizedRef = formId.toLowerCase().replace(/[^a-z0-9]/g, '');
+      form = forms.find(f => {
+        const normalizedName = (f.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const normalizedId = (f.id || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        return normalizedName === normalizedRef || normalizedId.includes(normalizedRef) || normalizedRef.includes(normalizedName);
+      });
+    }
+    // If still not found, try fuzzy match by extracting meaningful words
+    if (!form && formId) {
+      const refWords = formId.toLowerCase().replace(/[-_]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !['form', 'page'].includes(w));
+      form = forms.find(f => {
+        const nameWords = (f.name || '').toLowerCase().replace(/[-_]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+        return refWords.some(w => nameWords.some(nw => nw.includes(w) || w.includes(nw)));
+      });
+    }
+    if (!form) return <p className="text-muted-foreground">Form not found: {formId}</p>;
     const layout = form.layout;
     const renderFields = () => {
       if (layout?.sections && layout.sections.length > 0) {
@@ -5357,12 +8829,44 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
     return <div className="mt-4">{renderFields()}<div className={cn("mt-5 pt-4 border-t flex", form.submitButton?.position === 'right' ? 'justify-end' : 'justify-start')}><Button onClick={() => handleFormSubmit(form)} disabled={submittingForm === form.id}>{submittingForm === form.id ? 'Submitting...' : (form.submitButton?.label || 'Submit')}</Button></div></div>;
   };
 
+  // Helper to convert Figma styling to React inline styles
+  const figmaStyleToReact = (styling) => {
+    if (!styling) return {};
+    const style = {};
+    if (styling.background) style.backgroundColor = styling.background;
+    if (styling.color) style.color = styling.color;
+    if (styling.padding) style.padding = styling.padding;
+    if (styling.margin) style.margin = styling.margin;
+    if (styling.borderRadius) style.borderRadius = styling.borderRadius;
+    if (styling.border) style.border = styling.border;
+    if (styling.shadow) style.boxShadow = styling.shadow;
+    if (styling.width) style.width = styling.width;
+    if (styling.maxWidth) style.maxWidth = styling.maxWidth;
+    if (styling.minHeight) style.minHeight = styling.minHeight;
+    if (styling.gap) style.gap = styling.gap;
+    if (styling.display) style.display = styling.display;
+    if (styling.flexDirection) style.flexDirection = styling.flexDirection;
+    if (styling.alignItems) style.alignItems = styling.alignItems;
+    if (styling.justifyContent) style.justifyContent = styling.justifyContent;
+    if (styling.fontSize) style.fontSize = styling.fontSize;
+    if (styling.fontWeight) style.fontWeight = styling.fontWeight;
+    return style;
+  };
+
   const renderComponent = (component, index) => {
     if (!component) return null;
-    const { type, config, formRef, dataBinding, children } = component;
+    const { type, config, formRef, dataBinding, children, styling } = component;
+    const figmaStyle = figmaStyleToReact(styling || config?.styling);
+    // Component 5: Conditional style bindings
+    if (config?.conditionalStyles) {
+      Object.entries(config.conditionalStyles).forEach(([prop, template]) => {
+        const resolved = resolveStyleBinding(template, data);
+        if (resolved !== undefined) figmaStyle[prop] = resolved;
+      });
+    }
     switch (type) {
       case 'container':
-        return <div key={index} className={cn("w-full", config?.maxWidth && "mx-auto")} style={{ maxWidth: config?.maxWidth || '100%', padding: config?.padding || '0' }}>{(config?.children || children || component.components || []).map((c, i) => renderComponent(c, i))}</div>;
+        return <div key={index} className={cn("w-full", config?.maxWidth && "mx-auto")} style={{ maxWidth: config?.maxWidth || '100%', padding: config?.padding || '0', ...figmaStyle }}>{(config?.children || children || component.components || []).map((c, i) => renderComponent(c, i))}</div>;
       case 'heading':
         const headingClasses = { h1: 'text-3xl font-bold tracking-tight', h2: 'text-2xl font-semibold tracking-tight', h3: 'text-xl font-semibold' };
         const HeadingTag = config?.variant === 'h1' ? 'h1' : config?.variant === 'h2' ? 'h2' : config?.variant === 'h3' ? 'h3' : 'h2';
@@ -5374,10 +8878,16 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
         return <div key={index} style={{ height: config?.height || '16px' }} />;
       case 'divider':
         return <Separator key={index} className="my-4" />;
-      case 'stat-card':
-        return <Card key={index} className="hover:shadow-lg transition-shadow"><CardContent className="pt-6"><div className="flex justify-between items-start"><div><p className="text-sm font-medium text-muted-foreground">{config?.title}</p><p className="text-3xl font-bold mt-1">{config?.value || '0'}</p>{config?.trend && <span className={cn("text-sm mt-1 inline-block", config?.trendDirection === 'up' ? 'text-green-600' : 'text-red-600')}>{config?.trendDirection === 'up' ? '+' : ''}{config?.trend}</span>}</div>{config?.icon && <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">{config.icon === 'clipboard-list' ? '☐' : config.icon === 'clock' ? '⏱' : config.icon === 'check-circle' ? '✓' : '●'}</div>}</div></CardContent></Card>;
+      case 'stat-card': {
+        const rawValue = config?.value;
+        const isTemplate = typeof rawValue === 'string' && rawValue.startsWith('{{');
+        const resolvedValue = isTemplate ? resolveTemplate(rawValue, data) : rawValue;
+        const displayValue = (resolvedValue !== undefined && resolvedValue !== null && resolvedValue !== rawValue) ? resolvedValue : (isTemplate ? 0 : (resolvedValue || 0));
+        const hasData = !isTemplate || (resolvedValue !== rawValue);
+        return <Card key={index} className="hover:shadow-lg transition-shadow"><CardContent className="pt-6"><div className="flex justify-between items-start"><div><p className="text-sm font-medium text-muted-foreground">{config?.title}</p><p className="text-3xl font-bold mt-1">{displayValue}</p>{config?.trend && <span className={cn("text-sm mt-1 inline-block", config?.trendDirection === 'up' ? 'text-green-600' : 'text-red-600')}>{config?.trendDirection === 'up' ? '+' : ''}{config?.trend}</span>}</div>{config?.icon && <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><LucideIcon name={config.icon} /></div>}</div></CardContent></Card>;
+      }
       case 'buttonGroup':
-        return <div key={index} className="flex gap-3 flex-wrap">{(config?.buttons || []).map((btn, i) => <Button key={i} variant={btn.variant === 'primary' ? 'default' : btn.variant === 'destructive' ? 'destructive' : 'outline'}>{btn.icon && <span className="mr-2">{btn.icon === 'plus' ? '+' : btn.icon === 'x' ? '×' : btn.icon === 'check' ? '✓' : '●'}</span>}{btn.label}</Button>)}</div>;
+        return <div key={index} className="flex gap-3 flex-wrap">{(config?.buttons || []).map((btn, i) => <Button key={i} variant={btn.variant === 'primary' ? 'default' : btn.variant === 'destructive' ? 'destructive' : 'outline'}>{btn.icon && <span className="mr-2"><LucideIcon name={btn.icon} className="w-4 h-4 inline" /></span>}{btn.label}</Button>)}</div>;
       case 'breadcrumb':
         return <nav key={index} className="flex items-center space-x-2 text-sm text-muted-foreground">{(config?.items || []).map((item, i, arr) => <React.Fragment key={i}>{i > 0 && <span>/</span>}<a href={item.route} className={cn("hover:text-foreground transition-colors", i === arr.length - 1 ? 'text-foreground font-medium' : 'text-primary')}>{item.label}</a></React.Fragment>)}</nav>;
       case 'accordion':
@@ -5393,17 +8903,26 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
         return <Card key={index} className="hover:shadow-md transition-shadow">{(config?.title || config?.description) && <CardHeader>{config?.title && <CardTitle>{config.title}</CardTitle>}{config?.description && <CardDescription>{config.description}</CardDescription>}</CardHeader>}<CardContent>{formRef && renderInlineForm(formRef)}{(config?.children || component.components || children || []).map((c, i) => renderComponent(c, i))}</CardContent></Card>;
       case 'button':
         const buttonVariant = config?.variant === 'secondary' ? 'secondary' : config?.variant === 'outline' ? 'outline' : config?.variant === 'destructive' ? 'destructive' : config?.variant === 'ghost' ? 'ghost' : 'default';
-        return <Button key={index} variant={buttonVariant} onClick={() => handleAction(component.action)}>{config?.icon && <span className="mr-2">{config.icon === 'plus' ? '+' : config.icon === 'check' ? '✓' : '●'}</span>}{config?.text || config?.label}</Button>;
+        return <Button key={index} variant={buttonVariant} onClick={() => handleAction(component.action)}>{config?.icon && <span className="mr-2"><LucideIcon name={config.icon} className="w-4 h-4 inline" /></span>}{config?.text || config?.label}</Button>;
       case 'table':
         const [tableModel] = (dataBinding || '').split('.');
         const tableData = data[tableModel] || [];
         const columns = (config?.columns || []).map(col => ({ name: col.key, label: col.label, type: col.type || 'text' }));
         return <Card key={index}>{config?.title && <CardHeader><CardTitle>{config.title}</CardTitle></CardHeader>}<CardContent><DataTable columns={columns} data={tableData} /></CardContent></Card>;
-      case 'metric':
-        const [metricModel] = (dataBinding || '').split('.');
-        const metricData = data[metricModel] || [];
-        const metricValue = config?.aggregation === 'count' ? metricData.length : config?.aggregation === 'sum' ? metricData.reduce((sum, r) => sum + (r[config.field] || 0), 0) : metricData.length;
+      case 'metric': {
+        const metricRaw = config?.value;
+        const isMetricTemplate = typeof metricRaw === 'string' && metricRaw.startsWith('{{');
+        let metricValue;
+        if (isMetricTemplate) {
+          metricValue = resolveTemplate(metricRaw, data);
+          if (metricValue === metricRaw) metricValue = 0;
+        } else {
+          const [metricModel] = (dataBinding || '').split('.');
+          const metricData = data[metricModel] || [];
+          metricValue = metricData.length > 0 ? (config?.aggregation === 'count' ? metricData.length : config?.aggregation === 'sum' ? metricData.reduce((sum, r) => sum + (r[config.field] || 0), 0) : metricData.length) : 0;
+        }
         return <Card key={index} className="text-center hover:shadow-md transition-shadow"><CardContent className="pt-6"><p className="text-4xl font-bold">{metricValue}</p><p className="text-sm text-muted-foreground mt-1">{config?.label || config?.title}</p></CardContent></Card>;
+      }
       case 'badge':
         const badgeVariantMap = { success: 'default', warning: 'secondary', error: 'destructive', info: 'outline', green: 'default', red: 'destructive', blue: 'outline' };
         const badgeVar = badgeVariantMap[config?.color] || badgeVariantMap[config?.variant] || 'default';
@@ -5415,12 +8934,265 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
         return <Input key={index} type="search" placeholder={config?.placeholder || 'Search...'} className="max-w-sm" />;
       case 'filter':
         return <div key={index} className="flex gap-3 flex-wrap">{(config?.filters || []).map((filter, fIdx) => <div key={fIdx} className="min-w-[150px] space-y-2"><Label>{filter.label}</Label><Select><SelectTrigger><SelectValue placeholder="All" /></SelectTrigger><SelectContent><SelectItem value="">All</SelectItem>{(filter.options || []).map((opt, oIdx) => <SelectItem key={oIdx} value={opt.value || opt}>{opt.label || opt}</SelectItem>)}</SelectContent></Select></div>)}</div>;
-      case 'chart':
-        return <Card key={index} className="min-h-[200px]"><CardContent className="flex items-center justify-center h-full pt-6"><div className="text-center text-muted-foreground">{config?.title && <h4 className="font-semibold mb-2">{config.title}</h4>}<p className="text-sm">Chart: {config?.chartType || 'bar'}</p></div></CardContent></Card>;
-      case 'grid':
-        const gridColsMap = { 1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' };
+      case 'chart': {
+        const chartModel = (dataBinding || '').split('.')[0];
+        const chartData = data[chartModel] || config?.data || [];
+        const chartType = config?.chartType || 'bar';
+        const chartColors = ${JSON.stringify(chartColorPalette)};
+        const xKey = config?.xAxis || config?.xKey || (chartData[0] ? Object.keys(chartData[0]).find(k => typeof chartData[0][k] === 'string') : 'name');
+        const yKey = config?.yAxis || config?.yKey || (chartData[0] ? Object.keys(chartData[0]).find(k => typeof chartData[0][k] === 'number') : 'value');
+        const yKeys = config?.yKeys || (yKey ? [yKey] : []);
+
+        const renderChart = () => {
+          if (chartData.length === 0) return <div className="flex items-center justify-center h-full text-muted-foreground text-sm">No data for chart</div>;
+          switch (chartType) {
+            case 'line':
+              return <ResponsiveContainer width="100%" height={config?.height || 300}><LineChart data={chartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey={xKey} tick={{ fontSize: 12 }} /><YAxis tick={{ fontSize: 12 }} /><Tooltip /><Legend />{yKeys.map((k, i) => <Line key={k} type="monotone" dataKey={k} stroke={chartColors[i % chartColors.length]} strokeWidth={2} />)}</LineChart></ResponsiveContainer>;
+            case 'area':
+              return <ResponsiveContainer width="100%" height={config?.height || 300}><AreaChart data={chartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey={xKey} tick={{ fontSize: 12 }} /><YAxis tick={{ fontSize: 12 }} /><Tooltip /><Legend />{yKeys.map((k, i) => <Area key={k} type="monotone" dataKey={k} fill={chartColors[i % chartColors.length]} stroke={chartColors[i % chartColors.length]} fillOpacity={0.3} />)}</AreaChart></ResponsiveContainer>;
+            case 'pie':
+              return <ResponsiveContainer width="100%" height={config?.height || 300}><PieChart><Pie data={chartData} dataKey={yKey} nameKey={xKey} cx="50%" cy="50%" outerRadius={100} label>{chartData.map((_, i) => <Cell key={i} fill={chartColors[i % chartColors.length]} />)}</Pie><Tooltip /><Legend /></PieChart></ResponsiveContainer>;
+            case 'scatter':
+              return <ResponsiveContainer width="100%" height={config?.height || 300}><ScatterChart><CartesianGrid /><XAxis dataKey={xKey} name={xKey} /><YAxis dataKey={yKey} name={yKey} /><Tooltip cursor={{ strokeDasharray: '3 3' }} /><Scatter data={chartData} fill={chartColors[0]} /></ScatterChart></ResponsiveContainer>;
+            case 'composed':
+              return <ResponsiveContainer width="100%" height={config?.height || 300}><ComposedChart data={chartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey={xKey} /><YAxis /><Tooltip /><Legend />{yKeys.length > 0 && <Bar dataKey={yKeys[0]} fill={chartColors[0]} />}{yKeys.length > 1 && <Line type="monotone" dataKey={yKeys[1]} stroke={chartColors[1]} />}</ComposedChart></ResponsiveContainer>;
+            default: // bar
+              return <ResponsiveContainer width="100%" height={config?.height || 300}><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey={xKey} tick={{ fontSize: 12 }} /><YAxis tick={{ fontSize: 12 }} /><Tooltip /><Legend />{yKeys.map((k, i) => <Bar key={k} dataKey={k} fill={chartColors[i % chartColors.length]} radius={[4, 4, 0, 0]} />)}</BarChart></ResponsiveContainer>;
+          }
+        };
+        return <Card key={index}>{config?.title && <CardHeader><CardTitle>{config.title}</CardTitle>{config?.description && <CardDescription>{config.description}</CardDescription>}</CardHeader>}<CardContent className="pt-2">{renderChart()}</CardContent></Card>;
+      }
+      case 'kanban': {
+        const kanbanModel = (dataBinding || '').split('.')[0];
+        const kanbanItems = data[kanbanModel] || [];
+        return <div key={index}>{config?.title && <h3 className="text-lg font-semibold mb-4">{config.title}</h3>}<KanbanBoard columns={config?.columns} items={kanbanItems} statusField={config?.statusField || 'status'} onItemMove={(item, newStatus) => { const model = kanbanModel.toLowerCase(); dataApi.update(model, item.id, { [config?.statusField || 'status']: newStatus }).then(() => loadPageData()); }} /></div>;
+      }
+      case 'map': {
+        let mapMarkers = config?.markers || [];
+        if (dataBinding) {
+          const mapModel = dataBinding.split('.')[0];
+          const mapItems = data[mapModel] || [];
+          const latField = config?.latField || 'latitude';
+          const lngField = config?.lngField || 'longitude';
+          const labelField = config?.labelField || 'name';
+          mapMarkers = mapItems.filter(item => item[latField] && item[lngField]).map(item => ({ lat: Number(item[latField]), lng: Number(item[lngField]), label: item[labelField] || '' }));
+        }
+        return <div key={index}>{config?.title && <h3 className="text-lg font-semibold mb-4">{config.title}</h3>}<MapView center={config?.center} zoom={config?.zoom} markers={mapMarkers} height={config?.height || '400px'} /></div>;
+      }
+      case 'file-upload':
+        return <Card key={index}><CardHeader><CardTitle>{config?.title || 'Upload Files'}</CardTitle></CardHeader><CardContent><FileUpload multiple={config?.multiple !== false} accept={config?.accept} onChange={(files) => { console.log('Files uploaded:', files); }} /></CardContent></Card>;
+      case 'pdf-export': {
+        const exportModel = config?.model || (dataBinding || '').split('.')[0];
+        return <Button key={index} variant="outline" onClick={async () => { try { const res = await exportApi.pdf(exportModel); const url = URL.createObjectURL(new Blob([res.data])); const a = document.createElement('a'); a.href = url; a.download = \`\${exportModel}-export.pdf\`; a.click(); URL.revokeObjectURL(url); } catch (e) { alert('Export failed: ' + e.message); } }}>{config?.label || 'Export PDF'}</Button>;
+      }
+      case 'payment': case 'payment-button': case 'checkout':
+        return <Card key={index}><CardHeader><CardTitle>{config?.title || 'Payment'}</CardTitle>{config?.description && <CardDescription>{config.description}</CardDescription>}</CardHeader><CardContent><PaymentForm amount={config?.amount} currency={config?.currency} items={config?.items} buttonLabel={config?.buttonLabel} /></CardContent></Card>;
+      case 'grid': {
+        const gridResponsiveMap = { 1: 'grid-cols-1', 2: 'grid-cols-1 sm:grid-cols-2', 3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3', 4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' };
         const gridCols = config?.columns || 3;
-        return <div key={index} className={cn("grid gap-4", gridColsMap[gridCols] || 'grid-cols-3')}>{(config?.children || component.components || children || []).map((c, i) => renderComponent(c, i))}</div>;
+        const gapMap = { '8px': 'gap-2', '12px': 'gap-3', '16px': 'gap-4', '20px': 'gap-5', '24px': 'gap-6', '32px': 'gap-8' };
+        const gridGap = (config?.gap && gapMap[config.gap]) || 'gap-4';
+        return <div key={index} className={cn("grid", gridGap, gridResponsiveMap[gridCols] || 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')}>{(config?.children || component.components || children || []).map((c, i) => renderComponent(c, i))}</div>;
+      }
+      case 'slider': {
+        const sliderId = \`slider-\${index}\`;
+        const sliderMin = config?.min || 0;
+        const sliderMax = config?.max || 100;
+        const sliderStep = config?.step || 1;
+        const sliderDefault = config?.defaultValue || [Math.round((sliderMax - sliderMin) / 2)];
+        const [sliderVal, setSliderVal] = React.useState(Array.isArray(sliderDefault) ? sliderDefault : [sliderDefault]);
+        return <div key={index} className="space-y-2" style={figmaStyle}>{config?.label && <div className="flex justify-between items-center"><Label htmlFor={sliderId}>{config.label}</Label>{config?.showValue !== false && <span className="text-sm text-muted-foreground">{sliderVal[0]}</span>}</div>}<Slider id={sliderId} min={sliderMin} max={sliderMax} step={sliderStep} value={sliderVal} onValueChange={setSliderVal} /></div>;
+      }
+      case 'popover':
+        return <Popover key={index}><PopoverTrigger asChild><Button variant={config?.triggerVariant || 'outline'}>{config?.trigger || 'Open'}</Button></PopoverTrigger><PopoverContent align={config?.align || 'center'} side={config?.side || 'bottom'} className="w-80">{(config?.children || children || []).map((c, i) => renderComponent(c, i))}{config?.content && <div className="text-sm">{config.content}</div>}</PopoverContent></Popover>;
+      case 'dropdown-menu':
+        return <DropdownMenu key={index}><DropdownMenuTrigger asChild><Button variant={config?.triggerVariant || 'outline'}>{config?.trigger || 'Menu'}</Button></DropdownMenuTrigger><DropdownMenuContent>{config?.label && <DropdownMenuLabel>{config.label}</DropdownMenuLabel>}{config?.label && <DropdownMenuSeparator />}{(config?.items || []).map((item, i) => item.separator ? <DropdownMenuSeparator key={i} /> : <DropdownMenuItem key={i} onClick={() => handleAction(item.action)}>{item.icon && <span className="mr-2"><LucideIcon name={item.icon} className="w-4 h-4 inline" /></span>}{item.label}</DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu>;
+      case 'modal':
+        return <Dialog key={index}><DialogTrigger asChild><Button variant={config?.triggerVariant || 'default'}>{config?.trigger || 'Open'}</Button></DialogTrigger><DialogContent>{(config?.title || config?.description) && <DialogHeader>{config?.title && <DialogTitle>{config.title}</DialogTitle>}{config?.description && <DialogDescription>{config.description}</DialogDescription>}</DialogHeader>}<div>{(config?.children || children || []).map((c, i) => renderComponent(c, i))}</div>{config?.footer && <DialogFooter>{(config.footer || []).map((btn, i) => <Button key={i} variant={btn.variant || 'default'} onClick={() => handleAction(btn.action)}>{btn.label}</Button>)}</DialogFooter>}</DialogContent></Dialog>;
+      case 'badge-overlay': {
+        const badgeCount = typeof config?.count === 'string' && config.count.startsWith('{{') ? resolveTemplate(config.count, data) : (config?.count || 0);
+        return <BadgeOverlay key={index} count={Number(badgeCount) || 0} variant={config?.variant || 'default'} max={config?.max || 99}>{config?.icon ? <LucideIcon name={config.icon} className={config?.iconClass || 'w-6 h-6'} /> : (config?.children || children || []).map((c, i) => renderComponent(c, i))}</BadgeOverlay>;
+      }
+      case 'tabs': {
+        const tabItems = config?.tabs || [];
+        const defaultTab = tabItems[0]?.id || 'tab-0';
+        const tabVariantClass = config?.variant === 'pills' ? 'bg-muted rounded-lg p-1' : '';
+        return <Tabs key={index} defaultValue={defaultTab} orientation={config?.orientation || 'horizontal'} className="w-full"><TabsList className={tabVariantClass}>{tabItems.map((tab, i) => <TabsTrigger key={tab.id || \`tab-\${i}\`} value={tab.id || \`tab-\${i}\`}>{tab.icon && <span className="mr-2"><LucideIcon name={tab.icon} className="w-4 h-4 inline" /></span>}{tab.label}</TabsTrigger>)}</TabsList>{tabItems.map((tab, i) => <TabsContent key={tab.id || \`tab-\${i}\`} value={tab.id || \`tab-\${i}\`}>{(tab.content || []).map((c, ci) => renderComponent(c, ci))}</TabsContent>)}</Tabs>;
+      }
+      case 'avatar': {
+        const avatarSizeMap = { sm: 'h-8 w-8', md: 'h-10 w-10', lg: 'h-12 w-12' };
+        const avatarSize = avatarSizeMap[config?.size] || avatarSizeMap.md;
+        return <Avatar key={index} className={avatarSize}>{config?.src && <AvatarImage src={config.src} alt={config?.alt || config?.initials || ''} />}<AvatarFallback>{config?.initials || '?'}</AvatarFallback></Avatar>;
+      }
+      case 'progress': {
+        if (config?.variant === 'steps') {
+          const steps = config?.steps || [];
+          const currentStep = config?.currentStep || 0;
+          return <div key={index} className="space-y-2">{config?.label && <p className="text-sm font-medium">{config.label}</p>}<div className="flex items-center gap-2">{steps.map((step, i) => <React.Fragment key={i}><div className={cn("flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium border-2", i <= currentStep ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground border-muted')}>{i + 1}</div>{i < steps.length - 1 && <div className={cn("flex-1 h-0.5", i < currentStep ? 'bg-primary' : 'bg-muted')} />}</React.Fragment>)}</div>{steps.length > 0 && <div className="flex justify-between">{steps.map((step, i) => <span key={i} className={cn("text-xs", i <= currentStep ? 'text-foreground' : 'text-muted-foreground')}>{step.label || step}</span>)}</div>}</div>;
+        }
+        const progressValue = typeof config?.value === 'string' && config.value.startsWith('{{') ? Number(resolveTemplate(config.value, data)) || 0 : (config?.value || 0);
+        return <div key={index} className="space-y-2">{(config?.label || config?.showPercent) && <div className="flex justify-between items-center">{config?.label && <p className="text-sm font-medium">{config.label}</p>}{config?.showPercent && <span className="text-sm text-muted-foreground">{progressValue}%</span>}</div>}<Progress value={progressValue} /></div>;
+      }
+      case 'tooltip': {
+        const tooltipChildren = config?.children || children || [];
+        const trigger = tooltipChildren.length > 0 ? tooltipChildren.map((c, i) => renderComponent(c, i)) : <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border text-xs cursor-help">?</span>;
+        return <TooltipProvider key={index}><Tooltip><TooltipTrigger asChild><span>{trigger}</span></TooltipTrigger><TooltipContent><p>{config?.content || config?.text || ''}</p></TooltipContent></Tooltip></TooltipProvider>;
+      }
+      case 'data-cards': {
+        const cardsModel = (dataBinding || '').split('.')[0];
+        const cardsData = data[cardsModel] || [];
+        const gridCols = config?.columns || 1;
+        const cardsGridMap = { 1: 'grid-cols-1', 2: 'grid-cols-1 sm:grid-cols-2', 3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3', 4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' };
+        const cardsGapMap = { '8px': 'gap-2', '12px': 'gap-3', '16px': 'gap-4', '20px': 'gap-5', '24px': 'gap-6', '32px': 'gap-8' };
+        const cardsGap = (config?.gap && cardsGapMap[config.gap]) || 'gap-4';
+        if (cardsData.length === 0) return <div key={index} className="text-center py-8 text-muted-foreground">{config?.emptyMessage || 'No items found'}</div>;
+        return <div key={index} className={cn("grid", cardsGap, cardsGridMap[gridCols] || 'grid-cols-1')}>{cardsData.map((item, itemIdx) => { const resolved = resolveItemTemplate(config?.template, item); return <div key={item.id || itemIdx}>{renderComponent(resolved, itemIdx)}</div>; })}</div>;
+      }
+      case 'badge-list': {
+        const blItems = Array.isArray(config?.items) ? config.items : [];
+        const blVariantMap = { success: 'default', warning: 'secondary', error: 'destructive', info: 'outline', green: 'default', red: 'destructive', blue: 'outline', outline: 'outline' };
+        const blVariant = blVariantMap[config?.variant] || 'default';
+        return <div key={index} className="flex flex-wrap gap-1.5">{blItems.map((tag, i) => {
+          const label = typeof tag === 'string' ? tag : (tag?.label || tag?.value || '');
+          const itemVariant = (typeof tag === 'object' && tag?.variant) ? (blVariantMap[tag.variant] || blVariant) : blVariant;
+          return <Badge key={i} variant={itemVariant}>{label}</Badge>;
+        })}</div>;
+      }
+      case 'key-value-list': {
+        const kvItems = Array.isArray(config?.items) ? config.items : [];
+        const kvLayout = config?.layout || 'horizontal';
+        return <div key={index} className="divide-y">{kvItems.map((kvItem, i) => {
+          const valContent = (typeof kvItem.value === 'object' && kvItem.value !== null && kvItem.value.type) ? renderComponent(kvItem.value, i) : <span className="text-sm">{kvItem.value}</span>;
+          if (kvLayout === 'stacked') {
+            return <div key={i} className="py-2"><p className="text-sm text-muted-foreground">{kvItem.label}</p><div className="mt-0.5">{valContent}</div></div>;
+          }
+          return <div key={i} className="flex justify-between items-center py-2"><span className="text-sm text-muted-foreground">{kvItem.label}</span><div>{valContent}</div></div>;
+        })}</div>;
+      }
+      case 'list': {
+        const listItems = Array.isArray(config?.items) ? config.items : [];
+        const listVariant = config?.variant || 'bullet';
+        const Tag = listVariant === 'numbered' ? 'ol' : 'ul';
+        const listClass = listVariant === 'bullet' ? 'list-disc list-inside space-y-1' : listVariant === 'numbered' ? 'list-decimal list-inside space-y-1' : 'space-y-1';
+        return <Tag key={index} className={listClass}>{listItems.map((li, i) => {
+          if (typeof li === 'string') return <li key={i}>{li}</li>;
+          if (typeof li === 'object' && li !== null && li.type) return <li key={i}>{renderComponent(li, i)}</li>;
+          return <li key={i}>{String(li)}</li>;
+        })}</Tag>;
+      }
+      case 'callout':
+      case 'blockquote': {
+        const calloutVariantClasses = {
+          info: 'border-blue-500 bg-blue-50 dark:bg-blue-950/30',
+          warning: 'border-amber-500 bg-amber-50 dark:bg-amber-950/30',
+          success: 'border-green-500 bg-green-50 dark:bg-green-950/30',
+          error: 'border-red-500 bg-red-50 dark:bg-red-950/30',
+          quote: 'border-gray-400 bg-gray-50 dark:bg-gray-800/30',
+          neutral: 'border-muted-foreground/30 bg-muted/40',
+        };
+        const calloutVariant = config?.variant || 'neutral';
+        const calloutCls = calloutVariantClasses[calloutVariant] || calloutVariantClasses.neutral;
+        const calloutChildren = config?.children || children || [];
+        return <div key={index} className={cn("rounded-lg p-4 border-l-4", calloutCls)}>
+          {config?.title && <p className="font-semibold mb-2">{config.title}</p>}
+          {config?.content && <p className="text-sm">{config.content}</p>}
+          {calloutChildren.length > 0 && <div className="mt-2">{calloutChildren.map((c, i) => renderComponent(c, i))}</div>}
+        </div>;
+      }
+      case 'video': case 'audio': case 'media': case 'media-player': {
+        const mediaSrc = config?.src || config?.url || '';
+        const mediaType = (type === 'audio') ? 'audio' : 'video';
+        const poster = config?.poster || config?.thumbnail || '';
+        if (mediaType === 'audio') {
+          return <div key={index} className="space-y-2">{config?.title && <p className="text-sm font-medium">{config.title}</p>}<audio controls className="w-full" src={mediaSrc} preload={config?.preload || 'metadata'}>{config?.tracks?.map((t, i) => <track key={i} kind={t.kind || 'subtitles'} src={t.src} label={t.label} />)}</audio>{config?.caption && <p className="text-xs text-muted-foreground">{config.caption}</p>}</div>;
+        }
+        return <div key={index} className="space-y-2">{config?.title && <p className="text-sm font-medium">{config.title}</p>}<div className="relative rounded-lg overflow-hidden bg-black"><video controls className="w-full" src={mediaSrc} poster={poster} preload={config?.preload || 'metadata'} playsInline={config?.playsInline !== false} loop={config?.loop || false} muted={config?.muted || false}>{config?.tracks?.map((t, i) => <track key={i} kind={t.kind || 'subtitles'} src={t.src} label={t.label} />)}</video></div>{config?.caption && <p className="text-xs text-muted-foreground">{config.caption}</p>}</div>;
+      }
+      case 'rich-text': case 'rich-text-editor': {
+        const rtId = config?.id || ('rt-' + index);
+        const rtValue = config?.value || config?.content || config?.defaultValue || '';
+        const rtReadonly = config?.readonly || config?.disabled || false;
+        return <div key={index} className="space-y-2">{config?.label && <Label>{config.label}</Label>}<RichTextEditor value={rtValue} onChange={(val) => { setFormData(prev => ({ ...prev, [rtId]: { ...prev[rtId], content: val } })); }} />{rtReadonly && <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: rtValue }} />}</div>;
+      }
+      case 'data-grid': {
+        const dgModel = (dataBinding || '').split('.')[0];
+        const dgData = data[dgModel] || config?.data || [];
+        const dgCols = config?.columns || (dgData[0] ? Object.keys(dgData[0]).filter(k => k !== 'id').map(k => ({ key: k, label: k.charAt(0).toUpperCase() + k.slice(1), editable: config?.editable || false, sortable: true })) : []);
+        const [dgSort, setDgSort] = useState({ key: null, dir: 'asc' });
+        const [dgEditing, setDgEditing] = useState(null);
+        const [dgEditVal, setDgEditVal] = useState('');
+        const [dgPage, setDgPage] = useState(0);
+        const dgPageSize = config?.pageSize || 10;
+        const sortedData = [...dgData].sort((a, b) => {
+          if (!dgSort.key) return 0;
+          const av = a[dgSort.key], bv = b[dgSort.key];
+          const cmp = typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv));
+          return dgSort.dir === 'asc' ? cmp : -cmp;
+        });
+        const pagedData = sortedData.slice(dgPage * dgPageSize, (dgPage + 1) * dgPageSize);
+        const totalPages = Math.ceil(sortedData.length / dgPageSize);
+        return <Card key={index}>{config?.title && <CardHeader><CardTitle>{config.title}</CardTitle>{config?.description && <CardDescription>{config.description}</CardDescription>}</CardHeader>}<CardContent className="p-0"><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b bg-muted/50">{dgCols.map(col => <th key={col.key} className={cn("px-4 py-3 text-left font-medium text-muted-foreground", col.sortable !== false && "cursor-pointer select-none hover:text-foreground")} onClick={() => col.sortable !== false && setDgSort(prev => ({ key: col.key, dir: prev.key === col.key && prev.dir === 'asc' ? 'desc' : 'asc' }))}>{col.label}{dgSort.key === col.key && <span className="ml-1">{dgSort.dir === 'asc' ? '\u2191' : '\u2193'}</span>}</th>)}</tr></thead><tbody>{pagedData.map((row, ri) => <tr key={row.id || ri} className="border-b hover:bg-muted/30 transition-colors">{dgCols.map(col => <td key={col.key} className="px-4 py-3" onDoubleClick={() => { if (col.editable) { setDgEditing({ row: ri, col: col.key }); setDgEditVal(row[col.key] ?? ''); } }}>{dgEditing?.row === ri && dgEditing?.col === col.key ? <Input className="h-8 text-sm" value={dgEditVal} onChange={e => setDgEditVal(e.target.value)} onBlur={() => { if (dgModel && row.id) dataApi.update(dgModel.toLowerCase(), row.id, { [col.key]: dgEditVal }).then(() => loadPageData()); setDgEditing(null); }} onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setDgEditing(null); }} autoFocus /> : <span>{row[col.key] ?? ''}</span>}</td>)}</tr>)}{pagedData.length === 0 && <tr><td colSpan={dgCols.length} className="px-4 py-8 text-center text-muted-foreground">No data</td></tr>}</tbody></table></div>{totalPages > 1 && <div className="flex items-center justify-between px-4 py-3 border-t"><span className="text-sm text-muted-foreground">{sortedData.length} rows</span><div className="flex gap-1"><Button variant="outline" size="sm" disabled={dgPage === 0} onClick={() => setDgPage(p => p - 1)}>Prev</Button><span className="flex items-center px-3 text-sm">{dgPage + 1} / {totalPages}</span><Button variant="outline" size="sm" disabled={dgPage >= totalPages - 1} onClick={() => setDgPage(p => p + 1)}>Next</Button></div></div>}</CardContent></Card>;
+      }
+      case 'calendar': case 'scheduler': {
+        const calModel = (dataBinding || '').split('.')[0];
+        const calEvents = (data[calModel] || config?.events || []).map(ev => ({ ...ev, date: new Date(ev.date || ev.start || ev.startDate) }));
+        const [calMonth, setCalMonth] = useState(new Date());
+        const calYear = calMonth.getFullYear();
+        const calMo = calMonth.getMonth();
+        const firstDay = new Date(calYear, calMo, 1).getDay();
+        const daysInMonth = new Date(calYear, calMo + 1, 0).getDate();
+        const calDays = [];
+        for (let i = 0; i < firstDay; i++) calDays.push(null);
+        for (let d = 1; d <= daysInMonth; d++) calDays.push(d);
+        const today = new Date();
+        const isToday = (d) => d && today.getFullYear() === calYear && today.getMonth() === calMo && today.getDate() === d;
+        const getEventsForDay = (d) => calEvents.filter(ev => ev.date.getFullYear() === calYear && ev.date.getMonth() === calMo && ev.date.getDate() === d);
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const colorMap = { blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300', green: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300', red: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300', amber: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300', purple: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' };
+        return <Card key={index}><CardHeader className="flex-row items-center justify-between space-y-0 pb-4"><CardTitle>{config?.title || (monthNames[calMo] + ' ' + calYear)}</CardTitle><div className="flex gap-1"><Button variant="outline" size="sm" onClick={() => setCalMonth(new Date(calYear, calMo - 1, 1))}>&lt;</Button><Button variant="outline" size="sm" onClick={() => setCalMonth(new Date())}>{config?.todayLabel || 'Today'}</Button><Button variant="outline" size="sm" onClick={() => setCalMonth(new Date(calYear, calMo + 1, 1))}>&gt;</Button></div></CardHeader><CardContent><div className="grid grid-cols-7 text-center text-xs font-medium text-muted-foreground mb-1">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className="py-2">{d}</div>)}</div><div className="grid grid-cols-7">{calDays.map((d, i) => { const dayEvents = d ? getEventsForDay(d) : []; return <div key={i} className={cn("min-h-[80px] border border-muted/50 p-1", d ? 'bg-background' : 'bg-muted/20', isToday(d) && 'ring-2 ring-primary ring-inset')}>{d && <><span className={cn("inline-flex items-center justify-center w-6 h-6 text-xs rounded-full", isToday(d) ? 'bg-primary text-primary-foreground font-bold' : 'text-foreground')}>{d}</span>{dayEvents.slice(0, 3).map((ev, ei) => <div key={ei} className={cn("text-xs px-1 py-0.5 rounded truncate mt-0.5", colorMap[ev.color] || colorMap.blue)}>{ev.title || ev.name}</div>)}{dayEvents.length > 3 && <div className="text-xs text-muted-foreground mt-0.5">+{dayEvents.length - 3} more</div>}</>}</div>; })}</div></CardContent></Card>;
+      }
+      case 'stepper': case 'wizard': case 'step-indicator': {
+        const stpSteps = config?.steps || [];
+        const stpCurrent = config?.currentStep || 0;
+        const stpVariant = config?.variant || 'horizontal';
+        const stpClickable = config?.clickable || false;
+        if (stpVariant === 'vertical') {
+          return <div key={index} className="space-y-0">{stpSteps.map((step, i) => { const label = typeof step === 'string' ? step : (step.label || step.title); const desc = typeof step === 'object' ? (step.description || '') : ''; const isActive = i === stpCurrent; const isDone = i < stpCurrent; return <div key={i} className="flex gap-4">{/* Indicator column */}<div className="flex flex-col items-center"><div className={cn("flex items-center justify-center w-9 h-9 rounded-full border-2 text-sm font-medium shrink-0", isDone ? 'bg-primary text-primary-foreground border-primary' : isActive ? 'border-primary text-primary bg-primary/10' : 'border-muted text-muted-foreground')}>{isDone ? '\u2713' : i + 1}</div>{i < stpSteps.length - 1 && <div className={cn("w-0.5 flex-1 min-h-[24px]", isDone ? 'bg-primary' : 'bg-muted')} />}</div><div className={cn("pb-8", i === stpSteps.length - 1 && 'pb-0')}><p className={cn("text-sm font-medium", isActive ? 'text-foreground' : isDone ? 'text-foreground' : 'text-muted-foreground')}>{label}</p>{desc && <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>}{isActive && step.children && <div className="mt-3">{(Array.isArray(step.children) ? step.children : [step.children]).map((c, ci) => renderComponent(c, ci))}</div>}</div></div>; })}</div>;
+        }
+        return <div key={index} className="space-y-4"><div className="flex items-center">{stpSteps.map((step, i) => { const label = typeof step === 'string' ? step : (step.label || step.title); const isActive = i === stpCurrent; const isDone = i < stpCurrent; return <React.Fragment key={i}><div className={cn("flex flex-col items-center gap-1.5", stpClickable && 'cursor-pointer')} onClick={() => stpClickable && config?.onStepClick?.(i)}><div className={cn("flex items-center justify-center w-9 h-9 rounded-full border-2 text-sm font-medium transition-colors", isDone ? 'bg-primary text-primary-foreground border-primary' : isActive ? 'border-primary text-primary bg-primary/10' : 'border-muted text-muted-foreground')}>{isDone ? '\u2713' : i + 1}</div><span className={cn("text-xs font-medium text-center max-w-[80px]", isActive ? 'text-foreground' : isDone ? 'text-foreground' : 'text-muted-foreground')}>{label}</span></div>{i < stpSteps.length - 1 && <div className={cn("flex-1 h-0.5 mx-2 mt-[-18px]", isDone ? 'bg-primary' : 'bg-muted')} />}</React.Fragment>; })}</div>{stpSteps[stpCurrent]?.children && <div>{(Array.isArray(stpSteps[stpCurrent].children) ? stpSteps[stpCurrent].children : [stpSteps[stpCurrent].children]).map((c, ci) => renderComponent(c, ci))}</div>}</div>;
+      }
+      case 'carousel': case 'gallery': case 'image-gallery': {
+        const galItems = config?.items || config?.images || [];
+        const [galIdx, setGalIdx] = useState(0);
+        const galAutoPlay = config?.autoPlay || false;
+        const galInterval = config?.interval || 5000;
+        useEffect(() => { if (galAutoPlay && galItems.length > 1) { const t = setInterval(() => setGalIdx(i => (i + 1) % galItems.length), galInterval); return () => clearInterval(t); } }, [galAutoPlay, galItems.length]);
+        if (galItems.length === 0) return <div key={index} className="text-center py-8 text-muted-foreground">No items</div>;
+        const currentItem = galItems[galIdx];
+        const imgSrc = typeof currentItem === 'string' ? currentItem : (currentItem?.src || currentItem?.url || currentItem?.image || '');
+        const imgAlt = typeof currentItem === 'object' ? (currentItem?.alt || currentItem?.title || '') : '';
+        const imgCaption = typeof currentItem === 'object' ? (currentItem?.caption || currentItem?.description || '') : '';
+        return <div key={index} className="space-y-3">{config?.title && <h3 className="text-lg font-semibold">{config.title}</h3>}<div className="relative group rounded-lg overflow-hidden bg-muted"><img src={imgSrc} alt={imgAlt} className="w-full object-cover" style={{ height: config?.height || '400px' }} />{galItems.length > 1 && <><button className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setGalIdx(i => i === 0 ? galItems.length - 1 : i - 1)}>&lt;</button><button className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setGalIdx(i => (i + 1) % galItems.length)}>&gt;</button><div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">{galItems.map((_, i) => <button key={i} className={cn("w-2 h-2 rounded-full transition-colors", i === galIdx ? 'bg-primary' : 'bg-background/60')} onClick={() => setGalIdx(i)} />)}</div></>}{imgCaption && <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-8"><p className="text-white text-sm">{imgCaption}</p></div>}</div>{config?.showThumbnails && <div className="flex gap-2 overflow-x-auto pb-1">{galItems.map((item, i) => { const thumbSrc = typeof item === 'string' ? item : (item?.src || item?.url || item?.image || ''); return <button key={i} className={cn("shrink-0 rounded-md overflow-hidden border-2 transition-colors", i === galIdx ? 'border-primary' : 'border-transparent opacity-60 hover:opacity-100')} onClick={() => setGalIdx(i)}><img src={thumbSrc} alt="" className="w-16 h-16 object-cover" /></button>; })}</div>}</div>;
+      }
+      case 'tree': case 'tree-view': {
+        const TreeNode = ({ node, level = 0 }) => {
+          const [expanded, setExpanded] = useState(node.expanded !== false);
+          const hasChildren = node.children && node.children.length > 0;
+          const iconMap = { folder: '\uD83D\uDCC1', file: '\uD83D\uDCC4', page: '\uD83D\uDCC4', settings: '\u2699\uFE0F' };
+          return <div><div className={cn("flex items-center gap-1.5 py-1.5 px-2 rounded-md hover:bg-muted/60 cursor-pointer select-none transition-colors", node.active && 'bg-primary/10 text-primary')} style={{ paddingLeft: (level * 20 + 8) + 'px' }} onClick={() => { if (hasChildren) setExpanded(!expanded); node.onClick?.(); }}>{hasChildren ? <span className="w-4 h-4 flex items-center justify-center text-xs text-muted-foreground">{expanded ? '\u25BE' : '\u25B8'}</span> : <span className="w-4" />}{node.icon ? <span className="text-sm">{iconMap[node.icon] || node.icon}</span> : null}<span className="text-sm truncate">{node.label || node.name || node.title}</span>{node.badge && <Badge variant="secondary" className="ml-auto text-xs scale-90">{node.badge}</Badge>}</div>{hasChildren && expanded && <div>{node.children.map((child, i) => <TreeNode key={child.id || i} node={child} level={level + 1} />)}</div>}</div>;
+        };
+        const treeData = config?.items || config?.nodes || config?.data || [];
+        return <div key={index} className="space-y-1">{config?.title && <h3 className="text-sm font-semibold mb-2">{config.title}</h3>}{treeData.map((node, i) => <TreeNode key={node.id || i} node={node} level={0} />)}</div>;
+      }
+      case 'timeline': {
+        const tlItems = config?.items || config?.events || [];
+        const tlVariant = config?.variant || 'vertical';
+        if (tlVariant === 'horizontal') {
+          return <div key={index} className="space-y-2">{config?.title && <h3 className="text-lg font-semibold">{config.title}</h3>}<div className="flex items-start overflow-x-auto pb-4">{tlItems.map((item, i) => <div key={i} className="flex flex-col items-center min-w-[140px] px-3"><div className={cn("w-3 h-3 rounded-full shrink-0", item.color ? ('bg-' + item.color + '-500') : (i === 0 ? 'bg-primary' : 'bg-muted-foreground/40'))} />{i < tlItems.length - 1 && <div className="w-full h-0.5 bg-muted mt-1.5" />}<p className="text-sm font-medium mt-2 text-center">{item.title || item.label}</p>{item.date && <p className="text-xs text-muted-foreground">{item.date}</p>}{item.description && <p className="text-xs text-muted-foreground mt-1 text-center">{item.description}</p>}</div>)}</div></div>;
+        }
+        const tlColorMap = { blue: 'bg-blue-500', green: 'bg-green-500', red: 'bg-red-500', amber: 'bg-amber-500', purple: 'bg-purple-500', gray: 'bg-muted-foreground/40' };
+        return <div key={index} className="space-y-2">{config?.title && <h3 className="text-lg font-semibold">{config.title}</h3>}<div className="relative">{tlItems.map((item, i) => { const dotColor = tlColorMap[item.color] || (i === 0 ? 'bg-primary' : 'bg-muted-foreground/40'); return <div key={i} className="flex gap-4 pb-8 last:pb-0"><div className="flex flex-col items-center"><div className={cn("w-3 h-3 rounded-full shrink-0 mt-1.5", dotColor)} />{i < tlItems.length - 1 && <div className="w-0.5 flex-1 bg-muted" />}</div><div className="flex-1 pb-1"><div className="flex items-baseline gap-2"><p className="text-sm font-medium">{item.title || item.label}</p>{item.date && <span className="text-xs text-muted-foreground">{item.date}</span>}</div>{item.description && <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>}{item.children && <div className="mt-2">{(Array.isArray(item.children) ? item.children : [item.children]).map((c, ci) => renderComponent(c, ci))}</div>}</div></div>; })}</div></div>;
+      }
       default:
         const childComponents = config?.children || component.components || children || [];
         if (childComponents.length > 0) return <div key={index}>{childComponents.map((c, i) => renderComponent(c, i))}</div>;
@@ -5430,18 +9202,120 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
 
   const renderSection = (section, index) => {
     if (!section) return null;
-    const sectionClasses = { header: 'mb-8', main: '', 'stats-row': 'mb-6', filters: 'mb-6', sidebar: 'bg-card p-5 rounded-lg border' };
-    return <div key={index} className={sectionClasses[section.type] || ''}>{(section.components || []).map((component, i) => renderComponent(component, i))}</div>;
+    const sectionClasses = { header: 'mb-8', main: '', 'stats-row': 'mb-6', filters: 'mb-6', sidebar: 'bg-card p-5 rounded-lg border', 'quick-actions': 'mb-6', 'data-section': 'mb-6', hero: 'py-16 px-6', content: 'py-8', footer: 'py-8 border-t', navigation: 'py-4', cards: 'py-8', form: 'py-8' };
+    const sectionStyle = figmaStyleToReact(section.styling);
+
+    // Auto-grid: if section is stats-row and has multiple direct stat-card children, wrap in grid
+    if (section.type === 'stats-row') {
+      const components = section.components || [];
+      const directStatCards = components.filter(c => c.type === 'stat-card');
+      const emptyGrid = components.find(c => c.type === 'grid' && !(c.config?.children?.length > 0));
+      if (directStatCards.length > 1 || (emptyGrid && directStatCards.length > 0)) {
+        const nonStatCards = components.filter(c => c.type !== 'stat-card' && c.type !== 'grid');
+        const cols = directStatCards.length <= 2 ? 2 : directStatCards.length <= 3 ? 3 : 4;
+        const gridColsMap = { 2: 'grid-cols-1 sm:grid-cols-2', 3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3', 4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' };
+        return <div key={index} className="mb-6" style={sectionStyle}>{nonStatCards.map((c, i) => renderComponent(c, i))}<div className={cn("grid gap-4", gridColsMap[cols] || 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4')}>{directStatCards.map((c, i) => renderComponent(c, i))}</div></div>;
+      }
+    }
+
+    // Handle grid layout from Figma
+    if (section.layout?.type === 'grid' || section.styling?.display === 'grid') {
+      const gridCols = section.layout?.columns || section.styling?.gridColumns || 1;
+      const gridClass = gridCols === 2 ? 'grid-cols-2' : gridCols === 3 ? 'grid-cols-3' : gridCols === 4 ? 'grid-cols-4' : 'grid-cols-1';
+      return <div key={index} className={cn("grid gap-4", gridClass, sectionClasses[section.type] || '')} style={sectionStyle}>{section.title && <h3 className="col-span-full text-lg font-semibold mb-2">{section.title}</h3>}{(section.components || []).map((component, i) => renderComponent(component, i))}</div>;
+    }
+
+    // Handle flex layout from Figma
+    if (section.layout?.type === 'flex' || section.styling?.display === 'flex') {
+      return <div key={index} className={cn("flex", section.layout?.direction === 'column' ? 'flex-col' : 'flex-row', section.layout?.wrap ? 'flex-wrap' : '', sectionClasses[section.type] || '')} style={{ gap: section.layout?.gap || '16px', ...sectionStyle }}>{section.title && <h3 className="text-lg font-semibold mb-2 w-full">{section.title}</h3>}{(section.components || []).map((component, i) => renderComponent(component, i))}</div>;
+    }
+
+    return <div key={index} className={sectionClasses[section.type] || ''} style={sectionStyle}>{section.title && <h3 className="text-lg font-semibold mb-4">{section.title}</h3>}{(section.components || []).map((component, i) => renderComponent(component, i))}</div>;
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[300px]"><div className="text-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" /><p className="text-muted-foreground">Loading...</p></div></div>;
+  if (loading) return <div className="p-6 max-w-7xl mx-auto animate-pulse"><div className="mb-8"><Skeleton className="h-8 w-48 mb-2" /><Skeleton className="h-4 w-72" /></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">{[1,2,3,4].map(i => <Card key={i}><CardContent className="pt-6"><Skeleton className="h-4 w-20 mb-2" /><Skeleton className="h-8 w-16" /></CardContent></Card>)}</div><Card><CardContent className="pt-6 space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-4 w-full" />)}</CardContent></Card></div>;
   if (!page) return <div className="flex flex-col items-center justify-center py-16 text-center"><h3 className="text-xl font-semibold">Page Not Found</h3><p className="text-muted-foreground mt-2">The requested page could not be found.</p></div>;
   const hasStyledHeader = page.sections?.some(s => s.type === 'header' && s.components?.length > 0);
-  return <div className="p-6 max-w-7xl mx-auto">{!hasStyledHeader && <div className="mb-8"><h1 className="text-3xl font-bold tracking-tight">{page.title || page.name}</h1>{page.description && <p className="text-muted-foreground mt-2">{page.description}</p>}</div>}<div className="space-y-6">{(page.sections || []).map((section, index) => renderSection(section, index))}</div></div>;
+  // Apply Figma layout settings
+  const pageLayout = page.layout || {};
+  const layoutClasses = {
+    'full-width': 'w-full',
+    'contained': 'max-w-7xl mx-auto',
+    'narrow': 'max-w-3xl mx-auto',
+    'sidebar': 'max-w-7xl mx-auto grid grid-cols-[${this.generatedTheme?.layout?.sidebarWidth || '256px'}_1fr] gap-6'
+  };
+  const layoutClass = layoutClasses[pageLayout.type] || 'max-w-7xl mx-auto';
+  const pageStyle = figmaStyleToReact(pageLayout.styling || page.styling);
+  return <><div className={cn("p-6", layoutClass)} style={{ maxWidth: pageLayout.maxWidth, padding: pageLayout.padding, ...pageStyle }}>{!hasStyledHeader && <div className="mb-8"><h1 className="text-3xl font-bold tracking-tight">{page.title || page.name}</h1>{page.description && <p className="text-muted-foreground mt-2">{page.description}</p>}</div>}<div className="space-y-6">{(page.sections || []).map((section, index) => renderSection(section, index))}</div></div><Toaster /></>;
 }`;
 
     await fs.writeFile(path.join(componentsDir, 'PageRenderer.js'), pageRenderer);
     files.push('frontend/src/components/PageRenderer.js');
+
+    // Error Boundary component -- catches render errors per-page with friendly UI and retry
+    const errorBoundary = `import React from 'react';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    this.setState({ errorInfo });
+    console.error('[ErrorBoundary] Caught render error:', error, errorInfo);
+  }
+
+  handleRetry = () => {
+    this.setState({ hasError: false, error: null, errorInfo: null });
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
+          <p className="text-muted-foreground text-sm mb-4 text-center max-w-md">
+            This page encountered an error while rendering. You can try again or navigate to a different page.
+          </p>
+          <div className="flex gap-3">
+            <button onClick={this.handleRetry} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
+              Try Again
+            </button>
+            <button onClick={() => window.location.href = '/'} className="px-4 py-2 rounded-lg border text-sm font-medium hover:bg-accent transition-colors">
+              Go to Dashboard
+            </button>
+          </div>
+          {process.env.NODE_ENV === 'development' && this.state.error && (
+            <details className="mt-6 w-full max-w-lg">
+              <summary className="text-xs text-muted-foreground cursor-pointer">Error details</summary>
+              <pre className="mt-2 p-3 bg-muted rounded-lg text-xs overflow-auto max-h-48">
+                {this.state.error.toString()}
+                {this.state.errorInfo?.componentStack}
+              </pre>
+            </details>
+          )}
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;`;
+
+    await fs.writeFile(path.join(componentsDir, 'ErrorBoundary.js'), errorBoundary);
+    files.push('frontend/src/components/ErrorBoundary.js');
 
     return files;
   }
@@ -5455,14 +9329,21 @@ export default function PageRenderer({ page, forms, workflowContext = {}, onAuth
     const workflows = resources.workflows || this.application.workflows || [];
     const forms = resources.forms || this.application.forms || [];
 
-    // 1. Dashboard page
+    // 1. Dashboard page -- upgraded with Shadcn components, responsive grid, skeletons, and trend indicators
+    const appName = this.application.name || 'Your Application';
     const dashboard = `import React, { useState, useEffect } from 'react';
-import { logsApi, workflowsApi, formsApi } from '../api/client';
+import { useNavigate } from 'react-router-dom';
+import { logsApi, workflowsApi, formsApi, dataApi } from '../api/client';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Skeleton } from '../components/ui/skeleton';
+import { LayoutDashboard, FileText, Database, Activity, ArrowUpRight, ArrowDownRight, Clock, Plus } from 'lucide-react';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
-  const [recentWorkflows, setRecentWorkflows] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadDashboardData();
@@ -5476,12 +9357,25 @@ export default function Dashboard() {
         formsApi.list().catch(() => ({ data: [] }))
       ]);
 
+      const wfCount = workflowsRes.data?.length || ${workflows.length};
+      const formCount = formsRes.data?.length || ${forms.length};
+      const execCount = statsRes.data?.statistics?.totalExecutions || 0;
+
       setStats({
-        workflows: workflowsRes.data?.length || ${workflows.length},
-        forms: formsRes.data?.length || ${forms.length},
-        dataModels: ${dataModels.length},
-        executions: statsRes.data?.statistics?.totalExecutions || 0
+        workflows: { value: wfCount, trend: wfCount > 0 ? 'up' : 'neutral', label: 'Workflows' },
+        forms: { value: formCount, trend: formCount > 0 ? 'up' : 'neutral', label: 'Forms' },
+        dataModels: { value: ${dataModels.length}, trend: 'neutral', label: 'Data Models' },
+        executions: { value: execCount, trend: execCount > 0 ? 'up' : 'neutral', label: 'Executions' }
       });
+
+      // Build recent activity from available data
+      const activity = [];
+      if (workflowsRes.data && Array.isArray(workflowsRes.data)) {
+        workflowsRes.data.slice(0, 5).forEach(wf => {
+          activity.push({ type: 'workflow', name: wf.name || 'Workflow', time: wf.updatedAt || wf.createdAt || 'Recently' });
+        });
+      }
+      setRecentActivity(activity);
     } catch (error) {
       console.error('Error loading dashboard:', error);
     } finally {
@@ -5489,44 +9383,110 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) {
-    return <div className="loading">Loading dashboard...</div>;
-  }
+  const StatCard = ({ icon: IconComp, label, value, trend }) => (
+    <Card className="hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <IconComp className="w-5 h-5 text-primary" />
+          </div>
+          {trend === 'up' && <span className="flex items-center text-xs font-medium text-green-600"><ArrowUpRight className="w-3 h-3 mr-0.5" />Active</span>}
+          {trend === 'down' && <span className="flex items-center text-xs font-medium text-red-500"><ArrowDownRight className="w-3 h-3 mr-0.5" />Down</span>}
+        </div>
+        <div className="text-2xl font-bold tracking-tight">{value}</div>
+        <p className="text-sm text-muted-foreground mt-1">{label}</p>
+      </CardContent>
+    </Card>
+  );
+
+  const SkeletonCard = () => (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <Skeleton className="w-10 h-10 rounded-lg" />
+          <Skeleton className="w-12 h-4 rounded" />
+        </div>
+        <Skeleton className="w-16 h-7 rounded mb-2" />
+        <Skeleton className="w-24 h-4 rounded" />
+      </CardContent>
+    </Card>
+  );
 
   return (
-    <div>
-      <div className="page-header">
-        <h1>Dashboard</h1>
-        <p>Welcome to ${this.application.name || 'your application'}</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">Welcome to ${appName.replace(/'/g, "\\'")}</p>
       </div>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-value">{stats?.workflows || 0}</div>
-          <div className="stat-label">Workflows</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{stats?.forms || 0}</div>
-          <div className="stat-label">Forms</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{stats?.dataModels || 0}</div>
-          <div className="stat-label">Data Models</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{stats?.executions || 0}</div>
-          <div className="stat-label">Total Executions</div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {loading ? (
+          <>
+            <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
+          </>
+        ) : (
+          <>
+            <StatCard icon={Activity} label={stats?.workflows?.label} value={stats?.workflows?.value} trend={stats?.workflows?.trend} />
+            <StatCard icon={FileText} label={stats?.forms?.label} value={stats?.forms?.value} trend={stats?.forms?.trend} />
+            <StatCard icon={Database} label={stats?.dataModels?.label} value={stats?.dataModels?.value} trend={stats?.dataModels?.trend} />
+            <StatCard icon={LayoutDashboard} label={stats?.executions?.label} value={stats?.executions?.value} trend={stats?.executions?.trend} />
+          </>
+        )}
       </div>
 
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Quick Actions</h3>
-        </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <a href="/workflows" className="btn btn-primary">View Workflows</a>
-          <a href="/forms" className="btn btn-secondary">Browse Forms</a>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-lg">Recent Activity</CardTitle>
+            <CardDescription>Latest workflow and form activity</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="space-y-3">
+                {[1,2,3].map(i => <Skeleton key={i} className="h-12 rounded-lg" />)}
+              </div>
+            ) : recentActivity.length > 0 ? (
+              <div className="space-y-3">
+                {recentActivity.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Activity className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{item.name}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{item.type}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {typeof item.time === 'string' ? item.time : 'Recently'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-8">No recent activity</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button className="w-full justify-start" variant="outline" onClick={() => navigate('/workflows')}>
+              <Activity className="w-4 h-4 mr-2" />View Workflows
+            </Button>
+            <Button className="w-full justify-start" variant="outline" onClick={() => navigate('/forms')}>
+              <FileText className="w-4 h-4 mr-2" />Browse Forms
+            </Button>
+            <Button className="w-full justify-start" onClick={() => navigate('/workflows')}>
+              <Plus className="w-4 h-4 mr-2" />Start New Process
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -5674,7 +9634,7 @@ export default function WorkflowsPage() {
         onClose={() => setShowStartModal(false)}
         title={\`Start: \${selectedWorkflow?.name || 'Workflow'}\`}
       >
-        <p style={{ marginBottom: '16px', color: '#64748b' }}>
+        <p className="mb-4 text-muted-foreground">
           Enter input data for this workflow (optional):
         </p>
         <FormRenderer
@@ -5758,7 +9718,7 @@ export default function FormsPage() {
             {forms.map((form) => (
               <div key={form.id} className="card" style={{ margin: 0 }}>
                 <h4 style={{ marginBottom: '8px' }}>{form.name || form.title}</h4>
-                <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '16px' }}>
+                <p className="text-muted-foreground text-sm mb-4">
                   {form.description || \`\${form.fields?.length || 0} fields\`}
                 </p>
                 <button
@@ -5803,11 +9763,18 @@ export default function FormsPage() {
       files.push(`frontend/src/pages/${model.name}Page.js`);
     }
 
-    // 5. Generate Authentication Pages
-    files.push(...await this.generateAuthPages(pagesDir));
+    // 5. Generate Authentication Pages (only if no auth pages in pages.json)
+    const pagesJson = resources.pages || this.application.pages || [];
+    const hasAuthPagesInJson = pagesJson.some(p => {
+      const route = (p.route || '').toLowerCase();
+      return p.type === 'auth' || ['/login', '/register', '/signup', '/forgot-password', '/reset-password'].some(r => route.includes(r));
+    });
+    if (!hasAuthPagesInJson) {
+      files.push(...await this.generateAuthPages(pagesDir));
+    }
 
     // 6. Generate pages from pages.json
-    const pages = resources.pages || this.application.pages || [];
+    const pages = pagesJson;
     if (pages.length > 0) {
       console.log(`[ApplicationGenerator] Generating ${pages.length} dynamic pages from pages.json...`);
       for (const pageSpec of pages) {
@@ -5891,9 +9858,22 @@ export default function ${componentName}() {
     }).join('\n');
 
     const dataFetching = dataBindings.map(binding => {
-      return `    // TODO: Fetch ${binding} data from API
-    // Example: const ${binding}Data = await fetch('/api/${binding}').then(r => r.json());
-    // set${binding.charAt(0).toUpperCase() + binding.slice(1)}(${binding}Data);`;
+      const modelName = binding.charAt(0).toUpperCase() + binding.slice(1);
+      return `      try {
+        const ${binding}Res = await fetch('/api/data/${binding}');
+        const ${binding}Json = await ${binding}Res.json();
+        const ${binding}All = ${binding}Json.data || [];
+        set${modelName}({
+          totalCount: ${binding}All.length,
+          pendingCount: ${binding}All.filter(r => r.status === 'pending' || r.status === 'Pending').length,
+          inProgressCount: ${binding}All.filter(r => r.status === 'in_progress' || r.status === 'In Progress' || r.status === 'active').length,
+          completedCount: ${binding}All.filter(r => r.status === 'completed' || r.status === 'Completed' || r.status === 'done').length,
+          all: ${binding}All,
+          pending: ${binding}All.filter(r => r.status === 'pending' || r.status === 'Pending'),
+          inProgress: ${binding}All.filter(r => r.status === 'in_progress' || r.status === 'In Progress' || r.status === 'active'),
+          completed: ${binding}All.filter(r => r.status === 'completed' || r.status === 'Completed' || r.status === 'done')
+        });
+      } catch (e) { console.warn('Failed to load ${binding}:', e); }`;
     }).join('\n');
 
     return `  const [loading, setLoading] = useState(true);
@@ -5992,6 +9972,10 @@ ${dataFetching}
   generateTableCode(component) {
     const config = component.config || {};
     const columns = config.columns || [];
+    const dataSource = config.dataSource || config.dataBinding || 'data';
+    // Extract base data source name (e.g., "tickets" from "tickets.all")
+    const baseName = dataSource.split('.')[0];
+    const dataPath = dataSource.includes('.') ? dataSource : `${dataSource}.all`;
 
     return `
         <div className="card">
@@ -6002,7 +9986,14 @@ ${dataFetching}
               </tr>
             </thead>
             <tbody>
-              {/* TODO: Map data here */}
+              {(${this.replacePlaceholders(dataPath)} || []).map((row, idx) => (
+                <tr key={row.id || idx}>
+                  ${columns.map(col => `<td>{row.${col.key} || '-'}</td>`).join('\n                  ')}
+                </tr>
+              ))}
+              {(!${this.replacePlaceholders(dataPath)} || ${this.replacePlaceholders(dataPath)}.length === 0) && (
+                <tr><td colSpan={${columns.length}} className="text-center text-muted-foreground p-5">No data available</td></tr>
+              )}
             </tbody>
           </table>
         </div>`;
@@ -6077,6 +10068,196 @@ ${dataFetching}
     return text.replace(/\{\{([^}]+)\}\}/g, (match, content) => {
       return `{${content.trim()}}`;
     });
+  }
+
+  /**
+   * Generate a ChartWrapper component for the frontend.
+   */
+  async generateChartWrapper(frontendDir) {
+    const themeColors = this.generatedTheme?.theme?.colors || {};
+    const chartColors = [
+      themeColors.primary || '#3b82f6',
+      themeColors.success || '#10b981',
+      themeColors.accent || '#f59e0b',
+      themeColors.error || '#ef4444',
+      themeColors.info || '#8b5cf6',
+      themeColors.warning || '#ec4899',
+      themeColors.secondary || '#06b6d4',
+      themeColors.focus || '#84cc16'
+    ];
+    const code = UICodeGenerator.getChartWrapperTemplate(chartColors);
+    await fs.writeFile(path.join(frontendDir, 'src/components/ChartWrapper.js'), code);
+    return 'frontend/src/components/ChartWrapper.js';
+  }
+
+  /**
+   * LLM-powered UI code generation: convert pages.json definitions
+   * into actual React components using UICodeGenerator.
+   *
+   * Falls back to existing PageRenderer approach if generation fails.
+   */
+  async generateUICodePages(frontendDir) {
+    const files = [];
+    const resources = this.application.resources || {};
+    const pages = resources.pages || this.application.pages || [];
+
+    if (pages.length === 0) {
+      console.log('[ApplicationGenerator] No pages to generate UI code for.');
+      return files;
+    }
+
+    // Skip if ANTHROPIC_API_KEY is not set
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.log('[ApplicationGenerator] ANTHROPIC_API_KEY not set, skipping UI code generation.');
+      return files;
+    }
+
+    const forms = resources.forms || this.application.forms || [];
+    const dataModels = resources.dataModels || this.application.dataModels || [];
+    const workflows = resources.workflows || this.application.workflows || [];
+    const designSystem = this.generatedTheme?.theme || null;
+
+    const uiCodeGenerator = new UICodeGenerator();
+    const pagesDir = path.join(frontendDir, 'src/pages');
+    const generatedPageNames = [];
+    const fallbackPages = [];
+
+    console.log(`[ApplicationGenerator] Starting UI code generation for ${pages.length} pages...`);
+
+    for (const page of pages) {
+      try {
+        const associatedForms = forms.filter(f =>
+          (page.forms || []).includes(f.id) || (page.forms || []).includes(f.name)
+        );
+
+        const result = await uiCodeGenerator.generatePageComponent(
+          page, associatedForms, dataModels, workflows, designSystem
+        );
+
+        if (result.fallback) {
+          fallbackPages.push(page.name);
+          console.log(`[ApplicationGenerator] Page "${page.name}" using PageRenderer fallback.`);
+          continue;
+        }
+
+        const pageName = this.getPageComponentName(page);
+        const filePath = path.join(pagesDir, `${pageName}.jsx`);
+        await fs.writeFile(filePath, result.code);
+        files.push(`frontend/src/pages/${pageName}.jsx`);
+        generatedPageNames.push({ name: pageName, route: page.route });
+        console.log(`[ApplicationGenerator] UI code generated: ${pageName}.jsx`);
+      } catch (error) {
+        fallbackPages.push(page.name);
+        console.error(`[ApplicationGenerator] UI code generation failed for "${page.name}":`, error.message);
+      }
+    }
+
+    console.log(`[ApplicationGenerator] UI code generation complete: ${generatedPageNames.length} generated, ${fallbackPages.length} using fallback.`);
+
+    // Update App.js to import generated page components instead of using PageRenderer
+    if (generatedPageNames.length > 0) {
+      await this.patchAppJsWithGeneratedPages(frontendDir, generatedPageNames, pages);
+      files.push('frontend/src/App.js'); // overwritten
+    }
+
+    // Write generation report to README
+    try {
+      const readmePath = path.join(this.outputPath, 'README.md');
+      let readme = '';
+      try { readme = await fs.readFile(readmePath, 'utf-8'); } catch (e) { /* new file */ }
+
+      const reportLines = [
+        '',
+        '## Generation Report',
+        '',
+        '| Page | Method | Notes |',
+        '|------|--------|-------|'
+      ];
+      for (const p of generatedPageNames) {
+        reportLines.push(`| ${p.name}.jsx | UICodeGenerator | Generated |`);
+      }
+      for (const name of fallbackPages) {
+        reportLines.push(`| ${name} | PageRenderer (fallback) | Code generation failed |`);
+      }
+      reportLines.push('');
+
+      if (readme.includes('## Generation Report')) {
+        readme = readme.replace(/## Generation Report[\s\S]*?(?=\n## |\n$|$)/, reportLines.join('\n'));
+      } else {
+        readme += reportLines.join('\n');
+      }
+      await fs.writeFile(readmePath, readme);
+    } catch (e) {
+      // Non-critical, don't fail generation
+    }
+
+    return files;
+  }
+
+  /**
+   * Replace App.js routes section with template-based generation.
+   * Uses direct component imports for UICodeGenerator pages and
+   * PageRenderer as explicit fallback for pages that weren't generated.
+   */
+  async patchAppJsWithGeneratedPages(frontendDir, generatedPages, allPages) {
+    const appJsPath = path.join(frontendDir, 'src/App.js');
+
+    try {
+      let appJs = await fs.readFile(appJsPath, 'utf-8');
+
+      // Build import statements for generated pages
+      const imports = generatedPages.map(p =>
+        `import ${p.name} from './pages/${p.name}';`
+      ).join('\n');
+
+      // Insert imports after the existing PageRenderer import
+      const pageRendererImport = "import PageRenderer from './components/PageRenderer';";
+      if (appJs.includes(pageRendererImport)) {
+        appJs = appJs.replace(
+          pageRendererImport,
+          `${pageRendererImport}\n${imports}`
+        );
+      }
+
+      // Build complete route list from the page definitions
+      const generatedNames = new Set(generatedPages.map(p => p.name));
+      const routeLines = [];
+
+      for (const page of allPages) {
+        const componentName = this.getPageComponentName(page);
+        const route = page.route || `/${(page.name || '').toLowerCase().replace(/\s+/g, '-')}`;
+
+        if (generatedNames.has(componentName)) {
+          // UICodeGenerator produced a .jsx file for this page -- use it directly
+          routeLines.push(`<Route path="${route}" element={<${componentName} />} />`);
+        } else {
+          // Fallback: use PageRenderer for this page
+          routeLines.push(`<Route key="${page.id}" path="${route}" element={<PageRenderer page={pages.find(p => p.id === '${page.id}')} forms={forms} user={user} workflowContext={{ instance: workflowInstance, currentTask, startWorkflow, completeTask, onFormSubmit: handleFormSubmit }} socket={socket} />} />`);
+        }
+
+        // Auto-generate nested detail route for list/table pages
+        const pageType = (page.type || '').toLowerCase();
+        const hasDataModel = page.dataModelId || page.data_model_id || (page.sections || []).some(s => s.type === 'table' || s.type === 'list');
+        if ((pageType === 'list' || pageType === 'table' || hasDataModel) && !route.includes(':id')) {
+          const detailRoute = `${route}/:id`;
+          routeLines.push(`<Route path="${detailRoute}" element={<PageRenderer page={pages.find(p => p.id === '${page.id}')} forms={forms} user={user} workflowContext={{ instance: workflowInstance, currentTask, startWorkflow, completeTask, onFormSubmit: handleFormSubmit }} socket={socket} detailMode={true} />} />`);
+        }
+      }
+
+      const allRoutes = routeLines.join('\n          ');
+
+      // Replace the pages.map() pattern with the explicit route list
+      const pagesMapPattern = /\{pages\.map\(page => <Route key=\{page\.id\} path=\{page\.route\} element=\{<PageRenderer[^}]*\}\s*\/>\}\s*\/>\)\}/;
+
+      if (pagesMapPattern.test(appJs)) {
+        appJs = appJs.replace(pagesMapPattern, allRoutes);
+      }
+
+      await fs.writeFile(appJsPath, appJs);
+      console.log(`[ApplicationGenerator] Rebuilt App.js routes: ${generatedPages.length} generated, ${allPages.length - generatedPages.length} fallback (PageRenderer).`);
+    } catch (error) {
+      console.error('[ApplicationGenerator] Failed to rebuild App.js routes:', error.message);
+    }
   }
 
   async generateAuthPages(pagesDir) {
@@ -6154,6 +10335,21 @@ export default function LoginPage({ onLogin }) {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <div className="auth-divider">
+          <span>or continue with</span>
+        </div>
+
+        <div className="auth-social">
+          <button type="button" className="social-btn google-btn" onClick={() => window.location.href = '/api/auth/google'}>
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Google
+          </button>
+          <button type="button" className="social-btn github-btn" onClick={() => window.location.href = '/api/auth/github'}>
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            GitHub
+          </button>
+        </div>
 
         <div className="auth-footer">
           <p>Don't have an account? <Link to="/register">Sign up</Link></p>
@@ -6279,6 +10475,21 @@ export default function RegisterPage({ onLogin }) {
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
+
+        <div className="auth-divider">
+          <span>or sign up with</span>
+        </div>
+
+        <div className="auth-social">
+          <button type="button" className="social-btn google-btn" onClick={() => window.location.href = '/api/auth/google'}>
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Google
+          </button>
+          <button type="button" className="social-btn github-btn" onClick={() => window.location.href = '/api/auth/github'}>
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            GitHub
+          </button>
+        </div>
 
         <div className="auth-footer">
           <p>Already have an account? <Link to="/login">Sign in</Link></p>
@@ -6890,18 +11101,14 @@ module.exports = new PageDataService();
    */
   async generateSSRHtmlRenderer() {
     const appName = this.application.name || 'app';
+    const ssrLayout = this.generatedTheme?.layout || {};
+    const ssrLayoutType = ssrLayout.type || 'sidebar';
+    const ssrSidebarWidth = ssrLayout.sidebarWidth || '256px';
+    const ssrHeaderHeight = ssrLayout.headerHeight || '64px';
+    const ssrContainerMaxWidth = ssrLayout.containerMaxWidth || '1280px';
+    const ssrFontFamily = this.generatedTheme?.theme?.typography?.fontFamily || "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
-    // Read the full HtmlRenderer from the file system
-    const sourceFile = '/Users/m/Work/code/workflowpp/backend/generated-apps/eager-tiger/src/ssr/HtmlRenderer.js';
-    let content;
-
-    try {
-      content = await fs.readFile(sourceFile, 'utf8');
-      // Replace app-specific name in template
-      content = content.replace(/eager_tiger/g, appName.toLowerCase().replace(/\\s+/g, '_'));
-    } catch (error) {
-      console.error('[ApplicationGenerator] Could not read HtmlRenderer template, using minimal version');
-      content = `/**
+    let content = `/**
  * HTML Renderer
  * Generates HTML with embedded initial state for SSR hydration
  */
@@ -6940,6 +11147,68 @@ class HtmlRenderer {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${appName}</title>
+  <style>
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --primary: 222.2 47.4% 11.2%;
+      --primary-foreground: 210 40% 98%;
+      --secondary: 210 40% 96%;
+      --muted: 210 40% 96.1%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --border: 214.3 31.8% 91.4%;
+      --radius: 0.5rem;
+      ${ssrLayoutType !== 'topnav' ? `--sidebar-width: ${ssrSidebarWidth};` : ''}
+      ${ssrLayoutType === 'topnav' || ssrLayoutType === 'hybrid' ? `--header-height: ${ssrHeaderHeight};` : ''}
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: ${ssrFontFamily}; background: hsl(var(--background)); color: hsl(var(--foreground)); }
+    ${ssrLayoutType === 'topnav' ? `
+    .app-layout { display: flex; flex-direction: column; min-height: 100vh; }
+    .app-header { height: var(--header-height); background: hsl(var(--card)); border-bottom: 1px solid hsl(var(--border)); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 50; }
+    .app-header h2 { font-size: 1.125rem; font-weight: 700; }
+    .app-header nav { display: flex; align-items: center; gap: 0.25rem; }
+    .app-header nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; color: hsl(var(--muted-foreground)); text-decoration: none; font-size: 0.875rem; border-radius: var(--radius); transition: background 0.15s, color 0.15s; white-space: nowrap; }
+    .app-header nav a:hover { background: hsl(var(--secondary)); color: hsl(var(--foreground)); }
+    .app-header nav a.active { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+    .main-content { flex: 1; padding: 2rem; max-width: ${ssrContainerMaxWidth}; margin: 0 auto; }
+    ` : ssrLayoutType === 'hybrid' ? `
+    .app-layout { display: flex; flex-direction: column; min-height: 100vh; }
+    .app-header { height: var(--header-height); background: hsl(var(--card)); border-bottom: 1px solid hsl(var(--border)); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 50; }
+    .app-header h2 { font-size: 1.125rem; font-weight: 700; }
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { width: var(--sidebar-width); background: hsl(var(--card)); border-right: 1px solid hsl(var(--border)); padding: 1rem 0; display: flex; flex-direction: column; flex-shrink: 0; }
+    .sidebar-header { padding: 0.75rem 1.25rem; font-size: 1.125rem; font-weight: 700; border-bottom: 1px solid hsl(var(--border)); margin-bottom: 0.5rem; }
+    .sidebar nav a { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1.25rem; color: hsl(var(--muted-foreground)); text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; }
+    .sidebar nav a:hover { background: hsl(var(--secondary)); color: hsl(var(--foreground)); }
+    .sidebar nav a.active { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border-radius: var(--radius); margin: 0 0.5rem; }
+    .main-content { flex: 1; padding: 2rem; max-width: ${ssrContainerMaxWidth}; overflow: auto; }
+    ` : `
+    .app-layout { display: flex; min-height: 100vh; }
+    .sidebar { width: var(--sidebar-width); background: hsl(var(--card)); border-right: 1px solid hsl(var(--border)); padding: 1rem 0; display: flex; flex-direction: column; }
+    .sidebar-header { padding: 0.75rem 1.25rem; font-size: 1.125rem; font-weight: 700; border-bottom: 1px solid hsl(var(--border)); margin-bottom: 0.5rem; }
+    .sidebar nav a { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1.25rem; color: hsl(var(--muted-foreground)); text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; }
+    .sidebar nav a:hover { background: hsl(var(--secondary)); color: hsl(var(--foreground)); }
+    .sidebar nav a.active { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border-radius: var(--radius); margin: 0 0.5rem; }
+    .main-content { flex: 1; padding: 2rem; max-width: ${ssrContainerMaxWidth}; }
+    `}
+    .main-content h1 { font-size: 1.875rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.025em; }
+    .main-content .subtitle { color: hsl(var(--muted-foreground)); margin-bottom: 1.5rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 1.25rem; }
+    .stat-card .stat-label { font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-bottom: 0.25rem; }
+    .stat-card .stat-value { font-size: 1.875rem; font-weight: 700; }
+    .data-table { width: 100%; border-collapse: collapse; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); overflow: hidden; }
+    .data-table th { text-align: left; padding: 0.75rem 1rem; font-size: 0.75rem; font-weight: 500; color: hsl(var(--muted-foreground)); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid hsl(var(--border)); background: hsl(var(--secondary)); }
+    .data-table td { padding: 0.75rem 1rem; font-size: 0.875rem; border-bottom: 1px solid hsl(var(--border)); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500; border-radius: var(--radius); border: 1px solid hsl(var(--border)); background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); cursor: pointer; transition: opacity 0.15s; }
+    .btn:hover { opacity: 0.9; }
+    .btn-outline { background: transparent; color: hsl(var(--foreground)); }
+    .loading { display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 1rem; color: hsl(var(--muted-foreground)); }
+  </style>
 </head>
 <body>
   <div id="root"><!-- SSR_CONTENT_PLACEHOLDER --></div>
@@ -6970,7 +11239,6 @@ class HtmlRenderer {
 
 module.exports = new HtmlRenderer();
 `;
-    }
 
     const filePath = path.join(this.outputPath, 'src/ssr/HtmlRenderer.js');
     await fs.writeFile(filePath, content);
@@ -7016,6 +11284,71 @@ module.exports = {
       'uuid': 'text'
     };
     return typeMap[dbType?.toLowerCase()] || 'text';
+  }
+
+  /**
+   * Write precise Figma components to the frontend directory.
+   */
+  async writePreciseComponents(frontendDir, components) {
+    const files = [];
+    const figmaDir = path.join(frontendDir, 'src', 'components', 'figma');
+    await fs.mkdir(figmaDir, { recursive: true });
+
+    for (const comp of components) {
+      const filePath = path.join(frontendDir, comp.filePath);
+      const dir = path.dirname(filePath);
+      await fs.mkdir(dir, { recursive: true });
+      await fs.writeFile(filePath, comp.content);
+      files.push(path.join('frontend', comp.filePath));
+    }
+
+    return files;
+  }
+
+  /**
+   * Download precise Figma assets (images, vectors) to the frontend public directory.
+   */
+  async downloadPreciseAssets(frontendDir, assets) {
+    const assetsDir = path.join(frontendDir, 'public', 'assets', 'figma');
+    await fs.mkdir(assetsDir, { recursive: true });
+
+    const downloads = [];
+
+    // Download images
+    if (assets.images) {
+      for (const img of assets.images) {
+        if (img.url) {
+          downloads.push(
+            this.downloadFile(img.url, path.join(assetsDir, `${img.ref}.png`))
+              .catch(err => console.warn(`[ApplicationGenerator] Failed to download image ${img.ref}:`, err.message))
+          );
+        }
+      }
+    }
+
+    // Download vectors
+    if (assets.vectors) {
+      for (const vec of assets.vectors) {
+        if (vec.url) {
+          downloads.push(
+            this.downloadFile(vec.url, path.join(assetsDir, `${vec.nodeId}.svg`))
+              .catch(err => console.warn(`[ApplicationGenerator] Failed to download vector ${vec.nodeId}:`, err.message))
+          );
+        }
+      }
+    }
+
+    await Promise.all(downloads);
+  }
+
+  /**
+   * Download a file from URL to local path.
+   */
+  async downloadFile(url, destPath) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    await fs.writeFile(destPath, buffer);
   }
 }
 

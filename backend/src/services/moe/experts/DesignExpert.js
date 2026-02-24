@@ -14,6 +14,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { FORM_TYPE_LAYOUTS, detectFormType } = require('../../../utils/smart-layout');
 const { DESIGN_PRESETS, getPresetCSS, getTailwindTheme, getPresetEffects } = require('../../../config/design-presets');
+const { getDesignSystem } = require('../../../config/design-tokens');
 
 class DesignExpert extends BaseAgent {
   constructor() {
@@ -828,18 +829,31 @@ When no design is provided:
     }
 
     // Generate CSS from design system
+    // For precise path, designAnalysis is empty -- use preciseDesignSystem as fallback
     const designAnalysis = designAnalysisResult.designAnalysis || {};
-    const generatedCSS = this.generateCSSFromDesignSystem(designAnalysis.designSystem);
+    const cssSourceDesignSystem = designAnalysis.designSystem || designAnalysisResult.preciseDesignSystem || null;
+    const generatedCSS = this.generateCSSFromDesignSystem(cssSourceDesignSystem);
 
-    return {
+    const result = {
       forms: designAnalysisResult.forms || [],
       pages: designAnalysisResult.pages || [],
+      mobileScreens: designAnalysisResult.mobileScreens || [],
       designAnalysis: {
         ...designAnalysis,
         generatedCSS
       },
       expertType: 'DesignExpert'
     };
+
+    // Forward precise Figma data when present (from FigmaPrecisePipeline)
+    if (designAnalysisResult.preciseComponents) result.preciseComponents = designAnalysisResult.preciseComponents;
+    if (designAnalysisResult.preciseAssets) result.preciseAssets = designAnalysisResult.preciseAssets;
+    if (designAnalysisResult.preciseDesignSystem) result.preciseDesignSystem = designAnalysisResult.preciseDesignSystem;
+    if (designAnalysisResult.precisePageConfigs) result.precisePageConfigs = designAnalysisResult.precisePageConfigs;
+    if (designAnalysisResult.navigationGraph) result.navigationGraph = designAnalysisResult.navigationGraph;
+    if (designAnalysisResult.responsiveHints) result.responsiveHints = designAnalysisResult.responsiveHints;
+
+    return result;
   }
 
   /**
@@ -847,12 +861,16 @@ When no design is provided:
    * This CSS is applied to the generated app, forms, and pages
    * IMPORTANT: This method expects a VALIDATED design system with all required tokens
    */
-  generateCSSFromDesignSystem(designSystem) {
+  generateCSSFromDesignSystem(designSystem, layoutConfig = {}) {
     // If no design system provided, use complete design system
     if (!designSystem) {
       console.log('[DesignExpert] No design system provided, using complete design system');
       designSystem = this.getCompleteDesignSystem();
     }
+    // Layout navigation type: 'sidebar' | 'topnav' | 'hybrid'
+    const navType = layoutConfig.type || 'sidebar';
+    const navSidebarWidth = layoutConfig.sidebarWidth || '256px';
+    const navHeaderHeight = layoutConfig.headerHeight || '64px';
 
     // Validate and merge with complete design system to ensure all tokens exist
     const validation = this.validateDesignSystem(designSystem);
@@ -942,17 +960,79 @@ body {
 /* App Layout */
 .app {
   display: flex;
+  ${navType === 'topnav' || navType === 'hybrid' ? 'flex-direction: column;' : ''}
   min-height: 100vh;
 }
 
+${navType === 'topnav' || navType === 'hybrid' ? `
+/* Top Navigation Header */
+.app-header {
+  height: ${navHeaderHeight};
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.app-header .logo h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.app-header nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.app-header .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  border-radius: var(--radius-button);
+  font-size: 14px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.app-header .nav-link:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.app-header .nav-link.active {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+` : ''}
+
+${navType === 'hybrid' ? `
+/* Hybrid: sidebar below header */
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+` : ''}
+
+${navType !== 'topnav' ? `
 /* Sidebar Navigation */
 .sidebar {
-  width: 240px;
+  width: ${navSidebarWidth};
   background: var(--color-primary);
   color: white;
   padding: 20px 0;
-  position: fixed;
-  height: 100vh;
+  ${navType === 'sidebar' ? 'position: fixed; height: 100vh;' : 'flex-shrink: 0;'}
   overflow-y: auto;
 }
 
@@ -1004,14 +1084,15 @@ body {
   letter-spacing: 1px;
   color: rgba(255,255,255,0.5);
 }
+` : ''}
 
 /* Main Content */
 .main-content {
   flex: 1;
-  margin-left: 240px;
+  ${navType === 'sidebar' ? `margin-left: ${navSidebarWidth};` : ''}
   padding: var(--spacing-section);
   background: var(--color-background);
-  min-height: 100vh;
+  ${navType === 'sidebar' ? 'min-height: 100vh;' : ''}
 }
 
 /* Page Container */
@@ -2136,6 +2217,7 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
+  ${navType !== 'topnav' ? `
   .sidebar {
     width: 60px;
     padding: 10px 0;
@@ -2146,9 +2228,18 @@ body {
   }
 
   .main-content {
-    margin-left: 60px;
+    ${navType === 'sidebar' ? 'margin-left: 60px;' : ''}
     padding: 16px;
   }
+  ` : `
+  .app-header nav {
+    display: none;
+  }
+
+  .main-content {
+    padding: 16px;
+  }
+  `}
 
   .page-container {
     padding-top: 16px;
@@ -2214,6 +2305,16 @@ body {
       if (imageExtensions.some(ext => designInput.toLowerCase().includes(ext))) {
         return { type: 'image', description: 'Image design file detected', path: designInput };
       }
+    }
+
+    // Check for explicit figma-mcp type (from AresService)
+    if (designInput.type === 'figma-mcp' || designInput.type === 'figma') {
+      return {
+        type: 'figma',
+        description: 'Figma MCP design extraction',
+        url: designInput.url || designInput.figmaUrl,
+        accessToken: designInput.accessToken || designInput.figmaToken
+      };
     }
 
     // Check for structured design input
@@ -2382,6 +2483,141 @@ body {
       });
     }
 
+    // Precise mode: deterministic Figma-to-React pipeline (no AI re-interpretation of visuals)
+    if (designInput?.preciseMode) {
+      try {
+        const FigmaPrecisePipeline = require('../../figma/FigmaPrecisePipeline');
+        const pipeline = new FigmaPrecisePipeline();
+        const figmaUrl = typeof designInput === 'string' ? designInput : (designInput?.url || designInput?.figmaUrl);
+        const figmaToken = designInput?.accessToken || designInput?.figmaToken ||
+                           process.env.FIGMA_ACCESS_TOKEN || process.env.FIGMA_API_KEY;
+
+        if (onThinking) {
+          onThinking({
+            agent: this.name,
+            step: 'Precise Figma Extraction',
+            content: 'Running pixel-perfect extraction pipeline (no AI drift)...'
+          });
+        }
+
+        const result = await pipeline.execute(figmaUrl, figmaToken, { dataModels });
+
+        if (onThinking) {
+          onThinking({
+            agent: this.name,
+            step: 'Precise Figma Extraction',
+            content: `Extracted ${result.components.length} components, ${result.assets.images.length} images`
+          });
+        }
+
+        // Return in standard DesignExpert format with precise additions
+        if (result.mobileScreens?.length > 0) {
+          console.log(`[DesignExpert] Precise pipeline detected ${result.mobileScreens.length} mobile screen(s)`);
+        }
+        return {
+          designSystem: {
+            colors: result.designSystem.colors,
+            typography: { fontFamily: `${result.designSystem.typography.primaryFont}, system-ui, sans-serif` },
+            spacing: { unit: '8px' },
+          },
+          forms: [],
+          pages: result.pageConfigs,
+          mobileScreens: result.mobileScreens || [],
+          preciseComponents: result.components,
+          preciseAssets: result.assets,
+          preciseDesignSystem: result.designSystem,
+          precisePageConfigs: result.pageConfigs,
+          navigationGraph: result.navigationGraph,
+          responsiveHints: result.responsiveHints,
+          metadata: result.metadata,
+        };
+      } catch (preciseError) {
+        console.warn('[DesignExpert] Precise pipeline failed, falling back to standard:', preciseError.message);
+        // Fall through to standard flow
+      }
+    }
+
+    // Check if input is a Figma URL
+    const figmaUrl = typeof designInput === 'string'
+      ? designInput
+      : (designInput?.url || designInput?.figmaUrl);
+
+    const figmaToken = designInput?.accessToken || designInput?.figmaToken ||
+                       process.env.FIGMA_ACCESS_TOKEN || process.env.FIGMA_API_KEY;
+
+    if (figmaUrl && this.isFigmaUrl(figmaUrl)) {
+      // Try 1: Direct Figma REST API (faster and more reliable)
+      try {
+        if (onThinking) {
+          onThinking({
+            agent: this.name,
+            step: 'Figma API Extraction',
+            content: 'Connecting to Figma API to extract design tokens...'
+          });
+        }
+
+        const FigmaDirectClient = require('../../FigmaDirectClient');
+        const directClient = new FigmaDirectClient();
+
+        // Extract design using direct API
+        const extractedDesign = await directClient.extractDesign(figmaUrl, figmaToken);
+
+        if (onThinking) {
+          onThinking({
+            agent: this.name,
+            step: 'Figma API Extraction',
+            content: 'Design tokens extracted successfully via REST API, enhancing with Claude...'
+          });
+        }
+
+        // Enhance the extraction with Claude for better form/page detection
+        const enhanced = await this.enhanceFigmaMCPExtraction(extractedDesign, userRequirements, dataModels, onThinking);
+
+        return enhanced;
+      } catch (directError) {
+        console.warn('[DesignExpert] Figma direct API failed:', directError.message);
+
+        // Try 2: Fall back to MCP server
+        try {
+          if (onThinking) {
+            onThinking({
+              agent: this.name,
+              step: 'Figma MCP Fallback',
+              content: `Direct API failed (${directError.message}), trying MCP server...`
+            });
+          }
+
+          const FigmaMCPClient = require('../../FigmaMCPClient');
+          const mcpClient = new FigmaMCPClient();
+
+          const extractedDesign = await mcpClient.extractDesign(figmaUrl, figmaToken);
+
+          if (onThinking) {
+            onThinking({
+              agent: this.name,
+              step: 'Figma MCP Extraction',
+              content: 'Design tokens extracted via MCP, enhancing with Claude...'
+            });
+          }
+
+          const enhanced = await this.enhanceFigmaMCPExtraction(extractedDesign, userRequirements, dataModels, onThinking);
+          return enhanced;
+        } catch (mcpError) {
+          console.warn('[DesignExpert] Figma MCP also failed:', mcpError.message);
+
+          if (onThinking) {
+            onThinking({
+              agent: this.name,
+              step: 'Figma Analysis Fallback',
+              content: `All Figma extraction methods failed, using LLM-based analysis...`
+            });
+          }
+          // Fall through to LLM-based analysis below
+        }
+      }
+    }
+
+    // Fallback: Use LLM-based analysis (original behavior)
     // Build context
     const context = this.buildContext(userRequirements, dataModels);
 
@@ -2552,6 +2788,333 @@ CRITICAL: Return ONLY valid JSON with ALL required design tokens filled.`;
     }
 
     return result;
+  }
+
+  /**
+   * Check if a string is a valid Figma URL
+   * @param {string} url - URL to check
+   * @returns {boolean}
+   */
+  isFigmaUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    return /figma\.com\/(design|file|proto)\/[a-zA-Z0-9]+/.test(url);
+  }
+
+  /**
+   * Enhance Figma MCP extraction with Claude for better form/page detection
+   * @param {Object} mcpExtraction - Raw extraction from FigmaMCPClient
+   * @param {string} userRequirements - User requirements
+   * @param {Array} dataModels - Data models
+   * @param {Function} onThinking - Thinking callback
+   * @returns {Promise<Object>} Enhanced design data
+   */
+  async enhanceFigmaMCPExtraction(mcpExtraction, userRequirements, dataModels, onThinking) {
+    console.log('[DesignExpert] Starting Figma design analysis...');
+
+    // Validate and merge design system with defaults
+    if (mcpExtraction.designAnalysis && mcpExtraction.designAnalysis.designSystem) {
+      const validation = this.validateDesignSystem(mcpExtraction.designAnalysis.designSystem);
+      if (!validation.valid) {
+        mcpExtraction.designAnalysis.designSystem = this.mergeWithCompleteDesignSystem(
+          mcpExtraction.designAnalysis.designSystem
+        );
+      }
+    }
+
+    if (onThinking) {
+      onThinking({
+        agent: this.name,
+        step: 'Analyzing Figma Design',
+        content: 'Using AI to analyze the Figma design structure and map it to application components...'
+      });
+    }
+
+    // Get the raw Figma data for Claude to analyze
+    const rawFigmaData = mcpExtraction.designAnalysis?.rawFigmaData || '';
+    const designSystem = mcpExtraction.designAnalysis?.designSystem || {};
+
+    // Build context from user requirements
+    const context = this.buildContext(userRequirements, dataModels);
+
+    // Create a comprehensive prompt for Claude to analyze the Figma design
+    const analyzePrompt = `You are analyzing a Figma design file to generate an application that EXACTLY matches the design.
+
+**USER REQUIREMENTS**:
+${userRequirements}
+
+**RAW FIGMA DESIGN DATA** (extracted via MCP):
+${rawFigmaData.substring(0, 40000)}
+
+**EXTRACTED DESIGN TOKENS**:
+${JSON.stringify(designSystem, null, 2)}
+
+**APPLICATION CONTEXT**:
+${JSON.stringify(context, null, 2)}
+
+**YOUR TASK**:
+Analyze the Figma design and generate an application structure that EXACTLY replicates what you see in the design.
+
+1. **IDENTIFY ALL SCREENS/PAGES** in the Figma file:
+   - Look for frames named like "Home", "Login", "Dashboard", "Contact", etc.
+   - Each major frame is typically a page/screen
+   - Note the layout structure of each page
+
+2. **IDENTIFY ALL FORMS** in the design:
+   - Look for input fields, text areas, dropdowns, checkboxes
+   - Look for button labels like "Submit", "Send", "Sign Up"
+   - Extract exact field labels, placeholder text, and types
+
+3. **EXTRACT EXACT STYLING** for each component:
+   - Button colors, sizes, border-radius
+   - Input field styling
+   - Card/container styling
+   - Typography (font sizes, weights, colors)
+
+4. **EXTRACT FEATURES AND FUNCTIONALITY**:
+   - Identify buttons and their actions (Submit, Cancel, Add, Delete, etc.)
+   - Identify navigation patterns (sidebar, top nav, tabs, etc.)
+   - Identify interactive elements (dropdowns, toggles, checkboxes)
+   - Identify data display patterns (tables, cards, lists, stats)
+   - Map user requirements to elements in the Figma design
+
+5. **EXTRACT LAYOUT STRUCTURE**:
+   - Identify grid layouts (how many columns, gaps)
+   - Identify flex layouts (direction, alignment)
+   - Identify container widths and paddings
+   - Identify spacing between elements
+
+**CRITICAL REQUIREMENTS**:
+- Use EXACT hex colors from the Figma design (e.g., #1a73e8, not "blue")
+- Use EXACT pixel values for spacing, padding, border-radius (e.g., "16px", not "medium")
+- Match the EXACT layout structure shown in Figma (grid columns, flex direction)
+- Include ALL pages and forms visible in the design
+- Include ALL text content exactly as shown in Figma
+- Field names and labels should match Figma text exactly
+- Button labels should match Figma text exactly
+
+Return ONLY valid JSON:
+{
+  "designAnalysis": {
+    "source": "figma-mcp",
+    "figmaStructure": {
+      "totalFrames": <number>,
+      "identifiedPages": ["page names found"],
+      "identifiedForms": ["form names found"],
+      "layoutStyle": "single-page|multi-page|dashboard"
+    },
+    "designSystem": {
+      "colors": {
+        "primary": "#exact-from-figma",
+        "secondary": "#exact-from-figma",
+        "background": "#exact-from-figma",
+        "cardBackground": "#exact-from-figma",
+        "cardBorder": "#exact-from-figma",
+        "text": "#exact-from-figma",
+        "textSecondary": "#exact-from-figma",
+        "labelText": "#exact-from-figma",
+        "border": "#exact-from-figma",
+        "focus": "#exact-from-figma",
+        "error": "#exact-from-figma",
+        "success": "#exact-from-figma",
+        "warning": "#exact-from-figma",
+        "buttonPrimary": "#exact-from-figma",
+        "buttonText": "#exact-from-figma"
+      },
+      "typography": {
+        "fontFamily": "Font from Figma, fallback",
+        "pageTitle": { "size": "from-figma", "weight": 600, "color": "#from-figma" },
+        "sectionHeader": { "size": "from-figma", "weight": 600 },
+        "fieldLabel": { "size": "from-figma", "weight": 500 },
+        "inputText": { "size": "from-figma", "weight": 400 },
+        "buttonText": { "size": "from-figma", "weight": 500 }
+      },
+      "spacing": {
+        "sectionPadding": "from-figma",
+        "fieldGap": "from-figma",
+        "containerMaxWidth": "from-figma"
+      },
+      "borderRadius": {
+        "card": "from-figma",
+        "input": "from-figma",
+        "button": "from-figma"
+      },
+      "components": {
+        "button": {
+          "height": "from-figma",
+          "padding": "from-figma",
+          "fontSize": "from-figma"
+        },
+        "input": {
+          "height": "from-figma",
+          "padding": "from-figma",
+          "borderWidth": "from-figma"
+        },
+        "card": {
+          "padding": "from-figma",
+          "shadow": "from-figma"
+        }
+      }
+    }
+  },
+  "forms": [
+    {
+      "id": "form_id",
+      "name": "Exact Form Name from Figma",
+      "description": "Purpose based on design context",
+      "styling": {
+        "layout": "single-column|two-column",
+        "maxWidth": "from-figma",
+        "padding": "from-figma"
+      },
+      "fields": [
+        {
+          "id": "field_id",
+          "name": "fieldName",
+          "type": "text|email|tel|number|date|select|textarea|checkbox",
+          "label": "Exact Label from Figma",
+          "placeholder": "Exact placeholder from Figma",
+          "required": true,
+          "styling": {
+            "width": "full|half",
+            "order": 1
+          }
+        }
+      ],
+      "actions": [
+        { "type": "submit", "label": "Exact Button Text from Figma", "styling": { "variant": "primary" } },
+        { "type": "cancel", "label": "Cancel Text if present", "styling": { "variant": "secondary" } }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "id": "page_id",
+      "name": "Exact Page Name from Figma",
+      "title": "Page Title from Figma",
+      "route": "/matching-route",
+      "layout": {
+        "type": "full-width|contained|sidebar",
+        "maxWidth": "from-figma",
+        "padding": "from-figma"
+      },
+      "sections": [
+        {
+          "id": "section_id",
+          "title": "Section Title if present",
+          "type": "hero|content|form|cards|footer|navigation|stats-row|header",
+          "layout": {
+            "type": "grid|flex|stack",
+            "columns": 2,
+            "gap": "16px",
+            "direction": "row|column"
+          },
+          "styling": {
+            "background": "#from-figma",
+            "padding": "24px",
+            "borderRadius": "8px",
+            "border": "1px solid #e5e7eb",
+            "shadow": "0 1px 3px rgba(0,0,0,0.1)"
+          },
+          "components": [
+            {
+              "type": "heading|text|image|button|form|card|stat-card|container|grid|buttonGroup|divider|spacer",
+              "config": {
+                "text": "exact text from figma",
+                "variant": "h1|h2|h3|primary|secondary",
+                "src": "image-url-if-applicable",
+                "children": []
+              },
+              "styling": {
+                "background": "#from-figma",
+                "color": "#from-figma",
+                "padding": "from-figma",
+                "borderRadius": "from-figma",
+                "fontSize": "from-figma",
+                "fontWeight": "from-figma"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "navigation": {
+    "type": "top-bar|sidebar|bottom-tabs",
+    "position": "left|top|bottom",
+    "items": [
+      { "label": "Exact Nav Text from Figma", "route": "/matching-route", "icon": "icon-name-if-visible" }
+    ],
+    "styling": {
+      "background": "#exact-hex-from-figma",
+      "textColor": "#exact-hex-from-figma",
+      "width": "240px",
+      "padding": "16px"
+    }
+  },
+  "features": {
+    "hasLogin": true,
+    "hasSearch": true,
+    "hasDarkMode": false,
+    "hasNotifications": false,
+    "identifiedActions": ["Submit Form", "Add Item", "Delete", "Export", "etc."]
+  }
+}`;
+
+    try {
+      const messages = [{ role: 'user', content: analyzePrompt }];
+      const responseText = await this.getResponse(messages);
+      const analyzed = this.parseJsonResponse(responseText);
+
+      if (!analyzed) {
+        console.warn('[DesignExpert] Failed to analyze Figma design, using basic extraction');
+        mcpExtraction.designAnalysis.generatedCSS = this.generateCSSFromDesignSystem(designSystem);
+        return mcpExtraction;
+      }
+
+      // Generate CSS from the analyzed design system
+      if (analyzed.designAnalysis?.designSystem) {
+        analyzed.designAnalysis.generatedCSS = this.generateCSSFromDesignSystem(analyzed.designAnalysis.designSystem);
+      }
+
+      // Preserve mobileScreens from the original Figma extraction --
+      // Claude's analysis prompt doesn't produce them, but FigmaDirectClient did.
+      if (!analyzed.mobileScreens && mcpExtraction.mobileScreens?.length > 0) {
+        analyzed.mobileScreens = mcpExtraction.mobileScreens;
+        console.log(`[DesignExpert] Preserved ${mcpExtraction.mobileScreens.length} mobile screen(s) from FigmaDirectClient`);
+      }
+
+      console.log('[DesignExpert] Figma design analysis complete:', {
+        pagesFound: analyzed.pages?.length || 0,
+        formsFound: analyzed.forms?.length || 0,
+        mobileScreensFound: analyzed.mobileScreens?.length || 0,
+        hasNavigation: !!analyzed.navigation,
+        figmaStructure: analyzed.designAnalysis?.figmaStructure
+      });
+
+      if (onThinking) {
+        onThinking({
+          agent: this.name,
+          step: 'Design Analysis Complete',
+          content: `Found ${analyzed.pages?.length || 0} pages and ${analyzed.forms?.length || 0} forms in Figma design`
+        });
+      }
+
+      return analyzed;
+    } catch (error) {
+      console.error('[DesignExpert] Figma analysis error:', error.message);
+
+      if (onThinking) {
+        onThinking({
+          agent: this.name,
+          step: 'Analysis Fallback',
+          content: 'Using basic design extraction due to analysis error'
+        });
+      }
+
+      // Return basic extraction with generated CSS
+      mcpExtraction.designAnalysis.generatedCSS = this.generateCSSFromDesignSystem(designSystem);
+      return mcpExtraction;
+    }
   }
 
   async analyzePDFDesign(designInput, userRequirements, dataModels, onThinking) {
@@ -3494,95 +4057,7 @@ CRITICAL: Return ONLY the designAnalysis object with ALL required fields filled 
    * This is the authoritative source of all design tokens
    */
   getCompleteDesignSystem() {
-    return {
-      colors: {
-        primary: '#1a1a1a',
-        secondary: '#374151',
-        background: '#f5f5f5',
-        cardBackground: '#ffffff',
-        cardBorder: '#e8e8e8',
-        text: '#1a1a1a',
-        textSecondary: '#6b7280',
-        labelText: '#374151',
-        border: '#d1d5db',
-        focus: '#000000',
-        info: '#3b82f6',
-        infoBackground: '#f0f9ff',
-        error: '#ef4444',
-        success: '#10b981',
-        warning: '#f59e0b'
-      },
-      typography: {
-        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        pageTitle: { size: '28px', weight: 600 },
-        pageSubtitle: { size: '15px', weight: 400 },
-        sectionHeader: { size: '16px', weight: 600 },
-        sectionDescription: { size: '14px', weight: 400 },
-        fieldLabel: { size: '14px', weight: 500 },
-        inputText: { size: '14px', weight: 400, color: '#1f2937' },
-        helperText: { size: '13px', weight: 400 },
-        buttonText: { size: '14px', weight: 500 }
-      },
-      spacing: {
-        unit: '8px',
-        sectionPadding: '24px',
-        fieldGap: '16px',
-        sectionGap: '16px',
-        containerMaxWidth: '800px',
-        containerPaddingTop: '32px',
-        inputPadding: '10px 12px'
-      },
-      borderRadius: {
-        card: '8px',
-        input: '6px',
-        button: '6px',
-        checkbox: '4px'
-      },
-      shadows: {
-        card: 'none',
-        focus: 'none'
-      },
-      components: {
-        input: {
-          height: '42px',
-          border: '1px solid #d1d5db',
-          focusBorder: '1px solid #000000'
-        },
-        button: {
-          primary: {
-            background: '#1a1a1a',
-            color: '#ffffff',
-            padding: '10px 24px',
-            hoverBackground: '#000000'
-          },
-          secondary: {
-            background: '#ffffff',
-            color: '#374151',
-            border: '1px solid #d1d5db',
-            padding: '10px 20px'
-          }
-        },
-        card: {
-          background: '#ffffff',
-          border: '1px solid #e8e8e8',
-          padding: '24px'
-        },
-        infoBox: {
-          background: '#f0f9ff',
-          borderLeft: '4px solid #3b82f6',
-          padding: '12px 16px',
-          textColor: '#1e40af'
-        }
-      },
-      layout: {
-        maxWidth: '800px',
-        columns: {
-          desktop: 2,
-          tablet: 1,
-          mobile: 1
-        }
-      }
-    };
+    return getDesignSystem('light');
   }
 
   /**

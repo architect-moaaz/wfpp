@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const aresService = require('../services/AresService');
 const formDatabase = require('../database/FormDatabase');
+const ApplicationDatabase = require('../database/ApplicationDatabase');
+const ApplicationService = require('../services/ApplicationService');
 
 /**
  * ARES Conversational AI Routes
@@ -31,15 +33,119 @@ router.post('/chat', async (req, res) => {
       });
     }
 
-    // Generate response using ARES service
-    const response = await aresService.generateResponse(conversationHistory, context || {});
+    // Enrich context with resource summaries if application is open
+    let enrichedContext = { ...context };
+    const applicationId = context?.currentApplication?.id;
+
+    if (applicationId) {
+      try {
+        const appDb = new ApplicationDatabase();
+        await appDb.initialize();
+        const resourceSummaries = await appDb.getResourceSummaries(applicationId);
+        enrichedContext.resourceSummaries = resourceSummaries;
+        console.log('[ARES Chat] Loaded resource summaries for application:', applicationId);
+      } catch (summaryError) {
+        console.warn('[ARES Chat] Failed to load resource summaries:', summaryError.message);
+      }
+    }
+
+    // Generate response using ARES service with enriched context
+    const response = await aresService.generateResponse(conversationHistory, enrichedContext);
+
+    // Check for resource modification in the response
+    const { cleanContent, modification } = aresService.parseResourceModification(response.content);
+    let modificationApplied = false;
+    let modifiedResource = null;
+
+    if (modification && applicationId) {
+      console.log('[ARES Chat] Detected resource modification:', modification);
+
+      try {
+        // Fetch the full application
+        const appDb = new ApplicationDatabase();
+        await appDb.initialize();
+        const application = await appDb.findById(applicationId);
+
+        if (application) {
+          // Map resourceType to resources key
+          const resourceTypeMap = {
+            'form': 'forms',
+            'workflow': 'workflows',
+            'page': 'pages',
+            'dataModel': 'dataModels',
+            'rule': 'rules'
+          };
+
+          const resourcesKey = resourceTypeMap[modification.resourceType];
+          const resources = application.resources?.[resourcesKey] || [];
+
+          // Find the resource by ID
+          const resourceIndex = resources.findIndex(r => r.id === modification.resourceId);
+
+          if (resourceIndex !== -1) {
+            const fullResource = resources[resourceIndex];
+
+            // Get the user's modification request from the last user message
+            const lastUserMessage = conversationHistory
+              .filter(m => m.role === 'user')
+              .slice(-1)[0]?.content || modification.description;
+
+            // Generate the modified resource using LLM
+            const modifiedResourceResult = await aresService.generateModification(
+              modification.resourceType,
+              modification.resourceId,
+              fullResource,
+              lastUserMessage,
+              conversationHistory
+            );
+
+            // Apply the modification to the application
+            resources[resourceIndex] = modifiedResourceResult;
+            application.resources[resourcesKey] = resources;
+
+            // Save to database
+            await appDb.update(applicationId, {
+              resources: {
+                [resourcesKey]: resources
+              }
+            });
+
+            // Save to file system
+            await ApplicationService.saveResourceToFolder(
+              application.name,
+              resourcesKey,
+              resources
+            );
+
+            modificationApplied = true;
+            modifiedResource = {
+              type: modification.resourceType,
+              id: modification.resourceId,
+              name: modifiedResourceResult.name || fullResource.name,
+              resource: modifiedResourceResult
+            };
+
+            console.log('[ARES Chat] Resource modification applied successfully:', {
+              type: modification.resourceType,
+              id: modification.resourceId
+            });
+          } else {
+            console.warn('[ARES Chat] Resource not found for modification:', modification.resourceId);
+          }
+        }
+      } catch (modError) {
+        console.error('[ARES Chat] Error applying resource modification:', modError);
+      }
+    }
 
     res.json({
       success: true,
       response: {
-        content: response.content,
+        content: cleanContent,
         suggestions: response.suggestions,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        modificationApplied,
+        modifiedResource
       }
     });
   } catch (error) {
@@ -95,7 +201,7 @@ router.post('/stream', async (req, res) => {
  */
 router.post('/generate', async (req, res) => {
   try {
-    const { requirements, context, socketId, sessionId, conversationHistory, themeConfig } = req.body;
+    const { requirements, context, socketId, sessionId, conversationHistory, themeConfig, targetPlatform } = req.body;
 
     if (!requirements && !conversationHistory) {
       return res.status(400).json({
@@ -117,7 +223,12 @@ router.post('/generate', async (req, res) => {
       context,
       socketId,
       sessionId,
-      themeConfig: themeConfig ? { theme: themeConfig.theme, hasCustomCss: !!themeConfig.customCss } : null
+      themeConfig: themeConfig ? {
+        theme: themeConfig.theme,
+        hasCustomCss: !!themeConfig.customCss,
+        figmaUrl: themeConfig.figmaUrl || null,
+        hasFigmaToken: !!themeConfig.figmaToken
+      } : null
     });
 
     // Get Socket.io instance and session manager for progress updates
@@ -163,7 +274,7 @@ router.post('/generate', async (req, res) => {
     });
 
     // Run generation in background (don't await the response to client)
-    runGenerationInBackground(aresService, requirements, context, emitProgress, io, socketId, themeConfig);
+    runGenerationInBackground(aresService, requirements, context, emitProgress, io, socketId, themeConfig, targetPlatform);
 
   } catch (error) {
     console.error('Error in ARES generate endpoint:', error);
@@ -179,12 +290,13 @@ router.post('/generate', async (req, res) => {
  * Background generation function
  * Runs after HTTP response is sent, emits completion via WebSocket
  */
-async function runGenerationInBackground(aresService, requirements, context, emitProgress, io, socketId, themeConfig = null) {
+async function runGenerationInBackground(aresService, requirements, context, emitProgress, io, socketId, themeConfig = null, targetPlatform = 'all') {
   try {
-    // Add themeConfig to context for generation
+    // Add themeConfig and targetPlatform to context for generation
     const enrichedContext = {
       ...context,
-      themeConfig: themeConfig
+      themeConfig: themeConfig,
+      targetPlatform: targetPlatform || 'all'
     };
 
     // Trigger MoE generation with progress callback
@@ -220,7 +332,13 @@ async function runGenerationInBackground(aresService, requirements, context, emi
     const generatedDataModels = resultWorkflow.dataModels || [];
     const generatedPages = resultWorkflow.pages || [];
     const generatedRules = resultWorkflow.rules || [];
+    const generatedMobileUI = resultWorkflow.mobileUI || null;
     const designAnalysis = resultWorkflow.designAnalysis || null;
+    const preciseComponents = resultWorkflow.preciseComponents || null;
+    const preciseAssets = resultWorkflow.preciseAssets || null;
+    const preciseDesignSystem = resultWorkflow.preciseDesignSystem || null;
+    const precisePageConfigs = resultWorkflow.precisePageConfigs || null;
+    const navigationGraph = resultWorkflow.navigationGraph || null;
 
     console.log('[ARES] Extracted resources:', {
       workflows: generatedWorkflows.length,
@@ -229,6 +347,7 @@ async function runGenerationInBackground(aresService, requirements, context, emi
       dataModels: generatedDataModels.length,
       pages: generatedPages.length,
       rules: generatedRules.length,
+      mobileScreens: generatedMobileUI?.screens?.length || 0,
       hasDesignAnalysis: !!designAnalysis,
       designSource: designAnalysis?.source || 'none'
     });
@@ -324,6 +443,15 @@ async function runGenerationInBackground(aresService, requirements, context, emi
       }
     }
 
+    // Add mobile UI to application
+    if (generatedMobileUI && generatedMobileUI.screens && generatedMobileUI.screens.length > 0) {
+      application.resources.mobileUI = generatedMobileUI;
+      console.log('[ARES] Added mobileUI to application.resources:', {
+        screens: generatedMobileUI.screens.length,
+        navigation: generatedMobileUI.navigation?.type || 'none'
+      });
+    }
+
     // Add designAnalysis to application (contains theme/CSS from DesignExpert)
     if (designAnalysis) {
       application.resources.designAnalysis = designAnalysis;
@@ -339,7 +467,27 @@ async function runGenerationInBackground(aresService, requirements, context, emi
       console.log('[ARES] Added designAnalysis to application:', {
         source: designAnalysis.source || 'unknown',
         hasGeneratedCSS: !!designAnalysis.generatedCSS,
-        themeName: designAnalysis.themeName || 'default'
+        cssLength: designAnalysis.generatedCSS?.length || 0,
+        cssPreview: designAnalysis.generatedCSS?.substring(0, 200) || 'none',
+        themeName: designAnalysis.themeName || 'default',
+        hasDesignSystem: !!designAnalysis.designSystem,
+        designSystemKeys: Object.keys(designAnalysis.designSystem || {})
+      });
+    }
+
+    // Store precise Figma data in metadata so ApplicationGenerator can use it
+    if (preciseComponents) {
+      if (!application.metadata) application.metadata = {};
+      application.metadata.preciseComponents = preciseComponents;
+      application.metadata.preciseAssets = preciseAssets;
+      application.metadata.preciseDesignSystem = preciseDesignSystem;
+      application.metadata.precisePageConfigs = precisePageConfigs;
+      application.metadata.navigationGraph = navigationGraph;
+      console.log('[ARES] Added precise Figma data to application.metadata:', {
+        components: preciseComponents.length,
+        images: preciseAssets?.images?.length || 0,
+        vectors: preciseAssets?.vectors?.length || 0,
+        hasNavigationGraph: !!navigationGraph,
       });
     }
 
@@ -392,7 +540,8 @@ async function runGenerationInBackground(aresService, requirements, context, emi
       forms: application.resources.forms.length,
       dataModels: application.resources.dataModels.length,
       pages: application.resources.pages.length,
-      rules: application.resources.rules.length
+      rules: application.resources.rules.length,
+      mobileScreens: application.resources.mobileUI?.screens?.length || 0
     });
 
     // Update application in database with intelligent error handling
@@ -534,31 +683,44 @@ async function runGenerationInBackground(aresService, requirements, context, emi
     // Update resource files in generated app folder
     const ApplicationService = require('../services/ApplicationService');
     try {
-      await ApplicationService.saveResourceToFolder(
+      // Log the resources being saved for debugging
+      console.log('[ARES] Syncing resources to folder:', {
+        appName: application.name,
+        workflows: application.resources.workflows?.length || 0,
+        forms: application.resources.forms?.length || 0,
+        dataModels: application.resources.dataModels?.length || 0,
+        pages: application.resources.pages?.length || 0,
+        rules: application.resources.rules?.length || 0
+      });
+
+      // Use syncAllResourcesToFolder for atomic save of all resources
+      await ApplicationService.syncAllResourcesToFolder(
         application.name,
-        'workflows',
-        application.resources.workflows || []
+        application.resources
       );
-      await ApplicationService.saveResourceToFolder(
-        application.name,
-        'forms',
-        application.resources.forms || []
-      );
-      await ApplicationService.saveResourceToFolder(
-        application.name,
-        'dataModels',
-        application.resources.dataModels || []
-      );
-      await ApplicationService.saveResourceToFolder(
-        application.name,
-        'pages',
-        application.resources.pages || []
-      );
-      await ApplicationService.saveResourceToFolder(
-        application.name,
-        'rules',
-        application.resources.rules || []
-      );
+
+      // Save generated CSS from DesignExpert to frontend App.css
+      if (designAnalysis?.generatedCSS) {
+        const fs = require('fs').promises;
+        const path = require('path');
+        // Sanitize app name to match folder naming convention (underscores -> hyphens)
+        const sanitizedName = (application.name || 'app')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
+        const appDir = path.join(__dirname, '../../generated-apps', sanitizedName);
+        const cssPath = path.join(appDir, 'frontend/src/App.css');
+
+        try {
+          // Ensure frontend/src directory exists
+          await fs.mkdir(path.dirname(cssPath), { recursive: true });
+          await fs.writeFile(cssPath, designAnalysis.generatedCSS);
+          console.log('[ARES] Saved design system CSS to frontend/src/App.css');
+        } catch (cssError) {
+          console.warn('[ARES] Failed to save CSS file:', cssError.message);
+        }
+      }
+
       console.log('[ARES] Updated resource files in generated app folder');
     } catch (fileError) {
       console.warn('[ARES] Failed to update resource files:', fileError);

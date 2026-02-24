@@ -157,6 +157,10 @@ class FigmaToMobileConverter {
       if (node.styling.color) style.color = node.styling.color;
       if (node.styling.fontSize) style.fontSize = parseInt(node.styling.fontSize, 10);
       if (node.styling.fontWeight) style.fontWeight = String(node.styling.fontWeight);
+      if (node.styling.fontFamily) style.fontFamily = node.styling.fontFamily;
+      if (node.styling.letterSpacing) style.letterSpacing = parseFloat(node.styling.letterSpacing);
+      if (node.styling.lineHeight) style.lineHeight = parseInt(node.styling.lineHeight, 10);
+      if (node.styling.textAlign) style.textAlign = node.styling.textAlign;
     }
 
     return {
@@ -167,12 +171,14 @@ class FigmaToMobileConverter {
   }
 
   _convertButton(node, ds) {
-    const bg = node.styling?.background || ds.colors.primary;
+    const bg = node.styling?.backgroundColor || node.styling?.background || ds.colors.primary;
+    const padV = node.layout?.padding?.top || (node.styling?.paddingTop ? parseInt(node.styling.paddingTop, 10) : null) || 12;
+    const padH = node.layout?.padding?.left || (node.styling?.paddingLeft ? parseInt(node.styling.paddingLeft, 10) : null) || 24;
     const style = {
       backgroundColor: bg,
       borderColor: bg,
-      paddingVertical: 12,
-      paddingHorizontal: 24,
+      paddingVertical: padV,
+      paddingHorizontal: padH,
       borderRadius: ds.borderRadius,
       alignItems: 'center'
     };
@@ -204,11 +210,12 @@ class FigmaToMobileConverter {
       props.keyboardType = 'phone-pad';
     }
 
+    const inputPad = node.layout?.padding?.top || (node.styling?.paddingTop ? parseInt(node.styling.paddingTop, 10) : null) || 12;
     const style = {
       borderWidth: 1,
       borderColor: ds.colors.border,
       borderRadius: ds.borderRadius,
-      padding: 12,
+      padding: inputPad,
       fontSize: ds.fontSizes.body,
       color: ds.colors.text,
       backgroundColor: ds.colors.card
@@ -246,10 +253,64 @@ class FigmaToMobileConverter {
   }
 
   _convertIcon(node, ds) {
+    const name = (node.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const size = node.dimensions?.width || 24;
+    const color = node.styling?.color || ds.colors.text;
+
+    // Map common Figma icon names to Ionicons equivalents
+    const ioniconsMap = {
+      home: 'home-outline', house: 'home-outline',
+      search: 'search-outline', magnify: 'search-outline',
+      settings: 'settings-outline', gear: 'settings-outline', cog: 'settings-outline',
+      user: 'person-outline', person: 'person-outline', profile: 'person-outline', account: 'person-outline',
+      bell: 'notifications-outline', notification: 'notifications-outline', alert: 'notifications-outline',
+      heart: 'heart-outline', like: 'heart-outline', favorite: 'heart-outline',
+      star: 'star-outline',
+      cart: 'cart-outline', shoppingcart: 'cart-outline', bag: 'bag-outline',
+      menu: 'menu-outline', hamburger: 'menu-outline',
+      close: 'close-outline', x: 'close-outline',
+      back: 'arrow-back-outline', arrowleft: 'arrow-back-outline', chevronleft: 'chevron-back-outline',
+      forward: 'arrow-forward-outline', arrowright: 'arrow-forward-outline', chevronright: 'chevron-forward-outline',
+      plus: 'add-outline', add: 'add-outline',
+      minus: 'remove-outline',
+      check: 'checkmark-outline', checkmark: 'checkmark-outline',
+      edit: 'create-outline', pencil: 'create-outline',
+      delete: 'trash-outline', trash: 'trash-outline',
+      share: 'share-outline',
+      download: 'download-outline',
+      upload: 'cloud-upload-outline',
+      camera: 'camera-outline',
+      image: 'image-outline', photo: 'image-outline',
+      mail: 'mail-outline', email: 'mail-outline', envelope: 'mail-outline',
+      phone: 'call-outline', call: 'call-outline',
+      location: 'location-outline', map: 'map-outline', pin: 'location-outline',
+      calendar: 'calendar-outline', date: 'calendar-outline',
+      clock: 'time-outline', time: 'time-outline',
+      lock: 'lock-closed-outline', password: 'lock-closed-outline',
+      eye: 'eye-outline', show: 'eye-outline',
+      eyeoff: 'eye-off-outline', hide: 'eye-off-outline',
+      filter: 'filter-outline',
+      sort: 'swap-vertical-outline',
+      refresh: 'refresh-outline',
+      info: 'information-circle-outline',
+      warning: 'warning-outline',
+      error: 'alert-circle-outline',
+    };
+
+    const matched = ioniconsMap[name];
+    if (matched) {
+      return {
+        type: 'icon',
+        props: { name: matched, library: 'Ionicons', size, color },
+        style: {}
+      };
+    }
+
+    // Fallback: render as a generic placeholder
     return {
-      type: 'View',
-      props: { accessibilityLabel: node.name || 'icon' },
-      style: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }
+      type: 'icon',
+      props: { name: 'ellipse-outline', library: 'Ionicons', size, color, accessibilityLabel: node.name || 'icon' },
+      style: {}
     };
   }
 
@@ -263,9 +324,13 @@ class FigmaToMobileConverter {
       style.height = 200;
     }
     this._applyStyling(style, node);
+    const imageUri = node.assetUrl || node.styling?.imageUrl || null;
     return {
       type: 'Image',
-      props: { source: { uri: 'placeholder' }, accessibilityLabel: node.name || 'image' },
+      props: {
+        source: imageUri ? { uri: imageUri } : undefined,
+        accessibilityLabel: node.name || 'image'
+      },
       style
     };
   }
@@ -430,18 +495,62 @@ class FigmaToMobileConverter {
     if (!node || !node.styling) return;
     const s = node.styling;
     if (s.backgroundColor) style.backgroundColor = s.backgroundColor;
-    if (s.borderRadius !== undefined) style.borderRadius = s.borderRadius;
+
+    // Gradient background passthrough (ComponentRenderer parses CSS gradients)
+    if (s.background && typeof s.background === 'string' && s.background.includes('gradient')) {
+      style.background = s.background;
+    }
+
+    // Border radius: number or compound string ("8px 8px 0px 0px" -> per-corner)
+    if (s.borderRadius !== undefined) {
+      if (typeof s.borderRadius === 'string' && s.borderRadius.includes(' ')) {
+        const parts = s.borderRadius.split(/\s+/).map(v => parseInt(v, 10) || 0);
+        if (parts.length === 4) {
+          style.borderTopLeftRadius = parts[0];
+          style.borderTopRightRadius = parts[1];
+          style.borderBottomRightRadius = parts[2];
+          style.borderBottomLeftRadius = parts[3];
+        } else {
+          style.borderRadius = parts[0] || 0;
+        }
+      } else {
+        style.borderRadius = s.borderRadius;
+      }
+    }
+
     if (s.borderColor) {
       style.borderColor = s.borderColor;
       style.borderWidth = s.borderWidth || 1;
     }
-    if (s.shadowColor) {
+
+    // CSS boxShadow string parsing ("0px 2px 8px rgba(...)")
+    if (s.boxShadow && typeof s.boxShadow === 'string') {
+      const match = s.boxShadow.match(/([-\d.]+)px\s+([-\d.]+)px\s+([-\d.]+)px\s+(rgba?\([^)]+\))/);
+      if (match) {
+        style.shadowOffset = { width: parseFloat(match[1]), height: parseFloat(match[2]) };
+        style.shadowRadius = parseFloat(match[3]);
+        style.shadowColor = match[4];
+        style.shadowOpacity = 1; // opacity is embedded in rgba
+        style.elevation = Math.max(1, Math.round(parseFloat(match[3]) / 2));
+      }
+    } else if (s.shadowColor) {
       style.shadowColor = s.shadowColor;
       style.shadowOffset = { width: s.shadowOffsetX || 0, height: s.shadowOffsetY || 0 };
       style.shadowOpacity = s.shadowOpacity || 0.1;
       style.shadowRadius = s.shadowRadius || 4;
       style.elevation = 2;
     }
+
+    // Padding from styling
+    if (s.paddingTop !== undefined) style.paddingTop = parseInt(s.paddingTop, 10) || 0;
+    if (s.paddingRight !== undefined) style.paddingRight = parseInt(s.paddingRight, 10) || 0;
+    if (s.paddingBottom !== undefined) style.paddingBottom = parseInt(s.paddingBottom, 10) || 0;
+    if (s.paddingLeft !== undefined) style.paddingLeft = parseInt(s.paddingLeft, 10) || 0;
+
+    // Dimensions from styling
+    if (s.width !== undefined) style.width = typeof s.width === 'string' ? parseInt(s.width, 10) : s.width;
+    if (s.height !== undefined) style.height = typeof s.height === 'string' ? parseInt(s.height, 10) : s.height;
+
     if (s.opacity !== undefined && s.opacity < 1) style.opacity = s.opacity;
   }
 

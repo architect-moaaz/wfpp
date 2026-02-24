@@ -11,6 +11,7 @@
 const RouterAgent = require('./RouterAgent');
 const ExpertCombiner = require('./ExpertCombiner');
 const WorkflowValidator = require('../validation/WorkflowValidator');
+const { getDesignSystem, LIGHT_COLORS } = require('../../config/design-tokens');
 const WorkflowFixer = require('../validation/WorkflowFixer');
 const ApplicationValidator = require('./experts/ApplicationValidator');
 const PlanningExpert = require('./experts/PlanningExpert');
@@ -126,8 +127,13 @@ class MoEOrchestrator {
     }
 
     try {
-      // Import identity services
-      const { roleService, groupService, departmentService, positionService } = require('../identity');
+      // Import and instantiate identity services with database connection
+      const { RoleService, GroupService, DepartmentService } = require('../identity');
+      const ApplicationDatabase = require('../../database/ApplicationDatabase');
+      const db = ApplicationDatabase.getInstance ? ApplicationDatabase.getInstance() : new ApplicationDatabase();
+      const roleService = new RoleService(db);
+      const groupService = new GroupService(db);
+      const departmentService = new DepartmentService(db);
 
       // Fetch organization data in parallel
       const [roles, groups, departments] = await Promise.all([
@@ -169,9 +175,10 @@ class MoEOrchestrator {
   /**
    * Main method: Generate complete workflow using MoE
    */
-  async generateWorkflow(userRequirements, existingWorkflow, conversationHistory, emitEvent, designInput = null) {
+  async generateWorkflow(userRequirements, existingWorkflow, conversationHistory, emitEvent, designInput = null, targetPlatform = 'all') {
     console.log('[MoE] === WORKFLOW GENERATION STARTED ===');
     console.log('[MoE] User requirements:', userRequirements);
+    console.log('[MoE] Target platform:', targetPlatform);
     if (designInput) {
       console.log('[MoE] Design input provided:', designInput.type, designInput.name);
     }
@@ -200,7 +207,7 @@ class MoEOrchestrator {
       let applicationPlan = null;
       if (!existingWorkflow) {
         console.log('[MoE] Step 1.5: Creating application plan...');
-        applicationPlan = await this.createApplicationPlan(userRequirements, conversationHistory, emitThinking, designInput);
+        applicationPlan = await this.createApplicationPlan(userRequirements, conversationHistory, emitThinking, designInput, targetPlatform);
         console.log('[MoE] Step 1.5 COMPLETE: Plan created with', applicationPlan ? `${applicationPlan.dataModels.length} models` : 'fallback');
       }
 
@@ -217,7 +224,8 @@ class MoEOrchestrator {
         conversationHistory,
         emitThinking,
         designInput,
-        applicationPlan
+        applicationPlan,
+        targetPlatform
       );
 
       // Phase 3: Combine results
@@ -253,7 +261,7 @@ class MoEOrchestrator {
    * Phase 0: Create comprehensive application plan
    * Uses NEW component-based architecture to eliminate JSON truncation
    */
-  async createApplicationPlan(userRequirements, conversationHistory, emitThinking, designInput = null) {
+  async createApplicationPlan(userRequirements, conversationHistory, emitThinking, designInput = null, targetPlatform = 'all') {
     emitThinking({
       agent: 'PlanningExpert',
       step: 'Creating Application Blueprint',
@@ -302,16 +310,25 @@ class MoEOrchestrator {
       try {
         const designExpert = this.experts.design.ui;
 
-        // If theme is provided, use execute() which properly handles theme
+        // Check if we have a design input that requires processing
+        const hasFigmaMCPInput = designInput && (designInput.type === 'figma-mcp' || designInput.type === 'figma');
+        const hasThemeInput = designInput && designInput.theme;
+
+        // If theme or Figma MCP input is provided, use execute() which handles them
         // Otherwise use generateOptimalDesign() for auto-generation
-        if (designInput && designInput.theme) {
+        if (hasFigmaMCPInput || hasThemeInput) {
+          console.log('[MoE] Running DesignExpert with input:', {
+            type: designInput.type,
+            theme: designInput.theme,
+            hasFigmaUrl: !!designInput.url || !!designInput.figmaUrl
+          });
           fullDesignAnalysis = await designExpert.execute(
             userRequirements,
             [],  // conversationHistory
             (thought) => {
               if (emitThinking) emitThinking(thought);
             },
-            designInput  // Pass theme configuration
+            designInput  // Pass design configuration (theme or Figma MCP)
           );
           designSystem = fullDesignAnalysis?.designAnalysis || this.getDefaultDesignSystem();
         } else {
@@ -363,7 +380,7 @@ class MoEOrchestrator {
         console.log('[MoE] Organization context passed to ComponentOrchestrator');
       }
 
-      const plan = await orchestrator.execute(componentPlan, emitThinking);
+      const plan = await orchestrator.execute(componentPlan, emitThinking, targetPlatform);
 
       console.log('[MoE] Component generation complete:', {
         dataModels: plan.dataModels.length,
@@ -455,7 +472,7 @@ class MoEOrchestrator {
   /**
    * Phase 2: Execute selected experts in parallel
    */
-  async executeExperts(routing, userRequirements, existingWorkflow, conversationHistory, emitThinking, designInput = null, applicationPlan = null) {
+  async executeExperts(routing, userRequirements, existingWorkflow, conversationHistory, emitThinking, designInput = null, applicationPlan = null, targetPlatform = 'all') {
     const sharedContext = {
       userRequirements,
       existingWorkflow,
@@ -502,8 +519,15 @@ class MoEOrchestrator {
     if (designInput) {
       // Detect if this is a theme-based design input
       const isThemeInput = designInput.theme !== undefined;
+      const isFigmaMCPInput = designInput.type === 'figma-mcp' || designInput.type === 'figma';
 
-      if (isThemeInput) {
+      if (isFigmaMCPInput) {
+        emitThinking({
+          agent: 'MoEOrchestrator',
+          step: 'Executing Design Expert',
+          content: `Extracting design system from Figma via MCP...`
+        });
+      } else if (isThemeInput) {
         emitThinking({
           agent: 'MoEOrchestrator',
           step: 'Executing Design Expert',
@@ -523,7 +547,11 @@ class MoEOrchestrator {
           // Prepare design input for the expert
           let designInputForExpert = null;
 
-          if (isThemeInput) {
+          if (isFigmaMCPInput) {
+            // For Figma MCP input, pass the full config with URL and token
+            designInputForExpert = designInput;
+            console.log('[MoE] Using Figma MCP design input:', { url: designInput.url || designInput.figmaUrl, hasToken: !!designInput.accessToken });
+          } else if (isThemeInput) {
             // For theme-based input, pass the theme config directly
             designInputForExpert = designInput;
             console.log('[MoE] Using theme-based design input:', { theme: designInput.theme, hasCustomCss: !!designInput.customCss });
@@ -559,6 +587,9 @@ class MoEOrchestrator {
             if (designResult.pages && designResult.pages.length > 0) {
               results.pages.push({ pages: designResult.pages });
               console.log(`[MoE] Design expert extracted ${designResult.pages.length} pages from design`);
+            }
+            if (designResult.mobileScreens && designResult.mobileScreens.length > 0) {
+              console.log(`[MoE] Design expert extracted ${designResult.mobileScreens.length} mobile screens from design`);
             }
           }
         } catch (error) {
@@ -638,8 +669,53 @@ class MoEOrchestrator {
       console.log('[MoE] Skipping form experts - forms already generated by design expert');
     }
 
+    // Enrich sharedContext with design data for mobile experts
+    if (results.design) {
+      sharedContext.designSystem = results.design.designAnalysis?.designSystem || null;
+      sharedContext.designSource = results.design.designAnalysis?.source || null;
+    }
+    if (results.design?.pages && results.design.pages.length > 0) {
+      sharedContext.figmaScreens = results.design.pages;
+    }
+    if (results.design?.mobileScreens && results.design.mobileScreens.length > 0) {
+      sharedContext.figmaMobileScreens = results.design.mobileScreens;
+      console.log(`[MoE] Passing ${results.design.mobileScreens.length} mobile screen(s) to experts`);
+    }
+    // Also check applicationPlan for design system (from ComponentOrchestrator)
+    if (!sharedContext.designSystem && applicationPlan?.designSystem) {
+      sharedContext.designSystem = applicationPlan.designSystem;
+    }
+
+    // Enrich sharedContext with pages, forms, and data models for richer mobile generation
+    // Pages give the mobile expert full Figma layout definitions to replicate
+    if (results.pages?.length > 0) {
+      sharedContext.pages = results.pages.flat().filter(Boolean);
+    } else if (applicationPlan?.pages?.length > 0) {
+      sharedContext.pages = applicationPlan.pages;
+    }
+    // Forms let the mobile expert generate accurate form screens
+    if (results.forms?.length > 0) {
+      sharedContext.forms = results.forms.flat().filter(Boolean);
+    } else if (applicationPlan?.forms?.length > 0) {
+      sharedContext.forms = applicationPlan.forms;
+    }
+    // Data models enable dashboard stats and list screens with real field references
+    if (results.dataModels?.length > 0) {
+      sharedContext.dataModels = results.dataModels.flat().filter(Boolean);
+    } else if (applicationPlan?.dataModels?.length > 0) {
+      sharedContext.dataModels = applicationPlan.dataModels;
+    }
+
     // Execute mobile experts (if any exist) with AI-powered self-healing
-    if (routing.routing.mobileExperts.length > 0) {
+    // Skip mobile experts for web-only platform
+    if (targetPlatform === 'web-only' && routing.routing.mobileExperts.length > 0) {
+      console.log('[MoE] Skipping mobile experts - web-only platform selected');
+      emitThinking({
+        agent: 'MoEOrchestrator',
+        step: 'Platform Filter',
+        content: 'Skipping mobile screen generation (web-only platform selected)'
+      });
+    } else if (routing.routing.mobileExperts.length > 0) {
       emitThinking({
         agent: 'MoEOrchestrator',
         step: 'Executing Mobile Experts',
@@ -711,6 +787,15 @@ class MoEOrchestrator {
     }
 
     // Execute page expert - always run if we have forms or data models and design expert didn't generate pages
+    // Skip page expert for mobile-only platform
+    if (targetPlatform === 'mobile-only') {
+      console.log('[MoE] Skipping page expert - mobile-only platform selected');
+      emitThinking({
+        agent: 'MoEOrchestrator',
+        step: 'Platform Filter',
+        content: 'Skipping web page generation (mobile-only platform selected)'
+      });
+    } else {
     const hasFormsOrDataModels = results.forms.length > 0 || results.dataModels.length > 0;
     const designDidNotGeneratePages = results.pages.length === 0;
     if (hasFormsOrDataModels && designDidNotGeneratePages) {
@@ -738,6 +823,7 @@ class MoEOrchestrator {
     } else if (!designDidNotGeneratePages) {
       console.log('[MoE] Skipping page expert - pages already generated by design expert');
     }
+    } // end platform filter else
 
     // Execute rules expert - generate rules for workflows after workflows are created
     // Rules need to be attached to specific workflow nodes
@@ -814,7 +900,13 @@ class MoEOrchestrator {
       mobileUI: null,
       pages: [],
       rules: [],
-      designAnalysis: null  // Store design system and CSS from DesignExpert
+      designAnalysis: null,  // Store design system and CSS from DesignExpert
+      preciseComponents: null,
+      preciseAssets: null,
+      preciseDesignSystem: null,
+      precisePageConfigs: null,
+      navigationGraph: null,
+      responsiveHints: null,
     };
 
     // Extract designAnalysis from design expert result
@@ -825,6 +917,24 @@ class MoEOrchestrator {
         hasGeneratedCSS: !!combined.designAnalysis.generatedCSS,
         themeName: combined.designAnalysis.themeName || 'default'
       });
+    }
+
+    // Extract precise Figma data from design expert (FigmaPrecisePipeline output)
+    if (results.design) {
+      if (results.design.preciseComponents) combined.preciseComponents = results.design.preciseComponents;
+      if (results.design.preciseAssets) combined.preciseAssets = results.design.preciseAssets;
+      if (results.design.preciseDesignSystem) combined.preciseDesignSystem = results.design.preciseDesignSystem;
+      if (results.design.precisePageConfigs) combined.precisePageConfigs = results.design.precisePageConfigs;
+      if (results.design.navigationGraph) combined.navigationGraph = results.design.navigationGraph;
+      if (results.design.responsiveHints) combined.responsiveHints = results.design.responsiveHints;
+      if (combined.preciseComponents) {
+        console.log('[MoE] Captured precise Figma data:', {
+          components: combined.preciseComponents.length,
+          images: combined.preciseAssets?.images?.length || 0,
+          vectors: combined.preciseAssets?.vectors?.length || 0,
+          hasNavigationGraph: !!combined.navigationGraph,
+        });
+      }
     }
 
     // Keep workflows separate - don't combine them
@@ -863,9 +973,81 @@ class MoEOrchestrator {
       );
     }
 
+    // Convert precise Figma mobile screens via FigmaToMobileConverter
+    // This produces pixel-faithful RN components instead of AI-generated screens
+    if (results.design?.mobileScreens && results.design.mobileScreens.length > 0) {
+      try {
+        const FigmaToMobileConverter = require('./FigmaToMobileConverter');
+        const converter = new FigmaToMobileConverter();
+        const preciseDesignSystem = combined.preciseDesignSystem || null;
+        const convertedMobileUI = converter.convert(results.design.mobileScreens, preciseDesignSystem);
+
+        if (convertedMobileUI?.screens?.length > 0) {
+          console.log(`[MoE] FigmaToMobileConverter produced ${convertedMobileUI.screens.length} precise mobile screen(s)`);
+          // Replace AI-generated mobile UI with precise Figma-faithful screens
+          if (!combined.mobileUI || !combined.mobileUI.screens?.length) {
+            combined.mobileUI = convertedMobileUI;
+          } else {
+            // Merge: precise screens take priority, append any AI-only screens not covered
+            const preciseNames = new Set(convertedMobileUI.screens.map(s => s.name));
+            const aiOnlyScreens = combined.mobileUI.screens.filter(s => !preciseNames.has(s.name));
+            combined.mobileUI = {
+              screens: [...convertedMobileUI.screens, ...aiOnlyScreens],
+              navigation: convertedMobileUI.navigation,
+            };
+          }
+        }
+      } catch (converterError) {
+        console.warn('[MoE] FigmaToMobileConverter failed, using AI-generated mobile UI:', converterError.message);
+      }
+    }
+
     // Combine pages - extract from page results
     if (results.pages.length > 0) {
       combined.pages = results.pages.flatMap(p => p.pages || []);
+    }
+
+    // Post-combination validation: warn on empty critical arrays
+    if (combined.pages.length === 0) {
+      console.error('[MoE] Pages array empty after combination -- experts produced no pages');
+    }
+    if (combined.dataModels.length === 0) {
+      console.warn('[MoE] Data models array empty after combination');
+    }
+    if (combined.forms.length === 0) {
+      console.warn('[MoE] Forms array empty after combination');
+    }
+
+    // Mobile UI validation
+    if (combined.mobileUI) {
+      const mobileScreens = combined.mobileUI.screens || [];
+      if (mobileScreens.length === 0) {
+        console.warn('[MoE] Mobile UI defined but has no screens -- mobile app will show empty state');
+        // Try to generate fallback mobile screens from pages
+        if (combined.pages.length > 0) {
+          console.log('[MoE] Generating fallback mobile screens from page definitions');
+          combined.mobileUI.screens = combined.pages.slice(0, 5).map((page, i) => ({
+            id: `screen_${(page.name || 'page').toLowerCase().replace(/[^a-z0-9]/g, '_')}_${i}`,
+            name: (page.name || `Screen${i + 1}`).replace(/\s+/g, ''),
+            type: page.type === 'form' ? 'form' : 'detail',
+            components: [
+              { type: 'header', props: { text: page.title || page.name || 'Screen' } },
+              { type: 'text', props: { text: page.description || `${page.name || 'Screen'} content` } },
+            ],
+            _autoGenerated: true
+          }));
+          combined.mobileUI.navigation = {
+            type: combined.mobileUI.screens.length > 3 ? 'tab' : 'stack',
+            screens: combined.mobileUI.screens.map(s => s.name)
+          };
+        }
+      } else {
+        // Validate existing screens have components
+        const emptyScreens = mobileScreens.filter(s => !s.components || s.components.length === 0);
+        if (emptyScreens.length > 0) {
+          console.warn(`[MoE] ${emptyScreens.length} mobile screen(s) have no components: ${emptyScreens.map(s => s.name).join(', ')}`);
+        }
+      }
     }
 
     // Combine rules - rules are already in correct format
@@ -955,6 +1137,14 @@ class MoEOrchestrator {
       workflow.rules = combined.rules;
       workflow.designAnalysis = combined.designAnalysis;
 
+      // Embed precise Figma data (from FigmaPrecisePipeline)
+      if (combined.preciseComponents) workflow.preciseComponents = combined.preciseComponents;
+      if (combined.preciseAssets) workflow.preciseAssets = combined.preciseAssets;
+      if (combined.preciseDesignSystem) workflow.preciseDesignSystem = combined.preciseDesignSystem;
+      if (combined.precisePageConfigs) workflow.precisePageConfigs = combined.precisePageConfigs;
+      if (combined.navigationGraph) workflow.navigationGraph = combined.navigationGraph;
+      if (combined.responsiveHints) workflow.responsiveHints = combined.responsiveHints;
+
       // Add MoE metadata
       workflow.generatedBy = 'MoE';
       workflow.routing = routing;
@@ -1036,6 +1226,14 @@ class MoEOrchestrator {
       dataModels: combined.dataModels || []
     };
 
+    // Validation gate: prevent empty critical resources from propagating
+    const requiredResources = ['pages', 'dataModels'];
+    for (const key of requiredResources) {
+      if (!applicationPackage[key] || applicationPackage[key].length === 0) {
+        console.warn(`[MoE] WARNING: ${key} is empty after expert combination.`);
+      }
+    }
+
     // Use validateAndFix to both fix issues and validate
     const { validationReport: appValidationReport, fixes, totalFixesApplied } = await appValidator.validateAndFix(applicationPackage);
 
@@ -1078,6 +1276,11 @@ class MoEOrchestrator {
       }
     });
 
+    // Final validation gate: ensure we have pages before returning
+    if (!combined.pages || combined.pages.length === 0) {
+      console.error('[MoE] Pipeline produced no pages. Generated apps will use default templates only.');
+    }
+
     // Return object with workflows array (for multiple workflow support)
     // Also include a primary workflow for backward compatibility
     return {
@@ -1106,9 +1309,28 @@ class MoEOrchestrator {
         id: edge.id,
         source: edge.source,
         target: edge.target,
-        label: edge.label || '',
+        label: edge.data?.label || edge.label || '',
         sourceHandle: edge.sourceHandle || null,
-        targetHandle: edge.targetHandle || null
+        targetHandle: edge.targetHandle || null,
+        ...(edge.data?.condition || edge.condition ? { condition: edge.data?.condition || edge.condition } : {}),
+        ...(edge.data?.isDefault || edge.isDefault ? { isDefault: true } : {}),
+        ...(edge.data ? { data: edge.data } : {})
+      }));
+    }
+
+    // Also ensure edges array exists alongside connections (UI expects both)
+    if (workflow.connections && Array.isArray(workflow.connections) && (!workflow.edges || !Array.isArray(workflow.edges))) {
+      workflow.edges = workflow.connections.map(conn => ({
+        id: conn.id,
+        source: conn.source,
+        target: conn.target,
+        sourceHandle: conn.sourceHandle || null,
+        targetHandle: conn.targetHandle || null,
+        data: conn.data || {
+          ...(conn.label ? { label: conn.label } : {}),
+          ...(conn.condition ? { condition: conn.condition } : {}),
+          ...(conn.isDefault ? { isDefault: true } : {})
+        }
       }));
     }
 
@@ -1154,9 +1376,8 @@ class MoEOrchestrator {
     });
 
     // Check for start node - add one if missing
-    const hasStartNode = workflow.nodes.some(n =>
-      n.type === 'startProcess' || n.type === 'startEvent' || n.type === 'start'
-    );
+    const allStartTypes = ['startProcess', 'startEvent', 'start', 'timerStartEvent', 'messageStartEvent', 'signalStartEvent', 'conditionalStartEvent'];
+    const hasStartNode = workflow.nodes.some(n => allStartTypes.includes(n.type));
 
     if (!hasStartNode && workflow.nodes.length > 0) {
       console.log('[MoE] Adding missing start node');
@@ -1192,8 +1413,7 @@ class MoEOrchestrator {
       // Find nodes that don't have outgoing connections (terminal nodes)
       const nodesWithOutgoing = new Set(workflow.connections.map(c => c.source));
       const terminalNodes = workflow.nodes.filter(n =>
-        n.type !== 'startProcess' && n.type !== 'startEvent' && n.type !== 'start' &&
-        !nodesWithOutgoing.has(n.id)
+        !allStartTypes.includes(n.type) && !nodesWithOutgoing.has(n.id)
       );
 
       workflow.nodes.push({
@@ -1234,14 +1454,42 @@ class MoEOrchestrator {
       const outgoingConnections = workflow.connections.filter(c => c.source === decisionNode.id);
 
       if (outgoingConnections.length > 0) {
-        // Check if any connection has isDefault: true
-        const hasDefault = outgoingConnections.some(c => c.isDefault === true);
+        // Check if any connection has isDefault (top-level or in data)
+        const hasDefault = outgoingConnections.some(c => c.isDefault === true || c.data?.isDefault === true);
 
         if (!hasDefault) {
-          // Mark the last connection as default (typically the "else" path)
-          const lastConnection = outgoingConnections[outgoingConnections.length - 1];
-          lastConnection.isDefault = true;
-          console.log(`[MoE] Added default path to decision node ${decisionNode.id}: connection ${lastConnection.id}`);
+          // Find the edge without a condition to mark as default, or fall back to last edge
+          const noConditionEdge = outgoingConnections.find(c => !c.condition && !c.data?.condition);
+          const defaultEdge = noConditionEdge || outgoingConnections[outgoingConnections.length - 1];
+          defaultEdge.isDefault = true;
+          if (defaultEdge.data) {
+            defaultEdge.data.isDefault = true;
+          } else {
+            defaultEdge.data = { isDefault: true, label: defaultEdge.label || 'Default' };
+          }
+          console.log(`[MoE] Added default path to decision node ${decisionNode.id}: connection ${defaultEdge.id}`);
+        }
+
+        // Ensure each outgoing edge has a sourceHandle if missing
+        outgoingConnections.forEach((conn, idx) => {
+          if (!conn.sourceHandle) {
+            const handles = ['a', 'b', 'c'];
+            conn.sourceHandle = handles[idx] || handles[0];
+          }
+        });
+
+        // Sync to edges array as well
+        if (workflow.edges) {
+          outgoingConnections.forEach(conn => {
+            const matchingEdge = workflow.edges.find(e => e.id === conn.id);
+            if (matchingEdge) {
+              matchingEdge.sourceHandle = conn.sourceHandle;
+              if (conn.isDefault || conn.data?.isDefault) {
+                if (!matchingEdge.data) matchingEdge.data = {};
+                matchingEdge.data.isDefault = true;
+              }
+            }
+          });
         }
       }
     });
@@ -1256,79 +1504,7 @@ class MoEOrchestrator {
    * Used as fallback when DesignExpert fails or generates invalid output
    */
   getDefaultDesignSystem() {
-    return {
-      source: 'default',
-      colors: {
-        primary: '#1f2937',
-        secondary: '#3b82f6',
-        background: '#f8f9fa',
-        cardBackground: '#ffffff',
-        text: '#1f2937',
-        textSecondary: '#6b7280',
-        border: '#d1d5db',
-        focus: '#3b82f6',
-        error: '#ef4444',
-        success: '#10b981',
-        warning: '#f59e0b'
-      },
-      typography: {
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        fontSize: {
-          base: '14px',
-          h1: '24px',
-          h2: '20px',
-          label: '14px',
-          input: '14px'
-        },
-        fontWeight: {
-          title: 600,
-          label: 500,
-          input: 400
-        }
-      },
-      spacing: {
-        container: '24px',
-        fieldGap: '16px',
-        sectionGap: '32px',
-        inputPadding: '10px 12px'
-      },
-      components: {
-        input: {
-          borderRadius: '6px',
-          borderWidth: '1px',
-          height: '42px',
-          focusStyle: '2px solid #3b82f6, 0 0 0 3px rgba(59, 130, 246, 0.1)'
-        },
-        button: {
-          primary: {
-            background: '#1f2937',
-            color: '#ffffff',
-            padding: '10px 24px',
-            borderRadius: '6px'
-          },
-          secondary: {
-            background: '#ffffff',
-            color: '#374151',
-            border: '1px solid #d1d5db',
-            padding: '10px 24px',
-            borderRadius: '6px'
-          }
-        },
-        card: {
-          background: '#ffffff',
-          borderRadius: '8px',
-          shadow: '0 2px 8px rgba(0,0,0,0.08)',
-          padding: '24px'
-        }
-      },
-      layout: {
-        maxWidth: '800px',
-        columns: {
-          desktop: 2,
-          mobile: 1
-        }
-      }
-    };
+    return getDesignSystem('light');
   }
 
   /**
@@ -2071,7 +2247,7 @@ Return JSON in this exact format:
                     props: { style: { padding: 16 } },
                     children: [
                       { type: 'Text', props: { children: 'Welcome', style: { fontSize: 24, fontWeight: 'bold' } } },
-                      { type: 'Text', props: { children: 'Your mobile dashboard', style: { color: '#666' } } }
+                      { type: 'Text', props: { children: 'Your mobile dashboard', style: { color: LIGHT_COLORS.mutedForeground } } }
                     ]
                   }
                 ]
@@ -2137,9 +2313,9 @@ Return JSON in this exact format:
         screens: screens.map(s => s.name)
       },
       theme: {
-        primary: '#3b82f6',
-        background: '#f8f9fa',
-        text: '#1f2937'
+        primary: LIGHT_COLORS.primary,
+        background: LIGHT_COLORS.background,
+        text: LIGHT_COLORS.foreground
       },
       _autoGenerated: true
     };
